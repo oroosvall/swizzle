@@ -1,0 +1,15 @@
+
+struct foo
+{
+    int boo;
+}
+
+void func()
+{
+
+}
+
+int star = 123;
+
+foo bar;
+
