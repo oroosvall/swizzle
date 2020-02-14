@@ -33,3 +33,6 @@
 
 #folders
 build/
+data/cache.dat
+data/test.dat
+data/test.nam
