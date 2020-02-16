@@ -24,7 +24,7 @@ namespace swizzle
 		return Resource<CommandBuffer>();
 	}
 
-	Resource<FrameBuffer> GlRenderer::createFrameBuffer(uint32_t numAttach, DepthType depth, uint32_t width, uint32_t height)
+	Resource<FrameBuffer> GlRenderer::createFrameBuffer(uint32_t numAttach, eDepthType depth, uint32_t width, uint32_t height)
 	{
 		numAttach;
 		depth;

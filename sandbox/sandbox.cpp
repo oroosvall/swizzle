@@ -51,6 +51,7 @@ public:
 		, mAppConfig("App.cfg")
 		, mCamera(glm::radians(45.0F), 1280, 720)
 	{
+
 		mWindow = sw::SwCreateWindow(1280, 720, "App");
 
 		mWindow->addEventListener(this);
@@ -65,7 +66,12 @@ public:
 	
 	void publishEvent(const sw::WindowEvent& evt)
 	{
-		evt;
+		if (evt.getEventType() == sw::eWindowEventType::eType_resize)
+		{
+			sw::ResizeEvent& e = (sw::ResizeEvent&)evt;
+			mCamera.changeAspect(static_cast<float>(e.mWidth), static_cast<float>(e.mHeight));
+			mResize = true;
+		}
 	}
 
 	~Application()
@@ -83,6 +89,8 @@ protected:
 
 	sw::PerspectiveCamera mCamera;
 
+	bool mResize = false;
+
 };
 
 void Application::mainLoop()
@@ -99,14 +107,13 @@ void Application::mainLoop()
 
 	mWindow->show();
 	
-
 	auto vertexBuffer = mRenderer->createBuffer(sw::eBufferType::eVertexBuffer);
 	auto commandBuffer = mRenderer->createCommandBuffer(sw::eCmdBufferType::ePrimary);
 
 	auto shader = mRenderer->createShaderProgram(mRenderer->getDefaultFramebuffer(), sw::eShaderProgramType::GraphicsProgram);
 	shader->load("shaders/simple.shader");
 	
-	auto drawBuffer = mRenderer->createFrameBuffer(2, sw::DepthType::eDepth, 1280, 720);
+	auto drawBuffer = mRenderer->createFrameBuffer(2, sw::eDepthType::eDepthStencil, 1280, 720);
 	drawBuffer->setClearDepth(0, 1.0F, 0);
 	drawBuffer->setClearColor(1, {1.0F, 1.0F, 0.0F, 0.0F});
 
@@ -118,42 +125,28 @@ void Application::mainLoop()
 	meshloader::loadObjMeshIntoBuffer("meshes/shape.obj", vertexBuffer);
 
 	mCamera.setPosition({ 0.0F, 0.0F, 0.5F });
-	
-	uint32_t x = 0;
-	uint32_t y = 0;
-	mWindow->getSize(x, y);
 
 	utils::HighResolutionClock highRes;
 	utils::FpsCounter fpsCount;
 
-	float xPos = 0.0F;
-	bool inc = true;
-
 	while (mWindow->isVisible())
 	{
+		uint32_t x = 0;
+		uint32_t y = 0;
+		mWindow->getSize(x, y);
+
+		if (mResize)
+		{
+			drawBuffer->resize(x, y);
+			mResize = false;
+		}
+
 		sw::input::inputFrameReset();
 		mWindow->pollEvents();
 
 		float_t dt = highRes.secondsAsFloat(true);
 		fpsCount.tick(dt);
-
-		if (inc)
-		{
-			xPos += dt;
-			if (xPos > 1.0F)
-			{
-				inc = false;
-			}
-		}
-		else
-		{
-			xPos -= dt;
-			if (xPos < -1.0F)
-			{
-				inc = true;
-			}
-		}
-
+		
 		auto pos = mCamera.getPosition();
 		if (sw::input::isKeyPressed(sw::input::Keys::eKey_A))
 		{
@@ -180,7 +173,7 @@ void Application::mainLoop()
 		std::string str = "Fps: " + std::to_string(1.0F / dt);
 		mWindow->setTitle(str.c_str());
 
-		
+
 
 		commandBuffer->resetBuffer();
 		commandBuffer->beginRecording();
@@ -189,7 +182,7 @@ void Application::mainLoop()
 
 		// test frame buffer
 		commandBuffer->bindFrameBuffer(drawBuffer);
-		commandBuffer->setViewport(1280, 720);
+		commandBuffer->setViewport(x, y);
 		commandBuffer->bindShaderProgram(shaderTest);
 		glm::mat4 vp = mCamera.getViewProjection();
 
@@ -225,14 +218,14 @@ int main()
 {
 	ConsoleLogger logger;
 
-	sw::SwInitialize();
 	sw::SwAddLogger(&logger);
+	sw::SwInitialize();
 	Application app;
 
 	app.mainLoop();
 
-
 	sw::SwCleanup();
 
+	
 	return 0;
 }

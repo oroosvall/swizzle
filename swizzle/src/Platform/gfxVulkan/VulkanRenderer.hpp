@@ -22,7 +22,7 @@ namespace swizzle
 
 		virtual Resource<Buffer> createBuffer(eBufferType) override;
 		virtual Resource<CommandBuffer> createCommandBuffer(eCmdBufferType) override;
-		virtual Resource<FrameBuffer> createFrameBuffer(uint32_t numAttach, DepthType depth, uint32_t width, uint32_t height) override;
+		virtual Resource<FrameBuffer> createFrameBuffer(uint32_t numAttach, eDepthType depth, uint32_t width, uint32_t height) override;
 
 		virtual void submit(Resource<CommandBuffer> cmdbuffer) override;
 

@@ -116,9 +116,9 @@ namespace swizzle
 		return std::make_shared<VulkanCommandBuffer>(mLogical->getLogical(), mLogical->getCommandPool(), cmdBufType);
 	}
 
-	Resource<FrameBuffer> VulkanRenderer::createFrameBuffer(uint32_t numAttach, DepthType depth, uint32_t width, uint32_t height)
+	Resource<FrameBuffer> VulkanRenderer::createFrameBuffer(uint32_t numAttach, eDepthType depth, uint32_t width, uint32_t height)
 	{
-		return std::make_shared<VulkanFrameBuffer>(mLogical->getLogical(), numAttach,  depth, width, height, std::vector<Resource<VulkanTexture>>(), *mMemoryHelper);
+		return std::make_shared<VulkanFrameBuffer>(mLogical->getLogical(), numAttach, depth, width, height, std::vector<Resource<VulkanTexture>>(), *mMemoryHelper);
 	}
 
 	Resource<FrameBuffer> VulkanRenderer::getDefaultFramebuffer()

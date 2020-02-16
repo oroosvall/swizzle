@@ -4,7 +4,7 @@
 namespace swizzle
 {
 
-    VulkanFrameBuffer::VulkanFrameBuffer(VkDevice device, uint32_t numAttach, DepthType createDepthStencil, uint32_t width,
+    VulkanFrameBuffer::VulkanFrameBuffer(VkDevice device, uint32_t numAttach, eDepthType createDepthStencil, uint32_t width,
                                          uint32_t height, std::vector<Resource<VulkanTexture>> views, VulkanMemoryHelper& memhelper)
         : mCreatedFromImageViews(false), mDevice(device), mRenderPass(VK_NULL_HANDLE), mFramebuffer(VK_NULL_HANDLE), mMemoryHelper(memhelper),
           mNumAttach(numAttach), mWidth(width), mHeight(height),
@@ -43,7 +43,8 @@ namespace swizzle
 
 	const uint32_t VulkanFrameBuffer::getNumAttachments() const
 	{
-		return uint32_t(mTextures.size() - (mDepthStencil == DepthType::eDepth ? 1U : 0U));
+		bool hasDepth = (mDepthStencil == eDepthType::eDepth) || mDepthStencil == eDepthType::eDepthStencil;
+		return uint32_t(mTextures.size() - (hasDepth ? 1U : 0U));
 	}
 
 	const FramebufferAttachmentType VulkanFrameBuffer::getAttachmentType(uint32_t index) const
@@ -128,7 +129,7 @@ namespace swizzle
 
         for (auto it : mTextures)
         {
-            const bool isDepth = (it->getImageType() == eTextureResourceType::eTextureResType_RT_depth);
+            const bool isDepth = (it->getImageType() == eTextureResourceType::eTextureResType_RT_depth) || (it->getImageType() == eTextureResourceType::eTextureResType_RT_depthStencil);
             if (isDepth)
             {
                 depthRef.attachment = ctr;
@@ -187,7 +188,8 @@ namespace swizzle
         subPass.colorAttachmentCount = static_cast<uint32_t>(attachRefs.size());
         subPass.pColorAttachments = attachRefs.data();
         subPass.pResolveAttachments = VK_NULL_HANDLE;
-        if (mDepthStencil == DepthType::eDepth)
+		bool hasDepth = (mDepthStencil == eDepthType::eDepth) || mDepthStencil == eDepthType::eDepthStencil;
+        if (hasDepth)
         {
             subPass.pDepthStencilAttachment = &depthRef;
         }
@@ -222,10 +224,19 @@ namespace swizzle
         {
             eTextureResourceType resType = eTextureResourceType::eTextureResType_RT_color;
 			VkFormat fmt = VkFormat::VK_FORMAT_R8G8B8A8_SRGB;
-            if (mDepthStencil == DepthType::eDepth && i == 0)
+			bool hasDepth = (mDepthStencil == eDepthType::eDepth) || mDepthStencil == eDepthType::eDepthStencil;
+            if (hasDepth && i == 0)
             {
-                resType = eTextureResourceType::eTextureResType_RT_depth;
-				fmt = VkFormat::VK_FORMAT_D32_SFLOAT;
+				if (mDepthStencil == eDepthType::eDepth)
+				{
+					resType = eTextureResourceType::eTextureResType_RT_depth;
+					fmt = VkFormat::VK_FORMAT_D32_SFLOAT;
+				}
+				else if (mDepthStencil == eDepthType::eDepthStencil)
+				{
+					resType = eTextureResourceType::eTextureResType_RT_depthStencil;
+					fmt = VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
+				}
             }
 
 			TextureInfo textInfo = {

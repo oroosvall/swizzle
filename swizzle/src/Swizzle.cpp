@@ -35,10 +35,11 @@ namespace swizzle
 		return getPlatformDisplayCount();
 	}
 
-	Resolution SwGetDisplayResolution(uint32_t displayIndex)
+	void SWIZZLE_API SwGetDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions)
 	{
-		return getPlatformDisplayResolution(displayIndex);
+		getPlatformDisplayResolution(displayIndex, resolutionCount, resolutions);
 	}
+	
 
 	Resource<Window> SwCreateWindow(uint32_t width, uint32_t height, const char* title)
 	{

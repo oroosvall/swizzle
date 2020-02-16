@@ -27,7 +27,7 @@ namespace swizzle
 	void SWIZZLE_API SwAddLogger(LoggerIfc* logger);
 
 	uint32_t SWIZZLE_API SwGetNumDisplays();
-	Resolution SWIZZLE_API SwGetDisplayResolution(uint32_t displayIndex = 0);
+	void SWIZZLE_API SwGetDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions);
 
 	Resource<Window> SWIZZLE_API SwCreateWindow(uint32_t width, uint32_t height, const char* title);
 	Resource<Renderer> SWIZZLE_API SwCreateRenderer(Window* window, eRendererBackend backend);

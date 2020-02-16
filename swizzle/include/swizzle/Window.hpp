@@ -13,6 +13,7 @@ namespace swizzle
 	{
 		uint32_t mWidth;
 		uint32_t mHeight;
+		uint32_t mFrequency;
 	};
 
 	class Window

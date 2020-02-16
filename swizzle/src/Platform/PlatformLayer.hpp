@@ -12,7 +12,7 @@ namespace swizzle
 
 	uint32_t getPlatformDisplayCount();
 
-	Resolution getPlatformDisplayResolution(uint32_t displayIndex);
+	void getPlatformDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions);
 
 	Window* createPlatformWindow(uint32_t width, uint32_t height, const char* title);
 

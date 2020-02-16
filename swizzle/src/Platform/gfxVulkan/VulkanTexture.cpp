@@ -170,6 +170,9 @@ namespace swizzle
 		case eTextureResourceType::eTextureResType_RT_depth:
 			aspectFlags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT;
 			break;
+		case eTextureResourceType::eTextureResType_RT_depthStencil:
+			aspectFlags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT | VkImageAspectFlagBits::VK_IMAGE_ASPECT_STENCIL_BIT;
+			break;
 		default:
 			break;
 		}
@@ -227,6 +230,7 @@ namespace swizzle
 		case eTextureResourceType::eTextureResType_2D:
 		case eTextureResourceType::eTextureResType_RT_color:
 		case eTextureResourceType::eTextureResType_RT_depth:
+		case eTextureResourceType::eTextureResType_RT_depthStencil:
 			imageType = VkImageType::VK_IMAGE_TYPE_2D;
 			break;
 		case eTextureResourceType::eTextureResType_3D:
@@ -241,7 +245,7 @@ namespace swizzle
 
 		VkImageUsageFlagBits attachBit = VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		if (mTextureType == eTextureResourceType::eTextureResType_RT_depth)
+		if (mTextureType == eTextureResourceType::eTextureResType_RT_depth || mTextureType == eTextureResourceType::eTextureResType_RT_depthStencil)
 		{
 			attachBit = VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		}
@@ -309,6 +313,10 @@ namespace swizzle
 			break;
 		case eTextureResourceType::eTextureResType_RT_depth:
 			aspectFlags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT;
+			imageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+			break;
+		case eTextureResourceType::eTextureResType_RT_depthStencil:
+			aspectFlags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT | VkImageAspectFlagBits::VK_IMAGE_ASPECT_STENCIL_BIT;
 			imageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 			break;
 		default:

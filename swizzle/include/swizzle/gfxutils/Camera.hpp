@@ -49,6 +49,9 @@ namespace swizzle
 		PerspectiveCamera(float fov, float width, float heigth);
 		~PerspectiveCamera();
 
+		void changeFov(float fov);
+		void changeAspect(float width, float height);
+
 		void setPosition(glm::vec3 pos);
 		void setRotation(glm::vec3 rot);
 
@@ -58,7 +61,12 @@ namespace swizzle
 
 	private:
 
+		void recalculatePerspective();
 		void recalculateViewProj();
+
+		float mFov;
+		float mWidth;
+		float mHeight;
 
 		glm::mat4 mProjectionMatrix;
 		glm::mat4 mViewMatrix;

@@ -14,15 +14,30 @@
 namespace swizzle
 {
 
-    PerspectiveCamera::PerspectiveCamera(float fov, float width, float heigth)
-        : mProjectionMatrix(glm::perspective(fov, width/heigth, 0.01F, 10.0F)), mViewMatrix(1.0F), mProjView(1.0F), mPosition(0.0F), mRotation(0.0F)
+	PerspectiveCamera::PerspectiveCamera(float fov, float width, float heigth)
+		: mFov(fov), mWidth(width), mHeight(heigth)
+		, mProjectionMatrix(), mViewMatrix(1.0F), mProjView(1.0F), mPosition(0.0F), mRotation(0.0F)
     {
 		//mProjectionMatrix[1][1] *= -1;
+		recalculatePerspective();
 		recalculateViewProj();
     }
 
 	PerspectiveCamera::~PerspectiveCamera() {}
 	
+	void PerspectiveCamera::changeFov(float fov)
+	{
+		mFov = fov;
+		recalculatePerspective();
+	}
+
+	void PerspectiveCamera::changeAspect(float width, float height)
+	{
+		mWidth = width;
+		mHeight = height;
+		recalculatePerspective();
+	}
+
     void PerspectiveCamera::setPosition(glm::vec3 pos)
     {
         mPosition = pos;
@@ -44,6 +59,11 @@ namespace swizzle
     {
 		return mProjView;
     }
+
+	void PerspectiveCamera::recalculatePerspective()
+	{
+		mProjectionMatrix = glm::perspective(mFov, mWidth / mHeight, 0.01F, 10.0F);
+	}
 
     void PerspectiveCamera::recalculateViewProj()
     {

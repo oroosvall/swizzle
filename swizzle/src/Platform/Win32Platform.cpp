@@ -47,15 +47,53 @@ namespace swizzle
 		}
 	}
 
-	uint32_t getPlatformDisplayCount()
+	BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
 	{
-		return 1;
+		hMonitor;
+		hdcMonitor;
+		lprcMonitor;
+		int* count = (int*)dwData;
+		(*count)++;
+		return TRUE;
 	}
 
-	Resolution getPlatformDisplayResolution(uint32_t displayIndex)
+	uint32_t getPlatformDisplayCount()
+	{
+		uint32_t count = 0U;
+
+		EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)&count);
+
+		return count;
+	}
+
+	void getPlatformDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions)
 	{
 		displayIndex;
-		return Resolution();
+		uint32_t count = 0U;
+
+		DEVMODE deviceMode = { 0U };
+		deviceMode.dmSize = sizeof(DEVMODE);
+		deviceMode.dmDriverExtra = 0;
+
+		if (resolutions == nullptr)
+		{
+			while(EnumDisplaySettings(NULL, count, &deviceMode) != 0)
+			{
+				count++;
+			}
+			resolutionCount = count;
+		}
+		else
+		{
+			while (EnumDisplaySettings(NULL, count, &deviceMode) != 0 && count != resolutionCount)
+			{
+				resolutions[count].mHeight = deviceMode.dmPelsHeight;
+				resolutions[count].mWidth = deviceMode.dmPelsWidth;
+				resolutions[count].mFrequency = deviceMode.dmDisplayFrequency;
+				count++;
+			}
+		}
+
 	}
 
 	Window* createPlatformWindow(uint32_t width, uint32_t height, const char* title)

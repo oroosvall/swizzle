@@ -38,7 +38,7 @@ namespace swizzle
 		virtual Resource<Buffer> createBuffer(eBufferType) = 0;
 
 		virtual Resource<CommandBuffer> createCommandBuffer(eCmdBufferType) = 0;
-		virtual Resource<FrameBuffer> createFrameBuffer(uint32_t numAttach, DepthType depth, uint32_t width, uint32_t height) = 0;
+		virtual Resource<FrameBuffer> createFrameBuffer(uint32_t numAttach, eDepthType depth, uint32_t width, uint32_t height) = 0;
 
 		virtual Resource<FrameBuffer> getDefaultFramebuffer() = 0;
 

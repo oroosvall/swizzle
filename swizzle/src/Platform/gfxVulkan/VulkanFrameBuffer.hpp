@@ -32,7 +32,7 @@ namespace swizzle
     class VulkanFrameBuffer : public BaseFrameBuffer
     {
     public:
-        VulkanFrameBuffer(VkDevice device, uint32_t numAttach, DepthType createDepthStencil, uint32_t width, uint32_t height,
+        VulkanFrameBuffer(VkDevice device, uint32_t numAttach, eDepthType createDepthStencil, uint32_t width, uint32_t height,
                           std::vector<Resource<VulkanTexture>> views, VulkanMemoryHelper& memoryHelper);
         virtual ~VulkanFrameBuffer();
 
@@ -74,7 +74,7 @@ namespace swizzle
         uint32_t mWidth;
         uint32_t mHeight;
 
-		DepthType mDepthStencil;
+		eDepthType mDepthStencil;
         std::vector<Resource<VulkanTexture>> mTextures;
 		std::vector<VkClearValue> mClearValues;
 		bool mDest;

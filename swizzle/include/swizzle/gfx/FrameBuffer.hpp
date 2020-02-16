@@ -13,7 +13,7 @@ namespace swizzle
 		eColor
 	};
 
-	enum class DepthType
+	enum class eDepthType
 	{
 		eNone,
 		eDepth,

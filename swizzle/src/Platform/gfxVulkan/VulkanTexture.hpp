@@ -20,6 +20,7 @@ namespace swizzle
 
 		eTextureResType_RT_color,
 		eTextureResType_RT_depth,
+		eTextureResType_RT_depthStencil,
 	};
 
 	struct TextureInfo
@@ -45,9 +46,10 @@ namespace swizzle
 
 		virtual const uint32_t getWidth() const override;
 		virtual const uint32_t getHeight() const override;
-		virtual uint32_t getLayer() const ;
-
+		
 		virtual void setTextureData(uint32_t width, uint32_t height, void* data) override;
+
+		virtual uint32_t getLayer() const ;
 		virtual void setTextureData(void* data, uint32_t width, uint32_t height, uint32_t layer) ;
 		virtual void uploadData() ;
 
