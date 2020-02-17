@@ -287,7 +287,7 @@ namespace swizzle
 		multiSampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multiSampleState.pNext = VK_NULL_HANDLE;
 		multiSampleState.flags = 0;
-		multiSampleState.rasterizationSamples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+		multiSampleState.rasterizationSamples = mBaseFbo->getMultisampleCount();
 		multiSampleState.sampleShadingEnable = VK_FALSE;
 		multiSampleState.minSampleShading = 1.0F;
 		multiSampleState.pSampleMask = VK_NULL_HANDLE;

@@ -115,6 +115,11 @@ namespace swizzle
 		return mTextures[index]->getImage();
 	}
 
+	VkSampleCountFlagBits VulkanFrameBuffer::getMultisampleCount() const
+	{
+		return VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+	}
+
 	VkClearValue* VulkanFrameBuffer::getImageClearValues() const
 	{
 		VkClearValue* clearValues = const_cast<VkClearValue*>(mClearValues.data());

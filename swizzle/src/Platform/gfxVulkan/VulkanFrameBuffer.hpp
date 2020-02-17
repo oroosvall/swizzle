@@ -26,6 +26,8 @@ namespace swizzle
 		virtual uint32_t getImageCount() const = 0;
 		virtual VkImage getImage(uint32_t index) const = 0;
 
+		virtual VkSampleCountFlagBits getMultisampleCount() const = 0;
+
 		virtual VkClearValue* getImageClearValues() const = 0;
 	};
 
@@ -53,6 +55,8 @@ namespace swizzle
 		virtual VkRect2D getRenderArea() const override;
 		virtual uint32_t getImageCount() const override;
 		virtual VkImage getImage(uint32_t index) const override;
+
+		virtual VkSampleCountFlagBits getMultisampleCount() const override;
 
 		virtual VkClearValue* getImageClearValues() const override;
 

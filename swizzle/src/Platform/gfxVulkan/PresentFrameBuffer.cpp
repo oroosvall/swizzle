@@ -96,6 +96,11 @@ namespace swizzle
 		return mExternalImage;
 	}
 
+	VkSampleCountFlagBits PresentFrameBuffer::getMultisampleCount() const
+	{
+		return VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+	}
+
 	VkClearValue* PresentFrameBuffer::getImageClearValues() const
 	{
 		VkClearValue* clr = const_cast<VkClearValue*>(&mClearValue);

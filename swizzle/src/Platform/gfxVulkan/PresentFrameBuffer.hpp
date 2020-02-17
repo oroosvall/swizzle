@@ -32,6 +32,8 @@ namespace swizzle
 		virtual uint32_t getImageCount() const override;
 		VkImage getImage(uint32_t index) const override;
 
+		virtual VkSampleCountFlagBits getMultisampleCount() const override;
+
 		virtual VkClearValue* getImageClearValues() const override;
 
 	private:
