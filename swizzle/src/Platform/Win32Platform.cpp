@@ -96,9 +96,9 @@ namespace swizzle
 
 	}
 
-	Window* createPlatformWindow(uint32_t width, uint32_t height, const char* title)
+	Resource<Window> createPlatformWindow(uint32_t width, uint32_t height, const char* title)
 	{
-		return new Win32Window(width, height, title);
+		return std::make_shared<Win32Window>(width, height, title);
 	}
 
 	Renderer* platformGfxVulkan(Window* window)

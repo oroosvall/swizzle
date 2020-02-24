@@ -14,7 +14,7 @@ namespace swizzle
 
 	void getPlatformDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions);
 
-	Window* createPlatformWindow(uint32_t width, uint32_t height, const char* title);
+	Resource<Window> createPlatformWindow(uint32_t width, uint32_t height, const char* title);
 
 	Renderer* platformGfxVulkan(Window* window);
 	Renderer* platformGfxOpenGl(Window* window);
