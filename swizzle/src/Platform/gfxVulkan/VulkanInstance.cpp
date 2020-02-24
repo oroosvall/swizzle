@@ -116,7 +116,7 @@ namespace swizzle
     void VulkanInstance::createInstance()
     {
 
-        VkDebugReportCallbackCreateInfoEXT debugCallbackInfo;
+        VkDebugReportCallbackCreateInfoEXT debugCallbackInfo = { };
         memset(&debugCallbackInfo, 0, sizeof(VkDebugReportCallbackCreateInfoEXT));
         debugCallbackInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
         debugCallbackInfo.flags = VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_DEBUG_BIT_EXT |
@@ -142,16 +142,16 @@ namespace swizzle
         debugLayers.push_back("VK_LAYER_LUNARG_standard_validation");
         debugLayers.push_back("VK_LAYER_RENDERDOC_Capture");
 
-        VkApplicationInfo vkAppInfo;
+        VkApplicationInfo vkAppInfo = { };
         vkAppInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        vkAppInfo.apiVersion = VK_API_VERSION_1_1;
+        vkAppInfo.apiVersion = VK_API_VERSION_1_2;
         vkAppInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         vkAppInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         vkAppInfo.pApplicationName = "App";
         vkAppInfo.pEngineName = "Swizzle Engine";
         vkAppInfo.pNext = nullptr;
 
-        VkInstanceCreateInfo createInfo;
+		VkInstanceCreateInfo createInfo = { };
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.enabledLayerCount = static_cast<uint32_t>(debugLayers.size());
