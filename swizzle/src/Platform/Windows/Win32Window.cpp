@@ -462,6 +462,21 @@ namespace swizzle
 		return visible;
 	}
 
+
+	void Win32Window::setBorderless(bool borderless)
+	{
+		DWORD style = GetWindowLong(mWnd, GWL_STYLE);
+		if (borderless)
+		{
+			SetWindowLong(mWnd, GWL_STYLE, style & ~WS_OVERLAPPEDWINDOW);
+		}
+		else
+		{
+			SetWindowLong(mWnd, GWL_STYLE, style | WS_OVERLAPPEDWINDOW);
+		}
+
+	}
+
 	void Win32Window::getCursorPos(uint32_t& xPos, uint32_t& yPos) const
 	{
 		xPos = yPos = 0;
@@ -503,6 +518,7 @@ namespace swizzle
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+		
 	}
 
 	void Win32Window::setCursorVisible(bool visible) 

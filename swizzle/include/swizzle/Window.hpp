@@ -35,6 +35,8 @@ namespace swizzle
 
 		virtual bool isVisible() const = 0;
 		
+		virtual void setBorderless(bool borderless) = 0;
+
 		virtual void getCursorPos(uint32_t& xPos, uint32_t& yPos) const = 0;
 		virtual void getSize(uint32_t& width, uint32_t& height) const = 0;
 		virtual void* getNativeHandle() const = 0;
