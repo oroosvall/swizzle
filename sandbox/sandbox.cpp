@@ -72,6 +72,15 @@ public:
 			mCamera.changeAspect(static_cast<float>(e.mWidth), static_cast<float>(e.mHeight));
 			mResize = true;
 		}
+		else if (evt.getEventType() == sw::eWindowEventType::eType_input)
+		{
+			sw::InputEvent& e = (sw::InputEvent&)evt;
+			if (e.mKey == 87) // F11 key
+			{
+				mWindow->setBorderless(e.mPressed);
+			}
+			
+		}
 	}
 
 	~Application()
@@ -164,15 +173,11 @@ void Application::mainLoop()
 		{
 			pos.z += 1.0F * dt;
 		}
-		float dx = 0.0F, dy = 0.0F;
-		sw::input::getMouseDelta(dx, dy);
-		pos.y += dx * dt;
 
 		mCamera.setPosition(pos);
 
 		std::string str = "Fps: " + std::to_string(1.0F / dt);
 		mWindow->setTitle(str.c_str());
-
 
 
 		commandBuffer->resetBuffer();
@@ -195,15 +200,18 @@ void Application::mainLoop()
 		auto frameBuffer = mRenderer->getDefaultFramebuffer();
 		
 		commandBuffer->bindFrameBuffer(frameBuffer);
+		commandBuffer->unbindFrameBuffer();
 
-		commandBuffer->setViewport(x, y);
+		commandBuffer->resolve(drawBuffer, frameBuffer);
+
+		/*commandBuffer->setViewport(x, y);
 
 		commandBuffer->bindShaderProgram(shader);
 
 		commandBuffer->setShaderConstantData(shader, &vp[0][0], sizeof(glm::mat4));
-		commandBuffer->draw(vertexBuffer);
+		commandBuffer->draw(vertexBuffer);*/
 
-		commandBuffer->unbindFrameBuffer();
+		//commandBuffer->unbindFrameBuffer();
 
 		commandBuffer->endRecording();
 
