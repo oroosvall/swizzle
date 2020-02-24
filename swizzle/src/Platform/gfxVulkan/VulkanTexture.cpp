@@ -221,16 +221,19 @@ namespace swizzle
 	void VulkanTexture::createImage()
 	{
 		VkImageType imageType = VkImageType::VK_IMAGE_TYPE_2D;
+		VkImageUsageFlags attachBit = VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
 		switch (mTextureType)
 		{
 		case eTextureResourceType::eTextureResType_1D:
 		case eTextureResourceType::eTextureResType_1D_Array:
 			imageType = VkImageType::VK_IMAGE_TYPE_1D;
 			break;
-		case eTextureResourceType::eTextureResType_2D:
 		case eTextureResourceType::eTextureResType_RT_color:
+			attachBit = attachBit | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 		case eTextureResourceType::eTextureResType_RT_depth:
 		case eTextureResourceType::eTextureResType_RT_depthStencil:
+		case eTextureResourceType::eTextureResType_2D:
 			imageType = VkImageType::VK_IMAGE_TYPE_2D;
 			break;
 		case eTextureResourceType::eTextureResType_3D:
@@ -242,8 +245,6 @@ namespace swizzle
 		default:
 			break;
 		}
-
-		VkImageUsageFlagBits attachBit = VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		if (mTextureType == eTextureResourceType::eTextureResType_RT_depth || mTextureType == eTextureResourceType::eTextureResType_RT_depthStencil)
 		{
