@@ -211,4 +211,110 @@ namespace swizzle
 		}
 	}
 
+	void VulkanCommandBuffer::resolve(Resource<FrameBuffer> from, Resource<FrameBuffer> to)
+	{
+		if (mRecording)
+		{
+			FrameBuffer* ifbo = from.get();
+			BaseFrameBuffer* fbo = reinterpret_cast<BaseFrameBuffer*>(ifbo);
+
+			FrameBuffer* idfbo = to.get();
+			BaseFrameBuffer* dfbo = reinterpret_cast<BaseFrameBuffer*>(idfbo);
+
+			VkImage srcImage = fbo->getImage(1);
+			VkImage dstImage = dfbo->getImage(0);
+
+			VkImageResolve resolve;
+			resolve.srcOffset = { 0, 0, 0 };
+			resolve.dstOffset = { 0, 0, 0 };
+			auto [x, y] = dfbo->getRenderArea().extent;
+			resolve.extent = { x, y, 0U };
+			resolve.srcSubresource.mipLevel = 0U;
+			resolve.srcSubresource.layerCount = 1U;
+			resolve.srcSubresource.baseArrayLayer = 0U;
+			resolve.srcSubresource.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+				
+			resolve.dstSubresource.mipLevel = 0U;
+			resolve.dstSubresource.layerCount = 1U;
+			resolve.dstSubresource.baseArrayLayer = 0U;
+			resolve.dstSubresource.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+
+			VkImageMemoryBarrier imageBarrier[2];
+
+			imageBarrier[0].sType = VkStructureType::VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageBarrier[0].pNext =  VK_NULL_HANDLE;
+			imageBarrier[0].srcAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			imageBarrier[0].dstAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+			imageBarrier[0].oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			imageBarrier[0].newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			imageBarrier[0].srcQueueFamilyIndex = 0;
+			imageBarrier[0].dstQueueFamilyIndex = 0;
+			imageBarrier[0].image = srcImage;
+			imageBarrier[0].subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+			imageBarrier[0].subresourceRange.baseArrayLayer = 0U;
+			imageBarrier[0].subresourceRange.baseMipLevel = 0U;
+			imageBarrier[0].subresourceRange.layerCount = 1U;
+			imageBarrier[0].subresourceRange.levelCount = 1U;
+
+			imageBarrier[1].sType = VkStructureType::VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageBarrier[1].pNext = VK_NULL_HANDLE;
+			imageBarrier[1].srcAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			imageBarrier[1].dstAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			imageBarrier[1].oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			imageBarrier[1].newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			imageBarrier[1].srcQueueFamilyIndex = 0;
+			imageBarrier[1].dstQueueFamilyIndex = 0;
+			imageBarrier[1].image = dstImage;
+			imageBarrier[1].subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+			imageBarrier[1].subresourceRange.baseArrayLayer = 0U;
+			imageBarrier[1].subresourceRange.baseMipLevel = 0U;
+			imageBarrier[1].subresourceRange.layerCount = 1U;
+			imageBarrier[1].subresourceRange.levelCount = 1U;
+
+			vkCmdPipelineBarrier(mCommandBuffer
+				, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+				, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+				, VkDependencyFlagBits::VK_DEPENDENCY_DEVICE_GROUP_BIT
+				, 0, VK_NULL_HANDLE
+				, 0, VK_NULL_HANDLE
+				, 2, imageBarrier);
+
+			if (fbo->getMultisampleCount() != VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT)
+			{
+				vkCmdResolveImage(mCommandBuffer, srcImage, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstImage, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolve);
+			}
+			else
+			{
+				VkImageBlit blt;
+				int32_t xx = static_cast<int32_t>(x);
+				int32_t yy = static_cast<int32_t>(y);
+
+				blt.dstOffsets[0] = { 0, 0, 0 };
+				blt.dstOffsets[1] = { xx, yy, 1 };
+				blt.srcOffsets[0] = { 0, 0, 0 };
+				blt.srcOffsets[1] = { xx, yy, 1 };
+
+				blt.dstSubresource = resolve.dstSubresource;
+				blt.srcSubresource = resolve.srcSubresource;
+
+				vkCmdBlitImage(mCommandBuffer, srcImage, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstImage, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blt, VkFilter::VK_FILTER_NEAREST);
+			}
+
+			imageBarrier[0].newLayout = VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			imageBarrier[0].oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+
+			imageBarrier[1].oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			imageBarrier[1].newLayout = VkImageLayout::VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+			vkCmdPipelineBarrier(mCommandBuffer
+				, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+				, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+				, VkDependencyFlagBits::VK_DEPENDENCY_DEVICE_GROUP_BIT
+				, 0, VK_NULL_HANDLE
+				, 0, VK_NULL_HANDLE
+				, 2, imageBarrier);
+
+		}
+	}
+
 }

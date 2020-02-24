@@ -30,8 +30,10 @@ namespace swizzle
 		virtual void setShaderConstantData(Resource<ShaderProgram> shaderProgram, void* data, uint32_t dataSize) override;
 		virtual void draw(Resource<Buffer>& vertexBuffer) override;
 
-		virtual void VulkanCommandBuffer::bindFrameBuffer(Resource<FrameBuffer> framebuffer) override;
-		virtual void VulkanCommandBuffer::unbindFrameBuffer() override;
+		virtual void bindFrameBuffer(Resource<FrameBuffer> framebuffer) override;
+		virtual void unbindFrameBuffer() override;
+
+		virtual void resolve(Resource<FrameBuffer> from, Resource<FrameBuffer> to) override;
 
 		VkCommandBuffer getCommandBuffer() { return mCommandBuffer; };
 		bool isRecording() const { return mRecording; };

@@ -38,6 +38,8 @@ namespace swizzle
 		virtual void setShaderConstantData(Resource<ShaderProgram> shaderProgram, void* data, uint32_t dataSize) = 0;
 		virtual void draw(Resource<Buffer>& vertexBuffer) = 0;
 
+		virtual void resolve(Resource<FrameBuffer> from, Resource<FrameBuffer> to) = 0;
+
 		virtual void beginRecording() = 0;
 		virtual void endRecording() = 0;
 
