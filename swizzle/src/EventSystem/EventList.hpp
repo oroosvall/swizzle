@@ -10,6 +10,10 @@ namespace swizzle
 	class EventHandlerList : EventHandler<T>
 	{
 	public:
+		EventHandlerList()
+			: mEventHandlers()
+			, mBlockEvents(false)
+		{ }
 
 		void addListener(EventHandler<T>* listener)
 		{
@@ -23,15 +27,23 @@ namespace swizzle
 
 		virtual void publishEvent(const T& e) override
 		{
-			for (const auto& it : mEventHandlers)
+			if (!mBlockEvents)
 			{
-				it->publishEvent(e);
+				for (const auto& it : mEventHandlers)
+				{
+					it->publishEvent(e);
+				}
 			}
+		}
+
+		void blockEvents(bool block)
+		{
+			mBlockEvents = block;
 		}
 
 	private:
 		std::list<EventHandler<T>*> mEventHandlers;
-
+		bool mBlockEvents;
 	};
 
 }
