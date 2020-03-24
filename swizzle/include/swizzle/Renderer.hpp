@@ -45,13 +45,7 @@ namespace swizzle
 		virtual Resource<Texture2D> createTexture(eTextureDataFormat type) = 0;
 		virtual Resource<ShaderProgram> createShaderProgram(const Resource<FrameBuffer>& fbo, eShaderProgramType programType) = 0;
 
-		//virtual engine::Ref<IMesh> createMesh(bool indexed) override;
-		//virtual engine::Ref<ITexture> createTexture() override;
-		//virtual engine::Ref<IShader> createShader() override;
-		//virtual engine::Ref<IFrameBuffer> createFrameBuffer() override;
-		//virtual engine::Ref<ICommandBuffer> createCommandBuffer() override;
-		//virtual engine::Ref<IMaterial> createMaterial() override;
-		//virtual void submitCommands(engine::Ref<ICommandBuffer> buffer) override;
+
 
 		virtual void submit(Resource<CommandBuffer> cmdbuffer) = 0;
 		
