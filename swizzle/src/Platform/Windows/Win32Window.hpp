@@ -13,7 +13,7 @@ namespace swizzle
 {
 
 	const LPWSTR gWindowClass = L"SwizzleWindowClass";
-	LRESULT WINAPI WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	class Win32Window : public Window
 	{

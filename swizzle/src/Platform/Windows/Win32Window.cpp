@@ -287,7 +287,7 @@ namespace swizzle
 		delete[] lpb;
 	}
 
-	LRESULT WINAPI WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		Win32Window* wnd = reinterpret_cast<Win32Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 		if (nullptr != wnd)
@@ -301,8 +301,6 @@ namespace swizzle
 				evt.mFocused = true;
 				eventHandler.publishEvent(evt);
 				XInputEnable(true);
-				//FocusEvent evt(wnd, focus);
-
 			}
 			break;
 			case WM_KILLFOCUS:
