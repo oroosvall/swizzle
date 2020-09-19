@@ -1,51 +1,38 @@
 #ifndef COMMAND_BUFFER_HPP
 #define COMMAND_BUFFER_HPP
 
-#include <cstdint>
+#include <swizzle/core/common/Types.hpp>
+#include <swizzle/core/common/Resource.hpp>
 
-#include <swizzle/Resource.hpp>
-
+#include <swizzle/gfx/Swapchain.hpp>
 #include <swizzle/gfx/FrameBuffer.hpp>
 #include <swizzle/gfx/Buffer.hpp>
-#include <swizzle/gfx/Shader.hpp>
 
-
-namespace swizzle
+namespace swizzle::gfx
 {
+    class CommandBuffer
+    {
+    public:
+        virtual ~CommandBuffer() {}
 
-	enum class eCmdBufferType
-	{
-		ePrimary,
-		eSecondary,
-	};
+        virtual void reset(bool hardReset) = 0;
 
-	class CommandBuffer
-	{
-	public:
+        virtual void begin() = 0;
+        virtual void end() = 0;
 
-		virtual ~CommandBuffer() {}
+        virtual void submit(core::Resource<Swapchain> swp = nullptr) = 0;
 
-		virtual eCmdBufferType getBufferType() const = 0;
+        virtual void beginRenderPass(core::Resource<Swapchain> swp) = 0;
+        virtual void beginRenderPass(core::Resource<FrameBuffer> fbo) = 0;
+        virtual void endRenderPass() = 0;
 
-		virtual void resetBuffer(bool hardReset = false) = 0;
+        virtual void bindShader(core::Resource<Shader> shader) = 0;
+        virtual void setShaderConstant(core::Resource<Shader> shader, SwU8* data, SwU32 size) = 0;
+        virtual void setViewport(SwU32 x, SwU32 y) = 0;
 
-		virtual void bindFrameBuffer(Resource<FrameBuffer> framebuffer) = 0;
-		virtual void unbindFrameBuffer() = 0;
+        virtual void draw(core::Resource<Buffer> buffer) = 0;
 
-		virtual void setViewport(uint32_t x, uint32_t y) = 0;
-
-		virtual void bindShaderProgram(Resource<ShaderProgram> shaderProgram) = 0;
-		virtual void setShaderConstantData(Resource<ShaderProgram> shaderProgram, void* data, uint32_t dataSize) = 0;
-		virtual void draw(Resource<Buffer>& vertexBuffer) = 0;
-
-		virtual void resolve(Resource<FrameBuffer> from, Resource<FrameBuffer> to) = 0;
-
-		virtual void beginRecording() = 0;
-		virtual void endRecording() = 0;
-
-
-	};
-
+    };
 }
 
 #endif

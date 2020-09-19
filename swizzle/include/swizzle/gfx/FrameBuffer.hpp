@@ -1,44 +1,39 @@
 #ifndef FRAME_BUFFER_HPP
 #define FRAME_BUFFER_HPP
 
-#include <cstdint>
+#include <swizzle/core/common/Types.hpp>
+#include <swizzle/core/common/Resource.hpp>
 
-namespace swizzle
+#include <swizzle/gfx/Shader.hpp>
+
+namespace swizzle::gfx
 {
 
-	enum class FramebufferAttachmentType
-	{
-		eDepth = 0,
-		eDepthStencil,
-		eColor
-	};
+    struct ClearColor
+    {
+        SwFloat r;
+        SwFloat g;
+        SwFloat b;
+        SwFloat a;
+    };
 
-	enum class eDepthType
-	{
-		eNone,
-		eDepth,
-		eDepthStencil,
-	};
+    class FrameBuffer
+    {
+    public:
 
-	struct ClearColor
-	{
-		float r, g, b, a;
-	};
+        virtual ~FrameBuffer() {}
 
-	class FrameBuffer
-	{
-	public:
-		virtual ~FrameBuffer() {}
+        virtual SwU32 getNumColorAttachments() const = 0; 
+        virtual SwBool hasDepthAttachment() const = 0;
 
-		virtual const uint32_t getNumAttachments() const = 0;
-		virtual const FramebufferAttachmentType getAttachmentType(uint32_t index) const = 0;
-		virtual void setClearColor(uint32_t index, ClearColor color) = 0;
-		virtual void setClearDepth(uint32_t index, float depthValue, uint8_t stencil) = 0;
+        virtual void setColorAttachmentClearColor(SwU32 attachmentIndex, ClearColor color) = 0;
+        virtual void setDepthAttachmentClearValue(SwFloat depthValue, SwU8 stencilValue) = 0;
 
-		virtual void resize(uint32_t width, uint32_t height) = 0;
+        virtual void resize(SwU32 width, SwU32 height) = 0;
 
-	};
+        virtual core::Resource<Shader> createShader(ShaderAttributeList attributeList) = 0;
 
+    };
 }
 
 #endif

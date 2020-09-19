@@ -1,37 +1,18 @@
 #ifndef TEXTURE_HPP
 #define TEXTURE_HPP
 
-#include <cstdint>
+#include <swizzle/core/common/Types.hpp>
 
-namespace swizzle
+namespace swizzle::gfx
 {
+    class Texture
+    {
+    public:
+        virtual ~Texture() {}
 
-	enum class eTextureDataFormat
-	{
-		RInt8,
-		RGInt8,
-		RGBInt8,
-		RGBAInt8,
-		RFloat,
-		RGFloat,
-		RGBFloat,
-		RGBAFloat
-	};
+        virtual void setData(SwU32 width, SwU32 height, SwU32 channels, SwU8* pixelData) = 0;
 
-	class Texture2D
-	{
-	public:
-
-		virtual ~Texture2D() = default;
-
-		virtual const uint32_t getWidth() const = 0;
-		virtual const uint32_t getHeight() const = 0;
-
-		//
-		virtual void setTextureData(uint32_t width, uint32_t height, void* data) = 0;
-
-	};
-
+    };
 }
 
 #endif

@@ -7,8 +7,7 @@
 namespace script
 {
 
-
-	std::vector<Token> Parse(langString_t code);
+    std::vector<Token> Parse(langString code);
 
 }
 

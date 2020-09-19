@@ -7,7 +7,8 @@
 namespace utils
 {
 
-    size_t strlen_safe(const char* str);
+    size_t strlenSafe(const char* str) noexcept;
+    size_t wstrlenSafe(const wchar_t* str) noexcept;
 }
 
 #endif

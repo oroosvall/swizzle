@@ -2,7 +2,10 @@
 
 namespace utils
 {
-    HighResolutionClock::HighResolutionClock() : mTime(std::chrono::high_resolution_clock::now()) {}
+    HighResolutionClock::HighResolutionClock()
+        : mTime(std::chrono::high_resolution_clock::now())
+    {
+    }
 
     void HighResolutionClock::reset()
     {
@@ -36,19 +39,19 @@ namespace utils
         return static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(diff).count());
     }
 
-	float_t HighResolutionClock::secondsAsFloat(bool reset)
-	{
-		auto now = std::chrono::high_resolution_clock::now();
-		auto diff = now - mTime;
+    float_t HighResolutionClock::secondsAsFloat(bool reset)
+    {
+        auto now = std::chrono::high_resolution_clock::now();
+        auto diff = now - mTime;
 
-		if (reset)
-		{
-			mTime = now;
-		}
+        if (reset)
+        {
+            mTime = now;
+        }
 
-		auto time = std::chrono::duration_cast<std::chrono::duration<float>>(diff);
+        auto time = std::chrono::duration_cast<std::chrono::duration<float>>(diff);
 
-		return time.count();
-	}
+        return time.count();
+    }
 
 } // namespace utils

@@ -5,22 +5,20 @@
 
 namespace utils
 {
-	class FpsCounter
-	{
-	public:
-		FpsCounter();
+    class FpsCounter
+    {
+    public:
+        FpsCounter() noexcept;
 
-		void tick(float dt);
-		uint32_t getFps() const;
+        void tick(float dt) noexcept;
+        uint32_t getFps() const noexcept;
 
-	private:
+    private:
+        uint32_t mFps;
+        uint32_t mCount;
 
-		uint32_t mFps;
-		uint32_t mCount;
-
-		float mTime;
-
-	};
-}
+        float mTime;
+    };
+} // namespace utils
 
 #endif

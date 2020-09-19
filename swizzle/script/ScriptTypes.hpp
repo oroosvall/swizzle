@@ -7,15 +7,15 @@
 namespace script
 {
 
-	typedef std::string langString_t;
+    typedef std::string langString;
 
-	struct Token
-	{
-		langString_t mToken;
-		uint32_t mLineNumber;
-		uint32_t mColumn;
-	};
+    struct Token
+    {
+        langString mToken;
+        uint32_t mLineNumber;
+        uint32_t mColumn;
+    };
 
-}
+} // namespace script
 
 #endif

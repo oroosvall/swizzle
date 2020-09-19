@@ -1,41 +1,66 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
-#include <cstdint>
+#include <swizzle/core/common/Types.hpp>
 
-namespace swizzle
+namespace swizzle::gfx
 {
+    enum class ShaderType
+    {
+        ShaderType_Graphics,
+        ShaderType_Compute,
+    };
 
-	enum class eShaderProgramType
-	{
-		GraphicsProgram,
-		ComputeProgram,
-		RaytracingProgram
-	};
+    enum class ShaderBufferInputRate
+    {
+        InputRate_Vertex,
+        InputRate_Instance,
+    };
 
-	enum class ShaderType
-	{
-		VertexShader,
-		GeometryShader,
-		FragmentShader,
-		TesselationControlShader,
-		TesselationEvalShader,
-		ComputeShader,
-		
-	};
+    enum class ShaderAttributeDataType
+    {
+        vec2_16,
+        vec3_24,
+        vec4_32,
+        int3_24,
+        int4_32,
+    };
 
-	class ShaderProgram
-	{
-	public:
-		virtual ~ShaderProgram() {}
+    struct ShaderBufferInput
+    {
+        ShaderBufferInputRate mRate;
+        SwU32 mStride;
+    };
 
-		virtual eShaderProgramType getProgramType() const = 0;
-		virtual bool isShaderTypeSupported(ShaderType type) const = 0;
+    struct ShaderAttribute
+    {
+        // Buffer index to fetch data from
+        SwU32 mBufferIndex;
+        // data type determines size of attribute
+        ShaderAttributeDataType mDataType;
+        // offset from start of buffer
+        SwU32 mOffset;
+    };
 
-		virtual bool load(const char* file) = 0;
+    struct ShaderAttributeList
+    {
+        SwU32 mNumBuffers;
+        ShaderBufferInput* mBufferInput;
 
-	};
+        SwU32 mNumAttributes;
+        ShaderAttribute* mAttributes;
+    };
 
+
+
+    class Shader
+    {
+    public:
+        virtual ~Shader() {}
+
+        virtual SwBool load(const SwChar* file) = 0;
+
+    };
 }
 
 #endif

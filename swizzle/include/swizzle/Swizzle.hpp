@@ -1,37 +1,32 @@
-#include "Api.hpp"
+#ifndef SWIZZLE_HPP
+#define SWIZZLE_HPP
 
-#include "Window.hpp"
-#include "Renderer.hpp"
+#include <swizzle/core/common/Types.hpp>
+#include <swizzle/Api.hpp>
 
-#include "gfxutils/Vectors.hpp"
-#include "gfxutils/Matrix.hpp"
+#include <swizzle/core/logging/Logging.hpp>
+#include <swizzle/core/platform/Platform.hpp>
 
-#include "gfxutils/Camera.hpp"
-
-#include "Logging.hpp"
-
-#include "gfxutils/MeshLoader.hpp"
-
-#include <swizzle/Script.hpp>
-
-#include "input/Input.hpp"
-
-#include <cstdint>
+#include <swizzle/gfx/Gfx.hpp>
 
 namespace swizzle
 {
+    SwBool SWIZZLE_API SwInitialize(const SwChar* appName = nullptr);
+    SwBool SWIZZLE_API SwCleanup();
 
-	void SWIZZLE_API SwInitialize();
-	void SWIZZLE_API SwCleanup();
+    /*void SWIZZLE_API SwInitialize(eRendererBackend graphicsBackend);
+    void SWIZZLE_API SwCleanup();
 
-	void SWIZZLE_API SwAddLogger(LoggerIfc* logger);
+    void SWIZZLE_API SwAddLogger(LoggerIfc* logger);
 
-	uint32_t SWIZZLE_API SwGetNumDisplays();
-	void SWIZZLE_API SwGetDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions);
+    uint32_t SWIZZLE_API SwGetNumDisplays();
+    void SWIZZLE_API SwGetDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions);
 
-	Resource<Window> SWIZZLE_API SwCreateWindow(uint32_t width, uint32_t height, const char* title);
-	Resource<Renderer> SWIZZLE_API SwCreateRenderer(Window* window, eRendererBackend backend);
+    Resource<Window> SWIZZLE_API SwCreateWindow(uint32_t width, uint32_t height, const char* title);
+    Resource<Renderer> SWIZZLE_API SwCreateRenderer(Window* window, eRendererBackend backend);*/
 
-}
+} // namespace swizzle
 
 namespace sw = swizzle;
+
+#endif

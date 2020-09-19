@@ -5,54 +5,53 @@
 
 namespace script
 {
-	struct ScriptContext;
+    struct ScriptContext;
 
-	enum class Types
-	{
-		eTypeVoid,
-		eTypeInt,
-		eTypeChar,
-		eTypeUnsignedInt,
-		eTypeFloat,
-		eTypeDouble,
-		eTypeBool,
-		eTypeUser
-	};
+    enum class Types
+    {
+        eTypeVoid,
+        eTypeInt,
+        eTypeChar,
+        eTypeUnsignedInt,
+        eTypeFloat,
+        eTypeDouble,
+        eTypeBool,
+        eTypeUser
+    };
 
-	struct Value
-	{
-		Types mType;
-		bool mAsReference;
-		uint8_t mIsPointer;
-		void* mValue;
-	};
+    struct Value
+    {
+        Types mType;
+        bool mAsReference;
+        uint8_t mIsPointer;
+        void* mValue;
+    };
 
-	struct Argument
-	{
-		uint8_t mNumArgs;
-		Value* mArgs;
-	};
+    struct Argument
+    {
+        uint8_t mNumArgs;
+        Value* mArgs;
+    };
 
-	typedef Value(*function_t)(Argument);
+    typedef Value (*function_t)(Argument);
 
-	struct FunctionDescriptor
-	{
-		const char* mName;
-		function_t mFunction;
-		Value mExpectedReturnType;
-		Argument mExpectedArgumentTypes;
-	};
+    struct FunctionDescriptor
+    {
+        const char* mName;
+        function_t mFunction;
+        Value mExpectedReturnType;
+        Argument mExpectedArgumentTypes;
+    };
 
-	ScriptContext* InitializeScriptRuntime();
-	void CleanupScriptRuntime(ScriptContext* ctx);
+    ScriptContext* InitializeScriptRuntime();
+    void CleanupScriptRuntime(ScriptContext* ctx);
 
-	uint32_t RegisterFunction(FunctionDescriptor& function);
-	uint32_t RegisterFunction(ScriptContext* ctx, FunctionDescriptor& function);
+    uint32_t RegisterFunction(FunctionDescriptor& function);
+    uint32_t RegisterFunction(ScriptContext* ctx, FunctionDescriptor& function);
 
-	void UnregisterFunction(uint32_t functionId);
-	void UnregisterFunction(ScriptContext* ctx, uint32_t functionId);
+    void UnregisterFunction(uint32_t functionId);
+    void UnregisterFunction(ScriptContext* ctx, uint32_t functionId);
 
-}
+} // namespace script
 
 #endif
-

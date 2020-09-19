@@ -11,7 +11,7 @@ workspace "Swizzle"
 		"Release"
 	}
 	flags { "MultiProcessorCompile" }
-	startproject "game"
+	startproject "sandbox"
 
 targetdir ("build/" .. platform .. "/bin-%{cfg.shortname}/")
 objdir ("build/" .. platform .. "/int-%{cfg.shortname}/")
@@ -39,7 +39,7 @@ filter "configurations:RelWDbgInfo"
 
 filter "configurations:Release"
 	defines "SW_RELEASE"
-	optimize "On"
+	optimize "Speed"
     flags { "FatalCompileWarnings" }
     
 filter "system:windows"

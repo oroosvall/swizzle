@@ -3,16 +3,17 @@
 
 #include "ScriptTypes.hpp"
 
-namespace script {
+namespace script
+{
 
-	bool isSignedNumber(const langString_t& string);
-	bool isUnsignedNumber(const langString_t& string);
-	bool isFloatNumber(const langString_t& string);
-	bool isDoubleNumber(const langString_t& string);
+    bool isSignedNumber(const langString& string);
+    bool isUnsignedNumber(const langString& string);
+    bool isFloatNumber(const langString& string);
+    bool isDoubleNumber(const langString& string);
 
-    bool isNumber(const langString_t& string);
-	bool isNumber2(const langString_t& string);
-    bool isString(langString_t string);
+    bool isNumber(const langString& string);
+    bool isNumber2(const langString& string);
+    bool isString(langString string);
 } // namespace script
 
 #endif

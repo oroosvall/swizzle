@@ -2,34 +2,34 @@ include "workspace.lua"
 
 
 function setupPrj(prjName, prjType, filePath, includePath, defs, lnk, userFunc)
-	project(prjName)
+    project(prjName)
 
-		location("build/" .. platform .."/%{prj.name}")
-		kind(prjType)
-		language "c++"
+        location("build/" .. platform .."/%{prj.name}")
+        kind(prjType)
+        language "c++"
 
-		files {
-			filePath
-		}
-		includedirs {
-			includePath
-		}
-		defines {
-			defs
-		}
-		links {
-			lnk
-		}
-		if userFunc then
-			userFunc()
-		end
+        files {
+            filePath
+        }
+        includedirs {
+            includePath
+        }
+        defines {
+            defs
+        }
+        links {
+            lnk
+        }
+        if userFunc then
+            userFunc()
+        end
 end
 
 group("g-test")
     project("google-test")
-		location("build/" .. platform .."/%{prj.name}")
-		kind "staticLib"
-		language "c++"
+        location("build/" .. platform .."/%{prj.name}")
+        kind "staticLib"
+        language "c++"
         
         files {
             "vendor/google-test/googletest-master/googletest/include/**.h",
@@ -44,24 +44,24 @@ group("g-test")
         }
         
 group("glad")
-	project("glad")
-		location("build/" .. platform .. "/%{prj.name}")
-		kind "staticLib"
-		language "c"
-		
-		files {
-			"vendor/glad/include/glad/glad.h",
-			"vendor/glad/include/glad/glad_wgl.h",
-			"vendor/glad/include/KHR/khrplatform.h",
-			"vendor/glad/src/glad.c",
-			"vendor/glad/src/glad_wgl.c"
-		}
-		
-		includedirs {
+    project("glad")
+        location("build/" .. platform .. "/%{prj.name}")
+        kind "staticLib"
+        language "c"
+        
+        files {
+            "vendor/glad/include/glad/glad.h",
+            "vendor/glad/include/glad/glad_wgl.h",
+            "vendor/glad/include/KHR/khrplatform.h",
+            "vendor/glad/src/glad.c",
+            "vendor/glad/src/glad_wgl.c"
+        }
+        
+        includedirs {
             "vendor/glad/include/",
             "vendor/glad/include/glad"
-		}
-		
+        }
+        
 group("Utils")
 setupPrj("utils", "staticLib",
     {"swizzle/include/utils/**.hpp", "swizzle/utils/**.hpp", "swizzle/utils/**.cpp"}, -- files/filePath
@@ -108,13 +108,13 @@ group("Engine")
     )
 
     setupPrj("swizzle", "sharedLib",
-        {"swizzle/include/**.hpp", "swizzle/src/**.hpp", "swizzle/src/**.cpp"}, -- files/filePath
-        {"src/", "swizzle/include/", "swizzle/src/", os.getenv("VULKAN_SDK") .. "/Include", "vendor/glm/include", "swizzle"}, -- includePaths
+        {"swizzle/include/**.hpp", "swizzle/engine_src/**.hpp", "swizzle/engine_src/**.cpp"}, -- files/filePath
+        {"swizzle/include/", "swizzle/engine_src/", os.getenv("VULKAN_SDK") .. "/Include", "vendor/glm/include", "vendor/stb/include", "swizzle"}, -- includePaths
         {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"}, -- defines
         { "utils", "script", "physics", "vulkan-1", "shaderc_combined", "Xinput" }, -- links
         function() 
-            vpaths { ["src/*"] = "swizzle/src/**.hpp" }
-            vpaths { ["src/*"] = "swizzle/src/**.cpp" }
+            vpaths { ["engine_src/*"] = "swizzle/engine_src/**.hpp" }
+            vpaths { ["engine_src/*"] = "swizzle/engine_src/**.cpp" }
 
             vpaths { ["include/*"] = "swizzle/include/**.hpp" }
 
@@ -151,25 +151,40 @@ group("Tests")
         end -- userFunc
     )
 
+    setupPrj("utilsTest", "consoleApp",
+        {"Vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/utils/**.cpp"}, -- files/filePath
+        {"Vendor/google-test/googletest-master/googletest/include" , "swizzle/include"}, -- include paths
+        "", -- defines
+        {"utils", "google-test"}, -- links
+        function() -- userFunc
+            vpaths { ["*"] = "tests/**.hpp" }
+            vpaths { ["*"] = "tests/**.cpp" }
+        end -- userFunc
+    )
+
 group("Apps")
     setupPrj("sandbox", "consoleApp",
         {"swizzle/include/**.hpp", "sandbox/**.hpp", "sandbox/**.cpp"}, -- files/filePath
         {"sandbox/" , "swizzle/include/", "vendor/glm/include"}, -- include paths
-        {"SWIZZLE_DLL",}, -- defines
+        {"SWIZZLE_DLL"}, -- defines
         {"swizzle", "utils"}, -- links
         function() -- userFunc
             vpaths { ["sandbox/*"] = "sandbox/**.hpp" }
             vpaths { ["sandbox/*"] = "sandbox/**.cpp" }
+
+            vpaths { ["include/*"] = "swizzle/include/**.hpp" }
         end -- userFunc
     )
 
-    setupPrj("scriptSandbox", "consoleApp",
-        {"swizzle/include/**.hpp", "scriptSandbox/**.hpp", "scriptSandbox/**.cpp"}, -- files/filePath
-        {"scriptSandbox/" , "swizzle/include/", "vendor/glm/include"}, -- include paths
-        {"SWIZZLE_DLL",}, -- defines
+    setupPrj("modelConverter", "consoleApp",
+        {"swizzle/include/**.hpp", "modelConverter/**.hpp", "modelConverter/**.cpp"}, -- files/filePath
+        {"modelConverter/" , "swizzle/include/", "vendor/glm/include"}, -- include paths
+        {"SWIZZLE_DLL"}, -- defines
         {"swizzle", "utils"}, -- links
         function() -- userFunc
-            vpaths { ["scriptSandbox/*"] = "scriptSandbox/**.hpp" }
-            vpaths { ["scriptSandbox/*"] = "scriptSandbox/**.cpp" }
+            vpaths { ["modelConverter/*"] = "modelConverter/**.hpp" }
+            vpaths { ["modelConverter/*"] = "modelConverter/**.cpp" }
+
+            vpaths { ["include/*"] = "swizzle/include/**.hpp" }
         end -- userFunc
     )
