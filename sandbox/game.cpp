@@ -49,7 +49,7 @@ Game::Game()
         -0.5F, -0.5F, 0.0F, //0.0, 0.0, 1.0, 0.0, 1.0,
     };
 
-    //mBuffer->setBufferData(bla, sizeof(bla), sizeof(float) * 3U);
+    mBuffer->setBufferData(bla, sizeof(bla), sizeof(float) * 3U);
 
     cam.setPosition({ 0.0F, 0.0F, 5.5F });
 
@@ -120,8 +120,8 @@ bool Game::update(float dt)
 
     //for (size_t i = 0; i < 100; i++)
     {
-        t.model[3][0] += 5.5F;
-        t.model[3][1] -= 5.5F;
+        //t.model[3][0] += 5.5F;
+        //t.model[3][1] -= 5.5F;
         mCmdBuffer->setShaderConstant(mShader, (SwU8*)&t, sizeof(t));
         mCmdBuffer->draw(mBuffer);
     }
