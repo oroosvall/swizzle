@@ -17,8 +17,8 @@ namespace swizzle::gfx
 
         stbi_uc* pixels = stbi_load("texture/random_snipp.PNG", &x, &y, &c, STBI_rgb_alpha);
 
-        mWidth = static_cast<SwU32>(x);
-        mHeight = static_cast<SwU32>(y);
+        mWidth = static_cast<U32>(x);
+        mHeight = static_cast<U32>(y);
 
         VkDeviceSize imageSize = mWidth * mHeight * 4U;
 
@@ -42,8 +42,10 @@ namespace swizzle::gfx
         destroyResources();
     }
 
-    void VulkanTexture::setData(SwU32 width, SwU32 height, SwU32 channels, SwU8* pixelData)
+    void VulkanTexture::setData(U32 width, U32 height, U32 channels, U8* pixelData)
     {
+        pixelData;
+        channels;
         // check to recreate the texture
         if ((width != mWidth) || (height != mHeight) && ((width != 0U) & (height != 0U)))
         {

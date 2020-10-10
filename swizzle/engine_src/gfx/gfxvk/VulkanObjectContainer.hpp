@@ -22,7 +22,7 @@ namespace swizzle::gfx
 
         VkQueue mQueue;
 
-        SwU32 mQueueFamilyIndex;
+        U32 mQueueFamilyIndex;
 
         VkCommandPool mCmdPool;
         VkPipelineCache mPiplineCache;

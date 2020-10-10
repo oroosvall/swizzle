@@ -28,8 +28,8 @@ namespace swizzle::gfx
         virtual void endRenderPass() override;
 
         virtual void bindShader(core::Resource<Shader> shader) override;
-        virtual void setShaderConstant(core::Resource<Shader> shader, SwU8* data, SwU32 size) override;
-        virtual void setViewport(SwU32 x, SwU32 y) override;
+        virtual void setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size) override;
+        virtual void setViewport(U32 x, U32 y) override;
 
         virtual void draw(core::Resource<Buffer> buffer) override;
 

@@ -15,6 +15,6 @@
 
 const char* VkResultToString(VkResult res);
 
-SwU32 FindMemoryType(VkPhysicalDeviceMemoryProperties props, VkMemoryPropertyFlags properties, uint32_t type_bits);
+U32 FindMemoryType(VkPhysicalDeviceMemoryProperties props, VkMemoryPropertyFlags properties, uint32_t type_bits);
 
 #endif

@@ -74,11 +74,11 @@ namespace swizzle::gfx
         vkQueueSubmit(mQueue, 1, &subinfo, VK_NULL_HANDLE);
     }
 
-    StageMemoryBuffer& StageCmdBuffer::allocateStagingMemory(SwU8* data, VkDeviceSize memSize)
+    StageMemoryBuffer& StageCmdBuffer::allocateStagingMemory(U8* data, VkDeviceSize memSize)
     {
         StageMemoryBuffer memoryStuff;
 
-        SwU32 queueIndex = VK_QUEUE_FAMILY_IGNORED;
+        U32 queueIndex = VK_QUEUE_FAMILY_IGNORED;
 
         VkBufferCreateInfo bufferInfo;
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -117,7 +117,7 @@ namespace swizzle::gfx
 
     void StageCmdBuffer::transitionImage(VkImage image)
     {
-
+        image;
     }
 
     void StageCmdBuffer::clearStageBuffers()

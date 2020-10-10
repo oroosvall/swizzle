@@ -20,7 +20,7 @@ namespace swizzle::core
     class Win32Window : public Window
     {
     public:
-        Win32Window(const SwU32 width, const SwU32 height, const char* title);
+        Win32Window(const U32 width, const U32 height, const char* title);
         virtual ~Win32Window();
 
         virtual void show() override;
@@ -32,14 +32,14 @@ namespace swizzle::core
         virtual void setTitle(const char* title) override;
         virtual void setTitle(const wchar_t* title) override;
 
-        virtual void setSize(const SwU32 width, const SwU32 height) override;
+        virtual void setSize(const U32 width, const U32 height) override;
 
         virtual bool isVisible() const override;
 
         virtual void setBorderless(bool borderless) override;
 
-        virtual void getCursorPos(SwU32& xPos, SwU32& yPos) const override;
-        virtual void getSize(SwU32& width, SwU32& height) const override;
+        virtual void getCursorPos(U32& xPos, U32& yPos) const override;
+        virtual void getSize(U32& width, U32& height) const override;
         virtual void* getNativeHandle() const override;
         virtual void pollEvents() override;
 
@@ -48,7 +48,7 @@ namespace swizzle::core
 
         EventHandlerList<WindowEvent>& getEventHandler();
 
-        SwS32 modKeys;
+        S32 modKeys;
 
     private:
         HWND mWnd;

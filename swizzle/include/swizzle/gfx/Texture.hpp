@@ -10,7 +10,7 @@ namespace swizzle::gfx
     public:
         virtual ~Texture() {}
 
-        virtual void setData(SwU32 width, SwU32 height, SwU32 channels, SwU8* pixelData) = 0;
+        virtual void setData(U32 width, U32 height, U32 channels, U8* pixelData) = 0;
 
     };
 }

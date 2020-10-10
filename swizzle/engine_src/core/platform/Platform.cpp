@@ -4,17 +4,17 @@
 namespace swizzle::core
 {
 
-    SwU32 GetNumberOfDisplays()
+    U32 GetNumberOfDisplays()
     {
         return platform::getPlatformDisplayCount();
     }
 
-    SwU32 GetDisplayResolutionCount(SwU32 displayIndex)
+    U32 GetDisplayResolutionCount(U32 displayIndex)
     {
         return platform::getPlatformDisplayResolutionCount(displayIndex);
     }
 
-    void GetDisplayResolutions(SwU32 displayIndex, Resolution* resolutions, SwU32 size)
+    void GetDisplayResolutions(U32 displayIndex, Resolution* resolutions, U32 size)
     {
         platform::getPlatformDisplayResolutions(displayIndex, resolutions, size);
     }
@@ -34,17 +34,17 @@ namespace swizzle::core
         return platform::getPlatformAppCacheDirectory();
     }
 
-    SwU64 GetCurrentTimeMs()
+    U64 GetCurrentTimeMs()
     {
         return platform::getPlatformTimeStampMs();
     }
 
-    SwU32 GetCurrentThreadId()
+    U32 GetCurrentThreadId()
     {
         return platform::getPlatformCurrentThreadId();
     }
 
-    Resource<Window> CreateWindow(const SwU32 width, const SwU32 height, const SwChar* title)
+    Resource<Window> CreateWindow(const U32 width, const U32 height, const SwChar* title)
     {
         return platform::createPlatformWindow(width, height, title);
     }

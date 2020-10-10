@@ -55,8 +55,8 @@ namespace swizzle::gfx
 
         //mSwapchain = mLogical->createSwapchain(mInstance->getSurface(), *mMemoryHelper);
 
-        SwU64 size = 0;
-        SwU8* data = nullptr;
+        U64 size = 0;
+        U8* data = nullptr;
 
         std::ifstream cacheFile;
         std::string cacheFilePath = core::GetAppCacheDirectory();
@@ -67,7 +67,7 @@ namespace swizzle::gfx
         {
             size = cacheFile.tellg();
             cacheFile.seekg(0, std::ios::beg);
-            data = new SwU8[size];
+            data = new U8[size];
             cacheFile.read((char*)data, size);
             cacheFile.close();
         }
@@ -149,7 +149,7 @@ namespace swizzle::gfx
 
         size_t size = 0U;
         vkGetPipelineCacheData(mLogical->getLogical(), mVkObjects.mPiplineCache, &size, VK_NULL_HANDLE);
-        SwU8* cacheData = new SwU8[size];
+        U8* cacheData = new U8[size];
         vkGetPipelineCacheData(mLogical->getLogical(), mVkObjects.mPiplineCache, &size, cacheData);
 
         std::ofstream cacheFile;

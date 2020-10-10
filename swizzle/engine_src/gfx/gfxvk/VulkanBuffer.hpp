@@ -13,15 +13,18 @@ namespace swizzle::gfx
         VulkanBuffer(const VulkanObjectContainer& vkObjects, BufferType type);
         virtual ~VulkanBuffer();
 
-        virtual void setBufferData(void* data, SwU64 size, SwU32 stride) override;
+        virtual void setBufferData(void* data, U64 size, U32 stride) override;
+
+        virtual void* mapMemory(U64 size);
+        virtual void unmapMemory();
 
         VkBuffer getBuffer() const { return mBuffer; }
 
-        SwU32 getVertexCount() const { return mVertCount; }
+        U32 getVertexCount() const { return mVertCount; }
 
     private:
 
-        void createOrResize(SwU64 newSize);
+        void createOrResize(U64 newSize);
 
         const VulkanObjectContainer& mVkObjects;
         const BufferType mType;
@@ -30,8 +33,8 @@ namespace swizzle::gfx
         VkDeviceMemory mMemory;
 
         VkDeviceSize mBufferSize;
-        SwU32 mStride;
-        SwU32 mVertCount;
+        U32 mStride;
+        U32 mVertCount;
 
     };
 }

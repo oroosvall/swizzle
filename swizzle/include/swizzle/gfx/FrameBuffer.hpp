@@ -23,13 +23,13 @@ namespace swizzle::gfx
 
         virtual ~FrameBuffer() {}
 
-        virtual SwU32 getNumColorAttachments() const = 0; 
+        virtual U32 getNumColorAttachments() const = 0; 
         virtual SwBool hasDepthAttachment() const = 0;
 
-        virtual void setColorAttachmentClearColor(SwU32 attachmentIndex, ClearColor color) = 0;
-        virtual void setDepthAttachmentClearValue(SwFloat depthValue, SwU8 stencilValue) = 0;
+        virtual void setColorAttachmentClearColor(U32 attachmentIndex, ClearColor color) = 0;
+        virtual void setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue) = 0;
 
-        virtual void resize(SwU32 width, SwU32 height) = 0;
+        virtual void resize(U32 width, U32 height) = 0;
 
         virtual core::Resource<Shader> createShader(ShaderAttributeList attributeList) = 0;
 

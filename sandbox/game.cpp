@@ -3,6 +3,10 @@
 
 #include <glm/glm.hpp>
 
+#define SIZE (1024U * 1024U * 100U)
+
+U8 dumbData[SIZE];
+void* mapped;
 
 Game::Game()
  : cam(glm::radians(45.0F), 1280, 720)
@@ -14,28 +18,29 @@ Game::Game()
     mSwapchain = sw::gfx::CreateSwapchain(mWindow);
     mCmdBuffer = sw::gfx::CreateCommandBuffer();
 
-    // sw::gfx::ShaderBufferInput bufferInput[] = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
-    sw::gfx::ShaderBufferInput bufferInput[] = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U) };
+     sw::gfx::ShaderBufferInput bufferInput[] = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
 
     sw::gfx::ShaderAttribute attributes[] = {
         { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, 0U},
-        // { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, sizeof(float) * 3U },
-        // { 0U, sw::gfx::ShaderAttributeDataType::vec2_16, sizeof(float) * 6U }
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, sizeof(float) * 3U },
+        { 0U, sw::gfx::ShaderAttributeDataType::vec2_16, sizeof(float) * 6U }
     };
 
     sw::gfx::ShaderAttributeList attribs;
     attribs.mNumBuffers = 1U;
     attribs.mBufferInput = bufferInput;
-    
-    // This line currently causes out of bound access
-    attribs.mNumAttributes = 3U; // The intended value here is 1U
-
+    attribs.mNumAttributes = 3U;
     attribs.mAttributes = attributes;
 
     mShader = mSwapchain->createShader(attribs);
     mShader->load("shaders/simple.shader");
 
     mBuffer = sw::gfx::CreateBuffer(sw::gfx::BufferType::Vertex);
+    mBuffer2 = sw::gfx::CreateBuffer(sw::gfx::BufferType::Vertex);
+
+    mapped = mBuffer2->mapMemory(SIZE);
+
+    memcpy(dumbData, mapped, SIZE);
 
     mTexture = sw::gfx::CreateTexture();
 
@@ -53,28 +58,40 @@ Game::Game()
 
     cam.setPosition({ 0.0F, 0.0F, 5.5F });
 
-    //mMesh = new Model();
-    //mMesh->load("C:/tmp/rock.obj");
+    mMesh = new Model();
+    mMesh->load("C:/tmp/rock.obj");
 
-    //size_t size = mMesh->mMeshes.back().mTriangles.size() * 3 * 3;
+    size_t size = mMesh->mMeshes.back().mTriangles.size() * 3 * (3 + 3 + 2);
 
-    //char* data = new char[size * sizeof(float)];
-    //    
-    //size_t offset = 0;
+    char* data = new char[size * sizeof(float)];
+        
+    size_t offset = 0;
 
-    //auto triList = mMesh->mMeshes.back().mTriangles;
+    auto triList = mMesh->mMeshes.back().mTriangles;
 
-    //for (size_t i = 0; i < triList.size(); i++)
-    //{
-    //    memcpy(&data[offset], &mMesh->mMeshes.back().mVertices.data()[triList[i].v1], sizeof(float) * 3);
-    //    offset += sizeof(float) * 3;
-    //    memcpy(&data[offset], &mMesh->mMeshes.back().mVertices.data()[triList[i].v2], sizeof(float) * 3);
-    //    offset += sizeof(float) * 3;
-    //    memcpy(&data[offset], &mMesh->mMeshes.back().mVertices.data()[triList[i].v3], sizeof(float) * 3);
-    //    offset += sizeof(float) * 3;
-    //}
+    for (size_t i = 0; i < triList.size(); i++)
+    {
+        memcpy(&data[offset], &mMesh->mMeshes.back().mVertices.data()[triList[i].v1], sizeof(float) * 3);
+        offset += sizeof(float) * 3;
+        memset(&data[offset], 0, sizeof(float) * 3);
+        offset += sizeof(float) * 3;
+        memset(&data[offset], 0, sizeof(float) * 2);
+        offset += sizeof(float) * 2;
+        memcpy(&data[offset], &mMesh->mMeshes.back().mVertices.data()[triList[i].v2], sizeof(float) * 3);
+        offset += sizeof(float) * 3;
+        memset(&data[offset], 0, sizeof(float) * 3);
+        offset += sizeof(float) * 3;
+        memset(&data[offset], 0, sizeof(float) * 2);
+        offset += sizeof(float) * 2;
+        memcpy(&data[offset], &mMesh->mMeshes.back().mVertices.data()[triList[i].v3], sizeof(float) * 3);
+        offset += sizeof(float) * 3;
+        memset(&data[offset], 0, sizeof(float) * 3);
+        offset += sizeof(float) * 3;
+        memset(&data[offset], 0, sizeof(float) * 2);
+        offset += sizeof(float) * 2;
+    }
 
-    //mBuffer->setBufferData(data, size * sizeof(SwFloat), sizeof(float) * 3U);
+    mBuffer->setBufferData(data, size * sizeof(SwFloat), sizeof(float) * (3U + 3U + 2U));
 
  }
 
@@ -87,7 +104,7 @@ bool Game::update(float dt)
 {
     mWindow->pollEvents();
 
-    SwU32 x, y;
+    U32 x, y;
     mWindow->getSize(x, y);
 
     sw::gfx::HSVA hsv = sw::gfx::RgbaToHsva(rgba);
@@ -122,7 +139,7 @@ bool Game::update(float dt)
     {
         //t.model[3][0] += 5.5F;
         //t.model[3][1] -= 5.5F;
-        mCmdBuffer->setShaderConstant(mShader, (SwU8*)&t, sizeof(t));
+        mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
         mCmdBuffer->draw(mBuffer);
     }
 
@@ -130,7 +147,6 @@ bool Game::update(float dt)
     mCmdBuffer->end();
     mCmdBuffer->submit(mSwapchain);
     mSwapchain->present();
-
 
     return mWindow->isVisible();
 }

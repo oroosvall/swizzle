@@ -6,7 +6,7 @@
 namespace swizzle::gfx
 {
 
-    PresentFrameBuffer::PresentFrameBuffer(const VulkanObjectContainer& vkObjects, VkImage image, VkImageView imageView, VkFormat imageFormat, SwU32 width, SwU32 height)
+    PresentFrameBuffer::PresentFrameBuffer(const VulkanObjectContainer& vkObjects, VkImage image, VkImageView imageView, VkFormat imageFormat, U32 width, U32 height)
         : mVkObjects(vkObjects)
         , mRenderPass(VK_NULL_HANDLE)
         , mFrameBuffer(VK_NULL_HANDLE)
@@ -28,7 +28,7 @@ namespace swizzle::gfx
     }
 
     // Inherited via FrameBuffer
-    SwU32 PresentFrameBuffer::getNumColorAttachments() const
+    U32 PresentFrameBuffer::getNumColorAttachments() const
     {
         return 1U;
     }
@@ -38,7 +38,7 @@ namespace swizzle::gfx
         return false;
     }
 
-    void PresentFrameBuffer::setColorAttachmentClearColor(SwU32 attachmentIndex, ClearColor color)
+    void PresentFrameBuffer::setColorAttachmentClearColor(U32 attachmentIndex, ClearColor color)
     {
         attachmentIndex;
         mClearValue.color.float32[0] = color.r;
@@ -47,13 +47,13 @@ namespace swizzle::gfx
         mClearValue.color.float32[3] = color.a;
     }
 
-    void PresentFrameBuffer::setDepthAttachmentClearValue(SwFloat depthValue, SwU8 stencilValue)
+    void PresentFrameBuffer::setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue)
     {
         depthValue;
         stencilValue;
     }
 
-    void PresentFrameBuffer::resize(SwU32 width, SwU32 height)
+    void PresentFrameBuffer::resize(U32 width, U32 height)
     {
         mWidth = width;
         mHeight = height;
@@ -172,7 +172,7 @@ namespace swizzle::gfx
 
     }
 
-    SwU32 VulkanFrameBuffer::getNumColorAttachments() const
+    U32 VulkanFrameBuffer::getNumColorAttachments() const
     {
         return 0U;
     }
@@ -182,17 +182,17 @@ namespace swizzle::gfx
         return false;
     }
 
-    void VulkanFrameBuffer::setColorAttachmentClearColor(SwU32 attachmentIndex, ClearColor color)
+    void VulkanFrameBuffer::setColorAttachmentClearColor(U32 attachmentIndex, ClearColor color)
     {
 
     }
 
-    void VulkanFrameBuffer::setDepthAttachmentClearValue(SwFloat depthValue, SwU8 stencilValue)
+    void VulkanFrameBuffer::setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue)
     {
 
     }
 
-    void VulkanFrameBuffer::resize(SwU32 width, SwU32 height)
+    void VulkanFrameBuffer::resize(U32 width, U32 height)
     {
 
     }

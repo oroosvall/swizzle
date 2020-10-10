@@ -52,11 +52,11 @@ const char* VkResultToString(VkResult res)
 	return vkResultStrings[res];
 }
 
-SwU32 FindMemoryType(VkPhysicalDeviceMemoryProperties props, VkMemoryPropertyFlags properties, uint32_t typeBits)
+U32 FindMemoryType(VkPhysicalDeviceMemoryProperties props, VkMemoryPropertyFlags properties, uint32_t typeBits)
 {
-    SwU32 result = 0xFFFFFFFF; // Unable to find memoryType
+    U32 result = 0xFFFFFFFF; // Unable to find memoryType
 
-    for (SwU32 i = 0U; i < props.memoryTypeCount; i++)
+    for (U32 i = 0U; i < props.memoryTypeCount; i++)
     {
         if (((props.memoryTypes[i].propertyFlags & properties) == properties) && (typeBits & (1U << i)))
         {

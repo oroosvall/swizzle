@@ -26,7 +26,7 @@ namespace swizzle::gfx
         void beginStageRecording();
         void endAndSubmitRecording();
 
-        StageMemoryBuffer& allocateStagingMemory(SwU8* data, VkDeviceSize memSize);
+        StageMemoryBuffer& allocateStagingMemory(U8* data, VkDeviceSize memSize);
 
         void transitionImage(VkImage image);
 

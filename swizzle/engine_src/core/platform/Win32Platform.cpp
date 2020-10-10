@@ -28,7 +28,7 @@ namespace swizzle::core
     namespace platform
     {
 
-        constexpr SwU64 NULL_AND_SLASH_SIZE = 3;
+        constexpr U64 NULL_AND_SLASH_SIZE = 3;
 
         LARGE_INTEGER gFrequency;
         SwChar* gSaveGamesDir = nullptr;
@@ -59,7 +59,7 @@ namespace swizzle::core
                 LOG_ERROR("Failed to register window class");
             }
 
-            SwU64 appNameLen = utils::strlenSafe(appName);
+            U64 appNameLen = utils::strlenSafe(appName);
 
             PWSTR saveGames = NULL;
             if (SHGetKnownFolderPath(FOLDERID_SavedGames, KF_FLAG_DEFAULT, GetCurrentProcessToken(), &saveGames) != S_OK)
@@ -68,10 +68,10 @@ namespace swizzle::core
             }
             else
             {
-                SwU64 dirLen = utils::wstrlenSafe(saveGames);
-                SwU64 newSize = dirLen + appNameLen + NULL_AND_SLASH_SIZE;
+                U64 dirLen = utils::wstrlenSafe(saveGames);
+                U64 newSize = dirLen + appNameLen + NULL_AND_SLASH_SIZE;
                 gSaveGamesDir = new SwChar[newSize];
-                SwU64 out = 0;
+                U64 out = 0;
                 wcstombs_s(&out, gSaveGamesDir, newSize, saveGames, dirLen);
                 strncat_s(gSaveGamesDir, newSize, "\\", 1u);
                 strncat_s(gSaveGamesDir, newSize, appName, appNameLen);
@@ -86,9 +86,9 @@ namespace swizzle::core
             }
             else
             {
-                SwU64 out = 0;
-                SwU64 dirLen = utils::wstrlenSafe(appData);
-                SwU64 newSize = dirLen + appNameLen + NULL_AND_SLASH_SIZE;
+                U64 out = 0;
+                U64 dirLen = utils::wstrlenSafe(appData);
+                U64 newSize = dirLen + appNameLen + NULL_AND_SLASH_SIZE;
                 gAppDataDir = new SwChar[newSize];
                 wcstombs_s(&out, gAppDataDir, newSize, appData, dirLen);
                 strncat_s(gAppDataDir, newSize, "\\", 1u);
@@ -146,24 +146,24 @@ namespace swizzle::core
             hMonitor;
             hdcMonitor;
             lprcMonitor;
-            SwU32* count = (SwU32*)dwData;
+            U32* count = (U32*)dwData;
             (*count)++;
             return TRUE;
         }
 
-        SwU32 getPlatformDisplayCount()
+        U32 getPlatformDisplayCount()
         {
-            SwU32 count = 0U;
+            U32 count = 0U;
 
             EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)&count);
 
             return count;
         }
 
-        SwU32 getPlatformDisplayResolutionCount(SwU32 displayIndex)
+        U32 getPlatformDisplayResolutionCount(U32 displayIndex)
         {
             displayIndex;
-            SwU32 count = 0U;
+            U32 count = 0U;
 
             DEVMODE deviceMode = { 0U };
             deviceMode.dmSize = sizeof(DEVMODE);
@@ -176,10 +176,10 @@ namespace swizzle::core
             return count;
         }
 
-        void getPlatformDisplayResolutions(SwU32 displayIndex, Resolution* resolutions, SwU32 size)
+        void getPlatformDisplayResolutions(U32 displayIndex, Resolution* resolutions, U32 size)
         {
             displayIndex;
-            SwU32 count = 0U;
+            U32 count = 0U;
 
             DEVMODE deviceMode = { 0U };
             deviceMode.dmSize = sizeof(DEVMODE);
@@ -197,12 +197,12 @@ namespace swizzle::core
             }
         }
 
-        Resource<Window> createPlatformWindow(const SwU32 width, const SwU32 height, const SwChar* title)
+        Resource<Window> createPlatformWindow(const U32 width, const U32 height, const SwChar* title)
         {
             return std::make_shared<Win32Window>(width, height, title);
         }
     
-        const SwU64 getPlatformTimeStampMs()
+        const U64 getPlatformTimeStampMs()
         {
             LARGE_INTEGER time;
             QueryPerformanceCounter(&time);
@@ -213,10 +213,10 @@ namespace swizzle::core
             return static_cast<uint64_t>(time.QuadPart);
         }
 
-        const SwU32 getPlatformCurrentThreadId()
+        const U32 getPlatformCurrentThreadId()
         {
             const DWORD threadId = GetCurrentThreadId();
-            return static_cast<const SwU32>(threadId);
+            return static_cast<const U32>(threadId);
         }
     } // namespace platform
 

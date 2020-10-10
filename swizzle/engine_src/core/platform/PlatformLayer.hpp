@@ -20,15 +20,15 @@ namespace swizzle::core
         const SwChar* getPlatformTempDirectory();
         const SwChar* getPlatformAppCacheDirectory();
 
-        SwU32 getPlatformDisplayCount();
-        SwU32 getPlatformDisplayResolutionCount(SwU32 displayIndex);
-        void getPlatformDisplayResolutions(SwU32 displayIndex, Resolution* resolutions, SwU32 size);
+        U32 getPlatformDisplayCount();
+        U32 getPlatformDisplayResolutionCount(U32 displayIndex);
+        void getPlatformDisplayResolutions(U32 displayIndex, Resolution* resolutions, U32 size);
 
 
-        const SwU64 getPlatformTimeStampMs();
-        const SwU32 getPlatformCurrentThreadId();
+        const U64 getPlatformTimeStampMs();
+        const U32 getPlatformCurrentThreadId();
 
-        Resource<Window> createPlatformWindow(const SwU32 width, const SwU32  height, const SwChar* title);
+        Resource<Window> createPlatformWindow(const U32 width, const U32  height, const SwChar* title);
     }
 
     //void getPlatformDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions);

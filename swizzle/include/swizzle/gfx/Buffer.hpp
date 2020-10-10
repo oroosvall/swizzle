@@ -16,8 +16,10 @@ namespace swizzle::gfx
 
         virtual ~Buffer() {}
 
-        virtual void setBufferData(void* data, SwU64 size, SwU32 stride) = 0;
+        virtual void setBufferData(void* data, U64 size, U32 stride) = 0;
 
+        virtual void* mapMemory(U64 size) = 0;
+        virtual void unmapMemory() = 0;
     };
 }
 

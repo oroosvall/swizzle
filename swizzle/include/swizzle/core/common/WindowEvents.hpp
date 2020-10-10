@@ -36,8 +36,8 @@ namespace swizzle::core
         {
             return WindowEventType::ResizeEvent;
         }
-        SwS32 mWidth;
-        SwS32 mHeight;
+        S32 mWidth;
+        S32 mHeight;
     };
 
     class WindowFocusEvent : public WindowEvent
@@ -68,8 +68,8 @@ namespace swizzle::core
         }
 
         SwBool mFromKeyboard;
-        SwS32 mKey;
-        SwS32 mModKeys;
+        S32 mKey;
+        S32 mModKeys;
         SwBool mPressed;
     };
 
@@ -80,7 +80,7 @@ namespace swizzle::core
         {
             return WindowEventType::CharacterTypeEvent;
         }
-        SwU32 mCodePoint;
+        U32 mCodePoint;
     };
 
     class MouseMoveEvent : public WindowEvent
@@ -91,8 +91,8 @@ namespace swizzle::core
             return WindowEventType::MouseMoveEvent;
         }
 
-        SwS32 mX;
-        SwS32 mY;
+        S32 mX;
+        S32 mY;
     };
 
     class MouseMoveDelta : public WindowEvent
@@ -103,8 +103,8 @@ namespace swizzle::core
             return WindowEventType::MouseMoveDeltaEvent;
         }
 
-        SwS32 dX;
-        SwS32 dY;
+        S32 dX;
+        S32 dY;
     };
 
     class MouseScrollEvent : public WindowEvent
@@ -115,8 +115,8 @@ namespace swizzle::core
             return WindowEventType::MouseScrollEvent;
         }
 
-        SwS32 mScrollX;
-        SwS32 mScrollY;
+        S32 mScrollX;
+        S32 mScrollY;
     };
 
 } // namespace swizzle

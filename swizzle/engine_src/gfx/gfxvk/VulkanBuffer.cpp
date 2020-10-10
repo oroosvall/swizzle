@@ -29,11 +29,11 @@ namespace swizzle::gfx
         }
     }
 
-    void VulkanBuffer::setBufferData(void* data, SwU64 size, SwU32 stride)
+    void VulkanBuffer::setBufferData(void* data, U64 size, U32 stride)
     {
         createOrResize(size);
 
-        mVertCount = (SwU32)(size / (SwU64)stride);
+        mVertCount = (U32)(size / (U64)stride);
 
         void* mappedPtr = nullptr;
         vkMapMemory(mVkObjects.mLogicalDevice, mMemory, 0U, mBufferSize, 0U, &mappedPtr);
@@ -42,7 +42,20 @@ namespace swizzle::gfx
         mStride = stride;
     }
 
-    void VulkanBuffer::createOrResize(SwU64 newSize)
+    void* VulkanBuffer::mapMemory(U64 size)
+    {
+        createOrResize(size);
+        void* mappedPtr = nullptr;
+        vkMapMemory(mVkObjects.mLogicalDevice, mMemory, 0U, mBufferSize, 0U, &mappedPtr);
+        return mappedPtr;
+    }
+
+    void VulkanBuffer::unmapMemory()
+    {
+        vkUnmapMemory(mVkObjects.mLogicalDevice, mMemory);
+    }
+
+    void VulkanBuffer::createOrResize(U64 newSize)
     {
 
         if (mBuffer != VK_NULL_HANDLE)

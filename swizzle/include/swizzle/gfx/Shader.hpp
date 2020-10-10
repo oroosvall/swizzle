@@ -29,25 +29,25 @@ namespace swizzle::gfx
     struct ShaderBufferInput
     {
         ShaderBufferInputRate mRate;
-        SwU32 mStride;
+        U32 mStride;
     };
 
     struct ShaderAttribute
     {
         // Buffer index to fetch data from
-        SwU32 mBufferIndex;
+        U32 mBufferIndex;
         // data type determines size of attribute
         ShaderAttributeDataType mDataType;
         // offset from start of buffer
-        SwU32 mOffset;
+        U32 mOffset;
     };
 
     struct ShaderAttributeList
     {
-        SwU32 mNumBuffers;
+        U32 mNumBuffers;
         ShaderBufferInput* mBufferInput;
 
-        SwU32 mNumAttributes;
+        U32 mNumAttributes;
         ShaderAttribute* mAttributes;
     };
 

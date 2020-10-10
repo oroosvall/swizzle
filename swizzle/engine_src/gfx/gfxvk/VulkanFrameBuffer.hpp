@@ -12,17 +12,17 @@ namespace swizzle::gfx
     class PresentFrameBuffer : public FrameBuffer
     {
     public:
-        PresentFrameBuffer(const VulkanObjectContainer& vkObjects, VkImage image, VkImageView imageView, VkFormat imageFormat, SwU32 width,
-            SwU32 height);
+        PresentFrameBuffer(const VulkanObjectContainer& vkObjects, VkImage image, VkImageView imageView, VkFormat imageFormat, U32 width,
+            U32 height);
         virtual ~PresentFrameBuffer();
 
         // Inherited via FrameBuffer
-        virtual SwU32 getNumColorAttachments() const override;
+        virtual U32 getNumColorAttachments() const override;
         virtual SwBool hasDepthAttachment() const override;
-        virtual void setColorAttachmentClearColor(SwU32 attachmentIndex, ClearColor color) override;
-        virtual void setDepthAttachmentClearValue(SwFloat depthValue, SwU8 stencilValue) override;
+        virtual void setColorAttachmentClearColor(U32 attachmentIndex, ClearColor color) override;
+        virtual void setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue) override;
 
-        virtual void resize(SwU32 width, SwU32 height) override;
+        virtual void resize(U32 width, U32 height) override;
 
         virtual core::Resource<Shader> createShader(ShaderAttributeList attributeList) override;
 
@@ -55,8 +55,8 @@ namespace swizzle::gfx
 
         VkClearValue mClearValue;
 
-        SwU32 mWidth;
-        SwU32 mHeight;
+        U32 mWidth;
+        U32 mHeight;
     };
 
     /*class VulkanFrameBuffer : public FrameBuffer
@@ -66,13 +66,13 @@ namespace swizzle::gfx
         VulkanFrameBuffer(VulkanObjectContainer& vkObjects);
         virtual ~VulkanFrameBuffer();
 
-        virtual SwU32 getNumColorAttachments() const override;
+        virtual U32 getNumColorAttachments() const override;
         virtual SwBool hasDepthAttachment() const override;
 
-        virtual void setColorAttachmentClearColor(SwU32 attachmentIndex, ClearColor color) override;
-        virtual void setDepthAttachmentClearValue(SwFloat depthValue, SwU8 stencilValue) override;
+        virtual void setColorAttachmentClearColor(U32 attachmentIndex, ClearColor color) override;
+        virtual void setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue) override;
 
-        virtual void resize(SwU32 width, SwU32 height) override;
+        virtual void resize(U32 width, U32 height) override;
 
     private:
         

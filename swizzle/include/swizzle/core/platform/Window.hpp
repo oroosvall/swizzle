@@ -11,9 +11,9 @@ namespace swizzle::core
 
     struct Resolution
     {
-        SwU32 mWidth;
-        SwU32 mHeight;
-        SwU32 mFrequency;
+        U32 mWidth;
+        U32 mHeight;
+        U32 mFrequency;
     };
 
     class Window
@@ -30,14 +30,14 @@ namespace swizzle::core
         virtual void setTitle(const SwChar* title) = 0;
         virtual void setTitle(const SwWChar* title) = 0;
 
-        virtual void setSize(const SwU32 width, const SwU32 height) = 0;
+        virtual void setSize(const U32 width, const U32 height) = 0;
 
         virtual bool isVisible() const = 0;
 
         virtual void setBorderless(bool borderless) = 0;
 
-        virtual void getCursorPos(SwU32& xPos, SwU32& yPos) const = 0;
-        virtual void getSize(SwU32& width, SwU32& height) const = 0;
+        virtual void getCursorPos(U32& xPos, U32& yPos) const = 0;
+        virtual void getSize(U32& width, U32& height) const = 0;
         virtual void* getNativeHandle() const = 0;
 
         virtual void setCursorVisible(SwBool visible) = 0;

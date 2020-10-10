@@ -13,19 +13,19 @@
 namespace swizzle::core
 {
 
-    SwU32 SWIZZLE_API GetNumberOfDisplays();
-    SwU32 SWIZZLE_API GetDisplayResolutionCount(SwU32 displayIndex);
-    void SWIZZLE_API GetDisplayResolutions(SwU32 displayIndex, Resolution* resolutions, SwU32 size);
+    U32 SWIZZLE_API GetNumberOfDisplays();
+    U32 SWIZZLE_API GetDisplayResolutionCount(U32 displayIndex);
+    void SWIZZLE_API GetDisplayResolutions(U32 displayIndex, Resolution* resolutions, U32 size);
 
     const SwChar SWIZZLE_API * GetSaveGameDirectory();
     const SwChar SWIZZLE_API * GetTempDirectory();
     const SwChar SWIZZLE_API * GetAppCacheDirectory();
 
-    SwU64 SWIZZLE_API GetCurrentTimeMs();
-    SwU32 SWIZZLE_API GetCurrentThreadId();
+    U64 SWIZZLE_API GetCurrentTimeMs();
+    U32 SWIZZLE_API GetCurrentThreadId();
 
 
-    Resource<Window> SWIZZLE_API CreateWindow(const SwU32 width, const SwU32 height, const SwChar* title);
+    Resource<Window> SWIZZLE_API CreateWindow(const U32 width, const U32 height, const SwChar* title);
     Resource<Thread> SWIZZLE_API CreateThread();
 
 }

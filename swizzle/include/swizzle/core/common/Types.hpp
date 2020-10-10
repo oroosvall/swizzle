@@ -1,17 +1,19 @@
 #ifndef SW_TYPES_HPP
 #define SW_TYPES_HPP
 
-typedef signed long long SwS64;
-typedef unsigned long long SwU64;
+#include <cstdint>
 
-typedef signed int SwS32;
-typedef unsigned int SwU32;
+typedef int64_t S64;
+typedef uint64_t U64;
 
-typedef signed short SwS16;
-typedef unsigned short SwU16;
+typedef int32_t S32;
+typedef uint32_t U32;
 
-typedef signed char SwS8;
-typedef unsigned char SwU8;
+typedef int16_t S16;
+typedef uint16_t U16;
+
+typedef int8_t S8;
+typedef uint8_t U8;
 
 typedef char SwChar;
 typedef wchar_t SwWChar;

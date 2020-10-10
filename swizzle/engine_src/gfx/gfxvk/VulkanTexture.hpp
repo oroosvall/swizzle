@@ -17,7 +17,7 @@ namespace swizzle::gfx
         virtual ~VulkanTexture();
 
         // Inherited via Texture
-        virtual void setData(SwU32 width, SwU32 height, SwU32 channels, SwU8* pixelData) override;
+        virtual void setData(U32 width, U32 height, U32 channels, U8* pixelData) override;
 
         VkImageView getView() const { return mImageView; }
 
@@ -44,8 +44,8 @@ namespace swizzle::gfx
         VkDeviceMemory mStageMemory;
         VkBuffer mStageBuffer;
 
-        SwU32 mWidth;
-        SwU32 mHeight;
+        U32 mWidth;
+        U32 mHeight;
 
     };
 

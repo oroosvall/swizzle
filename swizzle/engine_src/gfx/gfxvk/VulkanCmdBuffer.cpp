@@ -127,7 +127,7 @@ namespace swizzle::gfx
 
     void VulkanCommandBuffer::submit(core::Resource<Swapchain> swp)
     {
-        SwU32 waitCount = 0;
+        U32 waitCount = 0;
         VkSemaphore sync = VK_NULL_HANDLE;
 
         if (swp)
@@ -269,14 +269,14 @@ namespace swizzle::gfx
         vkCmdBindDescriptorSets(mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipelineLayout(), 0, 1, &descSet, 0, VK_NULL_HANDLE);
     }
 
-    void VulkanCommandBuffer::setShaderConstant(core::Resource<Shader> shader, SwU8* data, SwU32 size)
+    void VulkanCommandBuffer::setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size)
     {
         VulkanShader* shad = (VulkanShader*)(shader.get());
 
         vkCmdPushConstants(mCmdBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0, size, data);
     }
 
-    void VulkanCommandBuffer::setViewport(SwU32 x, SwU32 y)
+    void VulkanCommandBuffer::setViewport(U32 x, U32 y)
     {
         if (x == 0U || y == 0U)
         {

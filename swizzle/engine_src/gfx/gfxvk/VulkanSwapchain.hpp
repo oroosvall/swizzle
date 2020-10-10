@@ -62,8 +62,8 @@ namespace swizzle::gfx
 
         VkSurfaceKHR mSurface;
 
-        SwU32 mSurfaceWidth;
-        SwU32 mSurfaceHeight;
+        U32 mSurfaceWidth;
+        U32 mSurfaceHeight;
         VkFormat mFormat;
         VkPresentModeKHR mSelectedPresentMode;
 
@@ -71,12 +71,12 @@ namespace swizzle::gfx
 
         std::unordered_map<VSyncTypes, VkPresentModeKHR> mAvailablePresentModes;
         SwBool mRecreateSwapchain;
-        SwU32 mCurrentImage;
+        U32 mCurrentImage;
 
         VkFence mAcquireImageFence;
         VkSemaphore mRenderCompleteSemaphore;
 
-        SwU32 mSwapchainImageCount;
+        U32 mSwapchainImageCount;
         std::vector<SwapchainImage> mSwapchainImages;
 
         std::vector<core::Resource<PresentFrameBuffer>> mFrameBuffers;

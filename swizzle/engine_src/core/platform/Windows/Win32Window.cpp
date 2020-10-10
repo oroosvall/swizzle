@@ -377,7 +377,7 @@ namespace swizzle::core
         return DefWindowProc(hWnd, msg, wParam, lParam);
     }
 
-    Win32Window::Win32Window(const SwU32 width, const SwU32 height, const char* title)
+    Win32Window::Win32Window(const U32 width, const U32 height, const char* title)
         : mWnd(NULL)
         , mCursorVisible(true)
         , mEventHandlers()
@@ -429,7 +429,7 @@ namespace swizzle::core
         SetWindowTextW(mWnd, title);
     }
 
-    void Win32Window::setSize(const SwU32 width, const SwU32 height)
+    void Win32Window::setSize(const U32 width, const U32 height)
     {
         SetWindowPos(mWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
     }
@@ -460,7 +460,7 @@ namespace swizzle::core
         }
     }
 
-    void Win32Window::getCursorPos(SwU32& xPos, SwU32& yPos) const
+    void Win32Window::getCursorPos(U32& xPos, U32& yPos) const
     {
         xPos = yPos = 0;
 
@@ -475,7 +475,7 @@ namespace swizzle::core
         }
     }
 
-    void Win32Window::getSize(SwU32& width, SwU32& height) const
+    void Win32Window::getSize(U32& width, U32& height) const
     {
 
         RECT rect;
