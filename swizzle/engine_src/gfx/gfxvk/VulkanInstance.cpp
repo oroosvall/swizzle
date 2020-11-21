@@ -1,5 +1,6 @@
 #include "VulkanInstance.hpp"
 #include "Surface.hpp"
+#include <swizzle/core/logging/Logging.hpp>
 //#include "VulkanPlatform.hpp"
 
 #include <cstdint>
@@ -179,7 +180,7 @@ namespace swizzle::gfx
         VkResult res = vkCreateInstance(&createInfo, nullptr, &mVkInstance);
         if (res != VK_SUCCESS)
         {
-            printf("vkCreateInstance failed!, returned %d\n", static_cast<int32_t>(res));
+            LOG_ERROR("vkCreateInstance failed!, returned %s\n", VkResultToString(res));
         }
 
     }

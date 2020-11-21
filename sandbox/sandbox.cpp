@@ -1,5 +1,4 @@
 
-
 #include <swizzle/Swizzle.hpp>
 #include <utils/HighResolutionClock.hpp>
 
@@ -33,11 +32,9 @@ int main(int argv, char* argc[])
 
     while (true)
     {
-        
         float_t dt = highRes.secondsAsFloat(true);
 
-        if (!game->update(dt)) break;
-        
+        if (!game->update(dt)) break;   
     }
 
     sw::gfx::WaitIdle();

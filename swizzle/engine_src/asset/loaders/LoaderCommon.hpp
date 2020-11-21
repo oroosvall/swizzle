@@ -1,0 +1,23 @@
+
+#pragma once
+
+#include <swizzle/core/common/Types.hpp>
+#include <glm/glm.hpp>
+#include <vector>
+
+namespace swizzle
+{
+    struct ModelContents
+    {
+        SwBool mHasNormals;
+        SwBool mHasUv;
+        SwBool mHasColor;
+        SwBool mHasSkinning;
+
+        U8 mStride;
+        std::vector<SwFloat> mVertexData;
+        std::vector<glm::ivec3> mFaces;
+
+    };
+
+}

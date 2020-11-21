@@ -248,6 +248,11 @@ namespace swizzle::gfx
             attributeDescriptor[i].binding = attrib.mBufferIndex;
             attributeDescriptor[i].format = getShaderAttributeFormat(attrib.mDataType);
             attributeDescriptor[i].offset = attrib.mOffset;
+            if (attributeDescriptor[i].format == VK_FORMAT_UNDEFINED)
+            {
+                MessageBox(NULL, L"Format was undefined", L"Shader loading", MB_ICONERROR);
+                exit(-1);
+            }
         }
 
         VkPipelineVertexInputStateCreateInfo vertexInput;

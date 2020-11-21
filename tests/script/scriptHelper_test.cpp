@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <script/ScriptHelperFuncs.hpp>
+#include <compiler/ScriptHelperFuncs.hpp>
 
 TEST(ScriptTests_helpers, signedNumberCheck)
 {

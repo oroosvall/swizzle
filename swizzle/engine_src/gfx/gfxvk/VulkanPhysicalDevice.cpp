@@ -1,4 +1,5 @@
 #include "VulkanPhysicalDevice.hpp"
+#include <swizzle/core/logging/Logging.hpp>
 
 #include <array>
 
@@ -21,7 +22,7 @@ namespace swizzle
         exts.resize(count);
         vkEnumerateDeviceExtensionProperties(mPhysicalDevice, nullptr, &count, exts.data());
 
-        for (auto it : exts)
+        for (const auto& it : exts)
         {
             extensions.push_back(it.extensionName);
         }
@@ -96,7 +97,7 @@ namespace swizzle
         VkResult res = vkCreateDevice(mPhysicalDevice, &createInfo, nullptr, &mLogicalDevice);
         if (res != VK_SUCCESS)
         {
-            printf("vkCreateDevice failed!, %d\n", res);
+            LOG_ERROR("vkCreateDevice failed!, returned %s\n", VkResultToString(res));
         }
 
         VkCommandPoolCreateInfo cmdPoolCreateInfo;
@@ -149,10 +150,5 @@ namespace swizzle
         }
         return queue;
     }
-
-    //VulkanSwapchain* LogicalDevice::createSwapchain(VkSurfaceKHR mSurface, VulkanMemoryHelper& memhelper)
-    //{
-    //    return new VulkanSwapchain(*this, mSurface, memhelper);
-    //}
 
 } // namespace swizzle

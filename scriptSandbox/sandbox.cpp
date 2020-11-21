@@ -1,47 +1,11 @@
 
-#include <utils/Config.hpp>
-#include <swizzle/Swizzle.hpp>
+#include <runtime/ProgramContext.hpp>
 
-#include <Windows.h>
-
-class Application
-{
-public:
-
-	Application()
-		: mAppConfig("App.cfg")
-	{
-	}
-
-	~Application()
-	{
-	}
-
-	void mainLoop();
-
-protected:
-
-
-	utils::Config mAppConfig;
-
-};
-
-void Application::mainLoop()
-{
-
-	/*script::Script scr;
-	scr.compileFromFile("scripts/test.sws");*/
-
-}
+#include <cstdio>
 
 int main()
 {
-	Application app;
-
-	app.mainLoop();
-
-
-
-
+	ProgramContext pc(1024);
+	
 	return 0;
 }

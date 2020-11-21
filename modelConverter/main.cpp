@@ -29,7 +29,6 @@ int main(int argv, char* argc[])
     utils::ArgOption compress("-c", ".swm attempt model compression", utils::ArgType::Flag);
     utils::ArgOption verbose("-v", "Verbose", utils::ArgType::Flag);
     utils::ArgOption benchmark("-b", "Benchmark", utils::ArgType::Flag);
-    // utils::ArgOption triangleIndexCompress("-cti", ".swm triangle index compression", utils::ArgType::Flag);
     utils::ArgOption version("-ver", "specify target swm version", utils::ArgType::Value);
 
     utils::ArgParser args("Model conversion utility");
@@ -38,8 +37,6 @@ int main(int argv, char* argc[])
     args.addOption(&compress);
     args.addOption(&verbose);
     args.addOption(&benchmark);
-    // args.addOption(&vertexIndexCompress);
-    // args.addOption(&triangleIndexCompress);
     args.addOption(&version);
 
     if (verbose.mIsSet)
@@ -53,16 +50,10 @@ int main(int argv, char* argc[])
 
     if (inFiles.mIsSet && outFiles.mIsSet)
     {
-        // CompressionFlags compressionFlags;
-        // compressionFlags.mVertexIndex = vertexIndexCompress.mIsSet;
-        // compressionFlags.mTriangleIndex = triangleIndexCompress.mIsSet;
-
         Model model;
         model.load(inFiles.mValues[0]);
         model.save(outFiles.mValues[0], compress.mIsSet);
     }
-
-    //swizzle::core::SwCoreDeinitialize();
 
     return 0;
 }

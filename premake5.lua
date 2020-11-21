@@ -36,11 +36,18 @@ group("g-test")
             "vendor/google-test/googletest-master/googletest/include/**.cc",
             "vendor/google-test/googletest-master/googletest/src/**.h",
             "vendor/google-test/googletest-master/googletest/src/gtest-all.cc",
+
+            "vendor/google-test/googletest-master/googlemock/include/**.h",
+            "vendor/google-test/googletest-master/googlemock/include/**.cc",
+            "vendor/google-test/googletest-master/googlemock/src/**.h",
+            "vendor/google-test/googletest-master/googlemock/src/gmock-all.cc",
         }
 
         includedirs {
             "vendor/google-test/googletest-master/googletest/include/",
-            "vendor/google-test/googletest-master/googletest/"
+            "vendor/google-test/googletest-master/googletest/",
+            "vendor/google-test/googletest-master/googlemock/include/",
+            "vendor/google-test/googletest-master/googlemock/"
         }
         
 group("glad")
@@ -62,23 +69,22 @@ group("glad")
             "vendor/glad/include/glad"
         }
         
-group("Utils")
-setupPrj("utils", "staticLib",
-    {"swizzle/include/utils/**.hpp", "swizzle/utils/**.hpp", "swizzle/utils/**.cpp"}, -- files/filePath
-    {"swizzle/include/"}, -- include paths
-    "", -- defines
-    nil, -- links
-    function() -- userFunc
-        vpaths { ["utils/*"] = "swizzle/utils/**.hpp" }
-        vpaths { ["utils/*"] = "swizzle/utils/**.cpp" }
-        vpaths { ["utils/*"] = "swizzle/include/utils/**.hpp" }
-    end  -- userFunc
-)
+group("libs")
+    setupPrj("utils", "staticLib",
+        {"libs/utils/include/**.hpp", "libs/utils/src/**.hpp", "libs/utils/src/**.cpp"}, -- files/filePath
+        {"libs/utils/include/"}, -- include paths
+        "", -- defines
+        nil, -- links
+        function() -- userFunc
+            vpaths { ["utils/*"] = "libs/utils/src/**.hpp" }
+            vpaths { ["utils/*"] = "libs/utils/src/**.cpp" }
+            vpaths { ["utils/*"] = "libs/utils/include/**.hpp" }
+        end  -- userFunc
+    )
 
-group("Engine")
     setupPrj("script", "staticLib",
-        {"swizzle/script/**.hpp","swizzle/script/**.cpp",}, -- files/FilePath
-        {"swizzle/include/"}, -- includePaths
+        {"libs/script/include/**.hpp", "libs/script/scr/**.hpp", "libs/script/src/**.cpp"}, -- files/FilePath
+        {"libs/script/include/", "libs/utils/include/"}, -- includePaths
         {""}, -- defines
         {"utils"}, -- links
         function() -- userFunc
@@ -90,8 +96,8 @@ group("Engine")
     )
 
     setupPrj("physics", "staticLib",
-        {"swizzle/include/physics/**.hpp", "swizzle/physics/**.hpp", "swizzle/physics/**.cpp"}, -- files/FilePath
-        {"swizzle/include/", "vendor/glm/include"}, -- includePaths
+        {"libs/physics/include/**.hpp", "libs/physics/src/**.hpp", "libs/physics/src/**.cpp"}, -- files/FilePath
+        {"libs/physics/include/", "vendor/glm/include"}, -- includePaths
         {""}, -- defines
         nil, -- links
         function() -- userFunc
@@ -107,9 +113,11 @@ group("Engine")
         end -- userFunc
     )
 
+group("Engine")
+
     setupPrj("swizzle", "sharedLib",
         {"swizzle/include/**.hpp", "swizzle/engine_src/**.hpp", "swizzle/engine_src/**.cpp"}, -- files/filePath
-        {"swizzle/include/", "swizzle/engine_src/", os.getenv("VULKAN_SDK") .. "/Include", "vendor/glm/include", "vendor/stb/include", "swizzle"}, -- includePaths
+        {"swizzle/include/", "swizzle/engine_src/", os.getenv("VULKAN_SDK") .. "/Include", "vendor/glm/include", "vendor/stb/include", "swizzle", "libs/utils/include"}, -- includePaths
         {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"}, -- defines
         { "utils", "script", "physics", "vulkan-1", "shaderc_combined", "Xinput" }, -- links
         function() 
@@ -131,7 +139,8 @@ group("Engine")
 group("Tests")
     setupPrj("scriptTest", "consoleApp",
         {"Vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/script/**.cpp"}, -- files/filePath
-        {"Vendor/google-test/googletest-master/googletest/include" , "swizzle"}, -- include paths
+        {"Vendor/google-test/googletest-master/googletest/include",
+         "Vendor/google-test/googletest-master/googlemock/include" , "libs/script/include", "libs/script/src"}, -- include paths
         "", -- defines
         {"script", "google-test"}, -- links
         function() -- userFunc
@@ -153,7 +162,7 @@ group("Tests")
 
     setupPrj("utilsTest", "consoleApp",
         {"Vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/utils/**.cpp"}, -- files/filePath
-        {"Vendor/google-test/googletest-master/googletest/include" , "swizzle/include"}, -- include paths
+        {"Vendor/google-test/googletest-master/googletest/include" , "libs/utils/include"}, -- include paths
         "", -- defines
         {"utils", "google-test"}, -- links
         function() -- userFunc
@@ -165,7 +174,7 @@ group("Tests")
 group("Apps")
     setupPrj("sandbox", "consoleApp",
         {"swizzle/include/**.hpp", "sandbox/**.hpp", "sandbox/**.cpp"}, -- files/filePath
-        {"sandbox/" , "swizzle/include/", "vendor/glm/include"}, -- include paths
+        {"sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include"}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
         {"swizzle", "utils"}, -- links
         function() -- userFunc
@@ -178,7 +187,7 @@ group("Apps")
 
     setupPrj("modelConverter", "consoleApp",
         {"swizzle/include/**.hpp", "modelConverter/**.hpp", "modelConverter/**.cpp"}, -- files/filePath
-        {"modelConverter/" , "swizzle/include/", "vendor/glm/include"}, -- include paths
+        {"modelConverter/", "swizzle/include/", "vendor/glm/include", "libs/utils/include"}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
         {"swizzle", "utils"}, -- links
         function() -- userFunc
@@ -186,5 +195,18 @@ group("Apps")
             vpaths { ["modelConverter/*"] = "modelConverter/**.cpp" }
 
             vpaths { ["include/*"] = "swizzle/include/**.hpp" }
+        end -- userFunc
+    )
+
+    setupPrj("scriptSandbox", "consoleApp",
+        {"scriptSandbox/**.hpp", "scriptSandbox/**.cpp"}, -- files/filePath
+        {"scriptSandbox/", "libs/script/include", "libs/utils/include"}, -- include paths
+        {}, -- defines
+        {"utils", "script"}, -- links
+        function() -- userFunc
+            vpaths { ["scriptSandbox/*"] = "scriptSandbox/**.hpp" }
+            vpaths { ["scriptSandbox/*"] = "scriptSandbox/**.cpp" }
+
+            -- vpaths { ["include/*"] = "swizzle/include/**.hpp" }
         end -- userFunc
     )
