@@ -1,12 +1,9 @@
 
-#include "game.hpp"
+#include "Game.hpp"
 
 #include <glm/glm.hpp>
 
-#define SIZE (1024U * 1024U * 100U)
-
-U8 dumbData[SIZE];
-void* mapped;
+#include "swizzle/input/Input.hpp"
 
 Game::Game()
  : cam(glm::radians(45.0F), 1280, 720)
@@ -14,6 +11,8 @@ Game::Game()
 {
     mWindow = sw::core::CreateWindow(1920, 1080, "Sandbox");
     mWindow->show();
+
+    sw::input::SetInputSource(mWindow);
 
     mSwapchain = sw::gfx::CreateSwapchain(mWindow);
     mCmdBuffer = sw::gfx::CreateCommandBuffer();
@@ -36,11 +35,6 @@ Game::Game()
     mShader->load("shaders/simple.shader");
 
     mBuffer = sw::gfx::CreateBuffer(sw::gfx::BufferType::Vertex);
-    mBuffer2 = sw::gfx::CreateBuffer(sw::gfx::BufferType::Vertex);
-
-    mapped = mBuffer2->mapMemory(SIZE);
-
-    memcpy(dumbData, mapped, SIZE);
 
     mTexture = sw::gfx::CreateTexture();
 
@@ -123,7 +117,6 @@ bool Game::update(float dt)
 
     tmp t = {};
     t.model = glm::mat4(1.0F);
-    //t.model[3][0] = -50.0F;
     t.view = cam.getView();
     t.proj = cam.getProjection();
     t.eye = glm::vec4(cam.getPosition(), 1.0);
@@ -135,10 +128,7 @@ bool Game::update(float dt)
     mCmdBuffer->bindShader(mShader);
     mCmdBuffer->setViewport(x, y);
 
-    //for (size_t i = 0; i < 100; i++)
     {
-        //t.model[3][0] += 5.5F;
-        //t.model[3][1] -= 5.5F;
         mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
         mCmdBuffer->draw(mBuffer);
     }

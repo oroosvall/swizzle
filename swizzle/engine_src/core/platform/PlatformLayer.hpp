@@ -29,6 +29,12 @@ namespace swizzle::core
         const U32 getPlatformCurrentThreadId();
 
         Resource<Window> createPlatformWindow(const U32 width, const U32  height, const SwChar* title);
+
+        const SwChar* GetPlatformKeyText(S32 key);
+        const SwWChar* GetPlatformKeyTextW(S32 key);
+
+        const S32 PlatformKeyToScanCode(input::Keys key);
+
     }
 
     //void getPlatformDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions);

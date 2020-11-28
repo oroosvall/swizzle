@@ -6,6 +6,7 @@
 #include "Win32Window.hpp"
 
 //#include "../../Logging/Logger.hpp"
+#include <string>
 
 #pragma warning(disable : 4995)
 #include <Xinput.h>
@@ -188,6 +189,44 @@ namespace swizzle::core
         }
     }
 
+    U32 correctScanCode(U32 scanCode, U32 vkey, U32 flags)
+    {
+        if (vkey == 255U)
+        {
+            return 0U;
+        }
+        else if (vkey == VK_SHIFT)
+        {
+            // correct left-hand / right-hand SHIFT
+            vkey = MapVirtualKey(scanCode, MAPVK_VSC_TO_VK_EX);
+        }
+        else if (vkey == VK_NUMLOCK)
+        {
+            // correct PAUSE/BREAK and NUM LOCK silliness, and set the extended bit
+            scanCode = (MapVirtualKey(vkey, MAPVK_VK_TO_VSC) | 0x100U);
+        }
+
+        bool isE0 = ((flags & RI_KEY_E0) != 0);
+        bool isE1 = ((flags & RI_KEY_E1) != 0);
+
+        if (isE1)
+        {
+            // manually map VK_PAUSE, since it is bugged #feature
+            if (vkey == VK_PAUSE)
+            {
+                scanCode = 0x45U;
+            }
+            else
+            {
+                scanCode = MapVirtualKey(vkey, MAPVK_VK_TO_VSC);
+            }
+        }
+
+        scanCode = (scanCode | (isE0 << 8U));
+
+        return scanCode;
+    }
+
     void processRawKeyboardEvents(Win32Window* window, EventHandlerList<WindowEvent>& evtHandler,
                                   RAWKEYBOARD& keyboardEvents)
     {
@@ -235,11 +274,39 @@ namespace swizzle::core
 
         InputEvent in;
         in.mFromKeyboard = true;
-        in.mKey = keyboardEvents.MakeCode;
+        in.mKey = correctScanCode(keyboardEvents.MakeCode, keyboardEvents.VKey, keyboardEvents.Flags);
         in.mPressed = pressed;
         in.mModKeys = window->modKeys;
 
-        evtHandler.publishEvent(in);
+        if (in.mKey != 0U)
+        {
+            /*UINT key = (in.mKey << 16U);
+            char buffer[512] = {};*/
+            /*GetKeyNameTextA((LONG)key, buffer, 512);
+            LOG_INFO("%d, %s", in.mKey, buffer);*/
+
+            /*HKL hLocale = LoadKeyboardLayoutA("00000409", KLF_NOTELLSHELL);
+            HKL hPrevious = ActivateKeyboardLayout(hLocale, KLF_SETFORPROCESS);*/
+
+            //UINT Vkey = MapVirtualKeyA(in.mKey, MAPVK_VSC_TO_VK);
+            //UINT mapping = MapVirtualKeyA(Vkey, MAPVK_VK_TO_CHAR);
+            //printf("0x%x, %c\n", mapping, mapping);
+            //LOG_INFO("0x%x, %c", mapping, mapping);
+            /*ActivateKeyboardLayout(hPrevious, KLF_SETFORPROCESS);
+            UnloadKeyboardLayout(hLocale);*/
+
+            //ToAscii()
+            /*HKL hLocale = LoadKeyboardLayoutA("00000409", KLF_NOTELLSHELL);
+            HKL hPrevious = ActivateKeyboardLayout(hLocale, KLF_SETFORPROCESS);*/
+
+            /*GetKeyNameTextA((LONG)key, buffer, 512);
+            LOG_INFO("%d, %s", in.mKey, buffer);*/
+            
+            /*ActivateKeyboardLayout(hPrevious, KLF_SETFORPROCESS);
+            UnloadKeyboardLayout(hLocale);*/
+
+            evtHandler.publishEvent(in);
+        }
     }
 
     void inputCallback(Win32Window* window, EventHandlerList<WindowEvent>& evtHandler, LPARAM lParam)
@@ -262,8 +329,6 @@ namespace swizzle::core
         if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
         {
             LOG_ERROR("GetRawInputData(...) does not return correct size!");
-            // Logger::getLogger().logMessage(LogType::eType_error,
-            //	"GetRawInputData(...) does not return correct size!\n");
         }
 
         RAWINPUT* raw = (RAWINPUT*)lpb;

@@ -2,7 +2,7 @@
 #define GAME_HPP
 
 #include <swizzle/Swizzle.hpp>
-#include "camera.hpp"
+#include "Camera.hpp"
 
 #include "Model.hpp"
 
@@ -24,7 +24,6 @@ private:
 
     sw::core::Resource<sw::gfx::Shader> mShader;
     sw::core::Resource<sw::gfx::Buffer> mBuffer;
-    sw::core::Resource<sw::gfx::Buffer> mBuffer2;
 
     sw::core::Resource<sw::gfx::Texture> mTexture;
 

@@ -5,6 +5,7 @@
 //#include <swizzle/Platform.hpp>
 
 #include "Windows/Win32Window.hpp"
+#include "Windows/Win32Input.hpp"
 
 #include <UserEnv.h>
 #pragma comment(lib, "Userenv.lib")
@@ -28,7 +29,7 @@ namespace swizzle::core
     namespace platform
     {
 
-        constexpr U64 NULL_AND_SLASH_SIZE = 3;
+        constexpr U64 NULL_AND_SLASH_SIZE = 3u;
 
         LARGE_INTEGER gFrequency;
         SwChar* gSaveGamesDir = nullptr;
@@ -108,10 +109,12 @@ namespace swizzle::core
                 strncat_s(gTempDir, MAX_PATH, appName, appNameLen);
                 strncat_s(gTempDir, MAX_PATH, "\\", 1u);
             }
+            InputInit();
         }
 
         void platformDeInit()
         {
+            InputCleanup();
             delete []gSaveGamesDir;
             delete []gTempDir;
             delete []gAppDataDir;
@@ -218,6 +221,22 @@ namespace swizzle::core
             const DWORD threadId = GetCurrentThreadId();
             return static_cast<const U32>(threadId);
         }
+
+        const SwChar* GetPlatformKeyText(S32 scanCode)
+        {
+            return GetWinKeyText(scanCode);
+        }
+
+        const SwWChar* GetPlatformKeyTextW(S32 scanCode)
+        {
+            return GetWinKeyTextW(scanCode);
+        }
+
+        const S32 PlatformKeyToScanCode(input::Keys key)
+        {
+            return Key2ScanCode(key);
+        }
+
     } // namespace platform
 
 } // namespace swizzle

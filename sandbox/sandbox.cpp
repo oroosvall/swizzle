@@ -2,7 +2,7 @@
 #include <swizzle/Swizzle.hpp>
 #include <utils/HighResolutionClock.hpp>
 
-#include "game.hpp"
+#include "Game.hpp"
 
 class StdLogger : public swizzle::core::LogDevice
 {
@@ -15,16 +15,19 @@ class StdLogger : public swizzle::core::LogDevice
 
 int main(int argv, char* argc[])
 {
+    setlocale(LC_CTYPE, "");
     argc; argv;
 
     StdLogger logger;
 
-    swizzle::core::AddLogger(&logger);
-    swizzle::SwInitialize("Swizzle-Sandbox");
+    auto c = "§";
 
-    printf("TempDir %s\n", swizzle::core::GetTempDirectory());
-    printf("SaveGameDir %s\n", swizzle::core::GetSaveGameDirectory());
-    printf("AppCache %s\n", swizzle::core::GetAppCacheDirectory());
+    sw::core::AddLogger(&logger);
+    sw::SwInitialize("Swizzle-Sandbox");
+
+    printf("TempDir %s\n", sw::core::GetTempDirectory());
+    printf("SaveGameDir %s\n", sw::core::GetSaveGameDirectory());
+    printf("AppCache %s\n", sw::core::GetAppCacheDirectory());
     
     utils::HighResolutionClock highRes;
 
@@ -33,7 +36,6 @@ int main(int argv, char* argc[])
     while (true)
     {
         float_t dt = highRes.secondsAsFloat(true);
-
         if (!game->update(dt)) break;   
     }
 
@@ -41,6 +43,6 @@ int main(int argv, char* argc[])
 
     delete game;
 
-    swizzle::SwCleanup();
-    swizzle::core::RemoveLogger(&logger);
+    sw::SwCleanup();
+    sw::core::RemoveLogger(&logger);
 }
