@@ -3,6 +3,7 @@
 
 #include <swizzle/Swizzle.hpp>
 #include "Camera.hpp"
+#include "CameraController.hpp"
 
 #include "Model.hpp"
 
@@ -29,6 +30,7 @@ private:
 
     sw::gfx::RGBA rgba = { 0.4F, 0.17F, 0.05F, 1.0F };
     PerspectiveCamera cam;
+    CameraController mController;
 
     Model* mMesh;
 

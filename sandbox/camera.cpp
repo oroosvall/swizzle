@@ -55,9 +55,9 @@ void PerspectiveCamera::setRotation(glm::vec3 rot)
     recalculateViewProj();
 }
 
-void PerspectiveCamera::lookAt(glm::vec3 pos, glm::vec3 eye, glm::vec3 up)
+void PerspectiveCamera::lookAt(glm::vec3 pos, glm::vec3 dir, glm::vec3 up)
 {
-    mViewMatrix = glm::lookAt(pos, eye, up);
+    mViewMatrix = glm::lookAt(pos, dir, up);
 }
 
 const glm::vec3& PerspectiveCamera::getPosition()

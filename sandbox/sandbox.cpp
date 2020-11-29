@@ -20,8 +20,6 @@ int main(int argv, char* argc[])
 
     StdLogger logger;
 
-    auto c = "§";
-
     sw::core::AddLogger(&logger);
     sw::SwInitialize("Swizzle-Sandbox");
 

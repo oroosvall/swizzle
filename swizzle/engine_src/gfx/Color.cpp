@@ -9,7 +9,7 @@ namespace swizzle::gfx
     RGBA HsvaToRgba(HSVA hsva)
     {
         RGBA rgba;
-        SwFloat H = hsva.h, S = hsva.s, V = hsva.v, A = hsva.a,
+        F32 H = hsva.h, S = hsva.s, V = hsva.v, A = hsva.a,
             P, Q, T,
             fract;
 
@@ -41,10 +41,10 @@ namespace swizzle::gfx
     HSVA RgbaToHsva(RGBA rgba)
     {
         HSVA hsva;
-        SwFloat cMin = glm::min(rgba.r, glm::min(rgba.g, rgba.b));
-        SwFloat cMax = glm::max(rgba.r, glm::max(rgba.g, rgba.b));;
+        F32 cMin = glm::min(rgba.r, glm::min(rgba.g, rgba.b));
+        F32 cMax = glm::max(rgba.r, glm::max(rgba.g, rgba.b));;
 
-        SwFloat cDelta = cMax - cMin;
+        F32 cDelta = cMax - cMin;
 
         if (cDelta < 0.00001F)
         {
@@ -54,20 +54,20 @@ namespace swizzle::gfx
         {
             if (cMax == rgba.r)
             {
-                SwFloat mod = 360.0F;
-                SwFloat v = (60.0F * ((rgba.g - rgba.b) / cDelta) + 360.0F);
+                F32 mod = 360.0F;
+                F32 v = (60.0F * ((rgba.g - rgba.b) / cDelta) + 360.0F);
                 hsva.h = fmod(v, mod);
             }
             else if (cMax == rgba.g)
             {
-                SwFloat mod = 360.0F;
-                SwFloat v = (60.0F * ((rgba.b - rgba.r) / cDelta) + 120.0F);
+                F32 mod = 360.0F;
+                F32 v = (60.0F * ((rgba.b - rgba.r) / cDelta) + 120.0F);
                 hsva.h = fmod(v, mod);
             }
             else if (cMax == rgba.b)
             {
-                SwFloat mod = 360.0F;
-                SwFloat v = (60.0F * ((rgba.r - rgba.g) / cDelta) + 240.0F);
+                F32 mod = 360.0F;
+                F32 v = (60.0F * ((rgba.r - rgba.g) / cDelta) + 240.0F);
                 hsva.h = fmod(v, mod);
             }
 

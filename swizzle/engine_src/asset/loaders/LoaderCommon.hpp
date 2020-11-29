@@ -15,7 +15,7 @@ namespace swizzle
         SwBool mHasSkinning;
 
         U8 mStride;
-        std::vector<SwFloat> mVertexData;
+        std::vector<F32> mVertexData;
         std::vector<glm::ivec3> mFaces;
 
     };

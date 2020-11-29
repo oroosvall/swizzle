@@ -6,8 +6,9 @@
 #include "swizzle/input/Input.hpp"
 
 Game::Game()
- : cam(glm::radians(45.0F), 1280, 720)
+    : cam(glm::radians(45.0F), 1280, 720)
     , mMesh(nullptr)
+    , mController(cam)
 {
     mWindow = sw::core::CreateWindow(1920, 1080, "Sandbox");
     mWindow->show();
@@ -15,6 +16,8 @@ Game::Game()
     sw::input::SetInputSource(mWindow);
 
     mSwapchain = sw::gfx::CreateSwapchain(mWindow);
+    //mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncAdaptive);
+
     mCmdBuffer = sw::gfx::CreateCommandBuffer();
 
      sw::gfx::ShaderBufferInput bufferInput[] = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
@@ -85,7 +88,7 @@ Game::Game()
         offset += sizeof(float) * 2;
     }
 
-    mBuffer->setBufferData(data, size * sizeof(SwFloat), sizeof(float) * (3U + 3U + 2U));
+    mBuffer->setBufferData(data, size * sizeof(F32), sizeof(float) * (3U + 3U + 2U));
 
  }
 
@@ -96,7 +99,11 @@ Game::~Game()
 
 bool Game::update(float dt)
 {
+    swizzle::input::InputFrameReset();
+
     mWindow->pollEvents();
+
+    mController.update(dt);
 
     U32 x, y;
     mWindow->getSize(x, y);

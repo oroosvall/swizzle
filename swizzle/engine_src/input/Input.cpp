@@ -23,7 +23,8 @@ namespace swizzle
 			float mDy;
 			int32_t mX;
 			int32_t mY;
-			std::unordered_map<Keys, bool> mPressedKeys;
+			std::unordered_map<S32, SwBool> mPressedKeys;
+			std::unordered_map<S32, SwBool> mPressedMouse;
 		} inputCtx;
 
 		void SetInputSource(core::Resource<core::Window> window)
@@ -47,14 +48,17 @@ namespace swizzle
 
 		void InputFrameReset()
 		{
+			inputCtx.mDx = 0.0F;
+			inputCtx.mDy = 0.0F;
 		}
 
 		bool IsKeyPressed(const Keys key)
 		{
 			bool pressed = false;
-			if (inputCtx.mPressedKeys.count(key) != 0u)
+			S32 scanCode = swizzle::core::KeyToScanCode(key);
+			if (inputCtx.mPressedKeys.count(scanCode) != 0u)
 			{
-				pressed = inputCtx.mPressedKeys[key];
+				pressed = inputCtx.mPressedKeys[scanCode];
 			}
 			return pressed;
 		}
@@ -62,6 +66,17 @@ namespace swizzle
 		bool IsActionPressed(const KeyAction& action)
 		{
 			return false;
+		}
+
+		bool SWIZZLE_API IsMouseButtonPressed(const Mouse key)
+		{
+			bool pressed = false;
+			S32 scanCode = (S32)key;
+			if (inputCtx.mPressedMouse.count(scanCode) != 0u)
+			{
+				pressed = inputCtx.mPressedMouse[scanCode];
+			}
+			return pressed;
 		}
 
 		void GetMousePosition(int32_t& xPos, int32_t& yPos)
@@ -92,16 +107,15 @@ namespace swizzle
 				{
 					LOG_INFO("Key %d was None", e.mKey);
 				}
+				if (e.mFromKeyboard)
+				{
+					inputCtx.mPressedKeys[e.mKey] = e.mPressed;
+				}
 				else
 				{
-					if (e.mFromKeyboard)
-					{
-						printf("%s, ", sw::core::GetKeyText(e.mKey));
-						wprintf(L"%s\n", sw::core::GetKeyTextW(e.mKey));
-					}
+					inputCtx.mPressedMouse[e.mKey] = e.mPressed;
 				}
 				
-				// printf("%d, %c\n", e.mKey, MapVirtualKeyExA(e.mKey, MAPVK_VSC_TO_VK | MAPVK_VK_TO_CHAR, GetKeyboardLayout(0)));
 				break;
 			}
 			case core::WindowEventType::CharacterTypeEvent:

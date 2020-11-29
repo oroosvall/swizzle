@@ -15,7 +15,7 @@ public:
     void setPosition(glm::vec3 pos);
     void setRotation(glm::vec3 rot);
 
-    void lookAt(glm::vec3 pos, glm::vec3 eye, glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
+    void lookAt(glm::vec3 pos, glm::vec3 dir, glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
 
     const glm::vec3& getPosition();
     const glm::vec3& getRotation();

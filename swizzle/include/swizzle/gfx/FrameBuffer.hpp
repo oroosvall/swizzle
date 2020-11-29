@@ -11,10 +11,10 @@ namespace swizzle::gfx
 
     struct ClearColor
     {
-        SwFloat r;
-        SwFloat g;
-        SwFloat b;
-        SwFloat a;
+        F32 r;
+        F32 g;
+        F32 b;
+        F32 a;
     };
 
     class FrameBuffer
@@ -27,7 +27,7 @@ namespace swizzle::gfx
         virtual SwBool hasDepthAttachment() const = 0;
 
         virtual void setColorAttachmentClearColor(U32 attachmentIndex, ClearColor color) = 0;
-        virtual void setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue) = 0;
+        virtual void setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue) = 0;
 
         virtual void resize(U32 width, U32 height) = 0;
 

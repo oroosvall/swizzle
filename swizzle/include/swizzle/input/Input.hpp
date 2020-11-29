@@ -61,6 +61,15 @@ namespace swizzle
 			KeyNumPadDelete,
 		};
 
+		enum class Mouse
+		{
+			RightClick,
+			LeftClick,
+			MiddleClick,
+			Button3,
+			Button4,
+		};
+
 		struct Modifiers
 		{
 			bool mCtrl;
@@ -85,6 +94,8 @@ namespace swizzle
 
 		bool SWIZZLE_API IsKeyPressed(const Keys key);
 		bool SWIZZLE_API IsActionPressed(const KeyAction& action);
+
+		bool SWIZZLE_API IsMouseButtonPressed(const Mouse key);
 
 		void SWIZZLE_API GetMousePosition(int32_t& xPos, int32_t& yPos);
 		void SWIZZLE_API GetMouseDelta(float& x, float& y);

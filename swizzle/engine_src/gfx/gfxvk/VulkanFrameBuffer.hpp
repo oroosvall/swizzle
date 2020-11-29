@@ -20,7 +20,7 @@ namespace swizzle::gfx
         virtual U32 getNumColorAttachments() const override;
         virtual SwBool hasDepthAttachment() const override;
         virtual void setColorAttachmentClearColor(U32 attachmentIndex, ClearColor color) override;
-        virtual void setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue) override;
+        virtual void setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue) override;
 
         virtual void resize(U32 width, U32 height) override;
 
@@ -70,7 +70,7 @@ namespace swizzle::gfx
         virtual SwBool hasDepthAttachment() const override;
 
         virtual void setColorAttachmentClearColor(U32 attachmentIndex, ClearColor color) override;
-        virtual void setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue) override;
+        virtual void setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue) override;
 
         virtual void resize(U32 width, U32 height) override;
 

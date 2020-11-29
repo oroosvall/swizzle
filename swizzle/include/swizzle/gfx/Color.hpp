@@ -9,12 +9,12 @@ namespace swizzle::gfx
 
     struct RGBA
     {
-        SwFloat r, g, b, a;
+        F32 r, g, b, a;
     };
 
     struct HSVA
     {
-        SwFloat h, s, v, a;
+        F32 h, s, v, a;
     };
 
     RGBA SWIZZLE_API HsvaToRgba(HSVA hsva);

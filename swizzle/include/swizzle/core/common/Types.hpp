@@ -18,8 +18,8 @@ typedef uint8_t U8;
 typedef char SwChar;
 typedef wchar_t SwWChar;
 
-typedef float SwFloat;
-typedef double SwDouble;
+typedef float F32;
+typedef double F64;
 
 typedef bool SwBool;
 

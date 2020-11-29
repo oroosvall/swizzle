@@ -47,7 +47,7 @@ namespace swizzle::gfx
         mClearValue.color.float32[3] = color.a;
     }
 
-    void PresentFrameBuffer::setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue)
+    void PresentFrameBuffer::setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue)
     {
         depthValue;
         stencilValue;
@@ -187,7 +187,7 @@ namespace swizzle::gfx
 
     }
 
-    void VulkanFrameBuffer::setDepthAttachmentClearValue(SwFloat depthValue, U8 stencilValue)
+    void VulkanFrameBuffer::setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue)
     {
 
     }
