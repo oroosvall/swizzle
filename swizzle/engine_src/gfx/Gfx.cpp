@@ -1,5 +1,5 @@
 
-#include <swizzle/core/logging/Logging.hpp>
+#include <swizzle/core/Logging.hpp>
 #include "Gfx.hpp"
 
 #include "gfxvk/VulkanRenderer.hpp"

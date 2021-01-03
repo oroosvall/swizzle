@@ -173,39 +173,39 @@ group("Tests")
 
 group("Apps")
     setupPrj("sandbox", "consoleApp",
-        {"swizzle/include/**.hpp", "sandbox/**.hpp", "sandbox/**.cpp"}, -- files/filePath
-        {"sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include"}, -- include paths
+        {"swizzle/include/**.hpp", "apps/sandbox/**.hpp", "apps/sandbox/**.cpp"}, -- files/filePath
+        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include"}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
         {"swizzle", "utils"}, -- links
         function() -- userFunc
-            vpaths { ["sandbox/*"] = "sandbox/**.hpp" }
-            vpaths { ["sandbox/*"] = "sandbox/**.cpp" }
+            vpaths { ["sandbox/*"] = "apps/sandbox/**.hpp" }
+            vpaths { ["sandbox/*"] = "apps/sandbox/**.cpp" }
 
             vpaths { ["include/*"] = "swizzle/include/**.hpp" }
         end -- userFunc
     )
 
     setupPrj("modelConverter", "consoleApp",
-        {"swizzle/include/**.hpp", "modelConverter/**.hpp", "modelConverter/**.cpp"}, -- files/filePath
-        {"modelConverter/", "swizzle/include/", "vendor/glm/include", "libs/utils/include"}, -- include paths
+        {"swizzle/include/**.hpp", "apps/modelConverter/**.hpp", "apps/modelConverter/**.cpp"}, -- files/filePath
+        {"apps/modelConverter/", "swizzle/include/", "vendor/glm/include", "libs/utils/include"}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
         {"swizzle", "utils"}, -- links
         function() -- userFunc
-            vpaths { ["modelConverter/*"] = "modelConverter/**.hpp" }
-            vpaths { ["modelConverter/*"] = "modelConverter/**.cpp" }
+            vpaths { ["modelConverter/*"] = "apps/modelConverter/**.hpp" }
+            vpaths { ["modelConverter/*"] = "apps/modelConverter/**.cpp" }
 
             vpaths { ["include/*"] = "swizzle/include/**.hpp" }
         end -- userFunc
     )
 
     setupPrj("scriptSandbox", "consoleApp",
-        {"scriptSandbox/**.hpp", "scriptSandbox/**.cpp"}, -- files/filePath
-        {"scriptSandbox/", "libs/script/include", "libs/utils/include"}, -- include paths
+        {"apps/scriptSandbox/**.hpp", "apps/scriptSandbox/**.cpp"}, -- files/filePath
+        {"apps/scriptSandbox/", "libs/script/include", "libs/utils/include"}, -- include paths
         {}, -- defines
         {"utils", "script"}, -- links
         function() -- userFunc
-            vpaths { ["scriptSandbox/*"] = "scriptSandbox/**.hpp" }
-            vpaths { ["scriptSandbox/*"] = "scriptSandbox/**.cpp" }
+            vpaths { ["scriptSandbox/*"] = "apps/scriptSandbox/**.hpp" }
+            vpaths { ["scriptSandbox/*"] = "apps/scriptSandbox/**.cpp" }
 
             -- vpaths { ["include/*"] = "swizzle/include/**.hpp" }
         end -- userFunc

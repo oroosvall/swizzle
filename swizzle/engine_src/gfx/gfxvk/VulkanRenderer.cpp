@@ -1,14 +1,7 @@
-#include <swizzle/core/logging/Logging.hpp>
-#include <swizzle/core/platform/Platform.hpp>
+#include <swizzle/core/Logging.hpp>
+#include <swizzle/core/Platform.hpp>
 
 #include "VulkanRenderer.hpp"
-
-//#include "VulkanBuffer.hpp"
-//#include "VulkanCommandBuffer.hpp"
-//#include "VulkanFrameBuffer.hpp"
-//#include "VulkanShader.hpp"
-//
-//#include "Debugging/Profile.hpp"
 
 #include <fstream> // replace with something better
 #include <string>
@@ -71,21 +64,6 @@ namespace swizzle::gfx
             cacheFile.read((char*)data, size);
             cacheFile.close();
         }
-
-        //VkPipelineCacheCreateInfo cacheInfo;
-        //cacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-        //cacheInfo.pNext = VK_NULL_HANDLE;
-        //cacheInfo.flags = 0;
-        //cacheInfo.initialDataSize = size;
-        //cacheInfo.pInitialData = data;
-
-        //if (data)
-        //{
-        //    delete[] data;
-        //    data = nullptr;
-        //}
-
-        //vkCreatePipelineCache(mLogical->getLogical(), &cacheInfo, nullptr, &mPipelineCache);
 
         // Populate Vulkan object structure
         mVkObjects.mInstance = mInstance->getInstance();
@@ -179,16 +157,6 @@ namespace swizzle::gfx
         return mVkObjects;
     }
 
-    //Resource<Buffer> VulkanRenderer::createBuffer(eBufferType bufferType)
-    //{
-    //    return std::make_shared<VulkanBuffer>(mLogical->getLogical(), *mMemoryHelper, bufferType);
-    //}
-
-    //Resource<CommandBuffer> VulkanRenderer::createCommandBuffer(eCmdBufferType cmdBufType)
-    //{
-    //    return std::make_shared<VulkanCommandBuffer>(mLogical->getLogical(), mLogical->getCommandPool(), cmdBufType);
-    //}
-
     //Resource<FrameBuffer> VulkanRenderer::createFrameBuffer(uint32_t numAttach, eDepthType depth, uint32_t width,
     //                                                        uint32_t height)
     //{
@@ -278,26 +246,7 @@ namespace swizzle::gfx
     //    if (!mHadSubmission)
     //    {
     //    }
-
     //    mSwapchain->present();
-    //}
-
-    //bool VulkanRenderer::isVsyncModeSupported(VSyncTypes sync) const
-    //{
-    //    return mSwapchain->hasPresentMode(sync);
-    //}
-
-    //void VulkanRenderer::setVsync(VSyncTypes sync)
-    //{
-    //    mSwapchain->setPresentMode(sync);
-    //}
-
-    //void VulkanRenderer::publishEvent(const swizzle::WindowEvent& evt)
-    //{
-    //    if (evt.getEventType() == eWindowEventType::eType_resize)
-    //    {
-    //        mSwapchain->resize();
-    //    }
     //}
 
 } // namespace swizzle

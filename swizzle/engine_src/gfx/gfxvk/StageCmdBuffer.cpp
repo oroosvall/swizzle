@@ -99,7 +99,7 @@ namespace swizzle::gfx
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.pNext = VK_NULL_HANDLE;
         allocInfo.allocationSize = req.size;
-        allocInfo.memoryTypeIndex = FindMemoryType(mDeviceMemorProperties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, req.memoryTypeBits);
+        allocInfo.memoryTypeIndex = vk::FindMemoryType(mDeviceMemorProperties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, req.memoryTypeBits);
 
         vkAllocateMemory(mDevice, &allocInfo, nullptr, &memoryStuff.mMemory);
 

@@ -1,8 +1,8 @@
 #ifndef COMMAND_BUFFER_HPP
 #define COMMAND_BUFFER_HPP
 
-#include <swizzle/core/common/Types.hpp>
-#include <swizzle/core/common/Resource.hpp>
+#include <swizzle/core/Types.hpp>
+#include <swizzle/core/Resource.hpp>
 
 #include <swizzle/gfx/Swapchain.hpp>
 #include <swizzle/gfx/FrameBuffer.hpp>

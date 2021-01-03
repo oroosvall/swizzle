@@ -1,5 +1,5 @@
 #include "Surface.hpp"
-#include <swizzle/core/logging/Logging.hpp>
+#include <swizzle/core/Logging.hpp>
 
 namespace swizzle::gfx
 {
@@ -28,7 +28,7 @@ namespace swizzle::gfx
 
         if (res != VK_SUCCESS)
         {
-            LOG_ERROR("vkCreateWin32SurfaceKHR failed!, returned %s\n", VkResultToString(res));
+            LOG_ERROR("vkCreateWin32SurfaceKHR failed!, returned %s\n", vk::VkResultToString(res));
         }
         return surface;
 #else

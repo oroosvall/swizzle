@@ -21,12 +21,13 @@ namespace swizzle::gfx
 
         VkImageView getView() const { return mImageView; }
 
-        
+        void frameBufferCreate(U32 width, U32 height, VkFormat format);
+
     private:
 
-        void createImage();
+        void createImage(VkFormat format);
         void allocMemory();
-        void createView();
+        void createView(VkFormat format);
 
         void destroyResources();
         void createResources();

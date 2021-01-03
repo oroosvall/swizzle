@@ -3,7 +3,7 @@
 #include "VulkanFrameBuffer.hpp"
 #include "VulkanShader.hpp"
 
-#include <swizzle/core/logging/Logging.hpp>
+#include <swizzle/core/Logging.hpp>
 
 namespace swizzle::gfx
 {
@@ -100,18 +100,17 @@ namespace swizzle::gfx
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            LOG_INFO("Recrating swapchain: %s", VkResultToString(result));
-
+            LOG_INFO("Recrating swapchain: %s", vk::VkResultToString(result));
             recreateSwapchain();
             prepare();
         }
         else if (result < VK_SUCCESS)
         {
-            LOG_ERROR("Acquire image error: %s", VkResultToString(result));
+            LOG_ERROR("Acquire image error: %s", vk::VkResultToString(result));
         }
         else if (result != VK_SUCCESS)
         {
-            LOG_INFO("Aquire image: %s", VkResultToString(result));
+            LOG_INFO("Acquire image: %s", vk::VkResultToString(result));
         }
     }
 
@@ -130,11 +129,7 @@ namespace swizzle::gfx
 
         VkQueue queue = mVkObjects.mQueue;
 
-        VkResult r = vkQueuePresentKHR(queue, &presentInfo);
-        r;
-
-        // this should not be here
-        //vkDeviceWaitIdle(mVkObjects.mLogicalDevice);
+        (void)vkQueuePresentKHR(queue, &presentInfo);
 
         if (mRecreateSwapchain)
         {
@@ -172,6 +167,9 @@ namespace swizzle::gfx
 
     void VulkanSwapchain::recreateSwapchain()
     {
+        // make sure device is idle before recreating the swapchain
+        vkDeviceWaitIdle(mVkObjects.mLogicalDevice);
+
         mFrameBuffers.clear();
 
         createSwapchain(mSwapchain);
@@ -292,7 +290,7 @@ namespace swizzle::gfx
 
         if (result != VK_SUCCESS)
         {
-            LOG_ERROR("Error creating swapchain %s", VkResultToString(result));
+            LOG_ERROR("Error creating swapchain %s", vk::VkResultToString(result));
         }
 
         mSwapchain = newSwapchain;
@@ -314,7 +312,7 @@ namespace swizzle::gfx
         VkResult result = vkCreateFence(mVkObjects.mLogicalDevice, &fenceInfo, nullptr, &mAcquireImageFence);
         if (result != VK_SUCCESS)
         {
-            LOG_ERROR("Error creating swapchain fence %s", VkResultToString(result));
+            LOG_ERROR("Error creating swapchain fence %s", vk::VkResultToString(result));
         }
 
         VkSemaphoreCreateInfo semaphoreInfo;
@@ -325,7 +323,7 @@ namespace swizzle::gfx
         result = vkCreateSemaphore(mVkObjects.mLogicalDevice, &semaphoreInfo, nullptr, &mRenderCompleteSemaphore);
         if (result != VK_SUCCESS)
         {
-            LOG_ERROR("Error creating swapchain semaphore %s", VkResultToString(result));
+            LOG_ERROR("Error creating swapchain semaphore %s", vk::VkResultToString(result));
         }
     }
 
@@ -370,7 +368,7 @@ namespace swizzle::gfx
             VkResult result = vkCreateImageView(mVkObjects.mLogicalDevice, &imViewInfo, nullptr, &img.mImageView);
             if (result != VK_SUCCESS)
             {
-                LOG_ERROR("Error creating swapchain image view %s", VkResultToString(result));
+                LOG_ERROR("Error creating swapchain image view %s", vk::VkResultToString(result));
             }
         }
     }

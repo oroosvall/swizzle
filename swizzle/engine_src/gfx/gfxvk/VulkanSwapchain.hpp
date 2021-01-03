@@ -1,8 +1,8 @@
 #ifndef VULKAN_SWAPCHAIN_HPP
 #define VULKAN_SWAPCHAIN_HPP
 
-#include <swizzle/core/common/Resource.hpp>
-#include <swizzle/core/platform/Window.hpp>
+#include <swizzle/core/Resource.hpp>
+#include <swizzle/core/Window.hpp>
 
 #include <swizzle/gfx/Swapchain.hpp>
 

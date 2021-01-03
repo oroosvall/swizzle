@@ -1,7 +1,7 @@
 #ifndef VULKAN_OBJECT_CONTAINER_HPP
 #define VULKAN_OBJECT_CONTAINER_HPP
 
-#include <swizzle/core/common/Types.hpp>
+#include <swizzle/core/Types.hpp>
 
 #include "vk.hpp"
 #include "StageCmdBuffer.hpp"

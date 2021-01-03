@@ -3,8 +3,13 @@
 
 #include "vk.hpp"
 #include "VulkanObjectContainer.hpp"
+#include "VulkanTexture.hpp"
+
 #include <swizzle/gfx/FrameBuffer.hpp>
 
+#include <swizzle/core/Resource.hpp>
+
+#include <vector>
 
 namespace swizzle::gfx
 {
@@ -42,6 +47,9 @@ namespace swizzle::gfx
         //virtual VkClearValue* getImageClearValues() const override;
 
     //private:
+        void allocDepthMemory();
+        void createDepthImage();
+
         void createRenderPass();
         void createFramebuffer();
 
@@ -57,13 +65,20 @@ namespace swizzle::gfx
 
         U32 mWidth;
         U32 mHeight;
+
+        VkImage mDepthImage;
+        VkImageView mDepthImageView;
+
+        VkDeviceMemory mDepthMemory;
+        VkClearValue mDepthClearValue;
+
     };
 
-    /*class VulkanFrameBuffer : public FrameBuffer
+    class VulkanFrameBuffer : public FrameBuffer
     {
     public:
 
-        VulkanFrameBuffer(VulkanObjectContainer& vkObjects);
+        VulkanFrameBuffer(VulkanObjectContainer& vkObjects, U32 width, U32 height, U8 numAttachments, SwBool createDepth);
         virtual ~VulkanFrameBuffer();
 
         virtual U32 getNumColorAttachments() const override;
@@ -76,16 +91,24 @@ namespace swizzle::gfx
 
     private:
         
+        void createTextures();
         void createRenderPass();
         void createFrameBuffer();
+
+        SwBool mCreateDepth;
+        U32 mNumAttachments;
+        U32 mWidth;
+        U32 mHeight;
 
         VulkanObjectContainer& mVkObjects;
 
         VkRenderPass mRenderPass;
         VkFramebuffer mFrameBuffer;
 
+        std::vector<core::Resource<VulkanTexture>> mTextures;
+        std::vector<VkClearValue> mClearValues;
 
-    };*/
+    };
 
 }
 

@@ -1,6 +1,6 @@
 
 #include "Core.hpp"
-#include "platform/PlatformLayer.hpp"
+#include "PlatformLayer.hpp"
 
 namespace swizzle::core
 {

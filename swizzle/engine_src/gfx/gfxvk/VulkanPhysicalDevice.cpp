@@ -1,5 +1,5 @@
 #include "VulkanPhysicalDevice.hpp"
-#include <swizzle/core/logging/Logging.hpp>
+#include <swizzle/core/Logging.hpp>
 
 #include <array>
 
@@ -97,7 +97,7 @@ namespace swizzle
         VkResult res = vkCreateDevice(mPhysicalDevice, &createInfo, nullptr, &mLogicalDevice);
         if (res != VK_SUCCESS)
         {
-            LOG_ERROR("vkCreateDevice failed!, returned %s\n", VkResultToString(res));
+            LOG_ERROR("vkCreateDevice failed!, returned %s\n", vk::VkResultToString(res));
         }
 
         VkCommandPoolCreateInfo cmdPoolCreateInfo;

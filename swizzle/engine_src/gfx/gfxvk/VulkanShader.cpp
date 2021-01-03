@@ -1,6 +1,6 @@
 #include "VulkanShader.hpp"
 
-#include <swizzle/core/logging/Logging.hpp>
+#include <swizzle/core/Logging.hpp>
 
 #include <fstream>
 #include <string>

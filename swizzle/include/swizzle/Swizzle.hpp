@@ -1,11 +1,11 @@
 #ifndef SWIZZLE_HPP
 #define SWIZZLE_HPP
 
-#include <swizzle/core/common/Types.hpp>
+#include <swizzle/core/Types.hpp>
 #include <swizzle/Api.hpp>
 
-#include <swizzle/core/logging/Logging.hpp>
-#include <swizzle/core/platform/Platform.hpp>
+#include <swizzle/core/Logging.hpp>
+#include <swizzle/core/Platform.hpp>
 
 #include <swizzle/gfx/Gfx.hpp>
 

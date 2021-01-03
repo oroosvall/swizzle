@@ -5,7 +5,7 @@
 #include "VulkanBuffer.hpp"
 #include "VulkanTexture.hpp"
 
-#include <swizzle/core/logging/Logging.hpp>
+#include <swizzle/core/Logging.hpp>
 
 namespace swizzle::gfx
 {
@@ -36,7 +36,7 @@ namespace swizzle::gfx
         VkResult result = vkCreateFence(mVkObjects.mLogicalDevice, &fenceInfo, nullptr, &mCompleteFence);
         if (result != VK_SUCCESS)
         {
-            LOG_ERROR("Error creating swapchain fence %s", VkResultToString(result));
+            LOG_ERROR("Error creating swapchain fence %s", vk::VkResultToString(result));
         }
 
         gTexturePtr = new VulkanTexture(mVkObjects);
@@ -220,14 +220,16 @@ namespace swizzle::gfx
 
         PresentFrameBuffer* present = (PresentFrameBuffer*)(fbo.get());
 
+        VkClearValue clears[] = { present->mClearValue , present->mDepthClearValue };
+
         VkRenderPassBeginInfo beginInfo;
         beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         beginInfo.pNext = VK_NULL_HANDLE;
         beginInfo.renderPass = present->mRenderPass;
         beginInfo.framebuffer = present->mFrameBuffer;
         beginInfo.renderArea = { 0,0, present->mWidth, present->mHeight };
-        beginInfo.clearValueCount = 1;
-        beginInfo.pClearValues = &present->mClearValue;
+        beginInfo.clearValueCount = 2;
+        beginInfo.pClearValues = clears;
 
         vkCmdBeginRenderPass(mCmdBuffer, &beginInfo, VkSubpassContents::VK_SUBPASS_CONTENTS_INLINE);
     }

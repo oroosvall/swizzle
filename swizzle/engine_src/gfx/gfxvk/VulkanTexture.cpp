@@ -54,12 +54,14 @@ namespace swizzle::gfx
             mHeight = height;
             createResources();
         }
+    }
 
-
+    void VulkanTexture::frameBufferCreate(U32 width, U32 height, VkFormat format)
+    {
 
     }
 
-    void VulkanTexture::createImage()
+    void VulkanTexture::createImage(VkFormat format)
     {
         VkImageCreateInfo imageCreateInfo;
 
@@ -67,7 +69,7 @@ namespace swizzle::gfx
         imageCreateInfo.pNext = VK_NULL_HANDLE;
         imageCreateInfo.flags = 0;
         imageCreateInfo.imageType = VkImageType::VK_IMAGE_TYPE_2D;
-        imageCreateInfo.format = VkFormat::VK_FORMAT_R8G8B8A8_SRGB;
+        imageCreateInfo.format = format;
         imageCreateInfo.extent = { mWidth, mHeight, 1U };
         imageCreateInfo.mipLevels = 1U;
         imageCreateInfo.arrayLayers = 1U;
@@ -92,15 +94,14 @@ namespace swizzle::gfx
         allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.pNext = VK_NULL_HANDLE;
         allocInfo.allocationSize = memreq.size;
-        allocInfo.memoryTypeIndex = FindMemoryType(mVkObjects.mMemoryProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
+        allocInfo.memoryTypeIndex = vk::FindMemoryType(mVkObjects.mMemoryProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
 
         vkAllocateMemory(mVkObjects.mLogicalDevice, &allocInfo, nullptr, &mMemory);
 
         vkBindImageMemory(mVkObjects.mLogicalDevice, mImage, mMemory, 0U);
-
     }
 
-    void VulkanTexture::createView()
+    void VulkanTexture::createView(VkFormat format)
     {
         VkImageViewCreateInfo imageViewCreateInfo;
 
@@ -109,7 +110,7 @@ namespace swizzle::gfx
         imageViewCreateInfo.flags = 0;
         imageViewCreateInfo.image = mImage;
         imageViewCreateInfo.viewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
-        imageViewCreateInfo.format = VkFormat::VK_FORMAT_R8G8B8A8_SRGB;
+        imageViewCreateInfo.format = format;
         imageViewCreateInfo.components.a = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
         imageViewCreateInfo.components.r = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
         imageViewCreateInfo.components.g = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -138,9 +139,9 @@ namespace swizzle::gfx
 
     void VulkanTexture::createResources()
     {
-        createImage();
+        createImage(VkFormat::VK_FORMAT_R8G8B8A8_SRGB);
         allocMemory();
-        createView();
+        createView(VkFormat::VK_FORMAT_R8G8B8A8_SRGB);
     }
 
 }

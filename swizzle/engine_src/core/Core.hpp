@@ -1,7 +1,7 @@
 #ifndef CORE_HPP
 #define CORE_HPP
 
-#include <swizzle/core/common/Types.hpp>
+#include <swizzle/core/Types.hpp>
 
 namespace swizzle::core
 {

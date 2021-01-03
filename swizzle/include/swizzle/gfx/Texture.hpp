@@ -1,7 +1,7 @@
 #ifndef TEXTURE_HPP
 #define TEXTURE_HPP
 
-#include <swizzle/core/common/Types.hpp>
+#include <swizzle/core/Types.hpp>
 
 namespace swizzle::gfx
 {

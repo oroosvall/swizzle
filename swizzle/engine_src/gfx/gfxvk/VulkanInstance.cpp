@@ -1,6 +1,6 @@
 #include "VulkanInstance.hpp"
 #include "Surface.hpp"
-#include <swizzle/core/logging/Logging.hpp>
+#include <swizzle/core/Logging.hpp>
 //#include "VulkanPlatform.hpp"
 
 #include <cstdint>
@@ -157,7 +157,7 @@ namespace swizzle::gfx
 
         std::vector<const char*> debugLayers;
         debugLayers.push_back("VK_LAYER_KHRONOS_validation");
-        //debugLayers.push_back("VK_LAYER_RENDERDOC_Capture");
+        debugLayers.push_back("VK_LAYER_RENDERDOC_Capture");
 
         VkApplicationInfo vkAppInfo = {};
         vkAppInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -180,7 +180,7 @@ namespace swizzle::gfx
         VkResult res = vkCreateInstance(&createInfo, nullptr, &mVkInstance);
         if (res != VK_SUCCESS)
         {
-            LOG_ERROR("vkCreateInstance failed!, returned %s\n", VkResultToString(res));
+            LOG_ERROR("vkCreateInstance failed!, returned %s\n", vk::VkResultToString(res));
         }
 
     }

@@ -1,8 +1,8 @@
 #ifndef SWAPCHAIN_HPP
 #define SWAPCHAIN_HPP
 
-#include <swizzle/core/common/Types.hpp>
-#include <swizzle/core/common/Resource.hpp>
+#include <swizzle/core/Types.hpp>
+#include <swizzle/core/Resource.hpp>
 
 #include <swizzle/gfx/FrameBuffer.hpp>
 #include <swizzle/gfx/Shader.hpp>
