@@ -29,6 +29,9 @@ from bpy_extras.wm_utils.progress_report import (
 )
 
 HEADER_MAGIC = "SWM "
+UV_BIT = 0
+NORMAL_BIT = 1
+COLOR_BIT = 2
 
 def mesh_triangulate(me):
     import bmesh
@@ -38,12 +41,66 @@ def mesh_triangulate(me):
     bm.to_mesh(me)
     bm.free()
 
+
 def savable_objects(objs):
     ob = []
     for o in objs:
         if o.type == 'MESH':
             ob.append(o)
     return ob
+
+
+def generate_vertex_data(mesh, inc_uvs=False, inc_color=False, inc_vgroups=False):
+    vertex_data = dict()
+    triangle_list = []
+
+    me_verts = mesh.vertices
+    me_loops = mesh.loops
+
+    v_counter = 0
+
+    for poly in mesh.polygons:
+        tri = []
+        for l_idx in poly.loop_indices:
+            loop = me_loops[l_idx]
+            v_idx = loop.vertex_index
+            vpos = me_verts[v_idx].co.copy().freeze()
+            v_norm = loop.normal.copy().freeze()
+            if mesh.uv_layers.active and inc_uvs:
+                v_uv = mesh.uv_layers.active.data[l_idx].uv.copy().freeze()
+            else:
+                v_uv = None
+            if mesh.vertex_colors.active and inc_color:
+                v_color = mesh.vertex_colors.active.data[l_idx].color
+            else:
+                v_color = None
+
+            vertex = (vpos, v_norm, v_uv, v_color)
+            if vertex in vertex_data:
+                tri.append(vertex_data[vertex])
+            else:
+                tri.append(v_counter)
+                vertex_data[vertex] = v_counter
+                v_counter += 1
+        assert len(tri) == 3, "expected 3 triangles"
+        triangle_list.append(tri)
+    
+    vertex_data_rev = {value:key for key, value in vertex_data.items()}
+
+    return (vertex_data_rev, triangle_list)
+
+
+def set_bit(value, bit):
+    return value | (1<<bit)
+
+
+def clear_bit(value, bit):
+    return value & ~(1<<bit)
+
+
+def is_bit_set(value, bit):
+    return (value & (1<<bit)) != 0
+
 
 def save(context,
          filepath,
@@ -74,26 +131,61 @@ def save(context,
 
         if len(objects) > 255:
             raise "To many objects"
+
         fw(struct.pack("B", len(objects)))
         for ob in objects:
             fw(struct.pack("I", len(ob.name)))
             fw(bytes(ob.name, "utf-8"))
-            fw(struct.pack("H", 0))
-
+            flags = 0
+            
             ob_for_convert = ob.evaluated_get(depsgraph) if use_mesh_modifiers else ob.original
             me = ob_for_convert.to_mesh()
             mesh_triangulate(me)
 
             me.transform(global_matrix)
+            me.calc_normals_split()
 
-            me_verts = me.vertices[:]
-            fw(struct.pack("I", len(me_verts)))
-            for v in me_verts:
-                fw(struct.pack("fff", *v.co))
+            vertex_data, triangle_data = generate_vertex_data(me, True, True, False)
 
-            fw(struct.pack("I", len(me.polygons)))
-            for f in me.polygons:
-                fw(struct.pack("III", *f.vertices))
+            verts = []
+            normals = []
+            uvs = []
+            colors = []
+
+            if me.uv_layers.active:
+                flags = set_bit(flags, UV_BIT)
+
+            if me.vertex_colors.active:
+                flags = set_bit(flags, COLOR_BIT)
+
+            flags = set_bit(flags, NORMAL_BIT)
+
+            for key in vertex_data:
+                p,n,u,c = vertex_data[key]
+                verts.extend([*p])
+                normals.extend([*n])
+                if is_bit_set(flags, UV_BIT):
+                    uvs.extend([*u])
+                if is_bit_set(flags, COLOR_BIT):
+                    colors.extend([*c])
+
+            triangles = []
+            for t in triangle_data:
+                triangles.extend([*t])
+
+            fw(struct.pack("H", flags))
+
+            fw(struct.pack("I", len(verts)//3))
+            fw(struct.pack('%sf' % len(verts), *verts))
+            if is_bit_set(flags, UV_BIT):
+                fw(struct.pack('%sf' % len(uvs), *uvs))
+            if is_bit_set(flags, NORMAL_BIT):
+                fw(struct.pack('%sf' % len(normals), *normals))
+            if is_bit_set(flags, COLOR_BIT):
+                fw(struct.pack('%sf' % len(colors), *colors))
+
+            fw(struct.pack("I", len(triangles)//3))
+            fw(struct.pack('%sI' % len(triangles), *triangles))
 
             ob_for_convert.to_mesh_clear()
 

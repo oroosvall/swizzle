@@ -58,7 +58,7 @@ Game::Game()
     cam.setPosition({ 0.0F, 0.0F, 5.5F });
 
     mMesh = new Model();
-    mMesh->load("C:/tmp/small_dragon.obj");
+    mMesh->load("meshes/small_dragon.obj");
 
     size_t size = mMesh->mMeshes.back().mTriangles.size() * 3 * (3 + 3 + 2);
 

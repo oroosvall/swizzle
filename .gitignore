@@ -38,3 +38,4 @@ data/test.dat
 data/test.nam
 .vs/
 *.ods
+*.pyc
