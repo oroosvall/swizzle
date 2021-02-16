@@ -12,12 +12,14 @@
 namespace swizzle::gfx
 {
 
+    // @ TODO: move to File handling api
     static std::string getPathFromFileName(const std::string& fileName)
     {
         std::size_t found = fileName.find_last_of("/\\");
         return fileName.substr(0, found + 1);
     }
 
+    // @ TODO: move to File handling api
     static void readShaderInfo(const std::string& info, std::string& type, std::string& path)
     {
         auto index = info.find('=');
@@ -25,6 +27,7 @@ namespace swizzle::gfx
         path = info.substr(index + 1);
     }
 
+    // @ TODO: move to helper functions
     static VkFormat getShaderAttributeFormat(ShaderAttributeDataType type)
     {
         VkFormat fmt = VK_FORMAT_UNDEFINED;
@@ -52,36 +55,40 @@ namespace swizzle::gfx
         return fmt;
     }
 
-    VulkanShader::VulkanShader(const VulkanObjectContainer& vkObjects, const PresentFrameBuffer& frameBuffer, ShaderAttributeList shaderAttributes)
+    VulkanShader::VulkanShader(const VulkanObjectContainer& vkObjects, const PresentFrameBuffer& frameBuffer, const ShaderAttributeList& shaderAttributes)
         : mVkObjects(vkObjects)
         , mPipelineLayout(VK_NULL_HANDLE)
         , mPipeline(VK_NULL_HANDLE)
         , mFrameBuffer(frameBuffer)
         , mShaderAttributes(shaderAttributes)
     {
-
-        VkPushConstantRange push;
+        VkPushConstantRange push = {};
 
         push.size = sizeof(glm::mat4) * 4;
         push.offset = 0;
         push.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
 
-        VkDescriptorSetLayoutBinding layout_binding = {};
-        layout_binding.binding = 0;
-        layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        layout_binding.descriptorCount = 1;
-        layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        layout_binding.pImmutableSamplers = NULL;
+        VkDescriptorSetLayoutBinding layout_binding[2] = {};
+        layout_binding[0].binding = 0;
+        layout_binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        layout_binding[0].descriptorCount = 1;
+        layout_binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        layout_binding[0].pImmutableSamplers = NULL;
 
+        layout_binding[1].binding = 1;
+        layout_binding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        layout_binding[1].descriptorCount = 1;
+        layout_binding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        layout_binding[1].pImmutableSamplers = NULL;
 
         VkDescriptorSetLayoutCreateInfo descriptor_layout = {};
         descriptor_layout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         descriptor_layout.pNext = NULL;
-        descriptor_layout.bindingCount = 1;
-        descriptor_layout.pBindings = &layout_binding;
+        descriptor_layout.bindingCount = 2;
+        descriptor_layout.pBindings = layout_binding;
         vkCreateDescriptorSetLayout(mVkObjects.mLogicalDevice, &descriptor_layout, NULL, &mDescriptorLayout);
 
-        VkDescriptorSetAllocateInfo descAllocInfo;
+        VkDescriptorSetAllocateInfo descAllocInfo = {};
         descAllocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         descAllocInfo.pNext = VK_NULL_HANDLE;
         descAllocInfo.descriptorPool = mVkObjects.mDescriptorPool;
@@ -90,7 +97,7 @@ namespace swizzle::gfx
 
         vkAllocateDescriptorSets(mVkObjects.mLogicalDevice, &descAllocInfo, &mDescriptorSet);
 
-        VkPipelineLayoutCreateInfo info;
+        VkPipelineLayoutCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         info.pNext = VK_NULL_HANDLE;
         info.flags = 0;
@@ -99,23 +106,23 @@ namespace swizzle::gfx
         info.pushConstantRangeCount = 1;
         info.pPushConstantRanges = &push;
 
-        vkCreatePipelineLayout(mVkObjects.mLogicalDevice, &info, nullptr, &mPipelineLayout);
+        vkCreatePipelineLayout(mVkObjects.mLogicalDevice, &info, mVkObjects.mDebugAllocCallbacks, &mPipelineLayout);
     }
 
     VulkanShader::~VulkanShader()
     {
         vkFreeDescriptorSets(mVkObjects.mLogicalDevice, mVkObjects.mDescriptorPool, 1, &mDescriptorSet);
 
-        vkDestroyDescriptorSetLayout(mVkObjects.mLogicalDevice, mDescriptorLayout, nullptr);
+        vkDestroyDescriptorSetLayout(mVkObjects.mLogicalDevice, mDescriptorLayout, mVkObjects.mDebugAllocCallbacks);
 
-        vkDestroyPipeline(mVkObjects.mLogicalDevice, mPipeline, nullptr);
+        vkDestroyPipeline(mVkObjects.mLogicalDevice, mPipeline, mVkObjects.mDebugAllocCallbacks);
 
         for (auto& it : mShaders)
         {
-            vkDestroyShaderModule(mVkObjects.mLogicalDevice, it.second, nullptr);
+            vkDestroyShaderModule(mVkObjects.mLogicalDevice, it.second, mVkObjects.mDebugAllocCallbacks);
         }
 
-        vkDestroyPipelineLayout(mVkObjects.mLogicalDevice, mPipelineLayout, nullptr);
+        vkDestroyPipelineLayout(mVkObjects.mLogicalDevice, mPipelineLayout, mVkObjects.mDebugAllocCallbacks);
     }
 
     SwBool VulkanShader::load(const SwChar* filePath)
@@ -156,6 +163,11 @@ namespace swizzle::gfx
         return ok;
     }
 
+    core::Resource<Material> VulkanShader::createMaterial()
+    {
+        return nullptr;
+    }
+
     VkPipeline VulkanShader::getPipeline() const
     {
         return mPipeline;
@@ -183,14 +195,14 @@ namespace swizzle::gfx
             inFile.read(data.data(), data.size());
 
             VkShaderModule mod = VK_NULL_HANDLE;
-            VkShaderModuleCreateInfo info;
+            VkShaderModuleCreateInfo info = {};
             info.pCode = (uint32_t*)data.data();
             info.codeSize = data.size();
             info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
             info.pNext = VK_NULL_HANDLE;
             info.flags = 0;
 
-            vkCreateShaderModule(mVkObjects.mLogicalDevice, &info, nullptr, &mod);
+            vkCreateShaderModule(mVkObjects.mLogicalDevice, &info, mVkObjects.mDebugAllocCallbacks, &mod);
 
             if (strcmp(shaderType, "vertex") == 0)
             {
@@ -214,7 +226,7 @@ namespace swizzle::gfx
             if (it.first == ShaderModuleType::ShaderModuleType_Fragment)
                 stage = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
 
-            VkPipelineShaderStageCreateInfo shInfo;
+            VkPipelineShaderStageCreateInfo shInfo = {};
             shInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             shInfo.pNext = VK_NULL_HANDLE;
             shInfo.flags = 0;
@@ -229,11 +241,11 @@ namespace swizzle::gfx
         // Create bindings based on shader attributes
         std::vector<VkVertexInputBindingDescription> bindingDescriptors;
         bindingDescriptors.resize(mShaderAttributes.mNumBuffers);
-        for (uint32_t i = 0; i < bindingDescriptors.size(); ++i)
+        for (U32 i = 0U; i < mShaderAttributes.mNumBuffers; ++i)
         {
             const ShaderBufferInput& input = mShaderAttributes.mBufferInput[i];
             bindingDescriptors[i].binding = i;
-            bindingDescriptors[i].inputRate = 
+            bindingDescriptors[i].inputRate =
                 (input.mRate == ShaderBufferInputRate::InputRate_Vertex ? VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX
                     : VkVertexInputRate::VK_VERTEX_INPUT_RATE_INSTANCE);
              bindingDescriptors[i].stride = input.mStride;
@@ -241,7 +253,7 @@ namespace swizzle::gfx
 
         std::vector<VkVertexInputAttributeDescription> attributeDescriptor;
         attributeDescriptor.resize(mShaderAttributes.mNumAttributes);
-        for (uint32_t i = 0; i < attributeDescriptor.size(); ++i)
+        for (U32 i = 0U; i < mShaderAttributes.mNumAttributes; ++i)
         {
             const ShaderAttribute& attrib = mShaderAttributes.mAttributes[i];
             attributeDescriptor[i].location = i;
@@ -251,11 +263,11 @@ namespace swizzle::gfx
             if (attributeDescriptor[i].format == VK_FORMAT_UNDEFINED)
             {
                 MessageBox(NULL, L"Format was undefined", L"Shader loading", MB_ICONERROR);
-                exit(-1);
+                //exit(-1);
             }
         }
 
-        VkPipelineVertexInputStateCreateInfo vertexInput;
+        VkPipelineVertexInputStateCreateInfo vertexInput = {};
         vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInput.pNext = VK_NULL_HANDLE;
         vertexInput.flags = 0;
@@ -264,20 +276,20 @@ namespace swizzle::gfx
         vertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptor.size());
         vertexInput.pVertexAttributeDescriptions = attributeDescriptor.data();
 
-        VkPipelineInputAssemblyStateCreateInfo assemblyState;
+        VkPipelineInputAssemblyStateCreateInfo assemblyState = {};
         assemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         assemblyState.pNext = VK_NULL_HANDLE;
         assemblyState.flags = 0;
         assemblyState.topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         assemblyState.primitiveRestartEnable = VK_FALSE;
 
-        VkPipelineTessellationStateCreateInfo tessState;
+        VkPipelineTessellationStateCreateInfo tessState = {};
         tessState.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
         tessState.pNext = VK_NULL_HANDLE;
         tessState.flags = 0;
         tessState.patchControlPoints = 0;
 
-        VkViewport viewport;
+        VkViewport viewport = {};
         viewport.x = 0;
         viewport.y = 0;
         viewport.height = 100;
@@ -285,13 +297,13 @@ namespace swizzle::gfx
         viewport.minDepth = 0.0F;
         viewport.maxDepth = 1.0F;
 
-        VkRect2D r;
+        VkRect2D r = {};
         r.extent.height = 100;
         r.extent.width = 100;
         r.offset.x = 0;
         r.offset.y = 0;
 
-        VkPipelineViewportStateCreateInfo viewState;
+        VkPipelineViewportStateCreateInfo viewState = {};
         viewState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewState.pNext = VK_NULL_HANDLE;
         viewState.flags = 0;
@@ -300,7 +312,7 @@ namespace swizzle::gfx
         viewState.scissorCount = 1;
         viewState.pScissors = &r;
 
-        VkPipelineRasterizationStateCreateInfo rasterState;
+        VkPipelineRasterizationStateCreateInfo rasterState = {};
         rasterState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         rasterState.pNext = VK_NULL_HANDLE;
         rasterState.flags = 0;
@@ -315,7 +327,7 @@ namespace swizzle::gfx
         rasterState.depthBiasSlopeFactor = 0.0F;
         rasterState.lineWidth = 1.0F;
 
-        VkPipelineMultisampleStateCreateInfo multiSampleState;
+        VkPipelineMultisampleStateCreateInfo multiSampleState = {};
         multiSampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multiSampleState.pNext = VK_NULL_HANDLE;
         multiSampleState.flags = 0;
@@ -326,7 +338,7 @@ namespace swizzle::gfx
         multiSampleState.alphaToCoverageEnable = VK_FALSE;
         multiSampleState.alphaToOneEnable = VK_FALSE;
 
-        VkPipelineDepthStencilStateCreateInfo depthState;
+        VkPipelineDepthStencilStateCreateInfo depthState = {};
         depthState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthState.pNext = VK_NULL_HANDLE;
         depthState.flags = 0;
@@ -340,7 +352,7 @@ namespace swizzle::gfx
         depthState.minDepthBounds = 0.0F;
         depthState.maxDepthBounds = 1.0F;
 
-        VkPipelineColorBlendStateCreateInfo colorState;
+        VkPipelineColorBlendStateCreateInfo colorState = {};
         colorState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         colorState.pNext = VK_NULL_HANDLE;
         colorState.flags = 0;
@@ -350,7 +362,7 @@ namespace swizzle::gfx
         std::vector<VkPipelineColorBlendAttachmentState> attachs;
         for (size_t i = 0; i < colorState.attachmentCount; i++)
         {
-            VkPipelineColorBlendAttachmentState blendState;
+            VkPipelineColorBlendAttachmentState blendState = {};
             blendState.blendEnable = VK_FALSE;
             blendState.srcAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE;
             blendState.dstColorBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE;
@@ -373,14 +385,14 @@ namespace swizzle::gfx
 
         VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
-        VkPipelineDynamicStateCreateInfo dynState;
+        VkPipelineDynamicStateCreateInfo dynState = {};
         dynState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynState.pNext = VK_NULL_HANDLE;
         dynState.flags = 0;
         dynState.dynamicStateCount = 2U;
         dynState.pDynamicStates = dynamicStates;
 
-        VkGraphicsPipelineCreateInfo createInfo;
+        VkGraphicsPipelineCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         createInfo.pNext = VK_NULL_HANDLE;
         createInfo.flags = 0;
@@ -401,8 +413,12 @@ namespace swizzle::gfx
         createInfo.basePipelineHandle = VK_NULL_HANDLE;
         createInfo.basePipelineIndex = -1;
 
-        vkCreateGraphicsPipelines(mVkObjects.mLogicalDevice, mVkObjects.mPiplineCache, 1, &createInfo, nullptr,
-                                  &mPipeline);
+        VkResult res = vkCreateGraphicsPipelines(mVkObjects.mLogicalDevice, mVkObjects.mPiplineCache, 1u, &createInfo, mVkObjects.mDebugAllocCallbacks,
+                                                 &mPipeline);
+        if (res != VK_SUCCESS)
+        {
+            LOG_ERROR("Graphics pipeline creation failed %s", vk::VkResultToString(res));
+        }
     }
 
 } // namespace swizzle::gfx

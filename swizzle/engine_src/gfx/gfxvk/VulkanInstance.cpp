@@ -1,86 +1,10 @@
 #include "VulkanInstance.hpp"
 #include "Surface.hpp"
 #include <swizzle/core/Logging.hpp>
-//#include "VulkanPlatform.hpp"
-
-#include <cstdint>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
+#include "backend/VkDebug.hpp"
 
 namespace swizzle::gfx
 {
-
-    bool replace(std::string& str, const std::string& from, const std::string& to)
-    {
-        size_t start_pos = str.find(from);
-        if (start_pos == std::string::npos)
-            return false;
-        str.replace(start_pos, from.length(), to);
-        return true;
-    }
-
-
-    VKAPI_ATTR VkBool32 VKAPI_CALL vkDebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType,
-        uint64_t sourceObj, size_t location, int32_t msgCode,
-        const char* layerPrefix, const char* msg, void* userData)
-    {
-
-        userData;
-        msgCode;
-        location;
-        sourceObj;
-        objType;
-
-        std::ostringstream stream;
-
-        if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
-        {
-            stream << "INFO: ";
-            //return VK_FALSE;
-        }
-        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_WARNING_BIT_EXT)
-        {
-            stream << "WARNING: ";
-            //return VK_FALSE;
-        }
-        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
-        {
-            stream << "PERF: ";
-            //return VK_FALSE;
-        }
-        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_DEBUG_BIT_EXT)
-        {
-            stream << "DEBUG: ";
-            //return VK_FALSE;
-        }
-        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT)
-        {
-            stream << "ERROR: ";
-        }
-        stream << "@[" << layerPrefix << "]:\n";
-        std::string msgStr(msg);
-
-        replace(msgStr, ". ", ".\n");
-
-        //msgStr.replace(msgStr.begin(), ". ", ".\n");
-
-        stream << msgStr << std::endl << std::endl;
-
-        if (strcmp(layerPrefix, "MEM") != 0)
-        {
-            std::cout << stream.str();
-        }
-
-        if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT)
-        {
-            int err = 0;
-            err;
-        }
-
-        return VK_FALSE;
-    }
 
     VulkanInstance::VulkanInstance()
         : mVkInstance(VK_NULL_HANDLE)
@@ -89,9 +13,7 @@ namespace swizzle::gfx
         , mCreateDebugCallback(nullptr)
         , mDestroyDebugCallback(nullptr)
     {
-
         createInstance();
-
 #ifdef SW_DEBUG
         initDebug();
 #endif
@@ -99,11 +21,10 @@ namespace swizzle::gfx
 
     VulkanInstance::~VulkanInstance()
     {
-
 #ifdef SW_DEBUG
         deinitDebug();
 #endif
-        vkDestroyInstance(mVkInstance, nullptr);
+        vkDestroyInstance(mVkInstance, vk::getDebugAllocCallback());
     }
 
     const VkInstance VulkanInstance::getInstance() const
@@ -137,12 +58,12 @@ namespace swizzle::gfx
         debugCallbackInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
         debugCallbackInfo.flags = VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_DEBUG_BIT_EXT |
             VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT |
-            //VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
+            VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
             VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
             VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_WARNING_BIT_EXT;
         debugCallbackInfo.pNext = nullptr;
         debugCallbackInfo.pUserData = nullptr;
-        debugCallbackInfo.pfnCallback = vkDebugCallback;
+        debugCallbackInfo.pfnCallback = &vk::vkDebugCallback;
 
         VkInstanceCreateInfo vkInstanceInfo;
         memset(&vkInstanceInfo, 0, sizeof(VkInstanceCreateInfo));
@@ -177,7 +98,7 @@ namespace swizzle::gfx
         createInfo.ppEnabledLayerNames = debugLayers.data();
         createInfo.pApplicationInfo = &vkAppInfo;
 
-        VkResult res = vkCreateInstance(&createInfo, nullptr, &mVkInstance);
+        VkResult res = vkCreateInstance(&createInfo, vk::getDebugAllocCallback(), &mVkInstance);
         if (res != VK_SUCCESS)
         {
             LOG_ERROR("vkCreateInstance failed!, returned %s\n", vk::VkResultToString(res));
@@ -204,11 +125,11 @@ namespace swizzle::gfx
             VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_WARNING_BIT_EXT;
         debugCallbackInfo.pNext = nullptr;
         debugCallbackInfo.pUserData = nullptr;
-        debugCallbackInfo.pfnCallback = vkDebugCallback;
+        debugCallbackInfo.pfnCallback = &vk::vkDebugCallback;
 
         if (mCreateDebugCallback)
         {
-            mCreateDebugCallback(mVkInstance, &debugCallbackInfo, nullptr, &mDebugCallback);
+            mCreateDebugCallback(mVkInstance, &debugCallbackInfo, vk::getDebugAllocCallback(), &mDebugCallback);
         }
     }
 
@@ -216,7 +137,7 @@ namespace swizzle::gfx
     {
         if (mDestroyDebugCallback)
         {
-            mDestroyDebugCallback(mVkInstance, mDebugCallback, nullptr);
+            mDestroyDebugCallback(mVkInstance, mDebugCallback, vk::getDebugAllocCallback());
         }
     }
 

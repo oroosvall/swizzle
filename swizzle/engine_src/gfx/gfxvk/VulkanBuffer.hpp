@@ -1,8 +1,9 @@
 #ifndef VULKAN_BUFFER_HPP
 #define VULKAN_BUFFER_HPP
 
-#include "vk.hpp"
-#include "VulkanObjectContainer.hpp"
+#include "backend/Vk.hpp"
+#include "backend/VulkanObjectContainer.hpp"
+#include "backend/VulkanMemory.hpp"
 #include <swizzle/gfx/Buffer.hpp>
 
 namespace swizzle::gfx
@@ -30,9 +31,12 @@ namespace swizzle::gfx
         const BufferType mType;
 
         VkBuffer mBuffer;
-        VkDeviceMemory mMemory;
 
-        VkDeviceSize mBufferSize;
+        vk::VulkanMemory mBufferMemory;
+
+        //VkDeviceMemory mMemory;
+
+        //VkDeviceSize mBufferSize;
         U32 mStride;
         U32 mVertCount;
 

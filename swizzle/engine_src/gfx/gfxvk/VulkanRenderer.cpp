@@ -2,6 +2,7 @@
 #include <swizzle/core/Platform.hpp>
 
 #include "VulkanRenderer.hpp"
+#include "backend/VkDebug.hpp"
 
 #include <fstream> // replace with something better
 #include <string>
@@ -66,6 +67,7 @@ namespace swizzle::gfx
         }
 
         // Populate Vulkan object structure
+        mVkObjects.mDebugAllocCallbacks = vk::getDebugAllocCallback();
         mVkObjects.mInstance = mInstance->getInstance();
         mVkObjects.mPhysicalDevice = mLogical->getPhysical();
         mVkObjects.mLogicalDevice = mLogical->getLogical();
@@ -86,9 +88,9 @@ namespace swizzle::gfx
         pipelineCacheCreateInfo.flags = 0;
         pipelineCacheCreateInfo.initialDataSize = size;
         pipelineCacheCreateInfo.pInitialData = data;
-        vkCreatePipelineCache(mVkObjects.mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &mVkObjects.mPiplineCache);
+        vkCreatePipelineCache(mVkObjects.mLogicalDevice, &pipelineCacheCreateInfo, mVkObjects.mDebugAllocCallbacks, &mVkObjects.mPiplineCache);
 
-        vkCreateCommandPool(mVkObjects.mLogicalDevice, &cmdPoolCreateInfo, nullptr, &mVkObjects.mCmdPool);
+        vkCreateCommandPool(mVkObjects.mLogicalDevice, &cmdPoolCreateInfo, mVkObjects.mDebugAllocCallbacks, &mVkObjects.mCmdPool);
 
         mVkObjects.stageCmdBuffer = new StageCmdBuffer(mVkObjects.mLogicalDevice, mVkObjects.mCmdPool, mVkObjects.mQueue, mVkObjects.mMemoryProperties);
 
@@ -102,7 +104,7 @@ namespace swizzle::gfx
         poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         poolSize.descriptorCount = 10U;
 
-        VkDescriptorPoolCreateInfo descriptorPoolCreateInfo;
+        VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
         descriptorPoolCreateInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         descriptorPoolCreateInfo.pNext = VK_NULL_HANDLE;
         descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
@@ -110,7 +112,7 @@ namespace swizzle::gfx
         descriptorPoolCreateInfo.poolSizeCount = 1U;
         descriptorPoolCreateInfo.pPoolSizes = &poolSize;
 
-        vkCreateDescriptorPool(mVkObjects.mLogicalDevice, &descriptorPoolCreateInfo, nullptr, &mVkObjects.mDescriptorPool);
+        vkCreateDescriptorPool(mVkObjects.mLogicalDevice, &descriptorPoolCreateInfo, mVkObjects.mDebugAllocCallbacks, &mVkObjects.mDescriptorPool);
 
     }
 
@@ -119,10 +121,10 @@ namespace swizzle::gfx
         delete mVkObjects.stageCmdBuffer;
         mVkObjects.stageCmdBuffer = nullptr;
 
-        vkDestroyDescriptorPool(mVkObjects.mLogicalDevice, mVkObjects.mDescriptorPool, nullptr);
+        vkDestroyDescriptorPool(mVkObjects.mLogicalDevice, mVkObjects.mDescriptorPool, mVkObjects.mDebugAllocCallbacks);
         mVkObjects.mDescriptorPool = VK_NULL_HANDLE;
 
-        vkDestroyCommandPool(mVkObjects.mLogicalDevice, mVkObjects.mCmdPool, nullptr);
+        vkDestroyCommandPool(mVkObjects.mLogicalDevice, mVkObjects.mCmdPool, mVkObjects.mDebugAllocCallbacks);
         mVkObjects.mCmdPool = VK_NULL_HANDLE;
 
         size_t size = 0U;
@@ -139,7 +141,7 @@ namespace swizzle::gfx
 
         delete[] cacheData;
 
-        vkDestroyPipelineCache(mLogical->getLogical(), mVkObjects.mPiplineCache, nullptr);
+        vkDestroyPipelineCache(mLogical->getLogical(), mVkObjects.mPiplineCache, mVkObjects.mDebugAllocCallbacks);
 
         //delete mSwapchain;
         delete mLogical;

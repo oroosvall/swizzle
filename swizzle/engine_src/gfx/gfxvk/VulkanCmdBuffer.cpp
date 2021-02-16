@@ -17,7 +17,7 @@ namespace swizzle::gfx
         , mCmdBuffer(VK_NULL_HANDLE)
         , mCompleteFence(VK_NULL_HANDLE)
     {
-        VkCommandBufferAllocateInfo cmdAllocInfo;
+        VkCommandBufferAllocateInfo cmdAllocInfo = {};
 
         cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         cmdAllocInfo.pNext = VK_NULL_HANDLE;
@@ -33,44 +33,43 @@ namespace swizzle::gfx
         fenceInfo.pNext = VK_NULL_HANDLE;
         fenceInfo.flags = VkFenceCreateFlagBits::VK_FENCE_CREATE_SIGNALED_BIT;
 
-        VkResult result = vkCreateFence(mVkObjects.mLogicalDevice, &fenceInfo, nullptr, &mCompleteFence);
+        VkResult result = vkCreateFence(mVkObjects.mLogicalDevice, &fenceInfo, mVkObjects.mDebugAllocCallbacks, &mCompleteFence);
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Error creating swapchain fence %s", vk::VkResultToString(result));
         }
 
-        gTexturePtr = new VulkanTexture(mVkObjects);
+        gTexturePtr = new VulkanTexture(mVkObjects, 1024U, 1024U);
 
-        VkSamplerCreateInfo samplerInfo;
+        VkSamplerCreateInfo samplerInfo = {};
         samplerInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerInfo.pNext = VK_NULL_HANDLE;
         samplerInfo.flags = 0;
-        samplerInfo.magFilter = VkFilter::VK_FILTER_LINEAR;
-        samplerInfo.minFilter = VkFilter::VK_FILTER_LINEAR;
-        samplerInfo.mipmapMode = VkSamplerMipmapMode::VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.addressModeU = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerInfo.addressModeV = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerInfo.addressModeW = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.magFilter = VkFilter::VK_FILTER_NEAREST;
+        samplerInfo.minFilter = VkFilter::VK_FILTER_NEAREST;
+        samplerInfo.mipmapMode = VkSamplerMipmapMode::VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        samplerInfo.addressModeU = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+        samplerInfo.addressModeV = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+        samplerInfo.addressModeW = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
         samplerInfo.mipLodBias = 0.0F;
         samplerInfo.anisotropyEnable = VK_FALSE;
         samplerInfo.maxAnisotropy = 0.0F;
         samplerInfo.compareEnable = VK_FALSE;
         samplerInfo.compareOp = VkCompareOp::VK_COMPARE_OP_ALWAYS;
         samplerInfo.minLod = 0.0F;
-        samplerInfo.maxLod = 1.0F;
+        samplerInfo.maxLod = 0.0F;
         samplerInfo.borderColor = VkBorderColor::VK_BORDER_COLOR_INT_OPAQUE_BLACK;
         samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-        vkCreateSampler(mVkObjects.mLogicalDevice, &samplerInfo, nullptr, &gSampler);
-
+        vkCreateSampler(mVkObjects.mLogicalDevice, &samplerInfo, mVkObjects.mDebugAllocCallbacks, &gSampler);
     }
 
     VulkanCommandBuffer::~VulkanCommandBuffer()
     {
-        vkDestroySampler(mVkObjects.mLogicalDevice, gSampler, nullptr);
+        vkDestroySampler(mVkObjects.mLogicalDevice, gSampler, mVkObjects.mDebugAllocCallbacks);
         delete gTexturePtr;
 
-        vkDestroyFence(mVkObjects.mLogicalDevice, mCompleteFence, nullptr);
+        vkDestroyFence(mVkObjects.mLogicalDevice, mCompleteFence, mVkObjects.mDebugAllocCallbacks);
 
         vkFreeCommandBuffers(mVkObjects.mLogicalDevice, mVkObjects.mCmdPool, 1, &mCmdBuffer);
     }
@@ -90,10 +89,10 @@ namespace swizzle::gfx
 
     void VulkanCommandBuffer::begin()
     {
-        vkWaitForFences(mVkObjects.mLogicalDevice, 1, &mCompleteFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(mVkObjects.mLogicalDevice, 1, &mCompleteFence);
+        vkWaitForFences(mVkObjects.mLogicalDevice, 1U, &mCompleteFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(mVkObjects.mLogicalDevice, 1U, &mCompleteFence);
 
-        VkCommandBufferBeginInfo beginInfo;
+        VkCommandBufferBeginInfo beginInfo = {};
 
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.pNext = VK_NULL_HANDLE;
@@ -127,28 +126,34 @@ namespace swizzle::gfx
 
     void VulkanCommandBuffer::submit(core::Resource<Swapchain> swp)
     {
-        U32 waitCount = 0;
+        U32 waitCount = 0U;
         VkSemaphore sync = VK_NULL_HANDLE;
 
         if (swp)
         {
             VulkanSwapchain* swapchain = (VulkanSwapchain*)(swp.get());
             sync = swapchain->getSemaphore();
-            waitCount = 1;
+            waitCount = 1U;
+        }
+
+        // TODO: move into one sumbit call
+        if (mVkObjects.stageCmdBuffer->readyToSubmit())
+        {
+            mVkObjects.stageCmdBuffer->endAndSubmitRecording();
         }
 
         VkSubmitInfo subinfo;
         subinfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         subinfo.pNext = 0;
-        subinfo.waitSemaphoreCount = 0;
+        subinfo.waitSemaphoreCount = 0U;
         subinfo.pWaitSemaphores = VK_NULL_HANDLE;
         subinfo.pWaitDstStageMask = VK_NULL_HANDLE;
-        subinfo.commandBufferCount = 1;
+        subinfo.commandBufferCount = 1U;
         subinfo.pCommandBuffers = &mCmdBuffer;
         subinfo.signalSemaphoreCount = waitCount;
         subinfo.pSignalSemaphores = &sync;
 
-        vkQueueSubmit(mVkObjects.mQueue, 1, &subinfo, mCompleteFence);
+        vkQueueSubmit(mVkObjects.mQueue, 1U, &subinfo, mCompleteFence);
     }
 
     void VulkanCommandBuffer::beginRenderPass(core::Resource<Swapchain> swp)
@@ -159,76 +164,22 @@ namespace swizzle::gfx
 
     void VulkanCommandBuffer::beginRenderPass(core::Resource<FrameBuffer> fbo)
     {
-        if (!gTexturePtr->uploaded)
+        if (!gTexturePtr->isUploaded())
         {
-            VkImageMemoryBarrier imgBarrier;
-            imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            imgBarrier.pNext = VK_NULL_HANDLE;
-            imgBarrier.srcAccessMask = 0;
-            imgBarrier.dstAccessMask = 0;
-            imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_PREINITIALIZED;
-            imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            imgBarrier.image = gTexturePtr->mImage;
-            imgBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            imgBarrier.subresourceRange.baseMipLevel = 0;
-            imgBarrier.subresourceRange.levelCount = 1;
-            imgBarrier.subresourceRange.baseArrayLayer = 0;
-            imgBarrier.subresourceRange.layerCount = 1;
-
-            vkCmdPipelineBarrier(mCmdBuffer,
-                VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                0,
-                0, VK_NULL_HANDLE,
-                0, VK_NULL_HANDLE,
-                1, &imgBarrier);
-
-            VkBufferImageCopy region{};
-            region.bufferOffset = 0;
-            region.bufferRowLength = 0;
-            region.bufferImageHeight = 0;
-
-            region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            region.imageSubresource.mipLevel = 0;
-            region.imageSubresource.baseArrayLayer = 0;
-            region.imageSubresource.layerCount = 1;
-
-            region.imageOffset = { 0, 0, 0 };
-            region.imageExtent = {
-                gTexturePtr->mWidth,
-                gTexturePtr->mHeight,
-                1
-            };
-
-            vkCmdCopyBufferToImage(mCmdBuffer, gTexturePtr->mStageBuffer, gTexturePtr->mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                1,
-                &region);
-
-            imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-            vkCmdPipelineBarrier(mCmdBuffer,
-                VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                0,
-                0, VK_NULL_HANDLE,
-                0, VK_NULL_HANDLE,
-                1, &imgBarrier);
-
-            gTexturePtr->uploaded = true;
+            gTexturePtr->uploadImage(mCmdBuffer);
         }
 
         PresentFrameBuffer* present = (PresentFrameBuffer*)(fbo.get());
 
         VkClearValue clears[] = { present->mClearValue , present->mDepthClearValue };
 
-        VkRenderPassBeginInfo beginInfo;
+        VkRenderPassBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         beginInfo.pNext = VK_NULL_HANDLE;
         beginInfo.renderPass = present->mRenderPass;
         beginInfo.framebuffer = present->mFrameBuffer;
-        beginInfo.renderArea = { 0,0, present->mWidth, present->mHeight };
-        beginInfo.clearValueCount = 2;
+        beginInfo.renderArea = { 0U, 0U, present->mWidth, present->mHeight };
+        beginInfo.clearValueCount = 2U;
         beginInfo.pClearValues = clears;
 
         vkCmdBeginRenderPass(mCmdBuffer, &beginInfo, VkSubpassContents::VK_SUBPASS_CONTENTS_INLINE);
@@ -241,19 +192,37 @@ namespace swizzle::gfx
 
     void VulkanCommandBuffer::bindShader(core::Resource<Shader> shader)
     {
-
         VulkanShader* shad = (VulkanShader*)(shader.get());
 
         vkCmdBindPipeline(mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipeline());
+    }
+
+    void VulkanCommandBuffer::bindMaterial(core::Resource<Shader> shader, core::Resource<Buffer> material)
+    {
+        VulkanShader* shad = (VulkanShader*)(shader.get());
+
+        //VulkanTexture* tex = (VulkanTexture*)(texture.get());
+
+        VulkanBuffer* buffer = (VulkanBuffer*)material.get();
+
+        /*if (!tex->isUploaded())
+        {
+            tex->upload();
+        }*/
 
         VkDescriptorSet descSet = shad->getDescriptorSet();
 
-        VkWriteDescriptorSet writeDesc;
-
-        VkDescriptorImageInfo descImg;
+        VkDescriptorImageInfo descImg = {};
         descImg.sampler = gSampler;
         descImg.imageView = gTexturePtr->getView();
         descImg.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkDescriptorBufferInfo descBfr = {};
+        descBfr.buffer = buffer->getBuffer();
+        descBfr.offset = 0;
+        descBfr.range = sizeof(float) * 4;
+
+        VkWriteDescriptorSet writeDesc = {};
 
         writeDesc.sType = VkStructureType::VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         writeDesc.pNext = VK_NULL_HANDLE;
@@ -266,16 +235,24 @@ namespace swizzle::gfx
         writeDesc.pBufferInfo = VK_NULL_HANDLE;
         writeDesc.pTexelBufferView = VK_NULL_HANDLE;
 
-        vkUpdateDescriptorSets(mVkObjects.mLogicalDevice, 1, &writeDesc, 0, VK_NULL_HANDLE);
+        vkUpdateDescriptorSets(mVkObjects.mLogicalDevice, 1U, &writeDesc, 0U, VK_NULL_HANDLE);
 
-        vkCmdBindDescriptorSets(mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipelineLayout(), 0, 1, &descSet, 0, VK_NULL_HANDLE);
+        writeDesc.dstBinding = 1;
+        writeDesc.descriptorCount = 1;
+        writeDesc.descriptorType = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        writeDesc.pImageInfo = VK_NULL_HANDLE;
+        writeDesc.pBufferInfo = &descBfr;
+
+        vkUpdateDescriptorSets(mVkObjects.mLogicalDevice, 1U, &writeDesc, 0U, VK_NULL_HANDLE);
+
+        vkCmdBindDescriptorSets(mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipelineLayout(), 0U, 1U, &descSet, 0U, VK_NULL_HANDLE);
     }
 
     void VulkanCommandBuffer::setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size)
     {
         VulkanShader* shad = (VulkanShader*)(shader.get());
 
-        vkCmdPushConstants(mCmdBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0, size, data);
+        vkCmdPushConstants(mCmdBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0U, size, data);
     }
 
     void VulkanCommandBuffer::setViewport(U32 x, U32 y)
@@ -285,20 +262,22 @@ namespace swizzle::gfx
             x = 1U;
             y = 1U;
         }
-        VkViewport vp;
-        vp.x = 0;
+
+        VkViewport vp = {};
+        vp.x = 0.0F;
         vp.y = static_cast<float_t>(y);
         vp.width = static_cast<float_t>(x);
         vp.height = -static_cast<float_t>(y);
         vp.minDepth = 0.0F;
         vp.maxDepth = 1.0F;
-        vkCmdSetViewport(mCmdBuffer, 0, 1, &vp);
-        VkRect2D r;
+        vkCmdSetViewport(mCmdBuffer, 0U, 1U, &vp);
+
+        VkRect2D r = {};
         r.extent.width = x;
         r.extent.height = y;
         r.offset.x = 0;
         r.offset.y = 0;
-        vkCmdSetScissor(mCmdBuffer, 0, 1, &r);
+        vkCmdSetScissor(mCmdBuffer, 0U, 1U, &r);
     }
 
     void VulkanCommandBuffer::draw(core::Resource<Buffer> buffer)
@@ -308,7 +287,7 @@ namespace swizzle::gfx
 
         VkDeviceSize offset = 0U;
 
-        vkCmdBindVertexBuffers(mCmdBuffer, 0, 1, &bb, &offset);
+        vkCmdBindVertexBuffers(mCmdBuffer, 0U, 1U, &bb, &offset);
         vkCmdDraw(mCmdBuffer, buf->getVertexCount(), 1U, 0U, 0U);
     }
 

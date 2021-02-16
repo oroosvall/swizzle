@@ -4,7 +4,7 @@
 #include <swizzle/core/Resource.hpp>
 #include <swizzle/core/Window.hpp>
 
-#include "vk.hpp"
+#include "backend/Vk.hpp"
 
 namespace swizzle::gfx
 {

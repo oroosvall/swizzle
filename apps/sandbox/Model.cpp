@@ -33,8 +33,6 @@ void Model::save(const std::string& file, bool attemptCompress)
     }
 }
 
-
-
 void Model::loadObj(const std::string& file)
 {
     std::ifstream input(file);
@@ -66,6 +64,8 @@ void Model::loadObj(const std::string& file)
             {
                 if (mMeshes.size() >= 1)
                 {
+                    hasNormal = false;
+                    hasUv = false;
                     offset += static_cast<uint32_t>(mMeshes.back().mVertices.size());
                     //Model::Mesh& m = mMeshes.back();
                     LOG_INFO("\r loading mesh %d", loadCounter++);
@@ -109,9 +109,9 @@ void Model::loadObj(const std::string& file)
                 int v2 = std::strtol(line_ll_2.c_str(), nullptr, 0);
                 int v3 = std::strtol(line_ll_3.c_str(), nullptr, 0);
 
-                mMeshes.back().mVertices.push_back(verts[uint32_t(v1 - offset - 1)]);
-                mMeshes.back().mVertices.push_back(verts[uint32_t(v2 - offset - 1)]);
-                mMeshes.back().mVertices.push_back(verts[uint32_t(v3 - offset - 1)]);
+                mMeshes.back().mVertices.push_back(verts[uint32_t(v1 - 1)]);
+                mMeshes.back().mVertices.push_back(verts[uint32_t(v2 - 1)]);
+                mMeshes.back().mVertices.push_back(verts[uint32_t(v3 - 1)]);
 
                 if (hasNormal)
                 {
@@ -135,9 +135,9 @@ void Model::loadObj(const std::string& file)
                     int n2 = std::strtol(line_ll_2_n.c_str(), nullptr, 0);
                     int n3 = std::strtol(line_ll_3_n.c_str(), nullptr, 0);
 
-                    mMeshes.back().mNormals.push_back(normals[uint32_t(n1 - offset - 1)]);
-                    mMeshes.back().mNormals.push_back(normals[uint32_t(n2 - offset - 1)]);
-                    mMeshes.back().mNormals.push_back(normals[uint32_t(n3 - offset - 1)]);
+                    mMeshes.back().mNormals.push_back(normals[uint32_t(n1 - 1)]);
+                    mMeshes.back().mNormals.push_back(normals[uint32_t(n2 - 1)]);
+                    mMeshes.back().mNormals.push_back(normals[uint32_t(n3 - 1)]);
                 }
                 else
                 {
@@ -145,7 +145,7 @@ void Model::loadObj(const std::string& file)
                     mMeshes.back().mNormals.push_back({});
                     mMeshes.back().mNormals.push_back({});
                 }
-                
+
                 if (hasUv)
                 {
                     size_t off0_u_1 = line_ll_1.find_first_of('/') + 1;
@@ -157,17 +157,17 @@ void Model::loadObj(const std::string& file)
                     size_t off0_u_3 = line_ll_3.find_first_of('/') + 1;
                     size_t off1_u_3 = line_ll_3.find_first_of('/', off0_u_3 + 1) + 1;
 
-                    std::string line_ll_1_n = line_ll_1.substr(off0_u_1, off1_u_1 - off0_u_1);
-                    std::string line_ll_2_n = line_ll_2.substr(off0_u_2, off1_u_2 - off0_u_2);
-                    std::string line_ll_3_n = line_ll_3.substr(off0_u_3, off1_u_3 - off0_u_3);
+                    std::string line_ll_1_u = line_ll_1.substr(off0_u_1, off1_u_1 - off0_u_1);
+                    std::string line_ll_2_u = line_ll_2.substr(off0_u_2, off1_u_2 - off0_u_2);
+                    std::string line_ll_3_u = line_ll_3.substr(off0_u_3, off1_u_3 - off0_u_3);
 
-                    int u1 = std::strtol(line_ll_1.c_str(), nullptr, 0);
-                    int u2 = std::strtol(line_ll_2.c_str(), nullptr, 0);
-                    int u3 = std::strtol(line_ll_3.c_str(), nullptr, 0);
+                    int u1 = std::strtol(line_ll_1_u.c_str(), nullptr, 0);
+                    int u2 = std::strtol(line_ll_2_u.c_str(), nullptr, 0);
+                    int u3 = std::strtol(line_ll_3_u.c_str(), nullptr, 0);
 
-                    mMeshes.back().mUvs.push_back(uvs[uint32_t(u1 - offset - 1)]);
-                    mMeshes.back().mUvs.push_back(uvs[uint32_t(u2 - offset - 1)]);
-                    mMeshes.back().mUvs.push_back(uvs[uint32_t(u3 - offset - 1)]);
+                    mMeshes.back().mUvs.push_back(uvs[uint32_t(u1 - 1)]);
+                    mMeshes.back().mUvs.push_back(uvs[uint32_t(u2 - 1)]);
+                    mMeshes.back().mUvs.push_back(uvs[uint32_t(u3 - 1)]);
                 }
                 else
                 {
@@ -402,7 +402,7 @@ uint8_t* getModelVertexData(const Model::Mesh& mesh, CompressionFlags& compresse
     const size_t normalSize = mesh.mNormals.size() * sizeof(Vertex3d);
     const size_t uvSize = mesh.mUvs.size() * sizeof(Vertex2d);
     const size_t size = vertexSize + normalSize + uvSize + sizeof(uint32_t);
-    
+
     uint32_t index = 0U;
     std::map<float, uint32_t> vertexFloatMap;
 
@@ -437,7 +437,7 @@ uint8_t* getModelVertexData(const Model::Mesh& mesh, CompressionFlags& compresse
         data = new uint8_t[compressedSize];
         uint32_t* numFloats = (uint32_t*)data;
         *numFloats = static_cast<uint32_t>(vertexFloatMap.size());
-        
+
         size_t offset = sizeof(uint32_t);
         float* floats = (float*)(data + offset);
         for (const auto& f : vertexFloatMap)
@@ -557,7 +557,7 @@ void Model::saveSwm(const std::string& file, bool attemptCompression)
         MeshDescr_v1_0_variant_0 descr;
         descr.mNumMeshes = static_cast<uint8_t>(mMeshes.size());
         outFile.write((char*)&descr.mNumMeshes, sizeof(descr.mNumMeshes));
-        
+
         LOG_INFO("Saving compressed swm file\n");
         uint32_t writeCounter = 1;
         for (const auto& m : mMeshes)
@@ -580,7 +580,7 @@ void Model::saveSwm(const std::string& file, bool attemptCompression)
 
             uint8_t* vertexData = getModelVertexData(m, cf, vertexSize);
             uint8_t* triangleData = getModelTriangleData(m, cf, triangleSize);
-            
+
             mf.mHasUv = m.mUvs.size() != 0;
             mf.mHasNormal = m.mNormals.size() != 0;
 
@@ -590,7 +590,7 @@ void Model::saveSwm(const std::string& file, bool attemptCompression)
 
             outFile.write((char*)vertexData, vertexSize);
             outFile.write((char*)triangleData, triangleSize);
-            
+
             delete[] vertexData;
             delete[] triangleData;
 

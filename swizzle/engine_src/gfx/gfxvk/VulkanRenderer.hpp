@@ -3,9 +3,9 @@
 
 #include "gfx/Gfx.hpp"
 
-#include "vk.hpp"
+#include "backend/Vk.hpp"
 #include "VulkanInstance.hpp"
-#include "VulkanObjectContainer.hpp"
+#include "backend/VulkanObjectContainer.hpp"
 
 namespace swizzle::gfx
 {

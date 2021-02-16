@@ -12,6 +12,7 @@ namespace swizzle::gfx
 
         virtual void setData(U32 width, U32 height, U32 channels, U8* pixelData) = 0;
 
+        virtual void upload() = 0;
     };
 }
 

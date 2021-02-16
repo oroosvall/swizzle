@@ -1,6 +1,7 @@
 
 #include "VulkanFramebuffer.hpp"
 #include "VulkanShader.hpp"
+#include "backend/VulkanMemory.hpp"
 #include <swizzle/core/Logging.hpp>
 
 namespace swizzle::gfx
@@ -31,12 +32,12 @@ namespace swizzle::gfx
 
     PresentFrameBuffer::~PresentFrameBuffer()
     {
-        vkDestroyFramebuffer(mVkObjects.mLogicalDevice, mFrameBuffer, nullptr);
-        vkDestroyRenderPass(mVkObjects.mLogicalDevice, mRenderPass, nullptr);
-        vkFreeMemory(mVkObjects.mLogicalDevice, mDepthMemory, nullptr);
+        vkDestroyFramebuffer(mVkObjects.mLogicalDevice, mFrameBuffer, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyRenderPass(mVkObjects.mLogicalDevice, mRenderPass, mVkObjects.mDebugAllocCallbacks);
+        vkFreeMemory(mVkObjects.mLogicalDevice, mDepthMemory, mVkObjects.mDebugAllocCallbacks);
 
-        vkDestroyImageView(mVkObjects.mLogicalDevice, mDepthImageView, nullptr);
-        vkDestroyImage(mVkObjects.mLogicalDevice, mDepthImage, nullptr);
+        vkDestroyImageView(mVkObjects.mLogicalDevice, mDepthImageView, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyImage(mVkObjects.mLogicalDevice, mDepthImage, mVkObjects.mDebugAllocCallbacks);
 
     }
 
@@ -71,14 +72,14 @@ namespace swizzle::gfx
         mWidth = width;
         mHeight = height;
 
-        vkDestroyFramebuffer(mVkObjects.mLogicalDevice, mFrameBuffer, nullptr);
-        vkDestroyRenderPass(mVkObjects.mLogicalDevice, mRenderPass, nullptr);
+        vkDestroyFramebuffer(mVkObjects.mLogicalDevice, mFrameBuffer, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyRenderPass(mVkObjects.mLogicalDevice, mRenderPass, mVkObjects.mDebugAllocCallbacks);
 
         createRenderPass();
         createFramebuffer();
     }
 
-    core::Resource<Shader> PresentFrameBuffer::createShader(ShaderAttributeList attributeList)
+    core::Resource<Shader> PresentFrameBuffer::createShader(const ShaderAttributeList& attributeList)
     {
         return core::CreateRef<VulkanShader>(mVkObjects, *this, attributeList);
     }
@@ -103,9 +104,9 @@ namespace swizzle::gfx
         allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.pNext = VK_NULL_HANDLE;
         allocInfo.allocationSize = memreq.size;
-        allocInfo.memoryTypeIndex = vk::FindMemoryType(mVkObjects.mMemoryProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
+        allocInfo.memoryTypeIndex = vk::VulkanMemory::FindMemoryType(mVkObjects.mMemoryProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
 
-        vkAllocateMemory(mVkObjects.mLogicalDevice, &allocInfo, nullptr, &mDepthMemory);
+        vkAllocateMemory(mVkObjects.mLogicalDevice, &allocInfo, mVkObjects.mDebugAllocCallbacks, &mDepthMemory);
 
         vkBindImageMemory(mVkObjects.mLogicalDevice, mDepthImage, mDepthMemory, 0U);
     }
@@ -133,8 +134,8 @@ namespace swizzle::gfx
         imageInfo.pQueueFamilyIndices = &mVkObjects.mQueueFamilyIndex;
         imageInfo.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_PREINITIALIZED;
 
-        vkCreateImage(mVkObjects.mLogicalDevice, &imageInfo, nullptr, &mDepthImage);
-        
+        vkCreateImage(mVkObjects.mLogicalDevice, &imageInfo, mVkObjects.mDebugAllocCallbacks, &mDepthImage);
+
         allocDepthMemory();
 
         VkImageViewCreateInfo imageViewInfo;
@@ -156,7 +157,7 @@ namespace swizzle::gfx
         imageViewInfo.subresourceRange.layerCount = 1U;
         imageViewInfo.subresourceRange.levelCount = 1U;
 
-        vkCreateImageView(mVkObjects.mLogicalDevice, &imageViewInfo, nullptr, &mDepthImageView);
+        vkCreateImageView(mVkObjects.mLogicalDevice, &imageViewInfo, mVkObjects.mDebugAllocCallbacks, &mDepthImageView);
     }
 
     void PresentFrameBuffer::createRenderPass()
@@ -199,8 +200,8 @@ namespace swizzle::gfx
         descr[1].format = VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
         descr[1].samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
         descr[1].loadOp = VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
-        descr[1].storeOp = VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_STORE;
-        descr[1].stencilLoadOp = VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        descr[1].storeOp = VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        descr[1].stencilLoadOp = VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
         descr[1].stencilStoreOp = VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_DONT_CARE;
         descr[1].initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
         descr[1].finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -217,7 +218,7 @@ namespace swizzle::gfx
         createInfo.dependencyCount = 0;
         createInfo.pDependencies = VK_NULL_HANDLE;
 
-        VkResult result = vkCreateRenderPass(mVkObjects.mLogicalDevice, &createInfo, nullptr, &mRenderPass);
+        VkResult result = vkCreateRenderPass(mVkObjects.mLogicalDevice, &createInfo, mVkObjects.mDebugAllocCallbacks, &mRenderPass);
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Renderpass creation failed %s", vk::VkResultToString(result));
@@ -245,7 +246,7 @@ namespace swizzle::gfx
         createInfo.height = mHeight;
         createInfo.layers = 1;
 
-        VkResult result = vkCreateFramebuffer(mVkObjects.mLogicalDevice, &createInfo, nullptr, &mFrameBuffer);
+        VkResult result = vkCreateFramebuffer(mVkObjects.mLogicalDevice, &createInfo, mVkObjects.mDebugAllocCallbacks, &mFrameBuffer);
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Framebuffer creation failed %s", vk::VkResultToString(result));
@@ -253,7 +254,7 @@ namespace swizzle::gfx
     }
 
     /*********************************************************
-    
+
     **********************************************************/
 
     VulkanFrameBuffer::VulkanFrameBuffer(VulkanObjectContainer& vkObjects, U32 width, U32 height, U8 numAttachments, SwBool createDepth)
@@ -276,8 +277,8 @@ namespace swizzle::gfx
     VulkanFrameBuffer::~VulkanFrameBuffer()
     {
         mTextures.clear();
-        vkDestroyFramebuffer(mVkObjects.mLogicalDevice, mFrameBuffer, nullptr);
-        vkDestroyRenderPass(mVkObjects.mLogicalDevice, mRenderPass, nullptr);
+        vkDestroyFramebuffer(mVkObjects.mLogicalDevice, mFrameBuffer, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyRenderPass(mVkObjects.mLogicalDevice, mRenderPass, mVkObjects.mDebugAllocCallbacks);
     }
 
     U32 VulkanFrameBuffer::getNumColorAttachments() const
@@ -309,8 +310,8 @@ namespace swizzle::gfx
         mWidth = width;
         mHeight = height;
 
-        vkDestroyFramebuffer(mVkObjects.mLogicalDevice, mFrameBuffer, nullptr);
-        vkDestroyRenderPass(mVkObjects.mLogicalDevice, mRenderPass, nullptr);
+        vkDestroyFramebuffer(mVkObjects.mLogicalDevice, mFrameBuffer, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyRenderPass(mVkObjects.mLogicalDevice, mRenderPass, mVkObjects.mDebugAllocCallbacks);
 
         mTextures.clear();
         createTextures();
@@ -352,7 +353,7 @@ namespace swizzle::gfx
                 VK_NULL_HANDLE
             };*/
 
-            core::Resource<VulkanTexture> newTexture = std::make_shared<VulkanTexture>(mVkObjects);
+            core::Resource<VulkanTexture> newTexture = std::make_shared<VulkanTexture>(mVkObjects, mWidth, mHeight);
 
             //newTexture->
 
@@ -395,7 +396,7 @@ namespace swizzle::gfx
         createInfo.dependencyCount = 0;
         createInfo.pDependencies = VK_NULL_HANDLE;
 
-        vkCreateRenderPass(mVkObjects.mLogicalDevice, &createInfo, nullptr, &mRenderPass);
+        vkCreateRenderPass(mVkObjects.mLogicalDevice, &createInfo, mVkObjects.mDebugAllocCallbacks, &mRenderPass);
     }
 
     VkClearValue createEmptyClearValue()
@@ -450,7 +451,7 @@ namespace swizzle::gfx
         createInfo.height = mHeight;
         createInfo.layers = 1;
 
-        vkCreateFramebuffer(mVkObjects.mLogicalDevice, &createInfo, nullptr, &mFrameBuffer);
+        vkCreateFramebuffer(mVkObjects.mLogicalDevice, &createInfo, mVkObjects.mDebugAllocCallbacks, &mFrameBuffer);
     }
 
 }

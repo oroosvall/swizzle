@@ -1,7 +1,7 @@
 #ifndef RESOURCE_TRANSFER_HPP
 #define RESOURCE_TRANSFER_HPP
 
-#include "vk.hpp"
+#include "Vk.hpp"
 
 #include <vector>
 
@@ -30,6 +30,8 @@ namespace swizzle::gfx
 
         void transitionImage(VkImage image);
 
+        VkCommandBuffer getCmdBuffer() { return mCmdBuffer; }
+
     private:
 
         void clearStageBuffers();
@@ -44,6 +46,8 @@ namespace swizzle::gfx
         SwBool mRecordingStarted;
 
         std::vector<StageMemoryBuffer> mStageBuffers;
+
+        VkFence mCompleteFence;
 
     };
 

@@ -6,8 +6,8 @@
 
 #include <swizzle/gfx/Swapchain.hpp>
 
-#include "vk.hpp"
-#include "VulkanObjectContainer.hpp"
+#include "backend/Vk.hpp"
+#include "backend/VulkanObjectContainer.hpp"
 #include "VulkanFrameBuffer.hpp"
 
 #include <vector>
@@ -33,7 +33,7 @@ namespace swizzle::gfx
 
         virtual void setClearColor(ClearColor color) override;
 
-        virtual core::Resource<Shader> createShader(ShaderAttributeList attribs) override;
+        virtual core::Resource<Shader> createShader(const ShaderAttributeList& attribs) override;
 
         virtual void prepare() override;
         virtual void present() override;

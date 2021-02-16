@@ -52,9 +52,9 @@ namespace swizzle::gfx
         return core::CreateRef<VulkanSwapchain>(window, gRenderInstance->getVkObjects());;
     }
 
-    core::Resource<Texture> CreateTexture()
+    core::Resource<Texture> CreateTexture(U32 width, U32 height)
     {
-        return core::CreateRef<VulkanTexture>(gRenderInstance->getVkObjects());
+        return core::CreateRef<VulkanTexture>(gRenderInstance->getVkObjects(), width, height);
     }
 
     void WaitIdle()

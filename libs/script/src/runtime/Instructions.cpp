@@ -207,6 +207,7 @@ OpReturn opJmp(ProgramContext& ctx, uint8_t flags)
 
 OpReturn opCmp(ProgramContext& ctx, uint8_t flags)
 {
-
+    ctx;
+    flags;
     return { 0U, ErrorCode::OK };
 }

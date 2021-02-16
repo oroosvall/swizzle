@@ -2,6 +2,10 @@
 #define SHADER_HPP
 
 #include <swizzle/core/Types.hpp>
+#include <swizzle/core/Resource.hpp>
+#include <swizzle/gfx/Material.hpp>
+
+#include <vector>
 
 namespace swizzle::gfx
 {
@@ -26,14 +30,21 @@ namespace swizzle::gfx
         int4_32,
     };
 
-    struct ShaderBufferInput
+    class ShaderBufferInput
     {
+    public:
+        ShaderBufferInput(ShaderBufferInputRate rate, U32 stride) : mRate(rate), mStride(stride) {}
+        virtual ~ShaderBufferInput() {}
+
         ShaderBufferInputRate mRate;
         U32 mStride;
     };
 
-    struct ShaderAttribute
+    class ShaderAttribute
     {
+    public:
+        ShaderAttribute(U32 index, ShaderAttributeDataType dataType, U32 offset) : mBufferIndex(index), mDataType(dataType), mOffset(offset) {}
+        virtual ~ShaderAttribute() {}
         // Buffer index to fetch data from
         U32 mBufferIndex;
         // data type determines size of attribute
@@ -46,12 +57,9 @@ namespace swizzle::gfx
     {
         U32 mNumBuffers;
         ShaderBufferInput* mBufferInput;
-
         U32 mNumAttributes;
         ShaderAttribute* mAttributes;
     };
-
-
 
     class Shader
     {
@@ -59,6 +67,9 @@ namespace swizzle::gfx
         virtual ~Shader() {}
 
         virtual SwBool load(const SwChar* file) = 0;
+        virtual core::Resource<Material> createMaterial() = 0;
+
+
 
     };
 }

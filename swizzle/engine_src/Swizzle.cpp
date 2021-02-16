@@ -3,6 +3,8 @@
 #include "core/Core.hpp"
 #include "gfx/Gfx.hpp"
 
+#include "utils/HighResolutionClock.hpp"
+
 namespace swizzle
 {
     SwBool SwInitialize(const SwChar* appName)
@@ -23,4 +25,5 @@ namespace swizzle
 
         return status;
     }
+
 }

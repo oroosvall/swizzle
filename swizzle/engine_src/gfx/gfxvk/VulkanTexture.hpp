@@ -3,8 +3,8 @@
 
 #include <swizzle/gfx/Texture.hpp>
 
-#include "vk.hpp"
-#include "VulkanObjectContainer.hpp"
+#include "backend/Vk.hpp"
+#include "backend/VulkanObjectContainer.hpp"
 
 namespace swizzle::gfx
 {
@@ -13,15 +13,19 @@ namespace swizzle::gfx
     {
     public:
 
-        VulkanTexture(const VulkanObjectContainer& vkObjects);
+        VulkanTexture(const VulkanObjectContainer& vkObjects, U32 width, U32 height);
         virtual ~VulkanTexture();
 
         // Inherited via Texture
         virtual void setData(U32 width, U32 height, U32 channels, U8* pixelData) override;
 
+        virtual void upload() override;
+
         VkImageView getView() const { return mImageView; }
 
-        void frameBufferCreate(U32 width, U32 height, VkFormat format);
+        SwBool isUploaded() const;
+
+        void uploadImage(VkCommandBuffer cmdBuffer);
 
     private:
 
@@ -40,7 +44,7 @@ namespace swizzle::gfx
 
         VkDeviceMemory mMemory;
 
-        SwBool uploaded;
+        SwBool mUploaded;
 
         VkDeviceMemory mStageMemory;
         VkBuffer mStageBuffer;

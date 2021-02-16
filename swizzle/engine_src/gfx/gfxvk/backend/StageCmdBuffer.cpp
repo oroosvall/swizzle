@@ -1,4 +1,5 @@
 #include "StageCmdBuffer.hpp"
+#include "VulkanMemory.hpp"
 
 namespace swizzle::gfx
 {
@@ -22,6 +23,14 @@ namespace swizzle::gfx
         cmdAllocInfo.commandBufferCount = 1;
 
         vkAllocateCommandBuffers(mDevice, &cmdAllocInfo, &mCmdBuffer);
+
+        VkFenceCreateInfo fenceInfo = {};
+
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        fenceInfo.pNext = VK_NULL_HANDLE;
+
+        vkCreateFence(mDevice, &fenceInfo, nullptr, &mCompleteFence);
     }
 
     StageCmdBuffer::~StageCmdBuffer()
@@ -43,17 +52,21 @@ namespace swizzle::gfx
 
     void StageCmdBuffer::beginStageRecording()
     {
-        VkCommandBufferBeginInfo beginInfo;
-        beginInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.pNext = VK_NULL_HANDLE;
-        beginInfo.flags = 0;
-        beginInfo.pInheritanceInfo = {};
+        if (vkGetFenceStatus(mDevice, mCompleteFence) == VK_SUCCESS)
+        {
+            vkResetFences(mDevice, 1U, &mCompleteFence);
 
-        vkBeginCommandBuffer(mCmdBuffer, &beginInfo);
-        mRecordingStarted = true;
+            VkCommandBufferBeginInfo beginInfo;
+            beginInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.pNext = VK_NULL_HANDLE;
+            beginInfo.flags = 0;
+            beginInfo.pInheritanceInfo = {};
 
-        clearStageBuffers();
+            vkBeginCommandBuffer(mCmdBuffer, &beginInfo);
+            mRecordingStarted = true;
 
+            clearStageBuffers();
+        }
     }
 
     void StageCmdBuffer::endAndSubmitRecording()
@@ -71,7 +84,9 @@ namespace swizzle::gfx
         subinfo.signalSemaphoreCount = 0;
         subinfo.pSignalSemaphores = VK_NULL_HANDLE;
 
-        vkQueueSubmit(mQueue, 1, &subinfo, VK_NULL_HANDLE);
+        vkQueueSubmit(mQueue, 1, &subinfo, mCompleteFence);
+
+        mRecordingStarted = false;
     }
 
     StageMemoryBuffer& StageCmdBuffer::allocateStagingMemory(U8* data, VkDeviceSize memSize)
@@ -99,7 +114,7 @@ namespace swizzle::gfx
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.pNext = VK_NULL_HANDLE;
         allocInfo.allocationSize = req.size;
-        allocInfo.memoryTypeIndex = vk::FindMemoryType(mDeviceMemorProperties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, req.memoryTypeBits);
+        allocInfo.memoryTypeIndex = vk::VulkanMemory::FindMemoryType(mDeviceMemorProperties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, req.memoryTypeBits);
 
         vkAllocateMemory(mDevice, &allocInfo, nullptr, &memoryStuff.mMemory);
 

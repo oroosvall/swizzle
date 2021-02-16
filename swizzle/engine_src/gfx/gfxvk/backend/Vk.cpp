@@ -38,7 +38,6 @@ namespace vk
         RES_STR(VK_ERROR_INCOMPATIBLE_DISPLAY_KHR),
         RES_STR(VK_ERROR_VALIDATION_FAILED_EXT),
         RES_STR(VK_ERROR_INVALID_SHADER_NV),
-        RES_STR(VK_ERROR_INCOMPATIBLE_VERSION_KHR),
         RES_STR(VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT),
         RES_STR(VK_ERROR_NOT_PERMITTED_EXT),
         RES_STR(VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT),
@@ -54,18 +53,4 @@ namespace vk
         return vkResultStrings[res];
     }
 
-    U32 FindMemoryType(VkPhysicalDeviceMemoryProperties props, VkMemoryPropertyFlags properties, uint32_t typeBits)
-    {
-        U32 result = 0xFFFFFFFF; // Unable to find memoryType
-
-        for (U32 i = 0U; i < props.memoryTypeCount; i++)
-        {
-            if (((props.memoryTypes[i].propertyFlags & properties) == properties) && (typeBits & (1U << i)))
-            {
-                result = i;
-                break;
-            }
-        }
-        return result;
-    }
 }

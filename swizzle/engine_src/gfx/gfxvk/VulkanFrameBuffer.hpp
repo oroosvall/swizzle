@@ -1,8 +1,8 @@
 #ifndef VULKAN_FRAME_BUFFER_HPP
 #define VULKAN_FRAME_BUFFER_HPP
 
-#include "vk.hpp"
-#include "VulkanObjectContainer.hpp"
+#include "backend/Vk.hpp"
+#include "backend/VulkanObjectContainer.hpp"
 #include "VulkanTexture.hpp"
 
 #include <swizzle/gfx/FrameBuffer.hpp>
@@ -29,7 +29,7 @@ namespace swizzle::gfx
 
         virtual void resize(U32 width, U32 height) override;
 
-        virtual core::Resource<Shader> createShader(ShaderAttributeList attributeList) override;
+        virtual core::Resource<Shader> createShader(const ShaderAttributeList& attributeList) override;
 
         VkRenderPass getRenderPass() const;
         VkSampleCountFlagBits getMultisampleCount() const;
@@ -90,7 +90,7 @@ namespace swizzle::gfx
         virtual void resize(U32 width, U32 height) override;
 
     private:
-        
+
         void createTextures();
         void createRenderPass();
         void createFrameBuffer();

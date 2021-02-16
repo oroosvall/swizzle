@@ -27,7 +27,7 @@ namespace swizzle::gfx
 
         virtual void setClearColor(ClearColor color) = 0;
 
-        virtual core::Resource<Shader> createShader(ShaderAttributeList attribs) = 0;
+        virtual core::Resource<Shader> createShader(const ShaderAttributeList& attribs) = 0;
 
         virtual void prepare() = 0;
         virtual void present() = 0;

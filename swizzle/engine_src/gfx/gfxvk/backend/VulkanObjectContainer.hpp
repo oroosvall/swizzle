@@ -3,12 +3,12 @@
 
 #include <swizzle/core/Types.hpp>
 
-#include "vk.hpp"
+#include "Vk.hpp"
 #include "StageCmdBuffer.hpp"
 
-namespace swizzle::gfx
+namespace swizzle::gfx // move to vk namespace
 {
-    
+
     // this basically contains all vulkan objects created for the pipeline
     // that get passed around between objects
     // so it is handy to access
@@ -29,6 +29,8 @@ namespace swizzle::gfx
 
         VkDescriptorPool mDescriptorPool;
         StageCmdBuffer* stageCmdBuffer;
+
+        VkAllocationCallbacks* mDebugAllocCallbacks;
     };
 }
 

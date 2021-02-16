@@ -21,27 +21,11 @@ int main(int argv, char* argc[])
     StdLogger logger;
 
     sw::core::AddLogger(&logger);
-    sw::SwInitialize("Swizzle-Sandbox");
-
-    printf("TempDir %s\n", sw::core::GetTempDirectory());
-    printf("SaveGameDir %s\n", sw::core::GetSaveGameDirectory());
-    printf("AppCache %s\n", sw::core::GetAppCacheDirectory());
-    
-    utils::HighResolutionClock highRes;
 
     Game game;
 
-    while (true)
-    {
-        float_t dt = highRes.secondsAsFloat(true);
-        if (!game.update(dt)) break;   
-    }
+    game.initialize();
+    game.run();
 
-    sw::gfx::WaitIdle();
-
-
-    game.cleanup();
-
-    sw::SwCleanup();
     sw::core::RemoveLogger(&logger);
 }

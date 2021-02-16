@@ -2,7 +2,7 @@
 #define VULKAN_SHADER_HPP
 
 #include <swizzle/gfx/Shader.hpp>
-#include "VulkanObjectContainer.hpp"
+#include "backend/VulkanObjectContainer.hpp"
 #include "VulkanFrameBuffer.hpp"
 
 #include <map>
@@ -20,10 +20,12 @@ namespace swizzle::gfx
     {
     public:
 
-        VulkanShader(const VulkanObjectContainer& vkObjects, const PresentFrameBuffer& frameBuffer, ShaderAttributeList attribList);
+        VulkanShader(const VulkanObjectContainer& vkObjects, const PresentFrameBuffer& frameBuffer, const ShaderAttributeList& attribList);
         virtual ~VulkanShader();
 
         virtual SwBool load(const SwChar* filePath) override;
+
+        virtual core::Resource<Material> createMaterial() override;
 
         VkPipeline getPipeline() const;
         VkPipelineLayout getPipelineLayout() const;
@@ -31,7 +33,7 @@ namespace swizzle::gfx
         VkDescriptorSet getDescriptorSet() const;
 
     private:
-        
+
         void loadShader(const SwChar* shaderType, const SwChar* binaryFile);
         void createPipeline();
 

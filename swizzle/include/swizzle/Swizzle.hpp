@@ -1,29 +1,99 @@
 #ifndef SWIZZLE_HPP
 #define SWIZZLE_HPP
 
-#include <swizzle/core/Types.hpp>
-#include <swizzle/Api.hpp>
+/* Includes */
 
-#include <swizzle/core/Logging.hpp>
-#include <swizzle/core/Platform.hpp>
+#include "swizzle/core/Types.hpp"
+#include "swizzle/Api.hpp"
 
-#include <swizzle/gfx/Gfx.hpp>
+#include "swizzle/core/Logging.hpp"
+#include "swizzle/core/Platform.hpp"
+#include "swizzle/core/Window.hpp"
+
+#include "swizzle/gfx/Gfx.hpp"
+#include "swizzle/core/Input.hpp"
+
+#include <utils/HighResolutionClock.hpp>
+
+/* Defines */
+
+/* Typedefs */
+
+/* Function Declaration */
 
 namespace swizzle
 {
     SwBool SWIZZLE_API SwInitialize(const SwChar* appName = nullptr);
     SwBool SWIZZLE_API SwCleanup();
+}
 
-    /*void SWIZZLE_API SwInitialize(eRendererBackend graphicsBackend);
-    void SWIZZLE_API SwCleanup();
+/* Forward Declared Structs/Classes */
 
-    void SWIZZLE_API SwAddLogger(LoggerIfc* logger);
+/* Struct Declaration */
 
-    uint32_t SWIZZLE_API SwGetNumDisplays();
-    void SWIZZLE_API SwGetDisplayResolution(uint32_t displayIndex, uint32_t& resolutionCount, Resolution* resolutions);
+/* Class Declaration */
 
-    Resource<Window> SWIZZLE_API SwCreateWindow(uint32_t width, uint32_t height, const char* title);
-    Resource<Renderer> SWIZZLE_API SwCreateRenderer(Window* window, eRendererBackend backend);*/
+namespace swizzle
+{
+    // TODO: move to "AppTemplate.hpp"
+    class Application
+    {
+    public:
+        void initialize()
+        {
+            SwInitialize();
+
+            mWindow = core::CreateWindow(1920, 1080, "Template");
+            mWindow->show();
+
+            input::SetInputSource(mWindow);
+
+            mSwapchain = gfx::CreateSwapchain(mWindow);
+            mSwapchain->setVsync(gfx::VSyncTypes::vSyncAdaptive);
+
+            userSetup();
+        }
+
+        void run()
+        {
+            utils::HighResolutionClock highRes;
+            SwBool running = true;
+
+            while (running)
+            {
+                float_t dt = highRes.secondsAsFloat(true);
+
+                swizzle::input::InputFrameReset();
+                mWindow->pollEvents();
+
+                running = userUpdate(dt);
+            }
+
+            cleanup();
+        }
+
+    protected:
+        virtual void userSetup() = 0;
+        virtual SwBool userUpdate(F32 dt) = 0;
+        virtual void userCleanup() = 0;
+
+    private:
+        void cleanup()
+        {
+            gfx::WaitIdle();
+            userCleanup();
+
+            mSwapchain.reset();
+            mWindow.reset();
+
+            SwCleanup();
+        }
+
+    protected:
+        core::Resource<core::Window> mWindow;
+        core::Resource<gfx::Swapchain> mSwapchain;
+
+    };
 
 } // namespace swizzle
 

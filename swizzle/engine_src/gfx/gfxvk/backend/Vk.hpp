@@ -16,8 +16,6 @@
 namespace vk
 {
     const char* VkResultToString(VkResult res);
-
-    U32 FindMemoryType(VkPhysicalDeviceMemoryProperties props, VkMemoryPropertyFlags properties, uint32_t type_bits);
 }
 
 #endif

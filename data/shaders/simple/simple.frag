@@ -9,6 +9,11 @@ layout(location = 0) out vec4 fragColor;
 
 layout(set=0, binding=0) uniform sampler2D diffuseTexture;
 
+layout(set=0, binding=1) uniform Light
+{
+    vec4 lightColor;
+} lamp;
+
 const vec3 lightPos = vec3(1.0, 1.0 ,1.0);
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const vec3 diffuseColor = vec3(0.7, 0.3 ,0.15);
@@ -58,7 +63,7 @@ void main()
         float specAngle = max(dot(r, -viewDir), 0.0);
         specular = attenuation * pow(specAngle, 4.0);
 
-		letThereBeLight += lightColor * attenuation * max(dot(normal, s), 0.0);
+		letThereBeLight += lamp.lightColor.rgb * attenuation * max(dot(normal, s), 0.0);
 	
 	}
 
@@ -66,5 +71,6 @@ void main()
 
     //fragColor = vec4((diffuseColor * letThereBeLight).rgb + specular*specColor, 1.0);
     fragColor = vec4(texture(diffuseTexture, uv).rgb, 1.0) * vec4((diffuseColor * letThereBeLight).rgb + specular*specColor, 1.0);
-    //fragColor = vec4(uv, 0.0, 1.0);
+    //fragColor = vec4(texture(diffuseTexture, uv).rgb, 1.0);
+    //fragColor = vec4(uv, 0.0,  1.0);
 }

@@ -1,11 +1,12 @@
 #ifndef VULKAN_CMD_BUFFER_HPP
 #define VULKAN_CMD_BUFFER_HPP
 
-#include "vk.hpp"
-#include "VulkanObjectContainer.hpp"
+#include "backend/Vk.hpp"
+#include "backend/VulkanObjectContainer.hpp"
 
 #include <swizzle/gfx/CommandBuffer.hpp>
 #include <swizzle/gfx/Swapchain.hpp>
+#include <swizzle/gfx/Material.hpp>
 
 namespace swizzle::gfx
 {
@@ -28,6 +29,7 @@ namespace swizzle::gfx
         virtual void endRenderPass() override;
 
         virtual void bindShader(core::Resource<Shader> shader) override;
+        virtual void bindMaterial(core::Resource<Shader> shader, core::Resource<Buffer> material) override;
         virtual void setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size) override;
         virtual void setViewport(U32 x, U32 y) override;
 

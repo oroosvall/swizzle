@@ -7,6 +7,8 @@
 #include <swizzle/gfx/Swapchain.hpp>
 #include <swizzle/gfx/FrameBuffer.hpp>
 #include <swizzle/gfx/Buffer.hpp>
+#include <swizzle/gfx/Texture.hpp>
+#include <swizzle/gfx/Material.hpp>
 
 namespace swizzle::gfx
 {
@@ -27,6 +29,7 @@ namespace swizzle::gfx
         virtual void endRenderPass() = 0;
 
         virtual void bindShader(core::Resource<Shader> shader) = 0;
+        virtual void bindMaterial(core::Resource<Shader> shader, core::Resource<Buffer> material) = 0;
         virtual void setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size) = 0;
         virtual void setViewport(U32 x, U32 y) = 0;
 
