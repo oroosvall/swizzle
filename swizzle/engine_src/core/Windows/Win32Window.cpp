@@ -301,7 +301,7 @@ namespace swizzle::core
 
             /*GetKeyNameTextA((LONG)key, buffer, 512);
             LOG_INFO("%d, %s", in.mKey, buffer);*/
-            
+
             /*ActivateKeyboardLayout(hPrevious, KLF_SETFORPROCESS);
             UnloadKeyboardLayout(hLocale);*/
 
@@ -357,22 +357,41 @@ namespace swizzle::core
             auto& eventHandler = wnd->getEventHandler();
             switch (msg)
             {
+            case WM_ACTIVATE:
+            {
+                if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
+                {
+                    WindowFocusEvent evt;
+                    evt.mFocused = true;
+                    eventHandler.publishEvent(evt);
+                    XInputEnable(true);
+                }
+                else
+                {
+                    WindowFocusEvent evt;
+                    evt.mFocused = false;
+                    eventHandler.publishEvent(evt);
+                    XInputEnable(false);
+                    break;
+                }
+                break;
+            }
             case WM_SETFOCUS:
             {
                 WindowFocusEvent evt;
                 evt.mFocused = true;
                 eventHandler.publishEvent(evt);
                 XInputEnable(true);
+                break;
             }
-            break;
             case WM_KILLFOCUS:
             {
                 WindowFocusEvent evt;
                 evt.mFocused = false;
                 eventHandler.publishEvent(evt);
                 XInputEnable(false);
+                break;
             }
-            break;
             case WM_SYSCOMMAND:
             {
                 switch (wParam)
@@ -380,8 +399,8 @@ namespace swizzle::core
                 case SC_KEYMENU:
                     return 0;
                 }
+                break;
             }
-            break;
             case WM_SETCURSOR:
             {
                 if (nullptr != wnd)
@@ -394,8 +413,8 @@ namespace swizzle::core
                         }
                     }
                 }
+                break;
             }
-            break;
             case WM_SIZE:
             {
                 int width = LOWORD(lParam);
@@ -405,14 +424,14 @@ namespace swizzle::core
                 evt.mHeight = height;
                 evt.mWidth = width;
                 eventHandler.publishEvent(evt);
+                break;
             }
-            break;
             case WM_CLOSE:
             {
                 WindowCloseEvent evt;
                 eventHandler.publishEvent(evt);
+                break;
             }
-            break;
             case WM_CHAR:
             case WM_SYSCHAR:
             case WM_UNICHAR:
@@ -435,12 +454,12 @@ namespace swizzle::core
                 eventHandler.publishEvent(evt);
 
                 return 0;
+                break;
             }
-            break;
             case WM_INPUT: {
                 inputCallback(wnd, eventHandler, lParam);
+                break;
             }
-            break;
             default:
                 break;
             }
@@ -473,7 +492,7 @@ namespace swizzle::core
 
     void Win32Window::show()
     {
-        ShowWindow(mWnd, SW_SHOWNORMAL);
+        ShowWindow(mWnd, SW_SHOWNA);
     }
 
     void Win32Window::hide()
