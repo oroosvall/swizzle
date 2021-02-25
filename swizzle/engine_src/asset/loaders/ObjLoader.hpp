@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 #include <glm/glm.hpp>
 #include <vector>
 

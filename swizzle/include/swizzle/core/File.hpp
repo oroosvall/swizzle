@@ -1,7 +1,7 @@
 #ifndef FILE_HPP
 #define FILE_HPP
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 
 namespace swizzle::core
 {

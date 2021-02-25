@@ -1,7 +1,7 @@
 #ifndef VECTORS_HPP
 #define VECTORS_HPP
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 #include <swizzle/Api.hpp>
 
 namespace swizzle

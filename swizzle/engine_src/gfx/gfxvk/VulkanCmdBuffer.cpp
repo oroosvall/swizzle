@@ -1,7 +1,7 @@
 
 #include "VulkanCmdBuffer.hpp"
 #include "VulkanSwapchain.hpp"
-#include "VulkanShader.hpp"
+#include "shader/VulkanShader.hpp"
 #include "VulkanBuffer.hpp"
 #include "VulkanTexture.hpp"
 

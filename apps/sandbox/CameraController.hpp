@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 #include "Camera.hpp"
 #include <glm/glm.hpp>
 
@@ -19,7 +19,7 @@ private:
     void mousePan(float dx, float dy);
 
     PerspectiveCamera& mCamera;
-    
+
     glm::vec3 mPosition;
     glm::vec3 mDirection;
     glm::vec3 mStartDir;

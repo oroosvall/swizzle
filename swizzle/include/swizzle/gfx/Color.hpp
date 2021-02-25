@@ -1,7 +1,7 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 #include <swizzle/Api.hpp>
 
 namespace swizzle::gfx

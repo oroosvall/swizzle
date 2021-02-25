@@ -7,7 +7,7 @@
 
 #include <swizzle/gfx/FrameBuffer.hpp>
 
-#include <swizzle/core/Resource.hpp>
+#include <common/Resource.hpp>
 
 #include <vector>
 

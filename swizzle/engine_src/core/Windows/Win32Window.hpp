@@ -3,7 +3,7 @@
 
 #ifdef SW_WINDOWS
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 #include <swizzle/core/WindowEvents.hpp>
 #include <swizzle/core/Window.hpp>
 

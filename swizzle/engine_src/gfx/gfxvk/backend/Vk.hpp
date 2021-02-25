@@ -1,7 +1,7 @@
 #ifndef VK_HPP
 #define VK_HPP
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 
 #if defined(SW_WINDOWS)
 #define VK_USE_PLATFORM_WIN32_KHR

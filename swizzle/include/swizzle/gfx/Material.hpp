@@ -1,8 +1,8 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
-#include <swizzle/core/Types.hpp>
-#include <swizzle/core/Resource.hpp>
+#include <common/Types.hpp>
+#include <common/Resource.hpp>
 
 #include <swizzle/gfx/Buffer.hpp>
 #include <swizzle/gfx/Texture.hpp>

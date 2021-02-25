@@ -1,6 +1,6 @@
 
 #include "VulkanFramebuffer.hpp"
-#include "VulkanShader.hpp"
+#include "shader/VulkanShader.hpp"
 #include "backend/VulkanMemory.hpp"
 #include <swizzle/core/Logging.hpp>
 

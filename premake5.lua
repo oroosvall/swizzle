@@ -25,6 +25,13 @@ function setupPrj(prjName, prjType, filePath, includePath, defs, lnk, userFunc)
         end
 end
 
+extIncDirs = {}
+extIncDirs['common'] = "libs/common/include"
+extIncDirs['physics'] = "libs/physics/include"
+extIncDirs['script'] = "libs/script/include"
+extIncDirs['utils'] = "libs/utils/include"
+extIncDirs['vk_sdk'] = os.getenv("VULKAN_SDK") .. "/Include"
+
 group("g-test")
     project("google-test")
         location("build/" .. platform .."/%{prj.name}")
@@ -72,19 +79,19 @@ group("glad")
 group("libs")
     setupPrj("utils", "staticLib",
         {"libs/utils/include/**.hpp", "libs/utils/src/**.hpp", "libs/utils/src/**.cpp"}, -- files/filePath
-        {"libs/utils/include/"}, -- include paths
+        {extIncDirs['utils']}, -- include paths
         "", -- defines
         nil, -- links
         function() -- userFunc
             vpaths { ["utils/*"] = "libs/utils/src/**.hpp" }
             vpaths { ["utils/*"] = "libs/utils/src/**.cpp" }
-            vpaths { ["utils/*"] = "libs/utils/include/**.hpp" }
+            vpaths { ["include/*"] = "libs/utils/include/**.hpp" }
         end  -- userFunc
     )
 
     setupPrj("script", "staticLib",
         {"libs/script/include/**.hpp", "libs/script/scr/**.hpp", "libs/script/src/**.cpp"}, -- files/FilePath
-        {"libs/script/include/", "libs/utils/include/"}, -- includePaths
+        {"libs/script/include/", extIncDirs['utils']}, -- includePaths
         {""}, -- defines
         {"utils"}, -- links
         function() -- userFunc
@@ -101,9 +108,9 @@ group("libs")
         {""}, -- defines
         nil, -- links
         function() -- userFunc
-            vpaths { ["physics/*"] = "swizzle/physics/**.hpp" }
-            vpaths { ["physics/*"] = "swizzle/physics/**.cpp" }
-            vpaths { ["physics/*"] = "swizzle/include/physics/**.hpp" }
+            vpaths { ["physics/*"] = "lib/physics/**.hpp" }
+            vpaths { ["physics/*"] = "lib/physics/**.cpp" }
+            vpaths { ["physics/*"] = "lib/physics/include/**.hpp" }
 
             filter "system:windows"
                 defines
@@ -116,8 +123,8 @@ group("libs")
 group("Engine")
 
     setupPrj("swizzle", "sharedLib",
-        {"swizzle/include/**.hpp", "swizzle/engine_src/**.hpp", "swizzle/engine_src/**.cpp"}, -- files/filePath
-        {"swizzle/include/", "swizzle/engine_src/", os.getenv("VULKAN_SDK") .. "/Include", "vendor/glm/include", "vendor/stb/include", "swizzle", "libs/utils/include"}, -- includePaths
+        {"swizzle/include/**.hpp", "swizzle/engine_src/**.hpp", "swizzle/engine_src/**.cpp", extIncDirs['common'].."/**.hpp"}, -- files/filePath
+        {"swizzle/include/", "swizzle/engine_src/", extIncDirs['vk_sdk'], "vendor/glm/include", "vendor/stb/include", "swizzle", extIncDirs['utils'], extIncDirs['common']}, -- includePaths
         {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"}, -- defines
         { "utils", "script", "physics", "vulkan-1", "shaderc_combined", "Xinput" }, -- links
         function() 
@@ -125,6 +132,7 @@ group("Engine")
             vpaths { ["engine_src/*"] = "swizzle/engine_src/**.cpp" }
 
             vpaths { ["include/*"] = "swizzle/include/**.hpp" }
+            vpaths { ["include/*"] = extIncDirs['common'].."/**.hpp" }
 
             libdirs { os.getenv("VULKAN_SDK") .. "/Lib" }
 
@@ -174,7 +182,7 @@ group("Tests")
 group("Apps")
     setupPrj("sandbox", "consoleApp",
         {"swizzle/include/**.hpp", "apps/sandbox/**.hpp", "apps/sandbox/**.cpp"}, -- files/filePath
-        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include"}, -- include paths
+        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common']}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
         {"swizzle", "utils"}, -- links
         function() -- userFunc
@@ -187,7 +195,7 @@ group("Apps")
 
     setupPrj("modelConverter", "consoleApp",
         {"swizzle/include/**.hpp", "apps/modelConverter/**.hpp", "apps/modelConverter/**.cpp"}, -- files/filePath
-        {"apps/modelConverter/", "swizzle/include/", "vendor/glm/include", "libs/utils/include"}, -- include paths
+        {"apps/modelConverter/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common']}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
         {"swizzle", "utils"}, -- links
         function() -- userFunc
@@ -200,7 +208,7 @@ group("Apps")
 
     setupPrj("scriptSandbox", "consoleApp",
         {"apps/scriptSandbox/**.hpp", "apps/scriptSandbox/**.cpp"}, -- files/filePath
-        {"apps/scriptSandbox/", "libs/script/include", "libs/utils/include"}, -- include paths
+        {"apps/scriptSandbox/", "libs/script/include", "libs/utils/include", extIncDirs['common']}, -- include paths
         {}, -- defines
         {"utils", "script"}, -- links
         function() -- userFunc

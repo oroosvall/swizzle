@@ -3,7 +3,7 @@
 
 /* Includes */
 
-#include "swizzle/core/Types.hpp"
+#include <common/Types.hpp>
 #include "swizzle/Api.hpp"
 
 #include "swizzle/core/Logging.hpp"

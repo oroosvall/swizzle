@@ -1,7 +1,7 @@
 #ifndef BUFFER_HPP
 #define BUFFER_HPP
 
-#include <swizzle/core/Resource.hpp>
+#include <common/Resource.hpp>
 
 namespace swizzle::gfx
 {

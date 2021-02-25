@@ -1,7 +1,7 @@
 #ifndef WINDOW_EVENTS_HPP
 #define WINDOW_EVENTS_HPP
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 #include <swizzle/Api.hpp>
 
 namespace swizzle::core

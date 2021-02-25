@@ -1,7 +1,7 @@
 #ifndef GFX_HPP
 #define GFX_HPP
 
-#include <swizzle/core/Resource.hpp>
+#include <common/Resource.hpp>
 #include <swizzle/core/Window.hpp>
 #include <swizzle/Api.hpp>
 

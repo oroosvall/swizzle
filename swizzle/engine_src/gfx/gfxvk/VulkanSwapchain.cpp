@@ -1,8 +1,8 @@
 #include "VulkanSwapchain.hpp"
 #include "Surface.hpp"
 #include "VulkanFrameBuffer.hpp"
-#include "VulkanShader.hpp"
 
+#include "shader/VulkanShader.hpp"
 #include <swizzle/core/Logging.hpp>
 
 namespace swizzle::gfx

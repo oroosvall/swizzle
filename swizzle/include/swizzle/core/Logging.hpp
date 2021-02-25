@@ -1,7 +1,7 @@
 #ifndef LOGGING_HPP
 #define LOGGING_HPP
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 #include <swizzle/Api.hpp>
 
 /*

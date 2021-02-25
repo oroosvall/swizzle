@@ -1,8 +1,8 @@
 #ifndef FRAME_BUFFER_HPP
 #define FRAME_BUFFER_HPP
 
-#include <swizzle/core/Types.hpp>
-#include <swizzle/core/Resource.hpp>
+#include <common/Types.hpp>
+#include <common/Resource.hpp>
 
 #include <swizzle/gfx/Shader.hpp>
 

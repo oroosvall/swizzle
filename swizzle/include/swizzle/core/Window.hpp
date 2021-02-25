@@ -1,7 +1,7 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
-#include <swizzle/core/Types.hpp>
+#include <common/Types.hpp>
 
 #include <swizzle/core/Event.hpp>
 #include <swizzle/core/WindowEvents.hpp>

@@ -2,8 +2,8 @@
 #define PLATFORM_HPP
 
 #include <swizzle/Api.hpp>
-#include <swizzle/core/Types.hpp>
-#include <swizzle/core/Resource.hpp>
+#include <common/Types.hpp>
+#include <common/Resource.hpp>
 #include <swizzle/core/Input.hpp>
 
 #include "Window.hpp"

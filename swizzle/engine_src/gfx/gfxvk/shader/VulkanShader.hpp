@@ -1,21 +1,38 @@
 #ifndef VULKAN_SHADER_HPP
 #define VULKAN_SHADER_HPP
 
+/* Include files */
+
 #include <swizzle/gfx/Shader.hpp>
-#include "backend/VulkanObjectContainer.hpp"
-#include "VulkanFrameBuffer.hpp"
+
+#include "gfx/gfxvk/backend/VulkanObjectContainer.hpp"
+#include "gfx/gfxvk/VulkanFrameBuffer.hpp"
 
 #include <map>
 
+/* Defines */
+
+/* Typedefs/Enum */
+
 namespace swizzle::gfx
 {
-
     enum class ShaderModuleType
     {
         ShaderModuleType_Vertex,
         ShaderModuleType_Fragment
     };
+}
 
+/* Function Declaration*/
+
+/* Forward Declared Structs/Classes */
+
+/* Struct Declaration */
+
+/* Class Declaration */
+
+namespace swizzle::gfx
+{
     class VulkanShader : public Shader
     {
     public:
@@ -50,8 +67,6 @@ namespace swizzle::gfx
         VkDescriptorSet mDescriptorSet;
 
     };
-
-
 }
 
 #endif

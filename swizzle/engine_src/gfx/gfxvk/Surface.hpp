@@ -1,7 +1,7 @@
 #ifndef SURFACE_HPP
 #define SURFACE_HPP
 
-#include <swizzle/core/Resource.hpp>
+#include <common/Resource.hpp>
 #include <swizzle/core/Window.hpp>
 
 #include "backend/Vk.hpp"

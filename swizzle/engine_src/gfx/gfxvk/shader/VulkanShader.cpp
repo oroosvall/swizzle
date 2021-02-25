@@ -1,3 +1,5 @@
+/* Include files */
+
 #include "VulkanShader.hpp"
 
 #include <swizzle/core/Logging.hpp>
@@ -9,9 +11,30 @@
 
 #include <vector>
 
+/* Defines */
+
+/* Typedefs */
+
+/* Static Variables */
+
+/* Static Function Declaration */
+
 namespace swizzle::gfx
 {
+    // @ TODO: move to File handling api
+    static std::string getPathFromFileName(const std::string& fileName);
 
+    // @ TODO: move to shader helper functions
+    static void readShaderInfo(const std::string& info, std::string& type, std::string& path);
+
+    // @ TODO: move to shader helper functions
+    static VkFormat getShaderAttributeFormat(ShaderAttributeDataType type);
+}
+
+/* Static Function Definition */
+
+namespace swizzle::gfx
+{
     // @ TODO: move to File handling api
     static std::string getPathFromFileName(const std::string& fileName)
     {
@@ -19,7 +42,7 @@ namespace swizzle::gfx
         return fileName.substr(0, found + 1);
     }
 
-    // @ TODO: move to File handling api
+    // @ TODO: move to shader helper functions
     static void readShaderInfo(const std::string& info, std::string& type, std::string& path)
     {
         auto index = info.find('=');
@@ -27,7 +50,7 @@ namespace swizzle::gfx
         path = info.substr(index + 1);
     }
 
-    // @ TODO: move to helper functions
+    // @ TODO: move to shader helper functions
     static VkFormat getShaderAttributeFormat(ShaderAttributeDataType type)
     {
         VkFormat fmt = VK_FORMAT_UNDEFINED;
@@ -54,7 +77,14 @@ namespace swizzle::gfx
 
         return fmt;
     }
+}
 
+/* Function Definition */
+
+/* Class Public Function Definition */
+
+namespace swizzle::gfx
+{
     VulkanShader::VulkanShader(const VulkanObjectContainer& vkObjects, const PresentFrameBuffer& frameBuffer, const ShaderAttributeList& shaderAttributes)
         : mVkObjects(vkObjects)
         , mPipelineLayout(VK_NULL_HANDLE)
@@ -183,6 +213,14 @@ namespace swizzle::gfx
         return mDescriptorSet;
     }
 
+}
+
+/* Class Protected Function Definition */
+
+/* Class Private Function Definition */
+
+namespace swizzle::gfx
+{
     void VulkanShader::loadShader(const SwChar* shaderType, const SwChar* binaryFile)
     {
         std::ifstream inFile(binaryFile, std::ios::binary | std::ios::ate);
@@ -248,7 +286,7 @@ namespace swizzle::gfx
             bindingDescriptors[i].inputRate =
                 (input.mRate == ShaderBufferInputRate::InputRate_Vertex ? VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX
                     : VkVertexInputRate::VK_VERTEX_INPUT_RATE_INSTANCE);
-             bindingDescriptors[i].stride = input.mStride;
+            bindingDescriptors[i].stride = input.mStride;
         }
 
         std::vector<VkVertexInputAttributeDescription> attributeDescriptor;
@@ -262,6 +300,7 @@ namespace swizzle::gfx
             attributeDescriptor[i].offset = attrib.mOffset;
             if (attributeDescriptor[i].format == VK_FORMAT_UNDEFINED)
             {
+                // TODO: move this to platform layer
                 MessageBox(NULL, L"Format was undefined", L"Shader loading", MB_ICONERROR);
                 //exit(-1);
             }
@@ -371,9 +410,9 @@ namespace swizzle::gfx
             blendState.colorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
             blendState.alphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
             blendState.colorWriteMask = VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT |
-                                        VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT |
-                                        VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT |
-                                        VkColorComponentFlagBits::VK_COLOR_COMPONENT_B_BIT;
+                VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT |
+                VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT |
+                VkColorComponentFlagBits::VK_COLOR_COMPONENT_B_BIT;
 
             attachs.push_back(blendState);
         }
@@ -383,7 +422,7 @@ namespace swizzle::gfx
         colorState.blendConstants[2] = 0.0F;
         colorState.blendConstants[3] = 0.0F;
 
-        VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        VkDynamicState dynamicStates[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 
         VkPipelineDynamicStateCreateInfo dynState = {};
         dynState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -414,7 +453,7 @@ namespace swizzle::gfx
         createInfo.basePipelineIndex = -1;
 
         VkResult res = vkCreateGraphicsPipelines(mVkObjects.mLogicalDevice, mVkObjects.mPiplineCache, 1u, &createInfo, mVkObjects.mDebugAllocCallbacks,
-                                                 &mPipeline);
+            &mPipeline);
         if (res != VK_SUCCESS)
         {
             LOG_ERROR("Graphics pipeline creation failed %s", vk::VkResultToString(res));
