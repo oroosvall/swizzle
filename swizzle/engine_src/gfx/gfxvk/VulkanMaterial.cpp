@@ -22,16 +22,19 @@ namespace swizzle::gfx
 
     MaterialDescriptorType VulkanMaterial::getDescriptorType(U32 index)
     {
+        index;
         return MaterialDescriptorType::TextureSampler;
     }
 
     void VulkanMaterial::setDescriptorBufferResource(U32 index, core::Resource<Buffer> buffer)
     {
-
+        index;
+        buffer;
     }
 
     void VulkanMaterial::setDescriptorTextureResource(U32 index, core::Resource<Texture> texture)
     {
-
+        index;
+        texture;
     }
 }
