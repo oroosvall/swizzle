@@ -7,8 +7,8 @@
 #include <swizzle/gfx/Swapchain.hpp>
 
 #include "backend/Vk.hpp"
-#include "backend/VulkanObjectContainer.hpp"
-#include "VulkanFrameBuffer.hpp"
+#include "backend/VkContainer.hpp"
+#include "VulkanPresentFBO.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -25,7 +25,7 @@ namespace swizzle::gfx
     class VulkanSwapchain : public Swapchain
     {
     public:
-        VulkanSwapchain(core::Resource<core::Window> window, const VulkanObjectContainer& vkObjects);
+        VulkanSwapchain(const VkContainer vkObjects, core::Resource<core::Window> window);
         virtual ~VulkanSwapchain();
 
         virtual SwBool isVsyncModeSupported(VSyncTypes sync) const override;
@@ -58,7 +58,7 @@ namespace swizzle::gfx
         void createFrameBuffers();
 
         core::Resource<core::Window> mWindow;
-        const VulkanObjectContainer& mVkObjects;
+        const VkContainer mVkObjects;
 
         VkSurfaceKHR mSurface;
 
@@ -79,7 +79,7 @@ namespace swizzle::gfx
         U32 mSwapchainImageCount;
         std::vector<SwapchainImage> mSwapchainImages;
 
-        std::vector<core::Resource<PresentFrameBuffer>> mFrameBuffers;
+        std::vector<core::Resource<PresentFBO>> mFrameBuffers;
 
     };
 

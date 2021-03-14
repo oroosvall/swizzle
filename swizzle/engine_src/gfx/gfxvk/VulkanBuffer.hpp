@@ -2,8 +2,8 @@
 #define VULKAN_BUFFER_HPP
 
 #include "backend/Vk.hpp"
-#include "backend/VulkanObjectContainer.hpp"
 #include "backend/VulkanMemory.hpp"
+#include "backend/VkContainer.hpp"
 #include <swizzle/gfx/Buffer.hpp>
 
 namespace swizzle::gfx
@@ -11,7 +11,7 @@ namespace swizzle::gfx
     class VulkanBuffer : public Buffer
     {
     public:
-        VulkanBuffer(const VulkanObjectContainer& vkObjects, BufferType type);
+        VulkanBuffer(const VkContainer vkObjects, BufferType type);
         virtual ~VulkanBuffer();
 
         virtual void setBufferData(void* data, U64 size, U32 stride) override;
@@ -27,16 +27,13 @@ namespace swizzle::gfx
 
         void createOrResize(U64 newSize);
 
-        const VulkanObjectContainer& mVkObjects;
+        const VkContainer mVkObjects;
         const BufferType mType;
 
         VkBuffer mBuffer;
 
-        vk::VulkanMemory mBufferMemory;
+        vk::VulkanMemory2 mBufferMemory;
 
-        //VkDeviceMemory mMemory;
-
-        //VkDeviceSize mBufferSize;
         U32 mStride;
         U32 mVertCount;
 

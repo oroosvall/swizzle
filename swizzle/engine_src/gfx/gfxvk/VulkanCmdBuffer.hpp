@@ -2,7 +2,7 @@
 #define VULKAN_CMD_BUFFER_HPP
 
 #include "backend/Vk.hpp"
-#include "backend/VulkanObjectContainer.hpp"
+#include "backend/VkContainer.hpp"
 
 #include <swizzle/gfx/CommandBuffer.hpp>
 #include <swizzle/gfx/Swapchain.hpp>
@@ -14,7 +14,7 @@ namespace swizzle::gfx
     class VulkanCommandBuffer : public CommandBuffer
     {
     public:
-        VulkanCommandBuffer(const VulkanObjectContainer& vkObjects);
+        VulkanCommandBuffer(const VkContainer vkObjects);
         virtual ~VulkanCommandBuffer();
 
         virtual void reset(bool hardReset) override;
@@ -35,8 +35,7 @@ namespace swizzle::gfx
 
         virtual void draw(core::Resource<Buffer> buffer) override;
 
-        const VulkanObjectContainer& mVkObjects;
-
+        const VkContainer mVkObjects;
 
         VkCommandBuffer mCmdBuffer;
         VkFence mCompleteFence;

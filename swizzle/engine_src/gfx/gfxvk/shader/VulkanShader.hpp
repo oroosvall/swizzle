@@ -5,8 +5,8 @@
 
 #include <swizzle/gfx/Shader.hpp>
 
-#include "gfx/gfxvk/backend/VulkanObjectContainer.hpp"
-#include "gfx/gfxvk/VulkanFrameBuffer.hpp"
+#include "gfx/gfxvk/backend/VkContainer.hpp"
+#include "gfx/gfxvk/VulkanPresentFBO.hpp"
 
 #include <map>
 
@@ -33,12 +33,12 @@ namespace swizzle::gfx
 
 namespace swizzle::gfx
 {
-    class VulkanShader : public Shader
+    class VulkanShader2 : public Shader
     {
     public:
 
-        VulkanShader(const VulkanObjectContainer& vkObjects, const PresentFrameBuffer& frameBuffer, const ShaderAttributeList& attribList);
-        virtual ~VulkanShader();
+        VulkanShader2(const VkContainer vkObjects, const PresentFBO& frameBuffer, const ShaderAttributeList& attribList);
+        virtual ~VulkanShader2();
 
         virtual SwBool load(const SwChar* filePath) override;
 
@@ -54,8 +54,8 @@ namespace swizzle::gfx
         void loadShader(const SwChar* shaderType, const SwChar* binaryFile);
         void createPipeline();
 
-        const VulkanObjectContainer& mVkObjects;
-        const PresentFrameBuffer& mFrameBuffer;
+        const VkContainer mVkObjects;
+        const PresentFBO& mFrameBuffer;
         const ShaderAttributeList mShaderAttributes;
 
         VkPipelineLayout mPipelineLayout;

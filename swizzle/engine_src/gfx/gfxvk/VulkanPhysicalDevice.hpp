@@ -1,30 +1,48 @@
-#ifndef VULKAN_PHYSICAL_DEVICE_HPP
-#define VULKAN_PHYSICAL_DEVICE_HPP
+#ifndef VULKAN_PHYSICAL_DEVICE_2_HPP
+#define VULKAN_PHYSICAL_DEVICE_2_HPP
+
+/* Include files */
+
+#include <common/Resource.hpp>
+#include <common/Types.hpp>
 
 #include "backend/Vk.hpp"
-
-//#include "VulkanSwapchain.hpp"
 
 #include <string>
 #include <vector>
 
 #include <unordered_map>
 
+/* Defines */
+
+/* Typedefs/enums */
+
+/* Forward Declared Structs/Classes */
+
 namespace swizzle
 {
+    class LogicalDevice;
+}
 
-    union Id
+/* Struct Declaration */
+
+namespace swizzle
+{
+    union QueueId
     {
         struct
         {
-            uint32_t v1;
-            uint32_t v2;
+            U32 v1;
+            U32 v2;
         } s;
-        uint64_t v;
+        U64 v;
     };
+}
 
-    class LogicalDevice;
+/* Class Declaration */
 
+namespace swizzle
+{
     class PhysicalDevice
     {
     public:
@@ -34,16 +52,19 @@ namespace swizzle
 
         void activateExtension(const char* extension);
 
-        uint32_t getNumQueues() const;
+        U32 getNumQueues() const;
 
         /*
         @param queuePrios - contains a list of values between 0.0F - 1.0F
         values will be normalized before setting up the device;
         */
-        LogicalDevice* createLogicalDevice(std::vector<float>& queuePrios);
+        core::Resource<LogicalDevice> createLogicalDevice(std::vector<F32>& queuePrios);
+
+        VkPhysicalDeviceMemoryProperties getMemoryProperties() const;
 
     private:
         VkPhysicalDevice mPhysicalDevice;
+        VkPhysicalDeviceMemoryProperties mMemoryProperties;
 
         std::vector<const char*> mActiveExtensions;
     };
@@ -52,26 +73,29 @@ namespace swizzle
     {
     public:
         LogicalDevice(VkPhysicalDevice phys, const std::vector<const char*>& mExtensions,
-                      std::vector<float>& queuePrios);
+                      std::vector<F32>& queuePrios);
 
         virtual ~LogicalDevice();
-
-        //VulkanSwapchain* createSwapchain(VkSurfaceKHR mSurface, VulkanMemoryHelper& memhelper);
 
         VkPhysicalDevice getPhysical() const;
         VkDevice getLogical() const;
         VkCommandPool getCommandPool() const;
 
-        VkQueue getQueue(uint32_t queueFamily, uint32_t queueIndex) const;
+        VkQueue getQueue(U32 queueFamily, U32 queueIndex) const;
+
+        VkDevice operator()() const;
 
     private:
         VkPhysicalDevice mPhysicalDevice;
         VkDevice mLogicalDevice;
         VkCommandPool mCommandPool;
 
-        mutable std::unordered_map<uint64_t, VkQueue> mCahcedQueues;
+        mutable std::unordered_map<U64, VkQueue> mCahcedQueues;
     };
 
 } // namespace swizzle
+
+
+/* Function Declaration */
 
 #endif

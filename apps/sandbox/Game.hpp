@@ -23,6 +23,8 @@ public:
 
 private:
 
+    void updateMainWindow();
+
     sw::core::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
 
     sw::core::Resource<sw::gfx::Shader> mShader;

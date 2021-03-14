@@ -10,7 +10,8 @@
 #include "swizzle/core/Platform.hpp"
 #include "swizzle/core/Window.hpp"
 
-#include "swizzle/gfx/Gfx.hpp"
+#include "swizzle/gfx/Color.hpp"
+#include "swizzle/gfx/Context.hpp"
 #include "swizzle/core/Input.hpp"
 
 #include <utils/HighResolutionClock.hpp>
@@ -48,7 +49,13 @@ namespace swizzle
 
             input::SetInputSource(mWindow);
 
-            mSwapchain = gfx::CreateSwapchain(mWindow);
+            gfx::GfxContextCreateInfo info = {};
+            info.mDebugMemory = false;
+            info.mDeviceIndex = 0u;
+
+            mGfxContext = gfx::CreateContext(info);
+
+            mSwapchain = mGfxContext->createSwapchain(mWindow);
             mSwapchain->setVsync(gfx::VSyncTypes::vSyncAdaptive);
 
             userSetup();
@@ -80,16 +87,20 @@ namespace swizzle
     private:
         void cleanup()
         {
-            gfx::WaitIdle();
+            mGfxContext->waitIdle();
             userCleanup();
 
             mSwapchain.reset();
             mWindow.reset();
 
+            mGfxContext.reset();
+
             SwCleanup();
         }
 
     protected:
+
+        core::Resource<gfx::GfxContext> mGfxContext;
         core::Resource<core::Window> mWindow;
         core::Resource<gfx::Swapchain> mSwapchain;
 

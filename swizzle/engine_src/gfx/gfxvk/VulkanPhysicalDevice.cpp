@@ -1,14 +1,15 @@
 #include "VulkanPhysicalDevice.hpp"
 #include <swizzle/core/Logging.hpp>
 
-#include <array>
-
 namespace swizzle
 {
 
     PhysicalDevice::PhysicalDevice(VkPhysicalDevice phys)
         : mPhysicalDevice(phys)
+        , mMemoryProperties()
+        , mActiveExtensions()
     {
+        vkGetPhysicalDeviceMemoryProperties(mPhysicalDevice, &mMemoryProperties);
     }
 
     std::vector<std::string> PhysicalDevice::listAvailableExtensions()
@@ -16,7 +17,7 @@ namespace swizzle
 
         std::vector<std::string> extensions;
 
-        uint32_t count = 0;
+        U32 count = 0u;
         vkEnumerateDeviceExtensionProperties(mPhysicalDevice, nullptr, &count, nullptr);
         std::vector<VkExtensionProperties> exts;
         exts.resize(count);
@@ -35,17 +36,17 @@ namespace swizzle
         mActiveExtensions.push_back(extension);
     }
 
-    uint32_t PhysicalDevice::getNumQueues() const
+    U32 PhysicalDevice::getNumQueues() const
     {
-        uint32_t queueCount = 0;
+        U32 queueCount = 0u;
 
-        uint32_t queueFamilyCount = 0;
+        U32 queueFamilyCount = 0u;
         vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &queueFamilyCount, nullptr);
         std::vector<VkQueueFamilyProperties> queueProperties;
         queueProperties.resize(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &queueFamilyCount, queueProperties.data());
 
-        for (uint32_t i = 0; i < queueFamilyCount; i++)
+        for (U32 i = 0u; i < queueFamilyCount; i++)
         {
             if ((queueProperties[i].queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT) ==
                 VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
@@ -60,39 +61,44 @@ namespace swizzle
         return queueCount;
     }
 
-    LogicalDevice* PhysicalDevice::createLogicalDevice(std::vector<float>& queuPrio)
+    core::Resource<LogicalDevice> PhysicalDevice::createLogicalDevice(std::vector<F32>& queuPrio)
     {
-        return new LogicalDevice(mPhysicalDevice, mActiveExtensions, queuPrio);
+        return core::CreateRef<LogicalDevice>(mPhysicalDevice, mActiveExtensions, queuPrio);
+    }
+
+    VkPhysicalDeviceMemoryProperties PhysicalDevice::getMemoryProperties() const
+    {
+        return mMemoryProperties;
     }
 
     LogicalDevice::LogicalDevice(VkPhysicalDevice phys, const std::vector<const char*>& extensions,
-                                 std::vector<float>& queuePrio)
+                                 std::vector<F32>& queuePrio)
     {
         mPhysicalDevice = phys;
-        float* prios = queuePrio.data();
+        F32* prios = queuePrio.data();
 
-        uint32_t queueFamilyIndex = 0;
+        U32 queueFamilyIndex = 0u;
 
-        VkDeviceQueueCreateInfo queueCreateInfo;
+        VkDeviceQueueCreateInfo queueCreateInfo {};
         queueCreateInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueCreateInfo.pNext = nullptr;
-        queueCreateInfo.queueCount = static_cast<uint32_t>(queuePrio.size());
+        queueCreateInfo.queueCount = static_cast<U32>(queuePrio.size());
         queueCreateInfo.queueFamilyIndex = queueFamilyIndex;
         queueCreateInfo.pQueuePriorities = prios;
-        queueCreateInfo.flags = 0;
+        queueCreateInfo.flags = 0u;
 
-        VkDeviceCreateInfo createInfo;
+        VkDeviceCreateInfo createInfo {};
         createInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-        createInfo.enabledLayerCount = 0;
+        createInfo.enabledExtensionCount = static_cast<U32>(extensions.size());
+        createInfo.enabledLayerCount = 0u;
 
-        createInfo.flags = 0;
+        createInfo.flags = 0u;
         createInfo.pEnabledFeatures = nullptr;
         createInfo.pNext = nullptr;
         createInfo.ppEnabledExtensionNames = extensions.data();
         createInfo.ppEnabledLayerNames = nullptr;
         createInfo.pQueueCreateInfos = &queueCreateInfo;
-        createInfo.queueCreateInfoCount = 1;
+        createInfo.queueCreateInfoCount = 1u;
 
         VkResult res = vkCreateDevice(mPhysicalDevice, &createInfo, nullptr, &mLogicalDevice);
         if (res != VK_SUCCESS)
@@ -130,11 +136,11 @@ namespace swizzle
         return mCommandPool;
     }
 
-    VkQueue LogicalDevice::getQueue(uint32_t queueFamily, uint32_t queueIndex) const
+    VkQueue LogicalDevice::getQueue(U32 queueFamily, U32 queueIndex) const
     {
         VkQueue queue = VK_NULL_HANDLE;
 
-        Id v;
+        QueueId v;
         v.s.v1 = queueFamily;
         v.s.v2 = queueIndex;
 
@@ -149,6 +155,11 @@ namespace swizzle
             mCahcedQueues[v.v] = queue;
         }
         return queue;
+    }
+
+    VkDevice LogicalDevice::operator()(void) const
+    {
+        return mLogicalDevice;
     }
 
 } // namespace swizzle

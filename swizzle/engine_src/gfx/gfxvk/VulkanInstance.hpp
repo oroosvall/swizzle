@@ -1,8 +1,7 @@
-#ifndef VULKAN_INSTANCE_HPP
-#define VULKAN_INSTANCE_HPP
+#ifndef VULKAN_INSTANCE2_HPP
+#define VULKAN_INSTANCE2_HPP
 
 #include "backend/Vk.hpp"
-//#include <swizzle/Window.hpp>
 
 #include "VulkanPhysicalDevice.hpp"
 #include <vector>
@@ -26,7 +25,6 @@ namespace swizzle::gfx
         void deinitDebug();
 
         VkInstance mVkInstance;
-        VkSurfaceKHR mSurface;
 
         VkDebugReportCallbackEXT mDebugCallback;
 

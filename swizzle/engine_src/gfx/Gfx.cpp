@@ -1,65 +1,77 @@
 
+/* Include files */
+
 #include <swizzle/core/Logging.hpp>
 #include "Gfx.hpp"
+#include "gfxvk/VkContext.hpp"
 
-#include "gfxvk/VulkanRenderer.hpp"
-#include "gfxvk/VulkanSwapchain.hpp"
-#include "gfxvk/VulkanCmdBuffer.hpp"
-#include "gfxvk/VulkanBuffer.hpp"
-#include "gfxvk/VulkanTexture.hpp"
+/* Defines */
+
+/* Typedefs */
+
+/* Structs/Classes */
+
+/* Static Variables */
+
+/* Static Function Declaration */
+
+/* Static Function Definition */
+
+/* Function Definition */
 
 namespace swizzle::gfx
 {
 
-    VulkanRenderer* gRenderInstance = nullptr;
+    core::Resource<VulkanInstance> gVkInst;
 
     SwBool GfxInitialize()
     {
         LOG_INFO("Initializing Graphics!");
-        gRenderInstance = new VulkanRenderer();
+        gVkInst = core::CreateRef<VulkanInstance>();
 
         return true;
     }
 
     SwBool GfxCleanup()
     {
-        vkDeviceWaitIdle(gRenderInstance->getVkObjects().mLogicalDevice);
         LOG_INFO("Shutting down Graphics!");
 
-        delete gRenderInstance;
-        gRenderInstance = nullptr;
+        gVkInst.reset();
 
         return true;
     }
 
-    core::Resource<Buffer> CreateBuffer(BufferType type)
+    core::Resource<GfxContext> CreateContext(const GfxContextCreateInfo& createInfo)
     {
-        return core::CreateRef<VulkanBuffer>(gRenderInstance->getVkObjects(), type);
+        return core::CreateRef<VkGfxContext>(gVkInst, createInfo.mDeviceIndex);
     }
 
-    core::Resource<CommandBuffer> CreateCommandBuffer()
+    U32 GetDeviceCount()
     {
-        return core::CreateRef<VulkanCommandBuffer>(gRenderInstance->getVkObjects());
+        auto numDevices = gVkInst->listDevices().size();
+        return static_cast<U32>(numDevices);
     }
 
-    core::Resource<FrameBuffer> CreateFrameBuffer()
+    U32 GetPreferredDevice(U32 preferredDeviceIndex)
     {
-        return nullptr;
+        if (preferredDeviceIndex >= GetDeviceCount())
+        {
+            LOG_WARNING("Preferred device index out of range, selecting device with index 0\n");
+            preferredDeviceIndex = 0U;
+        }
+        return preferredDeviceIndex;
     }
 
-    core::Resource<Swapchain> CreateSwapchain(core::Resource<core::Window> window)
+    const SwCharPtr GetDeviceName(U32 deviceIndex)
     {
-        return core::CreateRef<VulkanSwapchain>(window, gRenderInstance->getVkObjects());;
+        deviceIndex;
+        LOG_WARNING("Not yet implemented\n");
+        return "NULL";
     }
-
-    core::Resource<Texture> CreateTexture(U32 width, U32 height)
-    {
-        return core::CreateRef<VulkanTexture>(gRenderInstance->getVkObjects(), width, height);
-    }
-
-    void WaitIdle()
-    {
-        vkDeviceWaitIdle(gRenderInstance->getVkObjects().mLogicalDevice);
-    }
-
 }
+
+/* Class Public Function Definition */
+
+/* Class Protected Function Definition */
+
+/* Class Private Function Definition */

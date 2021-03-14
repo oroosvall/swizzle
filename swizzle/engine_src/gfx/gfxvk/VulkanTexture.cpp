@@ -1,3 +1,5 @@
+#include "VulkanPhysicalDevice.hpp"
+
 #include "VulkanTexture.hpp"
 #include "backend/VulkanMemory.hpp"
 
@@ -6,41 +8,40 @@
 
 namespace swizzle::gfx
 {
-    VulkanTexture::VulkanTexture(const VulkanObjectContainer& vkObjects, U32 width, U32 height)
+    VulkanTexture::VulkanTexture(const VkContainer vkObjects, U32 width, U32 height)
         : mVkObjects(vkObjects)
         , mImage(VK_NULL_HANDLE)
         , mImageView(VK_NULL_HANDLE)
-        , mUploaded(false)
+        , mUploaded(true) // Black texture by default
         , mWidth(width)
         , mHeight(height)
+        , mStageBuffer(VK_NULL_HANDLE)
+        , mStageMemory(VK_NULL_HANDLE)
     {
+        createResources();
+
+        // TODO: remove me
         S32 x = 0, y = 0, c = 0;
 
         stbi_uc* pixels = stbi_load("texture/random_snipp.PNG", &x, &y, &c, STBI_rgb_alpha);
 
-        mWidth = static_cast<U32>(x);
-        mHeight = static_cast<U32>(y);
-
-        VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * 4U;
-
-        if (!mVkObjects.stageCmdBuffer->readyToSubmit())
-        {
-            mVkObjects.stageCmdBuffer->beginStageRecording();
-        }
-
-        const auto& stageMemory = mVkObjects.stageCmdBuffer->allocateStagingMemory(pixels, imageSize);
-
-        mStageBuffer = stageMemory.mBuffer;
-        mMemory = stageMemory.mMemory;
+        setData(x, y, 4u, pixels);
 
         stbi_image_free(pixels);
-
-        createResources();
     }
 
     VulkanTexture::~VulkanTexture()
     {
         destroyResources();
+
+        if (mStageBuffer)
+        {
+            vkDestroyBuffer(mVkObjects.mLogicalDevice->getLogical(), mStageBuffer, nullptr);
+            vkFreeMemory(mVkObjects.mLogicalDevice->getLogical(), mStageMemory, nullptr);
+
+            mStageBuffer = VK_NULL_HANDLE;
+            mStageMemory = VK_NULL_HANDLE;
+        }
     }
 
     void VulkanTexture::setData(U32 width, U32 height, U32 channels, U8* pixelData)
@@ -48,7 +49,7 @@ namespace swizzle::gfx
         pixelData;
         channels;
         // check to recreate the texture
-        if ((width != mWidth) || (height != mHeight) && ((width != 0U) && (height != 0U)) && mVkObjects.stageCmdBuffer->readyToSubmit())
+        if ((width != mWidth) || (height != mHeight) && ((width != 0U) && (height != 0U)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
         {
             destroyResources();
             mWidth = width;
@@ -56,9 +57,51 @@ namespace swizzle::gfx
             createResources();
         }
 
+        if (mStageBuffer)
+        {
+            vkDestroyBuffer(mVkObjects.mLogicalDevice->getLogical(), mStageBuffer, nullptr);
+            vkFreeMemory(mVkObjects.mLogicalDevice->getLogical(), mStageMemory, nullptr);
+
+            mStageBuffer = VK_NULL_HANDLE;
+            mStageMemory = VK_NULL_HANDLE;
+        }
+
+        const U32 queueIndex = VK_QUEUE_FAMILY_IGNORED;
+
         VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * 4U;
 
-        if (!mVkObjects.stageCmdBuffer->readyToSubmit())
+        VkBufferCreateInfo bufferInfo = {};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.pNext = VK_NULL_HANDLE;
+        bufferInfo.flags = 0;
+        bufferInfo.size = imageSize;
+        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        bufferInfo.sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
+        bufferInfo.queueFamilyIndexCount = 1u;
+        bufferInfo.pQueueFamilyIndices = &queueIndex;
+
+        vkCreateBuffer(mVkObjects.mLogicalDevice->getLogical(), &bufferInfo, nullptr, &mStageBuffer);
+
+        VkMemoryRequirements req;
+        vkGetBufferMemoryRequirements(mVkObjects.mLogicalDevice->getLogical(), mStageBuffer, &req);
+
+        VkMemoryAllocateInfo allocInfo;
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.pNext = VK_NULL_HANDLE;
+        allocInfo.allocationSize = req.size;
+        allocInfo.memoryTypeIndex = vk::VulkanMemory2::FindMemoryType(mVkObjects.mPhysicalDevice->getMemoryProperties(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, req.memoryTypeBits);
+
+        vkAllocateMemory(mVkObjects.mLogicalDevice->getLogical(), &allocInfo, nullptr, &mStageMemory);
+
+        vkBindBufferMemory(mVkObjects.mLogicalDevice->getLogical(), mStageBuffer, mStageMemory, 0U);
+
+        void* dataPtr = nullptr;
+        vkMapMemory(mVkObjects.mLogicalDevice->getLogical(), mStageMemory, 0, imageSize, 0, &dataPtr);
+        memcpy(dataPtr, pixelData, static_cast<size_t>(imageSize));
+        vkUnmapMemory(mVkObjects.mLogicalDevice->getLogical(), mStageMemory);
+
+
+        /*if (!mVkObjects.stageCmdBuffer->readyToSubmit())
         {
             mVkObjects.stageCmdBuffer->beginStageRecording();
         }
@@ -66,16 +109,16 @@ namespace swizzle::gfx
         const auto& stageMemory = mVkObjects.stageCmdBuffer->allocateStagingMemory(pixelData, imageSize);
 
         mStageBuffer = stageMemory.mBuffer;
-        mMemory = stageMemory.mMemory;
+        mMemory = stageMemory.mMemory;*/
         mUploaded = false;
     }
 
     void VulkanTexture::upload()
     {
-        if (mVkObjects.stageCmdBuffer->readyToSubmit())
+        /*if (mVkObjects.stageCmdBuffer->readyToSubmit())
         {
             uploadImage(mVkObjects.stageCmdBuffer->getCmdBuffer());
-        }
+        }*/
     }
 
     SwBool VulkanTexture::isUploaded() const
@@ -109,9 +152,9 @@ namespace swizzle::gfx
             1U, &imgBarrier);
 
         VkBufferImageCopy region = {};
-        region.bufferOffset = 0;
-        region.bufferRowLength = 0U;
-        region.bufferImageHeight = 0U;
+        region.bufferOffset = 0u;
+        region.bufferRowLength = mWidth;
+        region.bufferImageHeight = mHeight;
 
         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         region.imageSubresource.mipLevel = 0U;
@@ -159,27 +202,29 @@ namespace swizzle::gfx
         imageCreateInfo.usage = VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
         imageCreateInfo.sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
         imageCreateInfo.queueFamilyIndexCount = 1U;
-        imageCreateInfo.pQueueFamilyIndices = &mVkObjects.mQueueFamilyIndex;
+        //imageCreateInfo.pQueueFamilyIndices = &mVkObjects.mQueueFamilyIndex;
+        U32 idx = 0u; // TODO: fixme
+        imageCreateInfo.pQueueFamilyIndices = &idx;
         imageCreateInfo.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_PREINITIALIZED;
 
-        vkCreateImage(mVkObjects.mLogicalDevice, &imageCreateInfo, nullptr, &mImage);
+        vkCreateImage(mVkObjects.mLogicalDevice->getLogical(), &imageCreateInfo, mVkObjects.mDebugAllocCallbacks, &mImage);
     }
 
     void VulkanTexture::allocMemory()
     {
         VkMemoryRequirements memreq;
-        vkGetImageMemoryRequirements(mVkObjects.mLogicalDevice, mImage, &memreq);
+        vkGetImageMemoryRequirements(mVkObjects.mLogicalDevice->getLogical(), mImage, &memreq);
 
         VkMemoryAllocateInfo allocInfo = {};
 
         allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.pNext = VK_NULL_HANDLE;
         allocInfo.allocationSize = memreq.size;
-        allocInfo.memoryTypeIndex = vk::VulkanMemory::FindMemoryType(mVkObjects.mMemoryProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
+        allocInfo.memoryTypeIndex = vk::VulkanMemory2::FindMemoryType(mVkObjects.mPhysicalDevice->getMemoryProperties(), VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
 
-        vkAllocateMemory(mVkObjects.mLogicalDevice, &allocInfo, nullptr, &mMemory);
+        vkAllocateMemory(mVkObjects.mLogicalDevice->getLogical(), &allocInfo, mVkObjects.mDebugAllocCallbacks, &mMemory);
 
-        vkBindImageMemory(mVkObjects.mLogicalDevice, mImage, mMemory, 0U);
+        vkBindImageMemory(mVkObjects.mLogicalDevice->getLogical(), mImage, mMemory, 0U);
     }
 
     void VulkanTexture::createView(VkFormat format)
@@ -204,14 +249,14 @@ namespace swizzle::gfx
         imageViewCreateInfo.subresourceRange.levelCount = 1U;
 
         // TODO: bind memory before this
-        vkCreateImageView(mVkObjects.mLogicalDevice, &imageViewCreateInfo, nullptr, &mImageView);
+        vkCreateImageView(mVkObjects.mLogicalDevice->getLogical(), &imageViewCreateInfo, mVkObjects.mDebugAllocCallbacks, &mImageView);
     }
 
     void VulkanTexture::destroyResources()
     {
-        vkDestroyImageView(mVkObjects.mLogicalDevice, mImageView, nullptr);
-        vkFreeMemory(mVkObjects.mLogicalDevice, mMemory, nullptr);
-        vkDestroyImage(mVkObjects.mLogicalDevice, mImage, nullptr);
+        vkDestroyImageView(mVkObjects.mLogicalDevice->getLogical(), mImageView, mVkObjects.mDebugAllocCallbacks);
+        vkFreeMemory(mVkObjects.mLogicalDevice->getLogical(), mMemory, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyImage(mVkObjects.mLogicalDevice->getLogical(), mImage, mVkObjects.mDebugAllocCallbacks);
 
         mImage = VK_NULL_HANDLE;
         mImageView = VK_NULL_HANDLE;

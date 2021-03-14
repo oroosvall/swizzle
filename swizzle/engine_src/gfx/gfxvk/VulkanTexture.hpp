@@ -4,7 +4,7 @@
 #include <swizzle/gfx/Texture.hpp>
 
 #include "backend/Vk.hpp"
-#include "backend/VulkanObjectContainer.hpp"
+#include "backend/VkContainer.hpp"
 
 namespace swizzle::gfx
 {
@@ -13,7 +13,7 @@ namespace swizzle::gfx
     {
     public:
 
-        VulkanTexture(const VulkanObjectContainer& vkObjects, U32 width, U32 height);
+        VulkanTexture(const VkContainer vkObjects, U32 width, U32 height);
         virtual ~VulkanTexture();
 
         // Inherited via Texture
@@ -36,9 +36,8 @@ namespace swizzle::gfx
         void destroyResources();
         void createResources();
 
-        const VulkanObjectContainer& mVkObjects;
+        const VkContainer mVkObjects;
 
-    public: // This is a temporary hack
         VkImage mImage;
         VkImageView mImageView;
 
@@ -46,8 +45,8 @@ namespace swizzle::gfx
 
         SwBool mUploaded;
 
-        VkDeviceMemory mStageMemory;
         VkBuffer mStageBuffer;
+        VkDeviceMemory mStageMemory;
 
         U32 mWidth;
         U32 mHeight;

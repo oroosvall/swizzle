@@ -1,14 +1,33 @@
-#include "VulkanInstance.hpp"
-#include "Surface.hpp"
+
+/* Include files */
+
 #include <swizzle/core/Logging.hpp>
+
+#include "VulkanInstance.hpp"
+#include "surface/Surface.hpp"
 #include "backend/VkDebug.hpp"
+
+/* Defines */
+
+/* Typedefs */
+
+/* Structs/Classes */
+
+/* Static Variables */
+
+/* Static Function Declaration */
+
+/* Static Function Definition */
+
+/* Function Definition */
+
+/* Class Public Function Definition */
 
 namespace swizzle::gfx
 {
 
     VulkanInstance::VulkanInstance()
         : mVkInstance(VK_NULL_HANDLE)
-        , mSurface(VK_NULL_HANDLE)
         , mDebugCallback(VK_NULL_HANDLE)
         , mCreateDebugCallback(nullptr)
         , mDestroyDebugCallback(nullptr)
@@ -24,7 +43,7 @@ namespace swizzle::gfx
 #ifdef SW_DEBUG
         deinitDebug();
 #endif
-        vkDestroyInstance(mVkInstance, vk::getDebugAllocCallback());
+        vkDestroyInstance(mVkInstance, nullptr);
     }
 
     const VkInstance VulkanInstance::getInstance() const
@@ -52,7 +71,6 @@ namespace swizzle::gfx
 
     void VulkanInstance::createInstance()
     {
-
         VkDebugReportCallbackCreateInfoEXT debugCallbackInfo = {};
         memset(&debugCallbackInfo, 0, sizeof(VkDebugReportCallbackCreateInfoEXT));
         debugCallbackInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
@@ -72,9 +90,7 @@ namespace swizzle::gfx
 
         extensions.push_back(GetOsSurfaceExtension());
         extensions.push_back("VK_KHR_surface");
-        // extensions.push_back("VK_KHR_Maintenance1");
         extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-        //extensions.push_back();
 
         std::vector<const char*> debugLayers;
         debugLayers.push_back("VK_LAYER_KHRONOS_validation");
@@ -98,12 +114,11 @@ namespace swizzle::gfx
         createInfo.ppEnabledLayerNames = debugLayers.data();
         createInfo.pApplicationInfo = &vkAppInfo;
 
-        VkResult res = vkCreateInstance(&createInfo, vk::getDebugAllocCallback(), &mVkInstance);
+        VkResult res = vkCreateInstance(&createInfo, nullptr, &mVkInstance);
         if (res != VK_SUCCESS)
         {
             LOG_ERROR("vkCreateInstance failed!, returned %s\n", vk::VkResultToString(res));
         }
-
     }
 
 
@@ -121,7 +136,7 @@ namespace swizzle::gfx
         debugCallbackInfo.flags = VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_DEBUG_BIT_EXT |
             VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT |
             VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
-            //VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+            VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
             VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_WARNING_BIT_EXT;
         debugCallbackInfo.pNext = nullptr;
         debugCallbackInfo.pUserData = nullptr;
@@ -129,7 +144,7 @@ namespace swizzle::gfx
 
         if (mCreateDebugCallback)
         {
-            mCreateDebugCallback(mVkInstance, &debugCallbackInfo, vk::getDebugAllocCallback(), &mDebugCallback);
+            mCreateDebugCallback(mVkInstance, &debugCallbackInfo, nullptr, &mDebugCallback);
         }
     }
 
@@ -137,8 +152,13 @@ namespace swizzle::gfx
     {
         if (mDestroyDebugCallback)
         {
-            mDestroyDebugCallback(mVkInstance, mDebugCallback, vk::getDebugAllocCallback());
+            mDestroyDebugCallback(mVkInstance, mDebugCallback, nullptr);
         }
     }
 
 } // namespace swizzle
+
+
+/* Class Protected Function Definition */
+
+/* Class Private Function Definition */

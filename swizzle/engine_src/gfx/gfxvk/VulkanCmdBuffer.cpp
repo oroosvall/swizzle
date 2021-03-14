@@ -1,4 +1,6 @@
 
+#include "VulkanPhysicalDevice.hpp"
+
 #include "VulkanCmdBuffer.hpp"
 #include "VulkanSwapchain.hpp"
 #include "shader/VulkanShader.hpp"
@@ -9,10 +11,11 @@
 
 namespace swizzle::gfx
 {
-    VulkanTexture* gTexturePtr;
-    VkSampler gSampler;
 
-    VulkanCommandBuffer::VulkanCommandBuffer(const VulkanObjectContainer& vkObjects)
+    VulkanTexture* gTexturePtr2;
+    VkSampler gSampler2;
+
+    VulkanCommandBuffer::VulkanCommandBuffer(const VkContainer vkObjects)
         : mVkObjects(vkObjects)
         , mCmdBuffer(VK_NULL_HANDLE)
         , mCompleteFence(VK_NULL_HANDLE)
@@ -21,11 +24,11 @@ namespace swizzle::gfx
 
         cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         cmdAllocInfo.pNext = VK_NULL_HANDLE;
-        cmdAllocInfo.commandPool = mVkObjects.mCmdPool;
+        cmdAllocInfo.commandPool = mVkObjects.mLogicalDevice->getCommandPool();
         cmdAllocInfo.level = VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         cmdAllocInfo.commandBufferCount = 1;
 
-        vkAllocateCommandBuffers(mVkObjects.mLogicalDevice, &cmdAllocInfo, &mCmdBuffer);
+        vkAllocateCommandBuffers(mVkObjects.mLogicalDevice->getLogical(), &cmdAllocInfo, &mCmdBuffer);
 
         VkFenceCreateInfo fenceInfo;
 
@@ -33,13 +36,14 @@ namespace swizzle::gfx
         fenceInfo.pNext = VK_NULL_HANDLE;
         fenceInfo.flags = VkFenceCreateFlagBits::VK_FENCE_CREATE_SIGNALED_BIT;
 
-        VkResult result = vkCreateFence(mVkObjects.mLogicalDevice, &fenceInfo, mVkObjects.mDebugAllocCallbacks, &mCompleteFence);
+        VkResult result = vkCreateFence(mVkObjects.mLogicalDevice->getLogical(), &fenceInfo, mVkObjects.mDebugAllocCallbacks, &mCompleteFence);
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Error creating swapchain fence %s", vk::VkResultToString(result));
         }
 
-        gTexturePtr = new VulkanTexture(mVkObjects, 1024U, 1024U);
+
+        gTexturePtr2 = new VulkanTexture(mVkObjects, 1024U, 1024U);
 
         VkSamplerCreateInfo samplerInfo = {};
         samplerInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -61,17 +65,15 @@ namespace swizzle::gfx
         samplerInfo.borderColor = VkBorderColor::VK_BORDER_COLOR_INT_OPAQUE_BLACK;
         samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-        vkCreateSampler(mVkObjects.mLogicalDevice, &samplerInfo, mVkObjects.mDebugAllocCallbacks, &gSampler);
+        vkCreateSampler(mVkObjects.mLogicalDevice->getLogical(), &samplerInfo, mVkObjects.mDebugAllocCallbacks, &gSampler2);
+
     }
 
     VulkanCommandBuffer::~VulkanCommandBuffer()
     {
-        vkDestroySampler(mVkObjects.mLogicalDevice, gSampler, mVkObjects.mDebugAllocCallbacks);
-        delete gTexturePtr;
+        vkDestroyFence(mVkObjects.mLogicalDevice->getLogical(), mCompleteFence, mVkObjects.mDebugAllocCallbacks);
 
-        vkDestroyFence(mVkObjects.mLogicalDevice, mCompleteFence, mVkObjects.mDebugAllocCallbacks);
-
-        vkFreeCommandBuffers(mVkObjects.mLogicalDevice, mVkObjects.mCmdPool, 1, &mCmdBuffer);
+        vkFreeCommandBuffers(mVkObjects.mLogicalDevice->getLogical(), mVkObjects.mLogicalDevice->getCommandPool(), 1, &mCmdBuffer);
     }
 
     void VulkanCommandBuffer::reset(bool hardReset)
@@ -89,8 +91,8 @@ namespace swizzle::gfx
 
     void VulkanCommandBuffer::begin()
     {
-        vkWaitForFences(mVkObjects.mLogicalDevice, 1U, &mCompleteFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(mVkObjects.mLogicalDevice, 1U, &mCompleteFence);
+        vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mCompleteFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mCompleteFence);
 
         VkCommandBufferBeginInfo beginInfo = {};
 
@@ -117,6 +119,12 @@ namespace swizzle::gfx
         }*/
 
         vkBeginCommandBuffer(mCmdBuffer, &beginInfo);
+
+        if (!gTexturePtr2->isUploaded())
+        {
+            gTexturePtr2->uploadImage(mCmdBuffer);
+        }
+
     }
 
     void VulkanCommandBuffer::end()
@@ -137,12 +145,12 @@ namespace swizzle::gfx
         }
 
         // TODO: move into one sumbit call
-        if (mVkObjects.stageCmdBuffer->readyToSubmit())
+        /*if (mVkObjects.stageCmdBuffer->readyToSubmit())
         {
             mVkObjects.stageCmdBuffer->endAndSubmitRecording();
-        }
+        }*/
 
-        VkSubmitInfo subinfo;
+        VkSubmitInfo subinfo = {};
         subinfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         subinfo.pNext = 0;
         subinfo.waitSemaphoreCount = 0U;
@@ -153,7 +161,7 @@ namespace swizzle::gfx
         subinfo.signalSemaphoreCount = waitCount;
         subinfo.pSignalSemaphores = &sync;
 
-        vkQueueSubmit(mVkObjects.mQueue, 1U, &subinfo, mCompleteFence);
+        vkQueueSubmit(mVkObjects.mLogicalDevice->getQueue(0, 0), 1U, &subinfo, mCompleteFence);
     }
 
     void VulkanCommandBuffer::beginRenderPass(core::Resource<Swapchain> swp)
@@ -164,12 +172,7 @@ namespace swizzle::gfx
 
     void VulkanCommandBuffer::beginRenderPass(core::Resource<FrameBuffer> fbo)
     {
-        if (!gTexturePtr->isUploaded())
-        {
-            gTexturePtr->uploadImage(mCmdBuffer);
-        }
-
-        PresentFrameBuffer* present = (PresentFrameBuffer*)(fbo.get());
+        PresentFBO* present = (PresentFBO*)(fbo.get());
 
         VkClearValue clears[] = { present->mClearValue , present->mDepthClearValue };
 
@@ -192,29 +195,24 @@ namespace swizzle::gfx
 
     void VulkanCommandBuffer::bindShader(core::Resource<Shader> shader)
     {
-        VulkanShader* shad = (VulkanShader*)(shader.get());
+        VulkanShader2* shad = (VulkanShader2*)(shader.get());
 
         vkCmdBindPipeline(mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipeline());
     }
 
     void VulkanCommandBuffer::bindMaterial(core::Resource<Shader> shader, core::Resource<Buffer> material)
     {
-        VulkanShader* shad = (VulkanShader*)(shader.get());
+        VulkanShader2* shad = (VulkanShader2*)(shader.get());
 
         //VulkanTexture* tex = (VulkanTexture*)(texture.get());
 
         VulkanBuffer* buffer = (VulkanBuffer*)material.get();
 
-        /*if (!tex->isUploaded())
-        {
-            tex->upload();
-        }*/
-
         VkDescriptorSet descSet = shad->getDescriptorSet();
 
         VkDescriptorImageInfo descImg = {};
-        descImg.sampler = gSampler;
-        descImg.imageView = gTexturePtr->getView();
+        descImg.sampler = gSampler2;
+        descImg.imageView = gTexturePtr2->getView();
         descImg.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorBufferInfo descBfr = {};
@@ -235,7 +233,7 @@ namespace swizzle::gfx
         writeDesc.pBufferInfo = VK_NULL_HANDLE;
         writeDesc.pTexelBufferView = VK_NULL_HANDLE;
 
-        vkUpdateDescriptorSets(mVkObjects.mLogicalDevice, 1U, &writeDesc, 0U, VK_NULL_HANDLE);
+        vkUpdateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), 1U, &writeDesc, 0U, VK_NULL_HANDLE);
 
         writeDesc.dstBinding = 1;
         writeDesc.descriptorCount = 1;
@@ -243,14 +241,14 @@ namespace swizzle::gfx
         writeDesc.pImageInfo = VK_NULL_HANDLE;
         writeDesc.pBufferInfo = &descBfr;
 
-        vkUpdateDescriptorSets(mVkObjects.mLogicalDevice, 1U, &writeDesc, 0U, VK_NULL_HANDLE);
+        vkUpdateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), 1U, &writeDesc, 0U, VK_NULL_HANDLE);
 
         vkCmdBindDescriptorSets(mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipelineLayout(), 0U, 1U, &descSet, 0U, VK_NULL_HANDLE);
     }
 
     void VulkanCommandBuffer::setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size)
     {
-        VulkanShader* shad = (VulkanShader*)(shader.get());
+        VulkanShader2* shad = (VulkanShader2*)(shader.get());
 
         vkCmdPushConstants(mCmdBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0U, size, data);
     }

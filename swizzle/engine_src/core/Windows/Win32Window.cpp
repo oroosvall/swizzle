@@ -403,14 +403,11 @@ namespace swizzle::core
             }
             case WM_SETCURSOR:
             {
-                if (nullptr != wnd)
+                if (!wnd->isCursorVisible())
                 {
-                    if (false == wnd->isCursorVisible())
+                    if (HTCLIENT == LOWORD(lParam))
                     {
-                        if (HTCLIENT == LOWORD(lParam))
-                        {
-                            SetCursor(NULL);
-                        }
+                        SetCursor(NULL);
                     }
                 }
                 break;
@@ -608,16 +605,6 @@ namespace swizzle::core
     {
         return mEventHandlers;
     }
-
-    /*void Win32Window::setCursorVisible(bool visible)
-    {
-            mCursrorVisible = visible;
-    }
-
-    bool Win32Window::isCursorVisible() const
-    {
-            return mCursrorVisible;
-    }*/
 
 } // namespace swizzle
 

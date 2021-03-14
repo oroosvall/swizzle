@@ -1,6 +1,9 @@
+#include "VulkanInstance.hpp"
+#include "VulkanPhysicalDevice.hpp"
+
 #include "VulkanSwapchain.hpp"
-#include "Surface.hpp"
-#include "VulkanFrameBuffer.hpp"
+#include "surface/Surface.hpp"
+#include "VulkanPresentFBO.hpp"
 
 #include "shader/VulkanShader.hpp"
 #include <swizzle/core/Logging.hpp>
@@ -9,7 +12,7 @@ namespace swizzle::gfx
 {
 
 
-    VulkanSwapchain::VulkanSwapchain(core::Resource<core::Window> window, const VulkanObjectContainer& vkObjects)
+    VulkanSwapchain::VulkanSwapchain(const VkContainer vkObjects, core::Resource<core::Window> window)
         : mWindow(window)
         , mVkObjects(vkObjects)
         , mSurface(VK_NULL_HANDLE)
@@ -28,7 +31,7 @@ namespace swizzle::gfx
         , mSwapchainImages()
         , mFrameBuffers()
     {
-        mSurface = CreateOsSurface(window, mVkObjects.mInstance);
+        mSurface = CreateOsSurface(window, mVkObjects.mVkInstance->getInstance());
 
         createSwapchain(VK_NULL_HANDLE);
         createSynchronizationObjects();
@@ -42,19 +45,19 @@ namespace swizzle::gfx
 
     VulkanSwapchain::~VulkanSwapchain()
     {
-        vkDeviceWaitIdle(mVkObjects.mLogicalDevice);
+        vkDeviceWaitIdle(mVkObjects.mLogicalDevice->getLogical());
         mFrameBuffers.clear();
 
-        vkDestroySemaphore(mVkObjects.mLogicalDevice, mRenderCompleteSemaphore, mVkObjects.mDebugAllocCallbacks);
-        vkDestroyFence(mVkObjects.mLogicalDevice, mAcquireImageFence, mVkObjects.mDebugAllocCallbacks);
+        vkDestroySemaphore(mVkObjects.mLogicalDevice->getLogical(), mRenderCompleteSemaphore, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyFence(mVkObjects.mLogicalDevice->getLogical(), mAcquireImageFence, mVkObjects.mDebugAllocCallbacks);
 
         for (SwapchainImage img : mSwapchainImages)
         {
-            vkDestroyImageView(mVkObjects.mLogicalDevice, img.mImageView, mVkObjects.mDebugAllocCallbacks);
+            vkDestroyImageView(mVkObjects.mLogicalDevice->getLogical(), img.mImageView, mVkObjects.mDebugAllocCallbacks);
         }
 
-        vkDestroySwapchainKHR(mVkObjects.mLogicalDevice, mSwapchain, mVkObjects.mDebugAllocCallbacks);
-        vkDestroySurfaceKHR(mVkObjects.mInstance, mSurface, nullptr);
+        vkDestroySwapchainKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, mVkObjects.mDebugAllocCallbacks);
+        vkDestroySurfaceKHR(mVkObjects.mVkInstance->getInstance(), mSurface, nullptr);
 
         mAcquireImageFence = VK_NULL_HANDLE;
         mSwapchain = VK_NULL_HANDLE;
@@ -84,9 +87,9 @@ namespace swizzle::gfx
 
     void VulkanSwapchain::setClearColor(ClearColor color)
     {
-        for (auto fb : mFrameBuffers)
+        for (auto& fb : mFrameBuffers)
         {
-            fb->setColorAttachmentClearColor(0, color);
+            fb->setColorAttachmentClearColor(0u, color);
         }
     }
 
@@ -97,7 +100,7 @@ namespace swizzle::gfx
 
     void VulkanSwapchain::prepare()
     {
-        VkResult result = vkAcquireNextImageKHR(mVkObjects.mLogicalDevice, mSwapchain, UINT64_MAX, VK_NULL_HANDLE,
+        VkResult result = vkAcquireNextImageKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, UINT64_MAX, VK_NULL_HANDLE,
             mAcquireImageFence, &mCurrentImage);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
@@ -118,8 +121,8 @@ namespace swizzle::gfx
 
     void VulkanSwapchain::present()
     {
-        vkWaitForFences(mVkObjects.mLogicalDevice, 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(mVkObjects.mLogicalDevice, 1U, &mAcquireImageFence);
+        vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence);
 
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -129,9 +132,11 @@ namespace swizzle::gfx
         presentInfo.waitSemaphoreCount = 1U;
         presentInfo.pWaitSemaphores = &mRenderCompleteSemaphore;
 
-        VkQueue queue = mVkObjects.mQueue;
+        VkQueue queue = mVkObjects.mLogicalDevice->getQueue(0, 0);
 
+        //VkResult res =
         (void)vkQueuePresentKHR(queue, &presentInfo);
+        //LOG_ERROR("Present result %d\n", res);
 
         if (mRecreateSwapchain)
         {
@@ -147,7 +152,7 @@ namespace swizzle::gfx
 
     core::Resource<FrameBuffer> VulkanSwapchain::getFrameBuffer() const
     {
-        vkWaitForFences(mVkObjects.mLogicalDevice, 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
+        vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
         return mFrameBuffers[mCurrentImage];
     }
 
@@ -158,11 +163,11 @@ namespace swizzle::gfx
     std::vector<VkPresentModeKHR> VulkanSwapchain::getAvailablePresentModes()
     {
         uint32_t presentCount = 0U;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(mVkObjects.mPhysicalDevice, mSurface, &presentCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(mVkObjects.mLogicalDevice->getPhysical(), mSurface, &presentCount, nullptr);
 
         std::vector<VkPresentModeKHR> presentModes;
         presentModes.resize(presentCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(mVkObjects.mPhysicalDevice, mSurface, &presentCount, presentModes.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(mVkObjects.mLogicalDevice->getPhysical(), mSurface, &presentCount, presentModes.data());
 
         return presentModes;
     }
@@ -170,7 +175,7 @@ namespace swizzle::gfx
     void VulkanSwapchain::recreateSwapchain()
     {
         // make sure device is idle before recreating the swapchain
-        vkDeviceWaitIdle(mVkObjects.mLogicalDevice);
+        vkDeviceWaitIdle(mVkObjects.mLogicalDevice->getLogical());
 
         mFrameBuffers.clear();
 
@@ -178,7 +183,7 @@ namespace swizzle::gfx
 
         for (SwapchainImage img : mSwapchainImages)
         {
-            vkDestroyImageView(mVkObjects.mLogicalDevice, img.mImageView, mVkObjects.mDebugAllocCallbacks);
+            vkDestroyImageView(mVkObjects.mLogicalDevice->getLogical(), img.mImageView, mVkObjects.mDebugAllocCallbacks);
         }
 
         mSwapchainImages.clear();
@@ -221,17 +226,17 @@ namespace swizzle::gfx
         VkFormat targetFormat = VK_FORMAT_B8G8R8A8_SRGB;
         VkColorSpaceKHR targetColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
-        uint32_t surfaceFormatCount = 0;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(mVkObjects.mPhysicalDevice, mSurface, &surfaceFormatCount, nullptr);
+        U32 surfaceFormatCount = 0u;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(mVkObjects.mLogicalDevice->getPhysical(), mSurface, &surfaceFormatCount, nullptr);
         std::vector<VkSurfaceFormatKHR> surfaceFormats;
         surfaceFormats.resize(surfaceFormatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(mVkObjects.mPhysicalDevice, mSurface, &surfaceFormatCount,
+        vkGetPhysicalDeviceSurfaceFormatsKHR(mVkObjects.mLogicalDevice->getPhysical(), mSurface, &surfaceFormatCount,
             surfaceFormats.data());
 
         bool found = false;
-        uint32_t idx = 0U;
+        U32 idx = 0u;
 
-        for (uint32_t i = 0U; i < surfaceFormatCount; i++)
+        for (U32 i = 0u; i < surfaceFormatCount; i++)
         {
             if (surfaceFormats[i].colorSpace == targetColorSpace && surfaceFormats[i].format == targetFormat)
             {
@@ -241,7 +246,8 @@ namespace swizzle::gfx
             }
         }
         VkBool32 supported = FALSE;
-        vkGetPhysicalDeviceSurfaceSupportKHR(mVkObjects.mPhysicalDevice, mVkObjects.mQueueFamilyIndex, mSurface, &supported);
+        U32 queueIndex = 0u; // TODO: Fix me
+        vkGetPhysicalDeviceSurfaceSupportKHR(mVkObjects.mLogicalDevice->getPhysical(), queueIndex, mSurface, &supported);
 
         if (!supported)
         {
@@ -259,8 +265,8 @@ namespace swizzle::gfx
 
         VkSwapchainCreateInfoKHR createInfo = {};
 
-        VkSurfaceCapabilitiesKHR surfaceCapabilities{};
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mVkObjects.mPhysicalDevice, mSurface, &surfaceCapabilities);
+        VkSurfaceCapabilitiesKHR surfaceCapabilities = {};
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mVkObjects.mLogicalDevice->getPhysical(), mSurface, &surfaceCapabilities);
 
         if (surfaceCapabilities.currentExtent.width < UINT32_MAX)
         {
@@ -272,23 +278,23 @@ namespace swizzle::gfx
         createInfo.pNext = &fullscreenExclusice;
         createInfo.flags = 0;
         createInfo.surface = mSurface;
-        createInfo.minImageCount = 3U;
+        createInfo.minImageCount = 3u;
         createInfo.imageFormat = mFormat;
         createInfo.imageColorSpace = colorSpace;
         createInfo.imageExtent.height = mSurfaceHeight;
         createInfo.imageExtent.width = mSurfaceWidth;
-        createInfo.imageArrayLayers = 1U;
+        createInfo.imageArrayLayers = 1u;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
         createInfo.imageSharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 1U;
-        createInfo.pQueueFamilyIndices = &mVkObjects.mQueueFamilyIndex;
+        createInfo.queueFamilyIndexCount = 1u;
+        createInfo.pQueueFamilyIndices = &queueIndex;
         createInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         createInfo.presentMode = mSelectedPresentMode; // check available present modes
         createInfo.clipped = VK_TRUE;
         createInfo.oldSwapchain = oldSwapchain;
 
-        VkResult result = vkCreateSwapchainKHR(mVkObjects.mLogicalDevice, &createInfo, mVkObjects.mDebugAllocCallbacks, &newSwapchain);
+        VkResult result = vkCreateSwapchainKHR(mVkObjects.mLogicalDevice->getLogical(), &createInfo, mVkObjects.mDebugAllocCallbacks, &newSwapchain);
 
         if (result != VK_SUCCESS)
         {
@@ -299,30 +305,30 @@ namespace swizzle::gfx
 
         if (oldSwapchain != VK_NULL_HANDLE)
         {
-            vkDestroySwapchainKHR(mVkObjects.mLogicalDevice, oldSwapchain, mVkObjects.mDebugAllocCallbacks);
+            vkDestroySwapchainKHR(mVkObjects.mLogicalDevice->getLogical(), oldSwapchain, mVkObjects.mDebugAllocCallbacks);
         }
     }
 
     void VulkanSwapchain::createSynchronizationObjects()
     {
-        VkFenceCreateInfo fenceInfo;
+        VkFenceCreateInfo fenceInfo = {};
 
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.pNext = VK_NULL_HANDLE;
         fenceInfo.flags = 0;
 
-        VkResult result = vkCreateFence(mVkObjects.mLogicalDevice, &fenceInfo, mVkObjects.mDebugAllocCallbacks, &mAcquireImageFence);
+        VkResult result = vkCreateFence(mVkObjects.mLogicalDevice->getLogical(), &fenceInfo, mVkObjects.mDebugAllocCallbacks, &mAcquireImageFence);
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Error creating swapchain fence %s", vk::VkResultToString(result));
         }
 
-        VkSemaphoreCreateInfo semaphoreInfo;
+        VkSemaphoreCreateInfo semaphoreInfo = {};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
         semaphoreInfo.pNext = VK_NULL_HANDLE;
         semaphoreInfo.flags = 0U;
 
-        result = vkCreateSemaphore(mVkObjects.mLogicalDevice, &semaphoreInfo, mVkObjects.mDebugAllocCallbacks, &mRenderCompleteSemaphore);
+        result = vkCreateSemaphore(mVkObjects.mLogicalDevice->getLogical(), &semaphoreInfo, mVkObjects.mDebugAllocCallbacks, &mRenderCompleteSemaphore);
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Error creating swapchain semaphore %s", vk::VkResultToString(result));
@@ -331,15 +337,15 @@ namespace swizzle::gfx
 
     void VulkanSwapchain::createSwapchainImages()
     {
-        VkResult r = vkGetSwapchainImagesKHR(mVkObjects.mLogicalDevice, mSwapchain, &mSwapchainImageCount, nullptr);
+        VkResult r = vkGetSwapchainImagesKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, &mSwapchainImageCount, nullptr);
 
         mSwapchainImages.resize(mSwapchainImageCount);
 
         std::vector<VkImage> img(mSwapchainImageCount);
 
-        r = vkGetSwapchainImagesKHR(mVkObjects.mLogicalDevice, mSwapchain, &mSwapchainImageCount, img.data());
+        r = vkGetSwapchainImagesKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, &mSwapchainImageCount, img.data());
 
-        for (uint32_t i = 0; i < mSwapchainImageCount; ++i)
+        for (U32 i = 0u; i < mSwapchainImageCount; ++i)
         {
             mSwapchainImages[i].mImage = img[i];
         }
@@ -349,7 +355,7 @@ namespace swizzle::gfx
     {
         for (SwapchainImage& img : mSwapchainImages)
         {
-            VkImageViewCreateInfo imViewInfo;
+            VkImageViewCreateInfo imViewInfo = {};
             imViewInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             imViewInfo.flags = 0;
             imViewInfo.format = mFormat;
@@ -367,7 +373,7 @@ namespace swizzle::gfx
             imViewInfo.components.b = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_B;
             imViewInfo.viewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
 
-            VkResult result = vkCreateImageView(mVkObjects.mLogicalDevice, &imViewInfo, mVkObjects.mDebugAllocCallbacks, &img.mImageView);
+            VkResult result = vkCreateImageView(mVkObjects.mLogicalDevice->getLogical(), &imViewInfo, mVkObjects.mDebugAllocCallbacks, &img.mImageView);
             if (result != VK_SUCCESS)
             {
                 LOG_ERROR("Error creating swapchain image view %s", vk::VkResultToString(result));
@@ -379,7 +385,7 @@ namespace swizzle::gfx
     {
         for (SwapchainImage& img : mSwapchainImages)
         {
-            auto f = std::make_shared<PresentFrameBuffer>(mVkObjects, img.mImage, img.mImageView, mFormat,
+            auto f = std::make_shared<PresentFBO>(mVkObjects, img.mImage, img.mImageView, mFormat,
                 mSurfaceWidth, mSurfaceHeight);
             mFrameBuffers.emplace_back(f);
         }

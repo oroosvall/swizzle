@@ -1,16 +1,33 @@
-#pragma once
+#ifndef VULKAN_MEMORY_HPP
+#define VULKAN_MEMORY_HPP
+
+/* Include files */
 
 #include "Vk.hpp"
-#include "VulkanObjectContainer.hpp"
+
+#include "../VulkanInstance.hpp"
+#include "../VulkanPhysicalDevice.hpp"
+
+#include "VkContainer.hpp"
+
+/* Defines */
+
+/* Typedefs/enums */
+
+/* Forward Declared Structs/Classes */
+
+/* Struct Declaration */
+
+/* Class Declaration */
 
 namespace vk
 {
-    class VulkanMemory
+    class VulkanMemory2
     {
     public:
 
-        VulkanMemory(const swizzle::gfx::VulkanObjectContainer& vkObjects);
-        virtual ~VulkanMemory();
+        VulkanMemory2(const swizzle::gfx::VkContainer vkObjects);
+        virtual ~VulkanMemory2();
 
         void allocateMemory(VkMemoryPropertyFlags properties, VkMemoryRequirements memReqs);
 
@@ -24,9 +41,13 @@ namespace vk
 
     private:
 
-        const swizzle::gfx::VulkanObjectContainer& mVkObjects;
+        const swizzle::gfx::VkContainer mVkObjects;
 
         VkDeviceMemory mMemory;
         VkDeviceSize mMemorySize;
     };
 }
+
+/* Function Declaration */
+
+#endif

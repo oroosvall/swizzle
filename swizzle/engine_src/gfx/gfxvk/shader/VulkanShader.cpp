@@ -1,5 +1,7 @@
 /* Include files */
 
+#include "../VulkanPhysicalDevice.hpp"
+
 #include "VulkanShader.hpp"
 
 #include <swizzle/core/Logging.hpp>
@@ -85,7 +87,7 @@ namespace swizzle::gfx
 
 namespace swizzle::gfx
 {
-    VulkanShader::VulkanShader(const VulkanObjectContainer& vkObjects, const PresentFrameBuffer& frameBuffer, const ShaderAttributeList& shaderAttributes)
+    VulkanShader2::VulkanShader2(const VkContainer vkObjects, const PresentFBO& frameBuffer, const ShaderAttributeList& shaderAttributes)
         : mVkObjects(vkObjects)
         , mPipelineLayout(VK_NULL_HANDLE)
         , mPipeline(VK_NULL_HANDLE)
@@ -116,7 +118,7 @@ namespace swizzle::gfx
         descriptor_layout.pNext = NULL;
         descriptor_layout.bindingCount = 2;
         descriptor_layout.pBindings = layout_binding;
-        vkCreateDescriptorSetLayout(mVkObjects.mLogicalDevice, &descriptor_layout, NULL, &mDescriptorLayout);
+        vkCreateDescriptorSetLayout(mVkObjects.mLogicalDevice->getLogical(), &descriptor_layout, NULL, &mDescriptorLayout);
 
         VkDescriptorSetAllocateInfo descAllocInfo = {};
         descAllocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -125,7 +127,7 @@ namespace swizzle::gfx
         descAllocInfo.descriptorSetCount = 1;
         descAllocInfo.pSetLayouts = &mDescriptorLayout;
 
-        vkAllocateDescriptorSets(mVkObjects.mLogicalDevice, &descAllocInfo, &mDescriptorSet);
+        vkAllocateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), &descAllocInfo, &mDescriptorSet);
 
         VkPipelineLayoutCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -136,26 +138,26 @@ namespace swizzle::gfx
         info.pushConstantRangeCount = 1;
         info.pPushConstantRanges = &push;
 
-        vkCreatePipelineLayout(mVkObjects.mLogicalDevice, &info, mVkObjects.mDebugAllocCallbacks, &mPipelineLayout);
+        vkCreatePipelineLayout(mVkObjects.mLogicalDevice->getLogical(), &info, mVkObjects.mDebugAllocCallbacks, &mPipelineLayout);
     }
 
-    VulkanShader::~VulkanShader()
+    VulkanShader2::~VulkanShader2()
     {
-        vkFreeDescriptorSets(mVkObjects.mLogicalDevice, mVkObjects.mDescriptorPool, 1, &mDescriptorSet);
+        //vkFreeDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), mVkObjects.mDescriptorPool, 1, &mDescriptorSet); // TODO: Fixme
 
-        vkDestroyDescriptorSetLayout(mVkObjects.mLogicalDevice, mDescriptorLayout, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyDescriptorSetLayout(mVkObjects.mLogicalDevice->getLogical(), mDescriptorLayout, mVkObjects.mDebugAllocCallbacks);
 
-        vkDestroyPipeline(mVkObjects.mLogicalDevice, mPipeline, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyPipeline(mVkObjects.mLogicalDevice->getLogical(), mPipeline, mVkObjects.mDebugAllocCallbacks);
 
         for (auto& it : mShaders)
         {
-            vkDestroyShaderModule(mVkObjects.mLogicalDevice, it.second, mVkObjects.mDebugAllocCallbacks);
+            vkDestroyShaderModule(mVkObjects.mLogicalDevice->getLogical(), it.second, mVkObjects.mDebugAllocCallbacks);
         }
 
-        vkDestroyPipelineLayout(mVkObjects.mLogicalDevice, mPipelineLayout, mVkObjects.mDebugAllocCallbacks);
+        vkDestroyPipelineLayout(mVkObjects.mLogicalDevice->getLogical(), mPipelineLayout, mVkObjects.mDebugAllocCallbacks);
     }
 
-    SwBool VulkanShader::load(const SwChar* filePath)
+    SwBool VulkanShader2::load(const SwChar* filePath)
     {
         SwBool ok = false;
 
@@ -193,22 +195,22 @@ namespace swizzle::gfx
         return ok;
     }
 
-    core::Resource<Material> VulkanShader::createMaterial()
+    core::Resource<Material> VulkanShader2::createMaterial()
     {
         return nullptr;
     }
 
-    VkPipeline VulkanShader::getPipeline() const
+    VkPipeline VulkanShader2::getPipeline() const
     {
         return mPipeline;
     }
 
-    VkPipelineLayout VulkanShader::getPipelineLayout() const
+    VkPipelineLayout VulkanShader2::getPipelineLayout() const
     {
         return mPipelineLayout;
     }
 
-    VkDescriptorSet VulkanShader::getDescriptorSet() const
+    VkDescriptorSet VulkanShader2::getDescriptorSet() const
     {
         return mDescriptorSet;
     }
@@ -221,7 +223,7 @@ namespace swizzle::gfx
 
 namespace swizzle::gfx
 {
-    void VulkanShader::loadShader(const SwChar* shaderType, const SwChar* binaryFile)
+    void VulkanShader2::loadShader(const SwChar* shaderType, const SwChar* binaryFile)
     {
         std::ifstream inFile(binaryFile, std::ios::binary | std::ios::ate);
 
@@ -240,7 +242,7 @@ namespace swizzle::gfx
             info.pNext = VK_NULL_HANDLE;
             info.flags = 0;
 
-            vkCreateShaderModule(mVkObjects.mLogicalDevice, &info, mVkObjects.mDebugAllocCallbacks, &mod);
+            vkCreateShaderModule(mVkObjects.mLogicalDevice->getLogical(), &info, mVkObjects.mDebugAllocCallbacks, &mod);
 
             if (strcmp(shaderType, "vertex") == 0)
             {
@@ -253,7 +255,7 @@ namespace swizzle::gfx
         }
     }
 
-    void VulkanShader::createPipeline()
+    void VulkanShader2::createPipeline()
     {
         std::vector<VkPipelineShaderStageCreateInfo> shaderInfos;
         for (auto& it : mShaders)
@@ -452,7 +454,8 @@ namespace swizzle::gfx
         createInfo.basePipelineHandle = VK_NULL_HANDLE;
         createInfo.basePipelineIndex = -1;
 
-        VkResult res = vkCreateGraphicsPipelines(mVkObjects.mLogicalDevice, mVkObjects.mPiplineCache, 1u, &createInfo, mVkObjects.mDebugAllocCallbacks,
+        // TODO: Add Shader cache
+        VkResult res = vkCreateGraphicsPipelines(mVkObjects.mLogicalDevice->getLogical(), VK_NULL_HANDLE, 1u, &createInfo, mVkObjects.mDebugAllocCallbacks,
             &mPipeline);
         if (res != VK_SUCCESS)
         {

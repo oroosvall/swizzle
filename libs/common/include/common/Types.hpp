@@ -26,6 +26,8 @@ typedef uint8_t U8;
 typedef char SwChar;
 typedef wchar_t SwWChar;
 
+typedef SwChar* SwCharPtr;
+
 typedef float F32;
 typedef double F64;
 

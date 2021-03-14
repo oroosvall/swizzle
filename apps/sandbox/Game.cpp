@@ -18,11 +18,11 @@ Game::~Game()
 
 void Game::userSetup()
 {
-    //mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
+    mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
 
-    mFrameBuffer = sw::gfx::CreateFrameBuffer();
+    //mFrameBuffer = mGfxContext->createFrameBuffer();
 
-    mCmdBuffer = sw::gfx::CreateCommandBuffer();
+    mCmdBuffer = mGfxContext->createCommandBuffer();
 
     sw::gfx::ShaderBufferInput bufferInput = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
 
@@ -41,22 +41,22 @@ void Game::userSetup()
     mShader = mSwapchain->createShader(attribs);
     mShader->load("shaders/simple.shader");
 
-    mTexture = sw::gfx::CreateTexture(1024U, 1024U);
+    //mTexture = mGfxContext->createTexture(1024U, 1024U);
 
-    mTexture->setData(2, 2, 4, singlePixel);
+    //mTexture->setData(2, 2, 4, singlePixel);
 
     cam.setPosition({ 0.0F, 0.0F, 5.5F });
 
     Model* mMesh = new Model();
     mMesh->load("meshes/main_city.obj");
 
-    mUniformBuffer = sw::gfx::CreateBuffer(sw::gfx::BufferType::UniformBuffer);
+    mUniformBuffer = mGfxContext->createBuffer(sw::gfx::BufferType::UniformBuffer);
 
     mUniformBuffer->setBufferData(&lampColor, sizeof(lampColor), 1);
 
     for (auto& m : mMesh->mMeshes)
     {
-        auto buffer = sw::gfx::CreateBuffer(sw::gfx::BufferType::Vertex);
+        auto buffer = mGfxContext->createBuffer(sw::gfx::BufferType::Vertex);
 
         size_t size = m.mTriangles.size() * 3 * (3 + 3 + 2);
 
@@ -106,11 +106,6 @@ SwBool Game::userUpdate(F32 dt)
 {
     mController.update(dt);
 
-    U32 x, y;
-    mWindow->getSize(x, y);
-
-    cam.changeAspect((F32)x, (F32)y);
-
     sw::gfx::HSVA hsv = sw::gfx::RgbaToHsva(rgba);
     hsv.h += 20.0F * dt;
     rgba = sw::gfx::HsvaToRgba(hsv);
@@ -118,6 +113,31 @@ SwBool Game::userUpdate(F32 dt)
     sw::gfx::HSVA hsvLamp = sw::gfx::RgbaToHsva(lampColor);
     hsvLamp.h += 20.0F * dt;
     lampColor = sw::gfx::HsvaToRgba(hsvLamp);
+
+    updateMainWindow();
+
+    return mWindow->isVisible();
+}
+
+void Game::userCleanup()
+{
+    mCmdBuffer.reset();
+    mUniformBuffer.reset();
+
+    mShader.reset();
+    mBuffers.clear();
+
+    mTexture.reset();
+
+    mFrameBuffer.reset();
+}
+
+void Game::updateMainWindow()
+{
+    U32 x, y;
+    mWindow->getSize(x, y);
+
+    cam.changeAspect((F32)x, (F32)y);
 
     void* mem = mUniformBuffer->mapMemory(sizeof(lampColor));
     memcpy(mem, &lampColor, sizeof(lampColor));
@@ -150,7 +170,7 @@ SwBool Game::userUpdate(F32 dt)
     mCmdBuffer->bindMaterial(mShader, mUniformBuffer);
     mCmdBuffer->setViewport(x, y);
 
-    for (auto buffer : mBuffers)
+    for (auto& buffer : mBuffers)
     {
         mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
         mCmdBuffer->draw(buffer);
@@ -160,19 +180,4 @@ SwBool Game::userUpdate(F32 dt)
     mCmdBuffer->end();
     mCmdBuffer->submit(mSwapchain);
     mSwapchain->present();
-
-    return mWindow->isVisible();
-}
-
-void Game::userCleanup()
-{
-    mCmdBuffer.reset();
-    mUniformBuffer.reset();
-
-    mShader.reset();
-    mBuffers.clear();
-
-    mTexture.reset();
-
-    mFrameBuffer.reset();
 }
