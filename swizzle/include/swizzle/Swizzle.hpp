@@ -40,9 +40,9 @@ namespace swizzle
     class Application
     {
     public:
-        void initialize()
+        void initialize(const SwChar* appName = "Template")
         {
-            SwInitialize();
+            SwInitialize(appName);
 
             mWindow = core::CreateWindow(1920, 1080, "Template");
             mWindow->show();

@@ -102,6 +102,11 @@ namespace swizzle::core
                 strncat_s(gTempDir, MAX_PATH, appName, appNameLen);
                 strncat_s(gTempDir, MAX_PATH, "\\", 1u);
             }
+
+            CreateDirectoryA(gTempDir, NULL);
+            CreateDirectoryA(gSaveGamesDir, NULL);
+            CreateDirectoryA(gAppDataDir, NULL);
+
             InputInit();
         }
 
@@ -197,7 +202,7 @@ namespace swizzle::core
         {
             return std::make_shared<Win32Window>(width, height, title);
         }
-    
+
         const U64 getPlatformTimeStampMs()
         {
             LARGE_INTEGER time;
