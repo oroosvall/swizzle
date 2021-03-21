@@ -220,14 +220,14 @@ namespace swizzle::core
             return static_cast<const U32>(threadId);
         }
 
-        const SwChar* GetPlatformKeyText(S32 scanCode)
+        const SwCharPtr GetPlatformKeyText(S32 scanCode)
         {
-            return GetWinKeyText(scanCode);
+            return (const SwCharPtr)GetWinKeyText(scanCode);
         }
 
-        const SwWChar* GetPlatformKeyTextW(S32 scanCode)
+        const SwCharPtr GetPlatformKeyTextW(S32 scanCode)
         {
-            return GetWinKeyTextW(scanCode);
+            return (const SwCharPtr)GetWinKeyTextW(scanCode);
         }
 
         const S32 PlatformKeyToScanCode(input::Keys key)

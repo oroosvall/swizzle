@@ -28,10 +28,10 @@ namespace swizzle::core
     Resource<Window> SWIZZLE_API CreateWindow(const U32 width, const U32 height, const SwChar* title);
     Resource<Thread> SWIZZLE_API CreateThread();
 
-    const SwChar* GetKeyText(S32 key);
-    const SwWChar* GetKeyTextW(S32 key);
+    const SwCharPtr SWIZZLE_API GetKeyText(S32 key);
+    const SwCharPtr SWIZZLE_API GetKeyTextW(S32 key);
 
-    const S32 KeyToScanCode(input::Keys);
+    const S32 SWIZZLE_API KeyToScanCode(input::Keys);
 
 }
 

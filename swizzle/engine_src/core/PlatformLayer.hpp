@@ -27,8 +27,8 @@ namespace swizzle::core
 
         Resource<Window> createPlatformWindow(const U32 width, const U32  height, const SwChar* title);
 
-        const SwChar* GetPlatformKeyText(S32 key);
-        const SwWChar* GetPlatformKeyTextW(S32 key);
+        const SwCharPtr GetPlatformKeyText(S32 key);
+        const SwCharPtr GetPlatformKeyTextW(S32 key);
 
         const S32 PlatformKeyToScanCode(input::Keys key);
 

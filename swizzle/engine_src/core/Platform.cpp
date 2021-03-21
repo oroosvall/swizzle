@@ -54,12 +54,12 @@ namespace swizzle::core
         return nullptr;
     }
 
-    const SwChar* GetKeyText(S32 scanCode)
+    const SwCharPtr GetKeyText(S32 scanCode)
     {
         return platform::GetPlatformKeyText(scanCode);
     }
 
-    const SwWChar* GetKeyTextW(S32 scanCode)
+    const SwCharPtr GetKeyTextW(S32 scanCode)
     {
         return platform::GetPlatformKeyTextW(scanCode);
     }
