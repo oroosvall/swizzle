@@ -8,13 +8,13 @@ namespace swizzle::core
 {
     std::list<LogDevice*> gLoggers;
 
-    void LogMessage(SwChar* messageType, SwChar* message, ...)
+    void LogMessage(const SwChar* messageType, const SwChar* message, ...)
     {
         va_list vl;
         va_start(vl, message);
 
         SwChar buffer[1024];
-        
+
         vsnprintf_s(buffer, sizeof(buffer), message, vl);
 
         for (auto it : gLoggers)
