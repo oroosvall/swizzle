@@ -14,9 +14,13 @@ function setupPrj(prjName, prjType, filePath, includePath, defs, lnk, userFunc)
         includedirs {
             includePath
         }
-        defines {
-            defs
-        }
+        if (defs ~= "" or type(defs) == "table") then
+            for i,j in pairs(defs) do
+                if(j ~= "") then
+                    defines {j}
+                end
+            end
+        end
         links {
             lnk
         }

@@ -17,7 +17,7 @@ namespace utils
         uint32_t seconds(bool reset = false);
         uint32_t milliseconds(bool reset = false);
 
-        float_t secondsAsFloat(bool reset = false);
+        float secondsAsFloat(bool reset = false);
 
     private:
         std::chrono::high_resolution_clock::time_point mTime;

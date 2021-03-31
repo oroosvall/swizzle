@@ -39,7 +39,7 @@ namespace utils
         return static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(diff).count());
     }
 
-    float_t HighResolutionClock::secondsAsFloat(bool reset)
+    float HighResolutionClock::secondsAsFloat(bool reset)
     {
         auto now = std::chrono::high_resolution_clock::now();
         auto diff = now - mTime;

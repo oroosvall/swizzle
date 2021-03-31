@@ -1,6 +1,7 @@
 #include <utils/StringUtils.hpp>
 
 #include <string>
+#include <cstring>
 
 namespace utils
 {
@@ -13,7 +14,7 @@ namespace utils
         }
         return s;
     }
-    
+
     size_t wstrlenSafe(const wchar_t* str) noexcept
     {
         size_t s = 0U;

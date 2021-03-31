@@ -125,7 +125,7 @@ public:
     void saveSwm(const std::string& file, bool attemptCompress);
 
 
-    void Model::saveSwmComp(const std::string& file);
+    void saveSwmComp(const std::string& file);
 };
 
 #endif

@@ -1,6 +1,9 @@
 
 #include <utils/ArgParse.hpp>
 
+#include <cstdio>
+#include <cstring>
+
 namespace utils
 {
     ArgOption::ArgOption(const char* option, const char* description, ArgType type)
@@ -83,7 +86,7 @@ namespace utils
     {
         printf("%s\n", mAppInfo);
 
-        char* type = "";
+        const char* type = "";
 
         for (const ArgOption* o : mOptions)
         {

@@ -9,7 +9,7 @@ namespace swizzle::core
     template<typename T> using Resource = std::shared_ptr<T>;
 
     template <class _Ty, class... _Types>
-    _NODISCARD Resource<_Ty> CreateRef(_Types&&... _Args)
+    [[nodiscard]] Resource<_Ty> CreateRef(_Types&&... _Args)
     {
         return std::make_shared<_Ty>(std::forward<_Types>(_Args)...);
     }

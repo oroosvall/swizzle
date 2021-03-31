@@ -154,16 +154,19 @@ namespace utils
     {
         std::ofstream outFile(file);
 
-        for (auto it : mValues)
+        if (outFile.is_open())
         {
+            for (auto it : mValues)
+            {
 
-            auto name = it.first;
-            Value v = it.second;
+                auto name = it.first;
+                Value v = it.second;
 
-            outFile << name;
-            outFile << "=";
-            outFile << v.getString();
-            outFile << "\n";
+                outFile << name;
+                outFile << "=";
+                outFile << v.getString();
+                outFile << "\n";
+            }
         }
 
         outFile.close();
