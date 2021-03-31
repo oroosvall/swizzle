@@ -68,7 +68,7 @@ namespace swizzle
 
             while (running)
             {
-                float_t dt = highRes.secondsAsFloat(true);
+                F32 dt = highRes.secondsAsFloat(true);
 
                 swizzle::input::InputFrameReset();
                 mWindow->pollEvents();
