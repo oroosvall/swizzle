@@ -36,7 +36,7 @@ extIncDirs['script'] = "libs/script/include"
 extIncDirs['utils'] = "libs/utils/include"
 extIncDirs['vk_sdk'] = os.getenv("VULKAN_SDK") .. "/Include"
 
-group("g-test")
+group("vendor")
     project("google-test")
         location("build/" .. platform .."/%{prj.name}")
         kind "staticLib"
@@ -61,7 +61,6 @@ group("g-test")
             "vendor/google-test/googletest-master/googlemock/"
         }
         
-group("glad")
     project("glad")
         location("build/" .. platform .. "/%{prj.name}")
         kind "staticLib"
@@ -80,6 +79,20 @@ group("glad")
             "vendor/glad/include/glad"
         }
         
+    project("stb")
+        location("build/" .. platform .. "/%{prj.name}")
+        kind "staticLib"
+        language "c"
+        
+        files {
+            "vendor/stb/include/stb/*.h",
+            "libs/vendor/stb/*.c"
+        }
+        
+        includedirs {
+            "vendor/stb/include/",
+        } 
+
 group("libs")
     setupPrj("utils", "staticLib",
         {"libs/utils/include/**.hpp", "libs/utils/src/**.hpp", "libs/utils/src/**.cpp"}, -- files/filePath
@@ -130,7 +143,7 @@ group("Engine")
         {"swizzle/include/**.hpp", "swizzle/engine_src/**.hpp", "swizzle/engine_src/**.cpp", extIncDirs['common'].."/**.hpp"}, -- files/filePath
         {"swizzle/include/", "swizzle/engine_src/", extIncDirs['vk_sdk'], "vendor/glm/include", "vendor/stb/include", "swizzle", extIncDirs['utils'], extIncDirs['common']}, -- includePaths
         {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"}, -- defines
-        { "utils", "script", "physics", "vulkan-1", "shaderc_combined", "Xinput" }, -- links
+        { "utils", "script", "physics", "vulkan-1", "shaderc_combined", "Xinput", "stb" }, -- links
         function() 
             vpaths { ["engine_src/*"] = "swizzle/engine_src/**.hpp" }
             vpaths { ["engine_src/*"] = "swizzle/engine_src/**.cpp" }

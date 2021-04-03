@@ -3,7 +3,6 @@
 #include "VulkanTexture.hpp"
 #include "backend/VulkanMemory.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
 namespace swizzle::gfx
@@ -23,7 +22,7 @@ namespace swizzle::gfx
         // TODO: remove me
         S32 x = 0, y = 0, c = 0;
 
-        stbi_uc* pixels = stbi_load("texture/random_snipp.PNG", &x, &y, &c, STBI_rgb_alpha);
+        stbi_uc* pixels = stbi_load("texture/lightGray.PNG", &x, &y, &c, STBI_rgb_alpha);
 
         setData(x, y, 4u, pixels);
 
