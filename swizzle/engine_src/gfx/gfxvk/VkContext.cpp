@@ -102,21 +102,25 @@ namespace swizzle::gfx
         return core::CreateRef<VulkanBuffer>(mVkContainer, type);
     }
 
-    core::Resource<CommandBuffer> VkGfxContext::createCommandBuffer()
+    core::Resource<CommandBuffer> VkGfxContext::createCommandBuffer(U32 swapCount)
     {
-        return core::CreateRef<VulkanCommandBuffer>(mVkContainer);
+        return core::CreateRef<VulkanCommandBuffer>(mVkContainer, swapCount);
     }
 
-    core::Resource<Swapchain> VkGfxContext::createSwapchain(core::Resource<core::Window> window)
+    core::Resource<Swapchain> VkGfxContext::createSwapchain(core::Resource<core::Window> window, U32 swapCount)
     {
+        swapCount;
         return core::CreateRef<VulkanSwapchain>(mVkContainer, window);
     }
 
     core::Resource<Texture> VkGfxContext::createTexture(U32 width, U32 height)
     {
-        width;
-        height;
-        return nullptr;
+        return core::CreateRef<VulkanTexture>(mVkContainer, width, height);
+    }
+
+    VkContainer VkGfxContext::getVkContainer() const
+    {
+        return mVkContainer;
     }
 
 }

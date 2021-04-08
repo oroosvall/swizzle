@@ -8,19 +8,23 @@
 #include <swizzle/gfx/Swapchain.hpp>
 #include <swizzle/gfx/Material.hpp>
 
+#include <vector>
+
 namespace swizzle::gfx
 {
 
     class VulkanCommandBuffer : public CommandBuffer
     {
     public:
-        VulkanCommandBuffer(const VkContainer vkObjects);
+        VulkanCommandBuffer(const VkContainer vkObjects, U32 swapCount);
         virtual ~VulkanCommandBuffer();
 
         virtual void reset(bool hardReset) override;
 
-        virtual void begin() override;
+        virtual void begin(core::Resource<Swapchain> swp = nullptr) override;
         virtual void end() override;
+
+        virtual void uploadTexture(core::Resource<Texture> texture) override;
 
         virtual void submit(core::Resource<Swapchain> swp = nullptr) override;
 
@@ -29,17 +33,26 @@ namespace swizzle::gfx
         virtual void endRenderPass() override;
 
         virtual void bindShader(core::Resource<Shader> shader) override;
-        virtual void bindMaterial(core::Resource<Shader> shader, core::Resource<Buffer> material) override;
+        virtual void bindMaterial(core::Resource<Shader> shader, core::Resource<Material> material) override;
         virtual void setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size) override;
         virtual void setViewport(U32 x, U32 y) override;
 
         virtual void draw(core::Resource<Buffer> buffer) override;
 
+    private:
+
+        void createVkResources();
+
         const VkContainer mVkObjects;
 
-        VkCommandBuffer mCmdBuffer;
-        VkFence mCompleteFence;
+        const U32 mSwapCount;
 
+        std::vector<VkCommandBuffer> mCmdBuffer;
+        std::vector<VkFence> mCompleteFence;
+
+        VkCommandBuffer mActiveBuffer;
+        VkFence mNextFence;
+        U32 mSelected;
     };
 
 }

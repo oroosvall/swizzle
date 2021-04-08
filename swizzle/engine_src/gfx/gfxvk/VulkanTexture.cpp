@@ -46,7 +46,7 @@ namespace swizzle::gfx
     void VulkanTexture::setData(U32 width, U32 height, U32 channels, U8* pixelData)
     {
         pixelData;
-        channels;
+        mChannels = channels;
         // check to recreate the texture
         if ((width != mWidth) || (height != mHeight) && ((width != 0U) && (height != 0U)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
         {
@@ -67,7 +67,7 @@ namespace swizzle::gfx
 
         const U32 queueIndex = VK_QUEUE_FAMILY_IGNORED;
 
-        VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * 4U;
+        VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * (U64)channels;
 
         VkBufferCreateInfo bufferInfo = {};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -264,9 +264,30 @@ namespace swizzle::gfx
 
     void VulkanTexture::createResources()
     {
-        createImage(VkFormat::VK_FORMAT_R8G8B8A8_SRGB);
+        VkFormat selectedFormat;
+
+        switch (mChannels)
+        {
+        case 1:
+            selectedFormat = VkFormat::VK_FORMAT_R8_SRGB;
+            break;
+        case 2:
+            selectedFormat = VkFormat::VK_FORMAT_R8G8_SRGB;
+            break;
+        case 3:
+            selectedFormat = VkFormat::VK_FORMAT_R8G8B8_SRGB;
+            break;
+        case 4:
+            selectedFormat = VkFormat::VK_FORMAT_R8G8B8A8_SRGB;
+            break;
+        default:
+            selectedFormat = VkFormat::VK_FORMAT_R8G8B8A8_SRGB;
+            break;
+        }
+
+        createImage(selectedFormat);
         allocMemory();
-        createView(VkFormat::VK_FORMAT_R8G8B8A8_SRGB);
+        createView(selectedFormat);
     }
 
 }

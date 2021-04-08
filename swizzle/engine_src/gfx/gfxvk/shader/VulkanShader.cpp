@@ -3,6 +3,7 @@
 #include "../VulkanPhysicalDevice.hpp"
 
 #include "VulkanShader.hpp"
+#include "VulkanMaterial.hpp"
 
 #include <swizzle/core/Logging.hpp>
 
@@ -143,7 +144,7 @@ namespace swizzle::gfx
 
     VulkanShader2::~VulkanShader2()
     {
-        //vkFreeDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), mVkObjects.mDescriptorPool, 1, &mDescriptorSet); // TODO: Fixme
+        vkFreeDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), mVkObjects.mDescriptorPool, 1, &mDescriptorSet); // TODO: Fixme
 
         vkDestroyDescriptorSetLayout(mVkObjects.mLogicalDevice->getLogical(), mDescriptorLayout, mVkObjects.mDebugAllocCallbacks);
 
@@ -197,7 +198,20 @@ namespace swizzle::gfx
 
     core::Resource<Material> VulkanShader2::createMaterial()
     {
-        return nullptr;
+        VkDescriptorSetAllocateInfo allocInfo = {};
+        allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.pNext = VK_NULL_HANDLE;
+        allocInfo.descriptorPool = mVkObjects.mDescriptorPool;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.pSetLayouts = &mDescriptorLayout;
+
+        VkDescriptorSet desc = VK_NULL_HANDLE;
+
+        vkAllocateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), &allocInfo, &desc);
+
+        auto material = core::CreateRef<VulkanMaterial>(mVkObjects, desc);
+
+        return material;
     }
 
     VkPipeline VulkanShader2::getPipeline() const
@@ -383,9 +397,9 @@ namespace swizzle::gfx
         depthState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthState.pNext = VK_NULL_HANDLE;
         depthState.flags = 0;
-        depthState.depthTestEnable = VK_TRUE;
-        depthState.depthWriteEnable = VK_TRUE;
-        depthState.depthCompareOp = VkCompareOp::VK_COMPARE_OP_LESS;
+        depthState.depthTestEnable = mShaderAttributes.mEnableDepthTest;
+        depthState.depthWriteEnable = mShaderAttributes.mEnableDepthTest;
+        depthState.depthCompareOp = mShaderAttributes.mEnableDepthTest ? VkCompareOp::VK_COMPARE_OP_LESS : VkCompareOp::VK_COMPARE_OP_ALWAYS;
         depthState.depthBoundsTestEnable = VK_FALSE;
         depthState.stencilTestEnable = VK_FALSE;
         depthState.front = {};
@@ -404,11 +418,11 @@ namespace swizzle::gfx
         for (size_t i = 0; i < colorState.attachmentCount; i++)
         {
             VkPipelineColorBlendAttachmentState blendState = {};
-            blendState.blendEnable = VK_FALSE;
-            blendState.srcAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-            blendState.dstColorBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+            blendState.blendEnable = mShaderAttributes.mEnableBlending;
+            blendState.srcAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+            blendState.srcColorBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+            blendState.dstColorBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
             blendState.dstAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-            blendState.srcColorBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE;
             blendState.colorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
             blendState.alphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
             blendState.colorWriteMask = VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT |

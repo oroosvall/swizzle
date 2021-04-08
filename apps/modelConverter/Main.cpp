@@ -39,14 +39,13 @@ int main(int argv, char* argc[])
     args.addOption(&benchmark);
     args.addOption(&version);
 
+    if (!args.parse(argv, argc))
+        args.printHelp();
+
     if (verbose.mIsSet)
     {
         swizzle::core::AddLogger(&logger);
     }
-
-
-    if (!args.parse(argv, argc))
-        args.printHelp();
 
     if (inFiles.mIsSet && outFiles.mIsSet)
     {

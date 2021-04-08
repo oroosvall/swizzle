@@ -51,6 +51,8 @@ void Model::loadObj(const std::string& file)
         bool hasNormal = false;
         bool hasUv = false;
 
+        static int printState = 0;
+
         while (!input.eof())
         {
             std::getline(input, line);
@@ -79,6 +81,11 @@ void Model::loadObj(const std::string& file)
             }
             if (line[0] == 'v' && line[1] == 't')
             {
+                if (printState != 1)
+                {
+                    LOG_INFO("Loading texture coords");
+                    printState = 1;
+                }
                 float v1 = std::strtof(line.substr(off0, off1 - off0).c_str(), nullptr);
                 float v2 = std::strtof(line.substr(off1, off2 - off1).c_str(), nullptr);
                 uvs.push_back({ v1, v2 });
@@ -86,6 +93,11 @@ void Model::loadObj(const std::string& file)
             }
             else if (line[0] == 'v' && line[1] == 'n')
             {
+                if (printState != 2)
+                {
+                    LOG_INFO("Loading normals");
+                    printState = 2;
+                }
                 float v1 = std::strtof(line.substr(off0, off1 - off0).c_str(), nullptr);
                 float v2 = std::strtof(line.substr(off1, off2 - off1).c_str(), nullptr);
                 float v3 = std::strtof(line.substr(off2, off3 - off2).c_str(), nullptr);
@@ -94,6 +106,11 @@ void Model::loadObj(const std::string& file)
             }
             else if (line[0] == 'v' && line[1] == ' ')
             {
+                if (printState != 3)
+                {
+                    LOG_INFO("Loading verts");
+                    printState = 3;
+                }
                 float v1 = std::strtof(line.substr(off0, off1 - off0).c_str(), nullptr);
                 float v2 = std::strtof(line.substr(off1, off2 - off1).c_str(), nullptr);
                 float v3 = std::strtof(line.substr(off2, off3 - off2).c_str(), nullptr);
@@ -101,6 +118,11 @@ void Model::loadObj(const std::string& file)
             }
             else if (line[0] == 'f')
             {
+                if (printState != 4)
+                {
+                    LOG_INFO("Loading faces");
+                    printState = 4;
+                }
                 std::string line_ll_1 = line.substr(off0, off1 - off0);
                 std::string line_ll_2 = line.substr(off1, off2 - off1);
                 std::string line_ll_3 = line.substr(off2, off3 - off2);

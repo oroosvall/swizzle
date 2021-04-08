@@ -57,8 +57,8 @@ namespace swizzle::gfx
         virtual U32 getFrameCount() = 0;
 
         virtual core::Resource<Buffer> createBuffer(BufferType type) = 0;
-        virtual core::Resource<CommandBuffer> createCommandBuffer() = 0;
-        virtual core::Resource<Swapchain> createSwapchain(core::Resource<core::Window> window) = 0;
+        virtual core::Resource<CommandBuffer> createCommandBuffer(U32 swapCount) = 0;
+        virtual core::Resource<Swapchain> createSwapchain(core::Resource<core::Window> window, U32 swapCount) = 0;
         virtual core::Resource<Texture> createTexture(U32 width, U32 height) = 0;
 
     };

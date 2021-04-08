@@ -41,7 +41,10 @@ namespace swizzle::gfx
         void resize();
 
         core::Resource<FrameBuffer> getFrameBuffer() const;
-        VkSemaphore getSemaphore() const { return mRenderCompleteSemaphore; }
+        VkSemaphore getSemaphoreToSignal() const;
+        VkSemaphore getWaitForSemaphore() const;
+        VkFence getWaitFence() const;
+        U32 getCurrentFrame() const;
 
     private:
 
@@ -51,6 +54,7 @@ namespace swizzle::gfx
         void createSwapchain(VkSwapchainKHR oldSwapchain);
 
         void createSynchronizationObjects();
+        void destroySunchronizationObjects();
 
         void createSwapchainImages();
         void createSwapchainImageViews();
@@ -71,15 +75,20 @@ namespace swizzle::gfx
 
         std::unordered_map<VSyncTypes, VkPresentModeKHR> mAvailablePresentModes;
         SwBool mRecreateSwapchain;
-        U32 mCurrentImage;
+        U32 mCurrentFrame;
+        U32 mImageIndex;
 
-        VkFence mAcquireImageFence;
-        VkSemaphore mRenderCompleteSemaphore;
+        //VkSemaphore mRenderCompleteSemaphore;
 
         U32 mSwapchainImageCount;
         std::vector<SwapchainImage> mSwapchainImages;
 
         std::vector<core::Resource<PresentFBO>> mFrameBuffers;
+        std::vector<VkSemaphore> mRenderingFinishedSemaphore;
+        std::vector<VkSemaphore> mImageAvailableSemaphore;
+
+        std::vector<VkFence> mInFlightFences;
+        std::vector<VkFence> mImagesInFlight;
 
     };
 

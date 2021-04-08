@@ -54,8 +54,11 @@ namespace swizzle::gfx
     {
         if (newSize < mBufferMemory.getMemorySize())
             return;
+
         if (mBuffer != VK_NULL_HANDLE)
+        {
             vkDestroyBuffer(mVkObjects.mLogicalDevice->getLogical(), mBuffer, mVkObjects.mDebugAllocCallbacks);
+        }
 
         VkBufferUsageFlags usage = 0;
         switch (mType)

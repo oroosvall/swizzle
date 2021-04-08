@@ -11,6 +11,10 @@
 #pragma warning(disable : 4995)
 #include <Xinput.h>
 
+#undef max
+
+#include <algorithm>
+
 namespace swizzle::core
 {
 
@@ -53,8 +57,8 @@ namespace swizzle::core
                 moveEvt.mX = pt.x;
                 moveEvt.mY = pt.y;
 
-                moveEvt.mX = max(moveEvt.mX, 0);
-                moveEvt.mY = max(moveEvt.mY, 0);
+                moveEvt.mX = std::max(moveEvt.mX, 0);
+                moveEvt.mY = std::max(moveEvt.mY, 0);
 
                 evtHandler.publishEvent(moveEvt);
             }

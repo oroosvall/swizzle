@@ -16,16 +16,19 @@ class StdLogger : public swizzle::core::LogDevice
 int main(int argv, char* argc[])
 {
     setlocale(LC_CTYPE, "");
-    argc; argv;
+    (void)argc;
+    (void)argv;
 
     StdLogger logger;
 
     sw::core::AddLogger(&logger);
 
-    Game game;
+    {
+        Game game;
 
-    game.initialize("Swizzle-sandbox");
-    game.run();
+        game.initialize("Swizzle-sandbox");
+        game.run();
+    }
 
     sw::core::RemoveLogger(&logger);
 }

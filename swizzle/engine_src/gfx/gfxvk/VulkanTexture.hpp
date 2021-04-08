@@ -50,6 +50,7 @@ namespace swizzle::gfx
 
         U32 mWidth;
         U32 mHeight;
+        U32 mChannels;
 
     };
 

@@ -19,8 +19,10 @@ namespace swizzle::gfx
 
         virtual void reset(bool hardReset) = 0;
 
-        virtual void begin() = 0;
+        virtual void begin(core::Resource<Swapchain> swp = nullptr) = 0;
         virtual void end() = 0;
+
+        virtual void uploadTexture(core::Resource<Texture> texture) = 0;
 
         virtual void submit(core::Resource<Swapchain> swp = nullptr) = 0;
 
@@ -29,7 +31,7 @@ namespace swizzle::gfx
         virtual void endRenderPass() = 0;
 
         virtual void bindShader(core::Resource<Shader> shader) = 0;
-        virtual void bindMaterial(core::Resource<Shader> shader, core::Resource<Buffer> material) = 0;
+        virtual void bindMaterial(core::Resource<Shader> shader, core::Resource<Material> material) = 0;
         virtual void setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size) = 0;
         virtual void setViewport(U32 x, U32 y) = 0;
 

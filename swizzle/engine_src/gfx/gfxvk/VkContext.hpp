@@ -37,9 +37,11 @@ namespace swizzle::gfx
         virtual U32 getFrameCount() override;
 
         virtual core::Resource<Buffer> createBuffer(BufferType type) override;
-        virtual core::Resource<CommandBuffer> createCommandBuffer() override;
-        virtual core::Resource<Swapchain> createSwapchain(core::Resource<core::Window> window) override;
+        virtual core::Resource<CommandBuffer> createCommandBuffer(U32 swapCount) override;
+        virtual core::Resource<Swapchain> createSwapchain(core::Resource<core::Window> window, U32 swapCount) override;
         virtual core::Resource<Texture> createTexture(U32 width, U32 height) override;
+
+        VkContainer getVkContainer() const;
 
     private:
 

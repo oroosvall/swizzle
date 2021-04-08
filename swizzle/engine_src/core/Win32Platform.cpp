@@ -16,6 +16,8 @@
 #pragma comment(lib, "Shlwapi.lib")
 
 #include "utils/StringUtils.hpp"
+#include <processthreadsapi.h>
+#include <KnownFolders.h>
 
 namespace swizzle::core
 {
@@ -56,6 +58,7 @@ namespace swizzle::core
             U64 appNameLen = utils::strlenSafe(appName);
 
             PWSTR saveGames = NULL;
+
             if (SHGetKnownFolderPath(FOLDERID_SavedGames, KF_FLAG_DEFAULT, GetCurrentProcessToken(), &saveGames) != S_OK)
             {
                 LOG_ERROR("Failed to get home path");

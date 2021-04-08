@@ -9,6 +9,12 @@
 
 #include "Model.hpp"
 
+#include <utils/Config.hpp>
+#include <utils/FpsCounter.hpp>
+
+#include <swizzle/gui/GuiLabel.hpp>
+
+
 class Game : public sw::Application
 {
 public:
@@ -28,6 +34,7 @@ private:
     sw::core::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
 
     sw::core::Resource<sw::gfx::Shader> mShader;
+    sw::core::Resource<sw::gfx::Material> mMaterial;
 
     sw::core::Resource<sw::gfx::Texture> mTexture;
 
@@ -43,6 +50,15 @@ private:
     std::vector<sw::core::Resource<sw::gfx::Buffer>> mBuffers;
 
     U8 singlePixel[16] = { 0U, 0U, 0U, 255U, 128, 0, 0, 255, 0, 128, 0, 255, 0, 0, 128, 255 };
+
+    utils::Config mGameCfg;
+    utils::FpsCounter mFpsCounter;
+
+    // Temp
+    sw::gui::GuiLabel* guiLabel;
+    sw::core::Resource<sw::gfx::Shader> mTextShader;
+    sw::core::Resource<sw::gfx::Material> mTextMaterial;
+
 
 };
 

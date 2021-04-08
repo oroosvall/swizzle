@@ -44,6 +44,13 @@ void Model::loadObj(const std::string& file)
         uint32_t loadCounter = 1;
         LOG_INFO("Loading obj file\n");
 
+        std::vector<Vertex3d> verts;
+        std::vector<Vertex3d> normals;
+        std::vector<Vertex2d> uvs;
+
+        bool hasNormal = false;
+        bool hasUv = false;
+
         while (!input.eof())
         {
             std::getline(input, line);
@@ -57,6 +64,8 @@ void Model::loadObj(const std::string& file)
             {
                 if (mMeshes.size() >= 1)
                 {
+                    hasNormal = false;
+                    hasUv = false;
                     offset += static_cast<uint32_t>(mMeshes.back().mVertices.size());
                     //Model::Mesh& m = mMeshes.back();
                     LOG_INFO("\r loading mesh %d", loadCounter++);
@@ -68,23 +77,115 @@ void Model::loadObj(const std::string& file)
                 mMeshes.back().mName = s;
                 mMeshes.back().mName.push_back('\0');
             }
-            if (line[0] == 'v')
+            if (line[0] == 'v' && line[1] == 't')
+            {
+                float v1 = std::strtof(line.substr(off0, off1 - off0).c_str(), nullptr);
+                float v2 = std::strtof(line.substr(off1, off2 - off1).c_str(), nullptr);
+                uvs.push_back({ v1, v2 });
+                hasUv = true;
+            }
+            else if (line[0] == 'v' && line[1] == 'n')
             {
                 float v1 = std::strtof(line.substr(off0, off1 - off0).c_str(), nullptr);
                 float v2 = std::strtof(line.substr(off1, off2 - off1).c_str(), nullptr);
                 float v3 = std::strtof(line.substr(off2, off3 - off2).c_str(), nullptr);
-                mMeshes.back().mVertices.push_back({v1, v2, v3});
+                normals.push_back({ v1, v2, v3 });
+                hasNormal = true;
+            }
+            else if (line[0] == 'v' && line[1] == ' ')
+            {
+                float v1 = std::strtof(line.substr(off0, off1 - off0).c_str(), nullptr);
+                float v2 = std::strtof(line.substr(off1, off2 - off1).c_str(), nullptr);
+                float v3 = std::strtof(line.substr(off2, off3 - off2).c_str(), nullptr);
+                verts.push_back({ v1, v2, v3 });
             }
             else if (line[0] == 'f')
             {
-                int v1 = std::strtol(line.substr(off0, off1 - off0).c_str(), nullptr, 0);
-                int v2 = std::strtol(line.substr(off1, off2 - off1).c_str(), nullptr, 0);
-                int v3 = std::strtol(line.substr(off2, off3 - off2).c_str(), nullptr, 0);
+                std::string line_ll_1 = line.substr(off0, off1 - off0);
+                std::string line_ll_2 = line.substr(off1, off2 - off1);
+                std::string line_ll_3 = line.substr(off2, off3 - off2);
+
+                int v1 = std::strtol(line_ll_1.c_str(), nullptr, 0);
+                int v2 = std::strtol(line_ll_2.c_str(), nullptr, 0);
+                int v3 = std::strtol(line_ll_3.c_str(), nullptr, 0);
+
+                mMeshes.back().mVertices.push_back(verts[uint32_t(v1 - 1)]);
+                mMeshes.back().mVertices.push_back(verts[uint32_t(v2 - 1)]);
+                mMeshes.back().mVertices.push_back(verts[uint32_t(v3 - 1)]);
+
+                if (hasNormal)
+                {
+                    size_t off0_n_1 = line_ll_1.find_first_of('/') + 1;
+                    size_t off1_n_1 = line_ll_1.find_first_of('/', off0_n_1 + 1) + 1;
+                    size_t off2_n_1 = line_ll_1.find_first_of('/', off1_n_1 + 1) + 1;
+
+                    size_t off0_n_2 = line_ll_2.find_first_of('/') + 1;
+                    size_t off1_n_2 = line_ll_2.find_first_of('/', off0_n_2 + 1) + 1;
+                    size_t off2_n_2 = line_ll_2.find_first_of('/', off1_n_2 + 1) + 1;
+
+                    size_t off0_n_3 = line_ll_3.find_first_of('/') + 1;
+                    size_t off1_n_3 = line_ll_3.find_first_of('/', off0_n_3 + 1) + 1;
+                    size_t off2_n_3 = line_ll_3.find_first_of('/', off1_n_3 + 1) + 1;
+
+                    std::string line_ll_1_n = line_ll_1.substr(off1_n_1, off2_n_1 - off1_n_1);
+                    std::string line_ll_2_n = line_ll_2.substr(off1_n_2, off2_n_2 - off1_n_2);
+                    std::string line_ll_3_n = line_ll_3.substr(off1_n_3, off2_n_3 - off1_n_3);
+
+                    int n1 = std::strtol(line_ll_1_n.c_str(), nullptr, 0);
+                    int n2 = std::strtol(line_ll_2_n.c_str(), nullptr, 0);
+                    int n3 = std::strtol(line_ll_3_n.c_str(), nullptr, 0);
+
+                    mMeshes.back().mNormals.push_back(normals[uint32_t(n1 - 1)]);
+                    mMeshes.back().mNormals.push_back(normals[uint32_t(n2 - 1)]);
+                    mMeshes.back().mNormals.push_back(normals[uint32_t(n3 - 1)]);
+                }
+                else
+                {
+                    mMeshes.back().mNormals.push_back({});
+                    mMeshes.back().mNormals.push_back({});
+                    mMeshes.back().mNormals.push_back({});
+                }
+
+                if (hasUv)
+                {
+                    size_t off0_u_1 = line_ll_1.find_first_of('/') + 1;
+                    size_t off1_u_1 = line_ll_1.find_first_of('/', off0_u_1 + 1) + 1;
+
+                    size_t off0_u_2 = line_ll_2.find_first_of('/') + 1;
+                    size_t off1_u_2 = line_ll_2.find_first_of('/', off0_u_2 + 1) + 1;
+
+                    size_t off0_u_3 = line_ll_3.find_first_of('/') + 1;
+                    size_t off1_u_3 = line_ll_3.find_first_of('/', off0_u_3 + 1) + 1;
+
+                    std::string line_ll_1_u = line_ll_1.substr(off0_u_1, off1_u_1 - off0_u_1);
+                    std::string line_ll_2_u = line_ll_2.substr(off0_u_2, off1_u_2 - off0_u_2);
+                    std::string line_ll_3_u = line_ll_3.substr(off0_u_3, off1_u_3 - off0_u_3);
+
+                    int u1 = std::strtol(line_ll_1_u.c_str(), nullptr, 0);
+                    int u2 = std::strtol(line_ll_2_u.c_str(), nullptr, 0);
+                    int u3 = std::strtol(line_ll_3_u.c_str(), nullptr, 0);
+
+                    mMeshes.back().mUvs.push_back(uvs[uint32_t(u1 - 1)]);
+                    mMeshes.back().mUvs.push_back(uvs[uint32_t(u2 - 1)]);
+                    mMeshes.back().mUvs.push_back(uvs[uint32_t(u3 - 1)]);
+                }
+                else
+                {
+                    mMeshes.back().mUvs.push_back({});
+                    mMeshes.back().mUvs.push_back({});
+                    mMeshes.back().mUvs.push_back({});
+                }
+
+                size_t len = mMeshes.back().mVertices.size();
                 mMeshes.back().mTriangles.push_back(
-                    {uint32_t(v1 - offset - 1), uint32_t(v2 - offset - 1), uint32_t(v3 - offset - 1)});
+                    { uint32_t(len - 3U), uint32_t(len - 2U), uint32_t(len - 1U) }
+                );
+
+                //mMeshes.back().mTriangles.push_back(
+                //    {uint32_t(v1 - offset - 1), uint32_t(v2 - offset - 1), uint32_t(v3 - offset - 1)});
             }
         }
-        printf("\n");
+        LOG_INFO("\n");
     }
 }
 
@@ -301,7 +402,7 @@ uint8_t* getModelVertexData(const Model::Mesh& mesh, CompressionFlags& compresse
     const size_t normalSize = mesh.mNormals.size() * sizeof(Vertex3d);
     const size_t uvSize = mesh.mUvs.size() * sizeof(Vertex2d);
     const size_t size = vertexSize + normalSize + uvSize + sizeof(uint32_t);
-    
+
     uint32_t index = 0U;
     std::map<float, uint32_t> vertexFloatMap;
 
@@ -336,7 +437,7 @@ uint8_t* getModelVertexData(const Model::Mesh& mesh, CompressionFlags& compresse
         data = new uint8_t[compressedSize];
         uint32_t* numFloats = (uint32_t*)data;
         *numFloats = static_cast<uint32_t>(vertexFloatMap.size());
-        
+
         size_t offset = sizeof(uint32_t);
         float* floats = (float*)(data + offset);
         for (const auto& f : vertexFloatMap)
@@ -456,7 +557,7 @@ void Model::saveSwm(const std::string& file, bool attemptCompression)
         MeshDescr_v1_0_variant_0 descr;
         descr.mNumMeshes = static_cast<uint8_t>(mMeshes.size());
         outFile.write((char*)&descr.mNumMeshes, sizeof(descr.mNumMeshes));
-        
+
         LOG_INFO("Saving compressed swm file\n");
         uint32_t writeCounter = 1;
         for (const auto& m : mMeshes)
@@ -479,17 +580,19 @@ void Model::saveSwm(const std::string& file, bool attemptCompression)
 
             uint8_t* vertexData = getModelVertexData(m, cf, vertexSize);
             uint8_t* triangleData = getModelTriangleData(m, cf, triangleSize);
-            
+
             mf.mHasUv = m.mUvs.size() != 0;
             mf.mHasNormal = m.mNormals.size() != 0;
 
-
-            outFile.write((char*)&cf, sizeof(cf));
+            if (attemptCompression)
+            {
+                outFile.write((char*)&cf, sizeof(cf));
+            }
             outFile.write((char*)&mf, sizeof(mf));
 
             outFile.write((char*)vertexData, vertexSize);
             outFile.write((char*)triangleData, triangleSize);
-            
+
             delete[] vertexData;
             delete[] triangleData;
 

@@ -1,9 +1,12 @@
 
+#include <common/Types.hpp>
+
 #include "VulkanPhysicalDevice.hpp"
 
 #include "VulkanCmdBuffer.hpp"
 #include "VulkanSwapchain.hpp"
 #include "shader/VulkanShader.hpp"
+#include "shader/VulkanMaterial.hpp"
 #include "VulkanBuffer.hpp"
 #include "VulkanTexture.hpp"
 
@@ -15,33 +18,16 @@ namespace swizzle::gfx
     VulkanTexture* gTexturePtr2;
     VkSampler gSampler2;
 
-    VulkanCommandBuffer::VulkanCommandBuffer(const VkContainer vkObjects)
+    VulkanCommandBuffer::VulkanCommandBuffer(const VkContainer vkObjects, U32 swapCount)
         : mVkObjects(vkObjects)
-        , mCmdBuffer(VK_NULL_HANDLE)
-        , mCompleteFence(VK_NULL_HANDLE)
+        , mSwapCount(swapCount)
+        , mCmdBuffer()
+        , mCompleteFence()
+        , mActiveBuffer(VK_NULL_HANDLE)
+        , mNextFence(VK_NULL_HANDLE)
+        , mSelected(0u)
     {
-        VkCommandBufferAllocateInfo cmdAllocInfo = {};
-
-        cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cmdAllocInfo.pNext = VK_NULL_HANDLE;
-        cmdAllocInfo.commandPool = mVkObjects.mLogicalDevice->getCommandPool();
-        cmdAllocInfo.level = VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        cmdAllocInfo.commandBufferCount = 1;
-
-        vkAllocateCommandBuffers(mVkObjects.mLogicalDevice->getLogical(), &cmdAllocInfo, &mCmdBuffer);
-
-        VkFenceCreateInfo fenceInfo;
-
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.pNext = VK_NULL_HANDLE;
-        fenceInfo.flags = VkFenceCreateFlagBits::VK_FENCE_CREATE_SIGNALED_BIT;
-
-        VkResult result = vkCreateFence(mVkObjects.mLogicalDevice->getLogical(), &fenceInfo, mVkObjects.mDebugAllocCallbacks, &mCompleteFence);
-        if (result != VK_SUCCESS)
-        {
-            LOG_ERROR("Error creating swapchain fence %s", vk::VkResultToString(result));
-        }
-
+        createVkResources();
 
         gTexturePtr2 = new VulkanTexture(mVkObjects, 1024U, 1024U);
 
@@ -71,28 +57,42 @@ namespace swizzle::gfx
 
     VulkanCommandBuffer::~VulkanCommandBuffer()
     {
-        vkDestroyFence(mVkObjects.mLogicalDevice->getLogical(), mCompleteFence, mVkObjects.mDebugAllocCallbacks);
+        for (U32 i = 0u; i < mSwapCount; ++i)
+        {
+            vkDestroyFence(mVkObjects.mLogicalDevice->getLogical(), mCompleteFence[i], mVkObjects.mDebugAllocCallbacks);
+        }
 
-        vkFreeCommandBuffers(mVkObjects.mLogicalDevice->getLogical(), mVkObjects.mLogicalDevice->getCommandPool(), 1, &mCmdBuffer);
+        vkFreeCommandBuffers(mVkObjects.mLogicalDevice->getLogical(), mVkObjects.mLogicalDevice->getCommandPool(), mSwapCount, mCmdBuffer.data());
     }
 
     void VulkanCommandBuffer::reset(bool hardReset)
     {
         if (hardReset)
         {
-            vkResetCommandBuffer(mCmdBuffer,
+            vkResetCommandBuffer(mActiveBuffer,
                 VkCommandBufferResetFlagBits::VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
         }
         else
         {
-            vkResetCommandBuffer(mCmdBuffer, 0);
+            vkResetCommandBuffer(mActiveBuffer, 0);
         }
     }
 
-    void VulkanCommandBuffer::begin()
+    void VulkanCommandBuffer::begin(core::Resource<Swapchain> swp)
     {
-        vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mCompleteFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mCompleteFence);
+        if (swp)
+        {
+            //VulkanSwapchain* swapchain = (VulkanSwapchain*)(swp.get());
+            //VkFence wait = swapchain->getWaitFence();
+
+            //vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &wait, VK_TRUE, UINT64_MAX);
+            //mActiveBuffer = mCmdBuffer[swapchain->getCurrentFrame()];
+        }
+        else
+        {
+        }
+        vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mNextFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mNextFence);
 
         VkCommandBufferBeginInfo beginInfo = {};
 
@@ -118,30 +118,47 @@ namespace swizzle::gfx
             beginInfo.pInheritanceInfo = &inhertianceInfo;
         }*/
 
-        vkBeginCommandBuffer(mCmdBuffer, &beginInfo);
+        vkBeginCommandBuffer(mActiveBuffer, &beginInfo);
 
         if (!gTexturePtr2->isUploaded())
         {
-            gTexturePtr2->uploadImage(mCmdBuffer);
+            gTexturePtr2->uploadImage(mActiveBuffer);
         }
 
     }
 
     void VulkanCommandBuffer::end()
     {
-        vkEndCommandBuffer(mCmdBuffer);
+        vkEndCommandBuffer(mActiveBuffer);
+    }
+
+    void VulkanCommandBuffer::uploadTexture(core::Resource<Texture> texture)
+    {
+        VulkanTexture* tex = (VulkanTexture*)(texture.get());
+        if (!tex->isUploaded())
+        {
+            tex->uploadImage(mActiveBuffer);
+        }
     }
 
     void VulkanCommandBuffer::submit(core::Resource<Swapchain> swp)
     {
         U32 waitCount = 0U;
-        VkSemaphore sync = VK_NULL_HANDLE;
+        VkSemaphore renderComplete = VK_NULL_HANDLE;
+        VkSemaphore wait = VK_NULL_HANDLE;
+        VkPipelineStageFlags waitStageMask = VK_NULL_HANDLE;
+        VkFence waitFence = VK_NULL_HANDLE;
 
         if (swp)
         {
             VulkanSwapchain* swapchain = (VulkanSwapchain*)(swp.get());
-            sync = swapchain->getSemaphore();
+            renderComplete = swapchain->getSemaphoreToSignal();
+            wait = swapchain->getWaitForSemaphore();
+            waitStageMask = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            waitFence = swapchain->getWaitFence();
             waitCount = 1U;
+
+            vkResetFences(mVkObjects.mLogicalDevice->getLogical(), 1, &waitFence);
         }
 
         // TODO: move into one sumbit call
@@ -152,16 +169,23 @@ namespace swizzle::gfx
 
         VkSubmitInfo subinfo = {};
         subinfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        subinfo.pNext = 0;
-        subinfo.waitSemaphoreCount = 0U;
-        subinfo.pWaitSemaphores = VK_NULL_HANDLE;
-        subinfo.pWaitDstStageMask = VK_NULL_HANDLE;
+        subinfo.pNext = VK_NULL_HANDLE;
+        subinfo.waitSemaphoreCount = 0u;
+        subinfo.pWaitSemaphores = &wait;
+        subinfo.pWaitDstStageMask = &waitStageMask;
         subinfo.commandBufferCount = 1U;
-        subinfo.pCommandBuffers = &mCmdBuffer;
+        subinfo.pCommandBuffers = &mActiveBuffer;
         subinfo.signalSemaphoreCount = waitCount;
-        subinfo.pSignalSemaphores = &sync;
+        subinfo.pSignalSemaphores = &renderComplete;
 
-        vkQueueSubmit(mVkObjects.mLogicalDevice->getQueue(0, 0), 1U, &subinfo, mCompleteFence);
+        vkQueueSubmit(mVkObjects.mLogicalDevice->getQueue(0, 0), 1U, &subinfo, mNextFence);
+        mSelected = (mSelected + 1u) % (U32)mCompleteFence.size();
+        mActiveBuffer = mCmdBuffer[mSelected];
+        mNextFence = mCompleteFence[mSelected];
+        //if (waitFence != VK_NULL_HANDLE)
+        //{
+        //    mNextFence = waitFence;
+        //}
     }
 
     void VulkanCommandBuffer::beginRenderPass(core::Resource<Swapchain> swp)
@@ -185,30 +209,32 @@ namespace swizzle::gfx
         beginInfo.clearValueCount = 2U;
         beginInfo.pClearValues = clears;
 
-        vkCmdBeginRenderPass(mCmdBuffer, &beginInfo, VkSubpassContents::VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(mActiveBuffer, &beginInfo, VkSubpassContents::VK_SUBPASS_CONTENTS_INLINE);
     }
 
     void VulkanCommandBuffer::endRenderPass()
     {
-        vkCmdEndRenderPass(mCmdBuffer);
+        vkCmdEndRenderPass(mActiveBuffer);
     }
 
     void VulkanCommandBuffer::bindShader(core::Resource<Shader> shader)
     {
         VulkanShader2* shad = (VulkanShader2*)(shader.get());
 
-        vkCmdBindPipeline(mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipeline());
+        vkCmdBindPipeline(mActiveBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipeline());
     }
 
-    void VulkanCommandBuffer::bindMaterial(core::Resource<Shader> shader, core::Resource<Buffer> material)
+    void VulkanCommandBuffer::bindMaterial(core::Resource<Shader> shader, core::Resource<Material> material)
     {
+        //static bool updated = false;
         VulkanShader2* shad = (VulkanShader2*)(shader.get());
+        VulkanMaterial* mat = (VulkanMaterial*)(material.get());
+
+        VkDescriptorSet descSet = mat->getDescriptorSet();
 
         //VulkanTexture* tex = (VulkanTexture*)(texture.get());
 
-        VulkanBuffer* buffer = (VulkanBuffer*)material.get();
-
-        VkDescriptorSet descSet = shad->getDescriptorSet();
+        /*VulkanBuffer* buffer = (VulkanBuffer*)material.get();
 
         VkDescriptorImageInfo descImg = {};
         descImg.sampler = gSampler2;
@@ -233,24 +259,28 @@ namespace swizzle::gfx
         writeDesc.pBufferInfo = VK_NULL_HANDLE;
         writeDesc.pTexelBufferView = VK_NULL_HANDLE;
 
-        vkUpdateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), 1U, &writeDesc, 0U, VK_NULL_HANDLE);
+        if (!updated)
+        {
+            vkUpdateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), 1U, &writeDesc, 0U, VK_NULL_HANDLE);
 
-        writeDesc.dstBinding = 1;
-        writeDesc.descriptorCount = 1;
-        writeDesc.descriptorType = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        writeDesc.pImageInfo = VK_NULL_HANDLE;
-        writeDesc.pBufferInfo = &descBfr;
+            writeDesc.dstBinding = 1;
+            writeDesc.descriptorCount = 1;
+            writeDesc.descriptorType = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writeDesc.pImageInfo = VK_NULL_HANDLE;
+            writeDesc.pBufferInfo = &descBfr;
 
-        vkUpdateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), 1U, &writeDesc, 0U, VK_NULL_HANDLE);
+            vkUpdateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), 1U, &writeDesc, 0U, VK_NULL_HANDLE);
+            updated = true;
+        }*/
 
-        vkCmdBindDescriptorSets(mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipelineLayout(), 0U, 1U, &descSet, 0U, VK_NULL_HANDLE);
+        vkCmdBindDescriptorSets(mActiveBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipelineLayout(), 0U, 1U, &descSet, 0U, VK_NULL_HANDLE);
     }
 
     void VulkanCommandBuffer::setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size)
     {
         VulkanShader2* shad = (VulkanShader2*)(shader.get());
 
-        vkCmdPushConstants(mCmdBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0U, size, data);
+        vkCmdPushConstants(mActiveBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0U, size, data);
     }
 
     void VulkanCommandBuffer::setViewport(U32 x, U32 y)
@@ -263,19 +293,19 @@ namespace swizzle::gfx
 
         VkViewport vp = {};
         vp.x = 0.0F;
-        vp.y = static_cast<float_t>(y);
-        vp.width = static_cast<float_t>(x);
-        vp.height = -static_cast<float_t>(y);
+        vp.y = static_cast<F32>(y);
+        vp.width = static_cast<F32>(x);
+        vp.height = -static_cast<F32>(y);
         vp.minDepth = 0.0F;
         vp.maxDepth = 1.0F;
-        vkCmdSetViewport(mCmdBuffer, 0U, 1U, &vp);
+        vkCmdSetViewport(mActiveBuffer, 0U, 1U, &vp);
 
         VkRect2D r = {};
         r.extent.width = x;
         r.extent.height = y;
         r.offset.x = 0;
         r.offset.y = 0;
-        vkCmdSetScissor(mCmdBuffer, 0U, 1U, &r);
+        vkCmdSetScissor(mActiveBuffer, 0U, 1U, &r);
     }
 
     void VulkanCommandBuffer::draw(core::Resource<Buffer> buffer)
@@ -285,8 +315,43 @@ namespace swizzle::gfx
 
         VkDeviceSize offset = 0U;
 
-        vkCmdBindVertexBuffers(mCmdBuffer, 0U, 1U, &bb, &offset);
-        vkCmdDraw(mCmdBuffer, buf->getVertexCount(), 1U, 0U, 0U);
+        vkCmdBindVertexBuffers(mActiveBuffer, 0U, 1U, &bb, &offset);
+        vkCmdDraw(mActiveBuffer, buf->getVertexCount(), 1U, 0U, 0U);
+    }
+
+    void VulkanCommandBuffer::createVkResources()
+    {
+        mCmdBuffer.resize(mSwapCount);
+        mCompleteFence.resize(mSwapCount);
+
+        VkCommandBufferAllocateInfo cmdAllocInfo = {};
+
+        cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        cmdAllocInfo.pNext = VK_NULL_HANDLE;
+        cmdAllocInfo.commandPool = mVkObjects.mLogicalDevice->getCommandPool();
+        cmdAllocInfo.level = VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        cmdAllocInfo.commandBufferCount = mSwapCount;
+
+        vkAllocateCommandBuffers(mVkObjects.mLogicalDevice->getLogical(), &cmdAllocInfo, mCmdBuffer.data());
+        mActiveBuffer = mCmdBuffer[0];
+
+        VkFenceCreateInfo fenceInfo = {};
+
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceInfo.pNext = VK_NULL_HANDLE;
+        fenceInfo.flags = VkFenceCreateFlagBits::VK_FENCE_CREATE_SIGNALED_BIT;
+
+        for (U32 i = 0u; i < mSwapCount; ++i)
+        {
+            VkResult result = vkCreateFence(mVkObjects.mLogicalDevice->getLogical(), &fenceInfo, mVkObjects.mDebugAllocCallbacks, &mCompleteFence[i]);
+            if (result != VK_SUCCESS)
+            {
+                LOG_ERROR("Error creating Queue fence %s", vk::VkResultToString(result));
+            }
+        }
+
+        mNextFence = mCompleteFence[0];
+
     }
 
 }

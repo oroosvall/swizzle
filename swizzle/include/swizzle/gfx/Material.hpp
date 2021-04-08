@@ -13,6 +13,7 @@ namespace swizzle::gfx
 
     enum class MaterialDescriptorType
     {
+        Invalid,
         TextureSampler,
         UniformBuffer,
     };
@@ -20,6 +21,8 @@ namespace swizzle::gfx
     class Material
     {
     public:
+
+        virtual ~Material() {}
 
         virtual U32 getNumDescriptors() const = 0;
         virtual MaterialDescriptorType getDescriptorType(U32 index) = 0;

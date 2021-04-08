@@ -3,13 +3,13 @@
 
 #include <swizzle/Api.hpp>
 #include <swizzle/gfx/Buffer.hpp>
-#include <swizzle/Resource.hpp>
+#include <common/Resource.hpp>
 
 
 namespace meshloader
 {
-	
-	void SWIZZLE_API loadObjMeshIntoBuffer(const char* fileName, swizzle::Resource<swizzle::Buffer>& vertexBuffer);
+
+	void SWIZZLE_API loadObjMeshIntoBuffer(const char* fileName, swizzle::core::Resource<swizzle::gfx::Buffer>& vertexBuffer);
 
 }
 

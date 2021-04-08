@@ -55,7 +55,7 @@ namespace swizzle
 
             mGfxContext = gfx::CreateContext(info);
 
-            mSwapchain = mGfxContext->createSwapchain(mWindow);
+            mSwapchain = mGfxContext->createSwapchain(mWindow, 3);
             mSwapchain->setVsync(gfx::VSyncTypes::vSyncAdaptive);
 
             userSetup();

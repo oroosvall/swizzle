@@ -59,6 +59,8 @@ namespace swizzle::gfx
         ShaderBufferInput* mBufferInput;
         U32 mNumAttributes;
         ShaderAttribute* mAttributes;
+        SwBool mEnableDepthTest;
+        SwBool mEnableBlending;
     };
 
     class Shader

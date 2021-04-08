@@ -24,20 +24,25 @@ namespace swizzle::gfx
         , mSwapchain(VK_NULL_HANDLE)
         , mAvailablePresentModes()
         , mRecreateSwapchain(false)
-        , mCurrentImage(0U)
-        , mAcquireImageFence(VK_NULL_HANDLE)
-        , mRenderCompleteSemaphore(VK_NULL_HANDLE)
-        , mSwapchainImageCount(0U)
+        , mCurrentFrame(0u)
+        , mImageIndex(0u)
+        //, mRenderCompleteSemaphore(VK_NULL_HANDLE)
+        , mSwapchainImageCount(0u)
         , mSwapchainImages()
         , mFrameBuffers()
+        , mRenderingFinishedSemaphore()
+        , mImageAvailableSemaphore()
+        , mInFlightFences()
+        , mImagesInFlight()
     {
         mSurface = CreateOsSurface(window, mVkObjects.mVkInstance->getInstance());
 
         createSwapchain(VK_NULL_HANDLE);
-        createSynchronizationObjects();
 
         createSwapchainImages();
         createSwapchainImageViews();
+
+        createSynchronizationObjects();
 
         createFrameBuffers();
 
@@ -48,18 +53,18 @@ namespace swizzle::gfx
         vkDeviceWaitIdle(mVkObjects.mLogicalDevice->getLogical());
         mFrameBuffers.clear();
 
-        vkDestroySemaphore(mVkObjects.mLogicalDevice->getLogical(), mRenderCompleteSemaphore, mVkObjects.mDebugAllocCallbacks);
-        vkDestroyFence(mVkObjects.mLogicalDevice->getLogical(), mAcquireImageFence, mVkObjects.mDebugAllocCallbacks);
+        //vkDestroySemaphore(mVkObjects.mLogicalDevice->getLogical(), mRenderCompleteSemaphore, mVkObjects.mDebugAllocCallbacks);
 
         for (SwapchainImage img : mSwapchainImages)
         {
             vkDestroyImageView(mVkObjects.mLogicalDevice->getLogical(), img.mImageView, mVkObjects.mDebugAllocCallbacks);
         }
 
+        destroySunchronizationObjects();
+
         vkDestroySwapchainKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, mVkObjects.mDebugAllocCallbacks);
         vkDestroySurfaceKHR(mVkObjects.mVkInstance->getInstance(), mSurface, nullptr);
 
-        mAcquireImageFence = VK_NULL_HANDLE;
         mSwapchain = VK_NULL_HANDLE;
         mSurface = VK_NULL_HANDLE;
     }
@@ -100,8 +105,15 @@ namespace swizzle::gfx
 
     void VulkanSwapchain::prepare()
     {
-        VkResult result = vkAcquireNextImageKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, UINT64_MAX, VK_NULL_HANDLE,
-            mAcquireImageFence, &mCurrentImage);
+        VkResult result = vkAcquireNextImageKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, UINT64_MAX, mImageAvailableSemaphore[mCurrentFrame],
+            VK_NULL_HANDLE, &mImageIndex);
+
+        /*if (mImagesInFlight[mImageIndex] != VK_NULL_HANDLE)
+        {
+            vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1u, &mImagesInFlight[mImageIndex], VK_TRUE, UINT64_MAX);
+        }
+
+        mImagesInFlight[mImageIndex] = mInFlightFences[mCurrentFrame];*/
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
@@ -121,22 +133,26 @@ namespace swizzle::gfx
 
     void VulkanSwapchain::present()
     {
-        vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence);
+        /*vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence);*/
+
+        VkSemaphore sems[] = { mImageAvailableSemaphore[mCurrentFrame], mRenderingFinishedSemaphore[mCurrentFrame] };
 
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.swapchainCount = 1U;
         presentInfo.pSwapchains = &mSwapchain;
-        presentInfo.pImageIndices = &mCurrentImage;
-        presentInfo.waitSemaphoreCount = 1U;
-        presentInfo.pWaitSemaphores = &mRenderCompleteSemaphore;
+        presentInfo.pImageIndices = &mImageIndex;
+        presentInfo.waitSemaphoreCount = 2U;
+        presentInfo.pWaitSemaphores = sems; // &mRenderingFinishedSemaphore[mCurrentFrame];
 
         VkQueue queue = mVkObjects.mLogicalDevice->getQueue(0, 0);
 
         //VkResult res =
         (void)vkQueuePresentKHR(queue, &presentInfo);
         //LOG_ERROR("Present result %d\n", res);
+
+        mCurrentFrame = (mCurrentFrame + 1u) % mSwapchainImages.size();
 
         if (mRecreateSwapchain)
         {
@@ -152,8 +168,28 @@ namespace swizzle::gfx
 
     core::Resource<FrameBuffer> VulkanSwapchain::getFrameBuffer() const
     {
-        vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
-        return mFrameBuffers[mCurrentImage];
+        //vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
+        return mFrameBuffers[mImageIndex];
+    }
+
+    VkSemaphore VulkanSwapchain::getSemaphoreToSignal() const
+    {
+        return mRenderingFinishedSemaphore[mImageIndex];
+    }
+
+    VkSemaphore VulkanSwapchain::getWaitForSemaphore() const
+    {
+        return mImageAvailableSemaphore[mImageIndex];
+    }
+
+    VkFence VulkanSwapchain::getWaitFence() const
+    {
+        return mInFlightFences[mCurrentFrame];
+    }
+
+    U32 VulkanSwapchain::getCurrentFrame() const
+    {
+        return mCurrentFrame;
     }
 
     /*
@@ -177,18 +213,25 @@ namespace swizzle::gfx
         // make sure device is idle before recreating the swapchain
         vkDeviceWaitIdle(mVkObjects.mLogicalDevice->getLogical());
 
+        mCurrentFrame = 0u;
+        mImageIndex = 0u;
         mFrameBuffers.clear();
 
         createSwapchain(mSwapchain);
+
 
         for (SwapchainImage img : mSwapchainImages)
         {
             vkDestroyImageView(mVkObjects.mLogicalDevice->getLogical(), img.mImageView, mVkObjects.mDebugAllocCallbacks);
         }
 
+        destroySunchronizationObjects();
         mSwapchainImages.clear();
+
         createSwapchainImages();
         createSwapchainImageViews();
+
+        createSynchronizationObjects();
 
         createFrameBuffers();
     }
@@ -311,28 +354,59 @@ namespace swizzle::gfx
 
     void VulkanSwapchain::createSynchronizationObjects()
     {
+        mInFlightFences.resize(mSwapchainImages.size());
+        mImagesInFlight.resize(mSwapchainImages.size());
+        mRenderingFinishedSemaphore.resize(mSwapchainImages.size());
+        mImageAvailableSemaphore.resize(mSwapchainImages.size());
+
         VkFenceCreateInfo fenceInfo = {};
 
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.pNext = VK_NULL_HANDLE;
-        fenceInfo.flags = 0;
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        VkResult result = vkCreateFence(mVkObjects.mLogicalDevice->getLogical(), &fenceInfo, mVkObjects.mDebugAllocCallbacks, &mAcquireImageFence);
-        if (result != VK_SUCCESS)
+        for (U32 i = 0u; i < mSwapchainImages.size(); ++i)
         {
-            LOG_ERROR("Error creating swapchain fence %s", vk::VkResultToString(result));
+
+            VkResult result = vkCreateFence(mVkObjects.mLogicalDevice->getLogical(), &fenceInfo, mVkObjects.mDebugAllocCallbacks, &mInFlightFences[i]);
+            if (result != VK_SUCCESS)
+            {
+                LOG_ERROR("Error creating swapchain fence %s", vk::VkResultToString(result));
+            }
+
+            VkSemaphoreCreateInfo semaphoreInfo = {};
+            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            semaphoreInfo.pNext = VK_NULL_HANDLE;
+            semaphoreInfo.flags = 0U;
+
+            result = vkCreateSemaphore(mVkObjects.mLogicalDevice->getLogical(), &semaphoreInfo, mVkObjects.mDebugAllocCallbacks, &mRenderingFinishedSemaphore[i]);
+            if (result != VK_SUCCESS)
+            {
+                LOG_ERROR("Error creating swapchain semaphore %s", vk::VkResultToString(result));
+            }
+            result = vkCreateSemaphore(mVkObjects.mLogicalDevice->getLogical(), &semaphoreInfo, mVkObjects.mDebugAllocCallbacks, &mImageAvailableSemaphore[i]);
+            if (result != VK_SUCCESS)
+            {
+                LOG_ERROR("Error creating swapchain semaphore %s", vk::VkResultToString(result));
+            }
+        }
+    }
+
+    void VulkanSwapchain::destroySunchronizationObjects()
+    {
+        for (U32 i = 0u; i < (U32)mSwapchainImages.size(); ++i)
+        {
+            printf("Destroying fence 0x%p\n", mInFlightFences[i]);
+
+            vkDestroyFence(mVkObjects.mLogicalDevice->getLogical(), mInFlightFences[i], mVkObjects.mDebugAllocCallbacks);
+            vkDestroySemaphore(mVkObjects.mLogicalDevice->getLogical(), mRenderingFinishedSemaphore[i], mVkObjects.mDebugAllocCallbacks);
+            vkDestroySemaphore(mVkObjects.mLogicalDevice->getLogical(), mImageAvailableSemaphore[i], mVkObjects.mDebugAllocCallbacks);
         }
 
-        VkSemaphoreCreateInfo semaphoreInfo = {};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        semaphoreInfo.pNext = VK_NULL_HANDLE;
-        semaphoreInfo.flags = 0U;
-
-        result = vkCreateSemaphore(mVkObjects.mLogicalDevice->getLogical(), &semaphoreInfo, mVkObjects.mDebugAllocCallbacks, &mRenderCompleteSemaphore);
-        if (result != VK_SUCCESS)
-        {
-            LOG_ERROR("Error creating swapchain semaphore %s", vk::VkResultToString(result));
-        }
+        mInFlightFences.clear();
+        mImagesInFlight.clear();
+        mRenderingFinishedSemaphore.clear();
+        mImageAvailableSemaphore.clear();
     }
 
     void VulkanSwapchain::createSwapchainImages()
