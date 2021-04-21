@@ -6,6 +6,10 @@
 
 #include <swizzle/core/Input.hpp>
 
+#include <swizzle/profile/Profiler.hpp>
+
+#include <swizzle/asset/TextureLoader.hpp>
+
 Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
@@ -56,7 +60,7 @@ void Game::userSetup()
 
     mMaterial = mShader->createMaterial();
 
-    mTexture = mGfxContext->createTexture(100, 100);
+    mTexture = swizzle::asset::LoadTexture2D(mGfxContext, "texture/lightGray.png");
     mMaterial->setDescriptorTextureResource(0u, mTexture);
 
 
@@ -151,17 +155,96 @@ void Game::userSetup()
 
     delete mesh;
     mesh = nullptr;
+
+    mesh = new Model();
+    mesh->load("meshes/inverted_sphere.obj");
+
+    sw::gfx::ShaderBufferInput bufferInputWormhole = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
+
+    sw::gfx::ShaderAttribute attributesWormhole[] = {
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, 0U},
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, sizeof(float) * 3U },
+        { 0U, sw::gfx::ShaderAttributeDataType::vec2_16, sizeof(float) * 6U }
+    };
+
+    sw::gfx::ShaderAttributeList attribsWormhole = {};
+    attribsWormhole.mNumBuffers = 1U;
+    attribsWormhole.mBufferInput = &bufferInputWormhole;
+    attribsWormhole.mNumAttributes = COUNT_OF(attributesWormhole);
+    attribsWormhole.mAttributes = attributesWormhole;
+    attribsWormhole.mEnableDepthTest = false;
+    attribsWormhole.mEnableBlending = false;
+
+    mSkyShader = mSwapchain->createShader(attribsWormhole);
+    mSkyShader->load("shaders/sky.shader");
+
+    mSkyMaterial = mSkyShader->createMaterial();
+
+    mSkySphere = mGfxContext->createBuffer(sw::gfx::BufferType::Vertex);
+
+    //mUpperCelestialSphere = sw::asset::LoadTexture2D(mGfxContext, "texture/front.png");
+    mSkyTexture = sw::asset::LoadTextureCubeMap(mGfxContext,
+        "texture/right.png", "texture/left.png", "texture/top.png", "texture/bottom.png", "texture/front.png", "texture/back.png");
+
+    mSkyMaterial->setDescriptorTextureResource(0, mSkyTexture);
+
+    {
+        auto& m = mesh->mMeshes[0];
+        size_t size = m.mTriangles.size() * 3 * (3 + 3 + 2);
+
+        char* data = new char[size * sizeof(float)];
+
+        size_t offset = 0;
+
+        auto& mesh1 = m;
+        auto verts = mesh1.mVertices.data();
+        auto normals = mesh1.mNormals.data();
+        auto uvs = mesh1.mUvs.data();
+        auto& triList = mesh1.mTriangles;
+
+        triangleSum += (U32)triList.size();
+        vertSum += (U32)mesh1.mVertices.size();
+
+        for (auto& tri : triList)
+        {
+            memcpy(&data[offset], &verts[tri.v1], sizeof(float) * 3);
+            offset += sizeof(float) * 3;
+            memcpy(&data[offset], &normals[tri.v1], sizeof(float) * 3);
+            offset += sizeof(float) * 3;
+            memcpy(&data[offset], &uvs[tri.v1], sizeof(float) * 2);
+            offset += sizeof(float) * 2;
+            memcpy(&data[offset], &verts[tri.v2], sizeof(float) * 3);
+            offset += sizeof(float) * 3;
+            memcpy(&data[offset], &normals[tri.v2], sizeof(float) * 3);
+            offset += sizeof(float) * 3;
+            memcpy(&data[offset], &uvs[tri.v2], sizeof(float) * 2);
+            offset += sizeof(float) * 2;
+            memcpy(&data[offset], &verts[tri.v3], sizeof(float) * 3);
+            offset += sizeof(float) * 3;
+            memcpy(&data[offset], &normals[tri.v3], sizeof(float) * 3);
+            offset += sizeof(float) * 3;
+            memcpy(&data[offset], &uvs[tri.v3], sizeof(float) * 2);
+            offset += sizeof(float) * 2;
+        }
+
+        mSkySphere->setBufferData(data, size * sizeof(F32), sizeof(float) * (3U + 3U + 2U));
+        delete[] data;
+    }
+
+    delete mesh;
+    mesh = nullptr;
 }
 
 SwBool Game::userUpdate(F32 dt)
 {
+    sw::profile::ProfileEvent(__FUNCTION__, sw::profile::ProfileEventType::EventType_Frame);
     mFpsCounter.tick(dt);
     std::string title = "Heljo world, Fps: ";
 
     title += std::to_string(mFpsCounter.getFps());
-    mWindow->setTitle(title.c_str());
+    //mWindow->setTitle(title.c_str());
 
-    // guiLabel->setText(title.c_str());
+    guiLabel->setText(title.c_str());
 
     mController.update(dt);
 
@@ -197,6 +280,7 @@ void Game::userCleanup()
 
 void Game::updateMainWindow()
 {
+    sw::profile::ProfileEvent(__FUNCTION__, sw::profile::ProfileEventType::EventType_Generic);
     U32 x, y;
     mWindow->getSize(x, y);
 
@@ -229,6 +313,7 @@ void Game::updateMainWindow()
 
     mCmdBuffer->uploadTexture(mTexture);
     mCmdBuffer->uploadTexture(guiLabel->getTexture());
+    mCmdBuffer->uploadTexture(mSkyTexture);
 
     mCmdBuffer->beginRenderPass(mSwapchain);
 
@@ -237,11 +322,26 @@ void Game::updateMainWindow()
     mCmdBuffer->bindMaterial(mShader, mMaterial);
     mCmdBuffer->setViewport(x, y);
 
+    mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
     for (auto& buffer : mBuffers)
     {
-        mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
         mCmdBuffer->draw(buffer);
     }
+
+    // Wormhole stuff
+
+    mCmdBuffer->bindShader(mSkyShader);
+
+    mCmdBuffer->bindMaterial(mSkyShader, mSkyMaterial);
+    mCmdBuffer->setViewport(x, y);
+
+    t.model = glm::translate(glm::mat4(1.0F), { 0.0F, 0.0F, 0.0F });
+
+    mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+    mCmdBuffer->draw(mSkySphere);
+
+
+    // Text stuff
 
     mCmdBuffer->bindShader(mTextShader);
 

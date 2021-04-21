@@ -75,6 +75,7 @@ namespace swizzle::gui
 
         mutable std::unordered_map<U32, S32> mCodePointCache;
         mutable std::unordered_map<S32, FontGlyph> mGlyphCache;
+        mutable std::unordered_map<U64, F32> mKerningCache;
         mutable SwBool mTextureInvalidated;
 
         F32 mFontSize;

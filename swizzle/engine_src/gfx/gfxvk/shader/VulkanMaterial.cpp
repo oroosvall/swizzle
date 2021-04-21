@@ -68,7 +68,7 @@ namespace swizzle::gfx
 
     MaterialDescriptorType VulkanMaterial::getDescriptorType(U32 index)
     {
-        index;
+        (void)index;
         return MaterialDescriptorType::Invalid;
     }
 

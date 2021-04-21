@@ -29,7 +29,7 @@ namespace swizzle::gfx
     {
         createVkResources();
 
-        gTexturePtr2 = new VulkanTexture(mVkObjects, 1024U, 1024U);
+        gTexturePtr2 = new VulkanTexture(mVkObjects, 1024u, 1024u, 4u, nullptr);
 
         VkSamplerCreateInfo samplerInfo = {};
         samplerInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -134,7 +134,7 @@ namespace swizzle::gfx
 
     void VulkanCommandBuffer::uploadTexture(core::Resource<Texture> texture)
     {
-        VulkanTexture* tex = (VulkanTexture*)(texture.get());
+        VulkanTextureIfc* tex = (VulkanTextureIfc*)(texture.get());
         if (!tex->isUploaded())
         {
             tex->uploadImage(mActiveBuffer);

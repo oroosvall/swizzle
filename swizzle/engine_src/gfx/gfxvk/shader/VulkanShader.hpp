@@ -9,6 +9,7 @@
 #include "gfx/gfxvk/VulkanPresentFBO.hpp"
 
 #include <map>
+#include <string>
 
 /* Defines */
 
@@ -21,6 +22,13 @@ namespace swizzle::gfx
         ShaderModuleType_Vertex,
         ShaderModuleType_Fragment
     };
+
+    enum class PropertyType
+    {
+        SourceBlend,
+        DestinationBlend,
+        CullMode,
+    };
 }
 
 /* Function Declaration*/
@@ -28,6 +36,20 @@ namespace swizzle::gfx
 /* Forward Declared Structs/Classes */
 
 /* Struct Declaration */
+
+namespace swizzle::gfx
+{
+    struct Property
+    {
+        union
+        {
+            VkBlendFactor mBlendFactor[2];
+
+            VkCullModeFlagBits mCullMode;
+        };
+
+    };
+}
 
 /* Class Declaration */
 
@@ -54,6 +76,8 @@ namespace swizzle::gfx
         void loadShader(const SwChar* shaderType, const SwChar* binaryFile);
         void createPipeline();
 
+        void readProperty(const std::string& line);
+
         const VkContainer mVkObjects;
         const PresentFBO& mFrameBuffer;
         const ShaderAttributeList mShaderAttributes;
@@ -62,6 +86,7 @@ namespace swizzle::gfx
         VkPipeline mPipeline;
 
         std::map<ShaderModuleType, VkShaderModule> mShaders;
+        std::map<PropertyType, Property> mProperties;
 
         VkDescriptorSetLayout mDescriptorLayout;
         VkDescriptorSet mDescriptorSet;

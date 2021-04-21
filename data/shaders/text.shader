@@ -1,6 +1,9 @@
+[properties]
+sourceBlend=[SRC_ALPHA,SRC_ALPHA]
+destinationBlend=[ONE_MINUS_SRC_ALPHA,ONE]
 [vulkan]
 vertex=text/vert.spv
 fragment=text/frag.spv
 [opengl]
-vertex=text/simple.vert
-fragment=text/simple.frag
+vertex=text/text.vert
+fragment=text/text.frag

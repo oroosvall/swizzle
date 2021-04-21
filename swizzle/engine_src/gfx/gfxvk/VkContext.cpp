@@ -8,6 +8,8 @@
 #include "VulkanSwapchain.hpp"
 #include "VulkanCmdBuffer.hpp"
 
+#include "VulkanCubeMap.hpp"
+
 /* Defines */
 
 /* Typedefs */
@@ -113,9 +115,14 @@ namespace swizzle::gfx
         return core::CreateRef<VulkanSwapchain>(mVkContainer, window);
     }
 
-    core::Resource<Texture> VkGfxContext::createTexture(U32 width, U32 height)
+    core::Resource<Texture> VkGfxContext::createTexture(U32 width, U32 height, U32 channels, const U8* data)
     {
-        return core::CreateRef<VulkanTexture>(mVkContainer, width, height);
+        return core::CreateRef<VulkanTexture>(mVkContainer, width, height, channels, data);
+    }
+
+    core::Resource<Texture> VkGfxContext::createCubeMapTexture(U32 width, U32 height, U32 channels, const U8* data)
+    {
+        return core::CreateRef<VulkanCubeMap>(mVkContainer, width, height, channels, data);
     }
 
     VkContainer VkGfxContext::getVkContainer() const

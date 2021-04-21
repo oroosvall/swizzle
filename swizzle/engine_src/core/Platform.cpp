@@ -39,6 +39,11 @@ namespace swizzle::core
         return platform::getPlatformTimeStampMs();
     }
 
+    U64 GetCurrentTimeUs()
+    {
+        return platform::getPlatformTimeStampUs();
+    }
+
     U32 GetCurrentThreadId()
     {
         return platform::getPlatformCurrentThreadId();

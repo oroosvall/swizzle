@@ -23,6 +23,7 @@ namespace swizzle::core
     const SwChar SWIZZLE_API * GetAppCacheDirectory();
 
     U64 SWIZZLE_API GetCurrentTimeMs();
+    U64 SWIZZLE_API GetCurrentTimeUs();
     U32 SWIZZLE_API GetCurrentThreadId();
 
     Resource<Window> SWIZZLE_API CreateWindow(const U32 width, const U32 height, const SwChar* title);

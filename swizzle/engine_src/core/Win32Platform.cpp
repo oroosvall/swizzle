@@ -211,6 +211,17 @@ namespace swizzle::core
             LARGE_INTEGER time;
             QueryPerformanceCounter(&time);
 
+            time.QuadPart *= 1000U;
+            time.QuadPart /= gFrequency.QuadPart;
+
+            return static_cast<uint64_t>(time.QuadPart);
+        }
+
+        const U64 getPlatformTimeStampUs()
+        {
+            LARGE_INTEGER time;
+            QueryPerformanceCounter(&time);
+
             time.QuadPart *= 1000000U;
             time.QuadPart /= gFrequency.QuadPart;
 
@@ -219,7 +230,7 @@ namespace swizzle::core
 
         const U32 getPlatformCurrentThreadId()
         {
-            const DWORD threadId = GetCurrentThreadId();
+            const DWORD threadId = ::GetCurrentThreadId();
             return static_cast<const U32>(threadId);
         }
 

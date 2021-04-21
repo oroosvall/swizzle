@@ -1,0 +1,10 @@
+[properties]
+sourceBlend=[ONE,ONE]
+destinationBlend=[ONE,ONE]
+cullMode=CULL_FRONT
+[vulkan]
+vertex=sky/vert.spv
+fragment=sky/frag.spv
+[opengl]
+vertex=sky/sky.vert
+fragment=sky/sky.frag

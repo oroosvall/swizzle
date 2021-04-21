@@ -71,8 +71,6 @@ namespace swizzle::gfx
         virtual SwBool load(const SwChar* file) = 0;
         virtual core::Resource<Material> createMaterial() = 0;
 
-
-
     };
 }
 

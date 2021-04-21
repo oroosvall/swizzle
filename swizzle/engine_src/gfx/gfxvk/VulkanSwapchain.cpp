@@ -145,6 +145,7 @@ namespace swizzle::gfx
         presentInfo.pImageIndices = &mImageIndex;
         presentInfo.waitSemaphoreCount = 2U;
         presentInfo.pWaitSemaphores = sems; // &mRenderingFinishedSemaphore[mCurrentFrame];
+        presentInfo.pResults = VK_NULL_HANDLE;
 
         VkQueue queue = mVkObjects.mLogicalDevice->getQueue(0, 0);
 

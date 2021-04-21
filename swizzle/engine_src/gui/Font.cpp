@@ -11,9 +11,6 @@
 #include <algorithm>
 #include <vector>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb/stb_image_write.h>
-
 /* Defines */
 
 /* Typedefs */
@@ -35,14 +32,16 @@ namespace swizzle::gui
     Font::Font(const SwChar* fontPath, gfx::VkGfxContext* ctx)
         : mFileBuffer(nullptr)
         , mFontInfo()
+        , mCodePointCache()
         , mGlyphCache()
+        , mKerningCache()
         , mTextureInvalidated(true)
         , mFontSize(20.0F)
         , mScale(1.0F)
         , mAscent(1)
         , mBaseline(1)
         , mGlyphPoolMemory(1024 * 1024)
-        , mFontTexture(core::CreateRef<gfx::VulkanTexture>(ctx->getVkContainer(), 100, 100))
+        , mFontTexture(core::CreateRef<gfx::VulkanTexture>(ctx->getVkContainer(), 100, 100, 1, nullptr))
     {
         // @TODO: replace with input parameter
         std::ifstream inputFile(fontPath, std::ios::binary | std::ios::ate);
@@ -205,8 +204,6 @@ namespace swizzle::gui
             }
         }
 
-        stbi_write_png("Font.png", imgW, imgH, 1, image, imgW);
-
         mFontTexture->setData(imgW, imgH, 1, image);
 
         delete[] image;
@@ -216,11 +213,24 @@ namespace swizzle::gui
 
     F32 Font::getKerning(U32 codePoint1, U32 codePoint2) const
     {
-        S32 glyph1 = mCodePointCache[codePoint1];
-        S32 glyph2 = mCodePointCache[codePoint2];
+        union
+        {
+            U32 codePoint[2];
+            U64 combined;
+        } kern = { 0u };
 
-        const F32 kerning = mScale * (F32)stbtt_GetGlyphKernAdvance(&mFontInfo, glyph1, glyph2);
-        return kerning;
+        kern.codePoint[0] = codePoint1;
+        kern.codePoint[1] = codePoint2;
+
+        if (mKerningCache.find(kern.combined) == mKerningCache.end())
+        {
+            S32 glyph1 = mCodePointCache[codePoint1];
+            S32 glyph2 = mCodePointCache[codePoint2];
+            F32 kerning = mScale * (F32)stbtt_GetGlyphKernAdvance(&mFontInfo, glyph1, glyph2);
+            mKerningCache.insert({ kern.combined, kerning });
+        }
+
+        return mKerningCache[kern.combined];
     }
 
     Font::~Font()

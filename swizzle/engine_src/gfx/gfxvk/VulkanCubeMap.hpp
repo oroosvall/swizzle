@@ -1,36 +1,40 @@
-#ifndef VULKAN_TEXTURE_HPP
-#define VULKAN_TEXTURE_HPP
+#ifndef VULKAN_CUBE_MAP_HPP
+#define VULKAN_CUBE_MAP_HPP
+
+/* Include files */
 
 #include <swizzle/gfx/Texture.hpp>
+#include "VulkanTexture.hpp"
 
 #include "backend/Vk.hpp"
 #include "backend/VkContainer.hpp"
 
+
+/* Defines */
+
+/* Typedefs/enums */
+
+/* Forward Declared Structs/Classes */
+
+/* Struct Declaration */
+
+/* Class Declaration */
+
 namespace swizzle::gfx
 {
-
-    class VulkanTextureIfc : public Texture
-    {
-    public:
-        virtual ~VulkanTextureIfc() {}
-
-        virtual SwBool isUploaded() const = 0;
-        virtual void uploadImage(VkCommandBuffer cmdBuffer) = 0;
-    };
-
-    class VulkanTexture : public VulkanTextureIfc
+    class VulkanCubeMap : public VulkanTextureIfc
     {
     public:
 
-        VulkanTexture(const VkContainer vkObjects, U32 width, U32 height, U32 channels, const U8* pixelData);
-        virtual ~VulkanTexture();
+        VulkanCubeMap(const VkContainer vkObjects, U32 width, U32 height, U32 channels, const U8* pixelData);
+        virtual ~VulkanCubeMap();
 
         // Inherited via Texture
         virtual void setData(U32 width, U32 height, U32 channels, const U8* pixelData) override;
 
         virtual void upload() override;
 
-        VkImageView getView() const { return mImageView; }
+        VkImageView getView() const;
 
         virtual SwBool isUploaded() const override;
 
@@ -60,9 +64,12 @@ namespace swizzle::gfx
         U32 mWidth;
         U32 mHeight;
         U32 mChannels;
+        U32 mLayers;
 
     };
 
 }
 
 #endif
+
+/* Function Declaration */

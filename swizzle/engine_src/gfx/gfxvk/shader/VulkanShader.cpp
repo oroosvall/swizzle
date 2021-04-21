@@ -95,6 +95,13 @@ namespace swizzle::gfx
         , mFrameBuffer(frameBuffer)
         , mShaderAttributes(shaderAttributes)
     {
+
+        mProperties[PropertyType::SourceBlend].mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+        mProperties[PropertyType::SourceBlend].mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+        mProperties[PropertyType::DestinationBlend].mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+        mProperties[PropertyType::DestinationBlend].mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+        mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_NONE;
+
         VkPushConstantRange push = {};
 
         push.size = sizeof(glm::mat4) * 4;
@@ -166,29 +173,61 @@ namespace swizzle::gfx
 
         if (inFile.is_open())
         {
-            std::string backend = "";
-            do
+            std::string line = "";
+
+            enum class ParseState
             {
-                std::getline(inFile, backend);
-            } while (backend != "[vulkan]");
+                None,
+                Prop,
+                Vulkan
+            };
 
-            std::string info;
+            ParseState state = ParseState::None;
 
-            do
+            while (true)
             {
-                std::string shaderType = "";
-                std::string path = "";
-
-                std::getline(inFile, info);
-                if (inFile.eof() || info[0] == '[')
+                std::getline(inFile, line);
+                if (inFile.eof())
+                {
                     break;
+                }
 
-                readShaderInfo(info, shaderType, path);
-                path.insert(0, getPathFromFileName(filePath));
-                loadShader(shaderType.c_str(), path.c_str());
+                if (line == "[properties]")
+                {
+                    state = ParseState::Prop;
+                    continue;
+                }
+                else if (line == "[vulkan]")
+                {
+                    state = ParseState::Vulkan;
+                    continue;
+                }
+                else if (line[0] == '[')
+                {
+                    break;
+                }
+                else
+                {
+                    // Do Nothing
+                }
 
-                LOG_INFO("Load shader [type=%s] from %s", shaderType.c_str(), path.c_str());
-            } while (true);
+                if (state == ParseState::Prop)
+                {
+                    readProperty(line);
+                }
+                else if (state == ParseState::Vulkan)
+                {
+                    std::string shaderType = "";
+                    std::string path = "";
+
+                    readShaderInfo(line, shaderType, path);
+                    path.insert(0, getPathFromFileName(filePath));
+                    loadShader(shaderType.c_str(), path.c_str());
+
+                    LOG_INFO("Load shader [type=%s] from %s", shaderType.c_str(), path.c_str());
+                }
+
+            }
 
             createPipeline();
         }
@@ -374,7 +413,7 @@ namespace swizzle::gfx
         rasterState.depthClampEnable = VK_FALSE;
         rasterState.rasterizerDiscardEnable = VK_FALSE;
         rasterState.polygonMode = VkPolygonMode::VK_POLYGON_MODE_FILL;
-        rasterState.cullMode = VkCullModeFlagBits::VK_CULL_MODE_NONE;
+        rasterState.cullMode = mProperties[PropertyType::CullMode].mCullMode;
         rasterState.frontFace = VkFrontFace::VK_FRONT_FACE_CLOCKWISE;
         rasterState.depthBiasEnable = VK_FALSE;
         rasterState.depthBiasConstantFactor = 0.0F;
@@ -419,10 +458,10 @@ namespace swizzle::gfx
         {
             VkPipelineColorBlendAttachmentState blendState = {};
             blendState.blendEnable = mShaderAttributes.mEnableBlending;
-            blendState.srcAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
-            blendState.srcColorBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
-            blendState.dstColorBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            blendState.dstAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+            blendState.srcColorBlendFactor = mProperties[PropertyType::SourceBlend].mBlendFactor[0];
+            blendState.srcAlphaBlendFactor = mProperties[PropertyType::SourceBlend].mBlendFactor[1];
+            blendState.dstColorBlendFactor = mProperties[PropertyType::DestinationBlend].mBlendFactor[0];
+            blendState.dstAlphaBlendFactor = mProperties[PropertyType::DestinationBlend].mBlendFactor[1];
             blendState.colorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
             blendState.alphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
             blendState.colorWriteMask = VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT |
@@ -475,6 +514,93 @@ namespace swizzle::gfx
         {
             LOG_ERROR("Graphics pipeline creation failed %s", vk::VkResultToString(res));
         }
+    }
+
+    void VulkanShader2::readProperty(const std::string& line)
+    {
+        auto index = line.find('=');
+        auto prop = line.substr(0, index);
+        auto value = line.substr(index + 1);
+
+        if (prop == "sourceBlend")
+        {
+            Property p = {};
+
+            auto index2 = value.find(",");
+            auto first = value.substr(1, index2 - 1);
+            auto second = value.substr(index2 + 1);
+            second.pop_back();
+
+            if (first == "SRC_ALPHA")
+            {
+                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+            }
+            else if (first == "ONE")
+            {
+                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+            }
+
+            if (second == "SRC_ALPHA")
+            {
+                p.mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+            }
+            if (first == "ONE")
+            {
+                p.mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+            }
+
+            mProperties[PropertyType::SourceBlend] = p;
+
+        }
+        else if (prop == "destinationBlend")
+        {
+            Property p = {};
+
+            auto index2 = value.find(",");
+            auto first = value.substr(1, index2 - 1);
+            auto second = value.substr(index2 + 1);
+            second.pop_back();
+
+            if (first == "SRC_ALPHA")
+            {
+                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+            }
+            if (first == "ONE_MINUS_SRC_ALPHA")
+            {
+                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+            }
+            else if (first == "ONE")
+            {
+                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+            }
+
+            if (second == "SRC_ALPHA")
+            {
+                p.mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+            }
+            if (first == "ONE")
+            {
+                p.mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+            }
+
+            mProperties[PropertyType::DestinationBlend] = p;
+        }
+        else if (prop == "cullMode")
+        {
+            if (value == "CULL_NONE")
+            {
+                mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_NONE;
+            }
+            else if (value == "CULL_FRONT")
+            {
+                mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_FRONT_BIT;
+            }
+            else if (value == "CULL_BACK")
+            {
+                mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_BACK_BIT;
+            }
+        }
+
     }
 
 } // namespace swizzle::gfx

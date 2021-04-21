@@ -1,20 +1,41 @@
+
+/* Include files */
+
 #include "VulkanPhysicalDevice.hpp"
 
-#include "VulkanTexture.hpp"
+#include "VulkanCubeMap.hpp"
 #include "backend/VulkanMemory.hpp"
+
+/* Defines */
+
+/* Typedefs */
+
+/* Structs/Classes */
+
+/* Static Variables */
+
+/* Static Function Declaration */
+
+/* Static Function Definition */
+
+/* Function Definition */
+
+/* Class Public Function Definition */
 
 namespace swizzle::gfx
 {
-    VulkanTexture::VulkanTexture(const VkContainer vkObjects, U32 width, U32 height, U32 channels, const U8* pixelData)
+    VulkanCubeMap::VulkanCubeMap(const VkContainer vkObjects, U32 width, U32 height, U32 channels, const U8* pixelData)
         : mVkObjects(vkObjects)
         , mImage(VK_NULL_HANDLE)
         , mImageView(VK_NULL_HANDLE)
-        , mUploaded(true) // Black texture by default
+        , mMemory(VK_NULL_HANDLE)
+        , mUploaded(false)
         , mStageBuffer(VK_NULL_HANDLE)
         , mStageMemory(VK_NULL_HANDLE)
         , mWidth(width)
         , mHeight(height)
         , mChannels(channels)
+        , mLayers(6u)
     {
         createResources();
 
@@ -24,7 +45,7 @@ namespace swizzle::gfx
         }
     }
 
-    VulkanTexture::~VulkanTexture()
+    VulkanCubeMap::~VulkanCubeMap()
     {
         destroyResources();
 
@@ -38,9 +59,8 @@ namespace swizzle::gfx
         }
     }
 
-    void VulkanTexture::setData(U32 width, U32 height, U32 channels, const U8* pixelData)
+    void VulkanCubeMap::setData(U32 width, U32 height, U32 channels, const U8* pixelData)
     {
-        pixelData;
         mChannels = channels;
         // check to recreate the texture
         if ((width != mWidth) || (height != mHeight) && ((width != 0U) && (height != 0U)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
@@ -62,7 +82,7 @@ namespace swizzle::gfx
 
         const U32 queueIndex = VK_QUEUE_FAMILY_IGNORED;
 
-        VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * (U64)channels;
+        VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * (U64)channels * (U64)mLayers;
 
         VkBufferCreateInfo bufferInfo = {};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -94,33 +114,25 @@ namespace swizzle::gfx
         memcpy(dataPtr, pixelData, static_cast<size_t>(imageSize));
         vkUnmapMemory(mVkObjects.mLogicalDevice->getLogical(), mStageMemory);
 
-
-        /*if (!mVkObjects.stageCmdBuffer->readyToSubmit())
-        {
-            mVkObjects.stageCmdBuffer->beginStageRecording();
-        }
-
-        const auto& stageMemory = mVkObjects.stageCmdBuffer->allocateStagingMemory(pixelData, imageSize);
-
-        mStageBuffer = stageMemory.mBuffer;
-        mMemory = stageMemory.mMemory;*/
         mUploaded = false;
     }
 
-    void VulkanTexture::upload()
+    void VulkanCubeMap::upload()
     {
-        /*if (mVkObjects.stageCmdBuffer->readyToSubmit())
-        {
-            uploadImage(mVkObjects.stageCmdBuffer->getCmdBuffer());
-        }*/
+
     }
 
-    SwBool VulkanTexture::isUploaded() const
+    VkImageView VulkanCubeMap::getView() const
+    {
+        return mImageView;
+    }
+
+    SwBool VulkanCubeMap::isUploaded() const
     {
         return mUploaded;
     }
 
-    void VulkanTexture::uploadImage(VkCommandBuffer cmdBuffer)
+    void VulkanCubeMap::uploadImage(VkCommandBuffer cmdBuffer)
     {
         VkImageMemoryBarrier imgBarrier = {};
         imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -136,7 +148,7 @@ namespace swizzle::gfx
         imgBarrier.subresourceRange.baseMipLevel = 0U;
         imgBarrier.subresourceRange.levelCount = 1U;
         imgBarrier.subresourceRange.baseArrayLayer = 0U;
-        imgBarrier.subresourceRange.layerCount = 1U;
+        imgBarrier.subresourceRange.layerCount = mLayers;
 
         vkCmdPipelineBarrier(cmdBuffer,
             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -153,7 +165,7 @@ namespace swizzle::gfx
         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         region.imageSubresource.mipLevel = 0U;
         region.imageSubresource.baseArrayLayer = 0U;
-        region.imageSubresource.layerCount = 1U;
+        region.imageSubresource.layerCount = mLayers;
 
         region.imageOffset = { 0, 0, 0 };
         region.imageExtent = {
@@ -179,18 +191,26 @@ namespace swizzle::gfx
         mUploaded = true;
     }
 
-    void VulkanTexture::createImage(VkFormat format)
+}
+
+/* Class Protected Function Definition */
+
+/* Class Private Function Definition */
+
+namespace swizzle::gfx
+{
+    void VulkanCubeMap::createImage(VkFormat format)
     {
         VkImageCreateInfo imageCreateInfo = {};
 
         imageCreateInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.pNext = VK_NULL_HANDLE;
-        imageCreateInfo.flags = 0;
+        imageCreateInfo.flags = VkImageCreateFlagBits::VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
         imageCreateInfo.imageType = VkImageType::VK_IMAGE_TYPE_2D;
         imageCreateInfo.format = format;
         imageCreateInfo.extent = { mWidth, mHeight, 1U };
         imageCreateInfo.mipLevels = 1U;
-        imageCreateInfo.arrayLayers = 1U;
+        imageCreateInfo.arrayLayers = mLayers;
         imageCreateInfo.samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
         imageCreateInfo.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
         imageCreateInfo.usage = VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -204,7 +224,7 @@ namespace swizzle::gfx
         vkCreateImage(mVkObjects.mLogicalDevice->getLogical(), &imageCreateInfo, mVkObjects.mDebugAllocCallbacks, &mImage);
     }
 
-    void VulkanTexture::allocMemory()
+    void VulkanCubeMap::allocMemory()
     {
         VkMemoryRequirements memreq;
         vkGetImageMemoryRequirements(mVkObjects.mLogicalDevice->getLogical(), mImage, &memreq);
@@ -221,7 +241,7 @@ namespace swizzle::gfx
         vkBindImageMemory(mVkObjects.mLogicalDevice->getLogical(), mImage, mMemory, 0U);
     }
 
-    void VulkanTexture::createView(VkFormat format)
+    void VulkanCubeMap::createView(VkFormat format)
     {
         VkImageViewCreateInfo imageViewCreateInfo = {};
 
@@ -229,7 +249,7 @@ namespace swizzle::gfx
         imageViewCreateInfo.pNext = VK_NULL_HANDLE;
         imageViewCreateInfo.flags = 0;
         imageViewCreateInfo.image = mImage;
-        imageViewCreateInfo.viewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
+        imageViewCreateInfo.viewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_CUBE;
         imageViewCreateInfo.format = format;
         imageViewCreateInfo.components.a = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
         imageViewCreateInfo.components.r = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -239,14 +259,14 @@ namespace swizzle::gfx
         imageViewCreateInfo.subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0U;
         imageViewCreateInfo.subresourceRange.baseMipLevel = 0U;
-        imageViewCreateInfo.subresourceRange.layerCount = 1U;
+        imageViewCreateInfo.subresourceRange.layerCount = mLayers;
         imageViewCreateInfo.subresourceRange.levelCount = 1U;
 
         // TODO: bind memory before this
         vkCreateImageView(mVkObjects.mLogicalDevice->getLogical(), &imageViewCreateInfo, mVkObjects.mDebugAllocCallbacks, &mImageView);
     }
 
-    void VulkanTexture::destroyResources()
+    void VulkanCubeMap::destroyResources()
     {
         vkDestroyImageView(mVkObjects.mLogicalDevice->getLogical(), mImageView, mVkObjects.mDebugAllocCallbacks);
         vkFreeMemory(mVkObjects.mLogicalDevice->getLogical(), mMemory, mVkObjects.mDebugAllocCallbacks);
@@ -257,7 +277,7 @@ namespace swizzle::gfx
         mMemory = VK_NULL_HANDLE;
     }
 
-    void VulkanTexture::createResources()
+    void VulkanCubeMap::createResources()
     {
         VkFormat selectedFormat;
 
@@ -284,5 +304,4 @@ namespace swizzle::gfx
         allocMemory();
         createView(selectedFormat);
     }
-
 }

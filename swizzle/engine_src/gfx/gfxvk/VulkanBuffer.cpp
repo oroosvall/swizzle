@@ -52,7 +52,7 @@ namespace swizzle::gfx
 
     void VulkanBuffer::createOrResize(U64 newSize)
     {
-        if (newSize < mBufferMemory.getMemorySize())
+        if (newSize <= mBufferMemory.getMemorySize())
             return;
 
         if (mBuffer != VK_NULL_HANDLE)
@@ -77,6 +77,8 @@ namespace swizzle::gfx
         }
 
         VkBufferCreateInfo bufferInfo = {};
+
+        newSize = (newSize * 110) / 100;
 
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bufferInfo.pNext = VK_NULL_HANDLE;

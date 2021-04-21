@@ -49,6 +49,12 @@ private:
 
     std::vector<sw::core::Resource<sw::gfx::Buffer>> mBuffers;
 
+    sw::core::Resource<sw::gfx::Buffer> mSkySphere;
+    sw::core::Resource<sw::gfx::Shader> mSkyShader;
+
+    sw::core::Resource<sw::gfx::Texture> mSkyTexture;
+    sw::core::Resource<sw::gfx::Material> mSkyMaterial;
+
     U8 singlePixel[16] = { 0U, 0U, 0U, 255U, 128, 0, 0, 255, 0, 128, 0, 255, 0, 0, 128, 255 };
 
     utils::Config mGameCfg;

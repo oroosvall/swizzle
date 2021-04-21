@@ -23,6 +23,7 @@ namespace swizzle::core
 
 
         const U64 getPlatformTimeStampMs();
+        const U64 getPlatformTimeStampUs();
         const U32 getPlatformCurrentThreadId();
 
         Resource<Window> createPlatformWindow(const U32 width, const U32  height, const SwChar* title);

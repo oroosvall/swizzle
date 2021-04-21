@@ -4,6 +4,8 @@
 
 #include "Game.hpp"
 
+#include <swizzle/profile/Profiler.hpp>
+
 class StdLogger : public swizzle::core::LogDevice
 {
     // Inherited via LogDevice
@@ -27,7 +29,12 @@ int main(int argv, char* argc[])
         Game game;
 
         game.initialize("Swizzle-sandbox");
+
+        sw::profile::ProfileStart("ProfileTest.prof");
+
         game.run();
+
+        sw::profile::ProfileEnd();
     }
 
     sw::core::RemoveLogger(&logger);
