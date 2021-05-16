@@ -104,14 +104,15 @@ namespace swizzle::input
 {
 	void SWIZZLE_API SetInputSource(core::Resource<core::Window> window);
 
-	bool SWIZZLE_API RegisterKeyAction(const KeyAction& action);
+	SwBool SWIZZLE_API RegisterKeyAction(const KeyAction& action);
 
 	void SWIZZLE_API InputFrameReset();
 
-	bool SWIZZLE_API IsKeyPressed(const Keys key);
-	bool SWIZZLE_API IsActionPressed(const KeyAction& action);
+	SwBool SWIZZLE_API IsKeyPressed(const Keys key);
+	SwBool SWIZZLE_API IsActionPressed(const KeyAction& action);
+	SwBool SWIZZLE_API WasPressedThisFrame(const Keys key);
 
-	bool SWIZZLE_API IsMouseButtonPressed(const Mouse key);
+	SwBool SWIZZLE_API IsMouseButtonPressed(const Mouse key);
 
 	void SWIZZLE_API GetMousePosition(int32_t& xPos, int32_t& yPos);
 	void SWIZZLE_API GetMouseDelta(float& x, float& y);

@@ -33,6 +33,9 @@ namespace swizzle::gfx
 
         virtual void setClearColor(ClearColor color) override;
 
+        virtual void clearFrameCounter() override;
+        virtual U64 getFrameCounter() override;
+
         virtual core::Resource<Shader> createShader(const ShaderAttributeList& attribs) override;
 
         virtual void prepare() override;
@@ -89,6 +92,8 @@ namespace swizzle::gfx
 
         std::vector<VkFence> mInFlightFences;
         std::vector<VkFence> mImagesInFlight;
+
+        U64 mFrameCounter;
 
     };
 

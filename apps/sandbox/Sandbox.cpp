@@ -6,6 +6,8 @@
 
 #include <swizzle/profile/Profiler.hpp>
 
+#include <iostream>
+
 class StdLogger : public swizzle::core::LogDevice
 {
     // Inherited via LogDevice

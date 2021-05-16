@@ -1,5 +1,7 @@
-#include "VulkanPhysicalDevice.hpp"
+#include "VulkanDevice.hpp"
 #include <swizzle/core/Logging.hpp>
+
+#include "VulkanBuffer.hpp"
 
 namespace swizzle
 {
@@ -140,7 +142,7 @@ namespace swizzle
     {
         VkQueue queue = VK_NULL_HANDLE;
 
-        QueueId v;
+        QueueId v = {};
         v.s.v1 = queueFamily;
         v.s.v2 = queueIndex;
 
@@ -160,6 +162,55 @@ namespace swizzle
     VkDevice LogicalDevice::operator()(void) const
     {
         return mLogicalDevice;
+    }
+
+    std::shared_ptr<gfx::VkBufferInt> LogicalDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usageFlags)
+    {
+        VkBuffer buf = VK_NULL_HANDLE;
+
+        VkBufferCreateInfo createInfo = {};
+
+        createInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        createInfo.pNext = VK_NULL_HANDLE;
+        createInfo.flags = 0u;
+        createInfo.size = size;
+        createInfo.usage = usageFlags;
+        createInfo.sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.queueFamilyIndexCount = 0u;           // This is 0 because of EXCLUSIVE ACCESS
+        createInfo.pQueueFamilyIndices = VK_NULL_HANDLE; // This is 0 because of EXCLUSIVE ACCESS
+
+        vkCreateBuffer(mLogicalDevice, &createInfo, nullptr, &buf);
+        mNumBuffers++;
+        auto device = shared_from_this();
+
+        return std::make_shared<gfx::VkBufferInt>(device, buf );
+    }
+
+    void LogicalDevice::destroyBuffer(VkBuffer buffer)
+    {
+        vkDestroyBuffer(mLogicalDevice, buffer, nullptr);
+        mNumBuffers--;
+    }
+
+    vk::VkOwner<VkDeviceMemory> LogicalDevice::allocateMemory(VkDeviceSize size, U32 memoryIndex)
+    {
+        VkDeviceMemory mem = VK_NULL_HANDLE;
+
+        VkMemoryAllocateInfo memAllocInfo = {};
+        memAllocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        memAllocInfo.pNext = VK_NULL_HANDLE;
+        memAllocInfo.allocationSize = size;
+        memAllocInfo.memoryTypeIndex = memoryIndex;
+
+        vkAllocateMemory(mLogicalDevice, &memAllocInfo, nullptr, &mem);
+
+        return mem;
+    }
+
+    void LogicalDevice::dequeFreeMemory(vk::VkOwner<VkDeviceMemory> memory)
+    {
+        VkDeviceMemory mem = memory.release();
+        vkFreeMemory(mLogicalDevice, mem, nullptr);
     }
 
 } // namespace swizzle

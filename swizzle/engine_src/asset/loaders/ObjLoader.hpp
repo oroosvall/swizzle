@@ -1,9 +1,33 @@
 
-#pragma once
+#ifndef OBJ_LOADER_HPP
+#define OBJ_LOADER_HPP
+
+/* Include files */
 
 #include <common/Types.hpp>
 #include <glm/glm.hpp>
 #include <vector>
+
+#include "LoaderCommon.hpp"
+
+/* Defines */
+
+/* Typedefs/enums */
+
+/* Forward Declared Structs/Classes */
+
+/* Struct Declaration */
+
+
+
+/* Class Declaration */
+
+/* Function Declaration */
+
+namespace loader::obj
+{
+    SwBool loadObjFile(const SwChar* fileName, F32** vertexData, U32& numVertecies, U32** indexData, U32& numTriangles);
+}
 
 namespace swizzle
 {
@@ -28,3 +52,5 @@ namespace swizzle
     };
 
 }
+
+#endif

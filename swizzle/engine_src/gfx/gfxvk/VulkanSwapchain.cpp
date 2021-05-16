@@ -1,5 +1,5 @@
 #include "VulkanInstance.hpp"
-#include "VulkanPhysicalDevice.hpp"
+#include "VulkanDevice.hpp"
 
 #include "VulkanSwapchain.hpp"
 #include "surface/Surface.hpp"
@@ -34,6 +34,7 @@ namespace swizzle::gfx
         , mImageAvailableSemaphore()
         , mInFlightFences()
         , mImagesInFlight()
+        , mFrameCounter(0u)
     {
         mSurface = CreateOsSurface(window, mVkObjects.mVkInstance->getInstance());
 
@@ -98,6 +99,16 @@ namespace swizzle::gfx
         }
     }
 
+    void VulkanSwapchain::clearFrameCounter()
+    {
+        mFrameCounter = 0u;
+    }
+
+    U64 VulkanSwapchain::getFrameCounter()
+    {
+        return mFrameCounter;
+    }
+
     core::Resource<Shader> VulkanSwapchain::createShader(const ShaderAttributeList& attribs)
     {
         return mFrameBuffers[0]->createShader(attribs);
@@ -153,13 +164,19 @@ namespace swizzle::gfx
         (void)vkQueuePresentKHR(queue, &presentInfo);
         //LOG_ERROR("Present result %d\n", res);
 
-        mCurrentFrame = (mCurrentFrame + 1u) % mSwapchainImages.size();
+        mCurrentFrame++;
+        if (mCurrentFrame == mSwapchainImages.size())
+        {
+            mCurrentFrame = 0u;
+        }
 
         if (mRecreateSwapchain)
         {
             mRecreateSwapchain = false;
             recreateSwapchain();
         }
+
+        mFrameCounter++;
     }
 
     void VulkanSwapchain::resize()

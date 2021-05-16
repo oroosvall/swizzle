@@ -1,7 +1,7 @@
 
 /* Include files */
 
-#include "../VulkanPhysicalDevice.hpp"
+#include "../VulkanDevice.hpp"
 #include "VulkanMaterial.hpp"
 
 #include "../VulkanTexture.hpp"
@@ -57,6 +57,9 @@ namespace swizzle::gfx
 
     VulkanMaterial::~VulkanMaterial()
     {
+        vkDestroySampler(mVkObjects.mLogicalDevice->getLogical(), mSampler, mVkObjects.mDebugAllocCallbacks);
+        mSampler = VK_NULL_HANDLE;
+
         vkFreeDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), mVkObjects.mDescriptorPool, 1, &mDescriptorSet);
         mDescriptorSet = VK_NULL_HANDLE;
     }
@@ -77,7 +80,7 @@ namespace swizzle::gfx
         VulkanBuffer* bfr = (VulkanBuffer*)buffer.get();
 
         VkDescriptorBufferInfo descBfr = {};
-        descBfr.buffer = bfr->getBuffer();
+        descBfr.buffer = bfr->getBuffer()->mBuffer;
         descBfr.offset = 0;
         descBfr.range = sizeof(float) * 4;
 

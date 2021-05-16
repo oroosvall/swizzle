@@ -2,26 +2,26 @@
 #include "VulkanMemory.hpp"
 
 #include "../VulkanInstance.hpp"
-#include "../VulkanPhysicalDevice.hpp"
+#include "../VulkanDevice.hpp"
 
 namespace vk
 {
 
-    VulkanMemory2::VulkanMemory2(const swizzle::gfx::VkContainer vkObjects)
+    VulkanMemory::VulkanMemory(const swizzle::gfx::VkContainer vkObjects)
         : mVkObjects(vkObjects)
         , mMemory(VK_NULL_HANDLE)
         , mMemorySize(0U)
     {
     }
 
-    VulkanMemory2::~VulkanMemory2()
+    VulkanMemory::~VulkanMemory()
     {
         vkFreeMemory(mVkObjects.mLogicalDevice->getLogical(), mMemory, mVkObjects.mDebugAllocCallbacks);
         mMemory = VK_NULL_HANDLE;
         mMemorySize = 0U;
     }
 
-    void VulkanMemory2::allocateMemory(VkMemoryPropertyFlags properties, VkMemoryRequirements memReqs)
+    void VulkanMemory::allocateMemory(VkMemoryPropertyFlags properties, VkMemoryRequirements memReqs)
     {
         auto log = mVkObjects.mLogicalDevice.get();
         auto phys = mVkObjects.mPhysicalDevice.get();
@@ -50,29 +50,29 @@ namespace vk
         mMemory = memory;
     }
 
-    VkDeviceSize VulkanMemory2::getMemorySize()
+    VkDeviceSize VulkanMemory::getMemorySize() const
     {
         return mMemorySize;
     }
 
-    VkDeviceMemory VulkanMemory2::getMemoryHandle()
+    VkDeviceMemory VulkanMemory::getMemoryHandle() const
     {
         return mMemory;
     }
 
-    void* VulkanMemory2::mapMemory()
+    void* VulkanMemory::mapMemory()
     {
         void* ptr = nullptr;
         vkMapMemory(mVkObjects.mLogicalDevice->getLogical(), mMemory, 0U, mMemorySize, 0, &ptr);
         return ptr;
     }
 
-    void VulkanMemory2::unmapMemory()
+    void VulkanMemory::unmapMemory()
     {
         vkUnmapMemory(mVkObjects.mLogicalDevice->getLogical(), mMemory);
     }
 
-    U32 VulkanMemory2::FindMemoryType(VkPhysicalDeviceMemoryProperties props, VkMemoryPropertyFlags properties, uint32_t typeBits)
+    U32 VulkanMemory::FindMemoryType(VkPhysicalDeviceMemoryProperties props, VkMemoryPropertyFlags properties, uint32_t typeBits)
     {
         U32 result = 0xFFFFFFFF; // Unable to find memoryType
 

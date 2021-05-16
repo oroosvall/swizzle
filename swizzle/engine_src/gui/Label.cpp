@@ -35,9 +35,6 @@ namespace swizzle::gui
         : mCtx(ctx)
         , mFont("c:/windows/fonts/arial.ttf", ctx)
         , mQuadBuffer(nullptr)
-        , mOldBuffer(nullptr)
-        , mOldBuffer2(nullptr)
-        , mOldBuffer3(nullptr)
     {
         for (int i = 0; i < 512; ++i)
         {
@@ -52,22 +49,6 @@ namespace swizzle::gui
 
     void Label::setText(const SwChar* text)
     {
-        if (mOldBuffer2)
-        {
-            mOldBuffer3 = mOldBuffer2;
-        }
-
-        if (mOldBuffer)
-        {
-            mOldBuffer2 = mOldBuffer;
-        }
-
-        if (mQuadBuffer)
-        {
-            mOldBuffer = mQuadBuffer;
-            mQuadBuffer = mCtx->createBuffer(gfx::BufferType::Vertex);
-        }
-
         struct TextVertex
         {
             F32 x;

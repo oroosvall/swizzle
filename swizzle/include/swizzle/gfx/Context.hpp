@@ -30,7 +30,6 @@ namespace swizzle::gfx
         U32 mStagedObjects;
         U32 mNumTextures;
         U32 mNumBuffers;
-        U32 mFrameTimeUs;
     };
 
     struct GfxContextCreateInfo
@@ -52,9 +51,6 @@ namespace swizzle::gfx
         virtual void waitIdle() = 0;
 
         virtual GfxStatistics getStatistics() = 0;
-
-        virtual void resetFrameCount() = 0;
-        virtual U32 getFrameCount() = 0;
 
         virtual core::Resource<Buffer> createBuffer(BufferType type) = 0;
         virtual core::Resource<CommandBuffer> createCommandBuffer(U32 swapCount) = 0;

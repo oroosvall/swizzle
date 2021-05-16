@@ -18,6 +18,7 @@ namespace swizzle::gfx
     public:
 
         virtual void setBufferData(void* data, U64 size, U32 stride) = 0;
+        virtual U64 getRemainingSize() const = 0;
 
         virtual void* mapMemory(U64 size) = 0;
         virtual void unmapMemory() = 0;

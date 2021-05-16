@@ -1,7 +1,7 @@
 
 /* Include files */
 
-#include "VulkanPhysicalDevice.hpp"
+#include "VulkanDevice.hpp"
 
 #include "VulkanPresentFBO.hpp"
 
@@ -101,7 +101,7 @@ namespace swizzle::gfx
 
     core::Resource<Shader> PresentFBO::createShader(const ShaderAttributeList& attributeList)
     {
-        return core::CreateRef<VulkanShader2>(mVkObjects, *this, attributeList);
+        return core::CreateRef<VulkanShader>(mVkObjects, *this, attributeList);
     }
 
     VkRenderPass PresentFBO::getRenderPass() const
@@ -124,7 +124,7 @@ namespace swizzle::gfx
         allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.pNext = VK_NULL_HANDLE;
         allocInfo.allocationSize = memreq.size;
-        allocInfo.memoryTypeIndex = vk::VulkanMemory2::FindMemoryType(mVkObjects.mPhysicalDevice->getMemoryProperties(), VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
+        allocInfo.memoryTypeIndex = vk::VulkanMemory::FindMemoryType(mVkObjects.mPhysicalDevice->getMemoryProperties(), VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
 
         vkAllocateMemory(mVkObjects.mLogicalDevice->getLogical(), &allocInfo, mVkObjects.mDebugAllocCallbacks, &mDepthMemory);
 

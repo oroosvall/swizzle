@@ -1,9 +1,9 @@
-#ifndef VULKAN_INSTANCE2_HPP
-#define VULKAN_INSTANCE2_HPP
+#ifndef VULKAN_INSTANCE_HPP
+#define VULKAN_INSTANCE_HPP
 
 #include "backend/Vk.hpp"
 
-#include "VulkanPhysicalDevice.hpp"
+#include "VulkanDevice.hpp"
 #include <vector>
 
 namespace swizzle::gfx

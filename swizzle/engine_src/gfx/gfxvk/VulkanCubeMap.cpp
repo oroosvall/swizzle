@@ -1,7 +1,7 @@
 
 /* Include files */
 
-#include "VulkanPhysicalDevice.hpp"
+#include "VulkanDevice.hpp"
 
 #include "VulkanCubeMap.hpp"
 #include "backend/VulkanMemory.hpp"
@@ -103,7 +103,7 @@ namespace swizzle::gfx
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.pNext = VK_NULL_HANDLE;
         allocInfo.allocationSize = req.size;
-        allocInfo.memoryTypeIndex = vk::VulkanMemory2::FindMemoryType(mVkObjects.mPhysicalDevice->getMemoryProperties(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, req.memoryTypeBits);
+        allocInfo.memoryTypeIndex = vk::VulkanMemory::FindMemoryType(mVkObjects.mPhysicalDevice->getMemoryProperties(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, req.memoryTypeBits);
 
         vkAllocateMemory(mVkObjects.mLogicalDevice->getLogical(), &allocInfo, nullptr, &mStageMemory);
 
@@ -234,7 +234,7 @@ namespace swizzle::gfx
         allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.pNext = VK_NULL_HANDLE;
         allocInfo.allocationSize = memreq.size;
-        allocInfo.memoryTypeIndex = vk::VulkanMemory2::FindMemoryType(mVkObjects.mPhysicalDevice->getMemoryProperties(), VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
+        allocInfo.memoryTypeIndex = vk::VulkanMemory::FindMemoryType(mVkObjects.mPhysicalDevice->getMemoryProperties(), VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
 
         vkAllocateMemory(mVkObjects.mLogicalDevice->getLogical(), &allocInfo, mVkObjects.mDebugAllocCallbacks, &mMemory);
 

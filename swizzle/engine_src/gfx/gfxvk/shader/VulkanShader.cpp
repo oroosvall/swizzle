@@ -1,6 +1,6 @@
 /* Include files */
 
-#include "../VulkanPhysicalDevice.hpp"
+#include "../VulkanDevice.hpp"
 
 #include "VulkanShader.hpp"
 #include "VulkanMaterial.hpp"
@@ -88,7 +88,7 @@ namespace swizzle::gfx
 
 namespace swizzle::gfx
 {
-    VulkanShader2::VulkanShader2(const VkContainer vkObjects, const PresentFBO& frameBuffer, const ShaderAttributeList& shaderAttributes)
+    VulkanShader::VulkanShader(const VkContainer vkObjects, const PresentFBO& frameBuffer, const ShaderAttributeList& shaderAttributes)
         : mVkObjects(vkObjects)
         , mPipelineLayout(VK_NULL_HANDLE)
         , mPipeline(VK_NULL_HANDLE)
@@ -149,7 +149,7 @@ namespace swizzle::gfx
         vkCreatePipelineLayout(mVkObjects.mLogicalDevice->getLogical(), &info, mVkObjects.mDebugAllocCallbacks, &mPipelineLayout);
     }
 
-    VulkanShader2::~VulkanShader2()
+    VulkanShader::~VulkanShader()
     {
         vkFreeDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), mVkObjects.mDescriptorPool, 1, &mDescriptorSet); // TODO: Fixme
 
@@ -165,7 +165,7 @@ namespace swizzle::gfx
         vkDestroyPipelineLayout(mVkObjects.mLogicalDevice->getLogical(), mPipelineLayout, mVkObjects.mDebugAllocCallbacks);
     }
 
-    SwBool VulkanShader2::load(const SwChar* filePath)
+    SwBool VulkanShader::load(const SwChar* filePath)
     {
         SwBool ok = false;
 
@@ -235,7 +235,7 @@ namespace swizzle::gfx
         return ok;
     }
 
-    core::Resource<Material> VulkanShader2::createMaterial()
+    core::Resource<Material> VulkanShader::createMaterial()
     {
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -253,17 +253,17 @@ namespace swizzle::gfx
         return material;
     }
 
-    VkPipeline VulkanShader2::getPipeline() const
+    VkPipeline VulkanShader::getPipeline() const
     {
         return mPipeline;
     }
 
-    VkPipelineLayout VulkanShader2::getPipelineLayout() const
+    VkPipelineLayout VulkanShader::getPipelineLayout() const
     {
         return mPipelineLayout;
     }
 
-    VkDescriptorSet VulkanShader2::getDescriptorSet() const
+    VkDescriptorSet VulkanShader::getDescriptorSet() const
     {
         return mDescriptorSet;
     }
@@ -276,7 +276,7 @@ namespace swizzle::gfx
 
 namespace swizzle::gfx
 {
-    void VulkanShader2::loadShader(const SwChar* shaderType, const SwChar* binaryFile)
+    void VulkanShader::loadShader(const SwChar* shaderType, const SwChar* binaryFile)
     {
         std::ifstream inFile(binaryFile, std::ios::binary | std::ios::ate);
 
@@ -308,7 +308,7 @@ namespace swizzle::gfx
         }
     }
 
-    void VulkanShader2::createPipeline()
+    void VulkanShader::createPipeline()
     {
         std::vector<VkPipelineShaderStageCreateInfo> shaderInfos;
         for (auto& it : mShaders)
@@ -516,7 +516,7 @@ namespace swizzle::gfx
         }
     }
 
-    void VulkanShader2::readProperty(const std::string& line)
+    void VulkanShader::readProperty(const std::string& line)
     {
         auto index = line.find('=');
         auto prop = line.substr(0, index);

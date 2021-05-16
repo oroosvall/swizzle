@@ -14,6 +14,7 @@
 
 #include <swizzle/gui/GuiLabel.hpp>
 
+#include <swizzle/asset/MeshLoader.hpp>
 
 class Game : public sw::Application
 {
@@ -47,9 +48,9 @@ private:
     PerspectiveCamera cam;
     CameraController mController;
 
-    std::vector<sw::core::Resource<sw::gfx::Buffer>> mBuffers;
+    sw::Mesh mMesh;
+    sw::Mesh mSkysphere;
 
-    sw::core::Resource<sw::gfx::Buffer> mSkySphere;
     sw::core::Resource<sw::gfx::Shader> mSkyShader;
 
     sw::core::Resource<sw::gfx::Texture> mSkyTexture;
@@ -65,6 +66,7 @@ private:
     sw::core::Resource<sw::gfx::Shader> mTextShader;
     sw::core::Resource<sw::gfx::Material> mTextMaterial;
 
+    int extraText = 0;
 
 };
 

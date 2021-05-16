@@ -34,11 +34,14 @@ namespace swizzle::gfx
         , mPhysicalDevice(VK_NULL_HANDLE)
         , mLogicalDevice(VK_NULL_HANDLE)
     {
-        deviceIndex; // TODO: use this
 
         auto devices = mVkInstance->listDevices();
+        if (deviceIndex >= devices.size())
+        {
+            deviceIndex = 0;
+        }
 
-        mPhysicalDevice = core::CreateRef<PhysicalDevice>(devices[0]);
+        mPhysicalDevice = core::CreateRef<PhysicalDevice>(devices[deviceIndex]);
 
         auto extensions = mPhysicalDevice->listAvailableExtensions(); // use this to check if an extension is supported
         for (auto& it : extensions)
@@ -76,7 +79,7 @@ namespace swizzle::gfx
 
     VkGfxContext::~VkGfxContext()
     {
-
+        vkDestroyDescriptorPool(mLogicalDevice->getLogical(), mVkContainer.mDescriptorPool, mVkContainer.mDebugAllocCallbacks);
     }
 
     void VkGfxContext::waitIdle()
@@ -86,17 +89,12 @@ namespace swizzle::gfx
 
     GfxStatistics VkGfxContext::getStatistics()
     {
-        return {};
-    }
+        GfxStatistics stats = {};
 
-    void VkGfxContext::resetFrameCount()
-    {
+        stats.mNumBuffers = mLogicalDevice->getNumBuffers();
+        stats.mNumTextures = mLogicalDevice->getNumTextures();
 
-    }
-
-    U32 VkGfxContext::getFrameCount()
-    {
-        return 0ULL;
+        return stats;
     }
 
     core::Resource<Buffer> VkGfxContext::createBuffer(BufferType type)

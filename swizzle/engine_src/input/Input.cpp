@@ -30,6 +30,10 @@ namespace swizzle::input
         S32 mY = 0;
         std::unordered_map<S32, SwBool> mPressedKeys = {};
         std::unordered_map<S32, SwBool> mPressedMouse = {};
+
+        std::unordered_map<S32, SwBool> mPressedKeysThisFrame = {};
+        std::unordered_map<S32, SwBool> mPressedMouseThisFrame = {};
+
         SwBool mInputFocused = false;
     } inputCtx;
 }
@@ -58,7 +62,7 @@ namespace swizzle::input
         }
     }
 
-    bool RegisterKeyAction(const KeyAction& action)
+    SwBool RegisterKeyAction(const KeyAction& action)
     {
         action;
         return false;
@@ -68,11 +72,12 @@ namespace swizzle::input
     {
         inputCtx.mDx = 0.0F;
         inputCtx.mDy = 0.0F;
+        inputCtx.mPressedKeysThisFrame.clear();
     }
 
-    bool IsKeyPressed(const Keys key)
+    SwBool IsKeyPressed(const Keys key)
     {
-        bool pressed = false;
+        SwBool pressed = false;
         S32 scanCode = swizzle::core::KeyToScanCode(key);
         if (inputCtx.mPressedKeys.count(scanCode) != 0u)
         {
@@ -81,15 +86,26 @@ namespace swizzle::input
         return pressed && inputCtx.mInputFocused;
     }
 
-    bool IsActionPressed(const KeyAction& action)
+    SwBool WasPressedThisFrame(const Keys key)
+    {
+        SwBool pressed = false;
+        S32 scanCode = swizzle::core::KeyToScanCode(key);
+        if (inputCtx.mPressedKeysThisFrame.count(scanCode) != 0u)
+        {
+            pressed = inputCtx.mPressedKeysThisFrame[scanCode];
+        }
+        return pressed && inputCtx.mInputFocused;
+    }
+
+    SwBool IsActionPressed(const KeyAction& action)
     {
         action;
         return false;
     }
 
-    bool SWIZZLE_API IsMouseButtonPressed(const Mouse key)
+    SwBool SWIZZLE_API IsMouseButtonPressed(const Mouse key)
     {
-        bool pressed = false;
+        SwBool pressed = false;
         S32 scanCode = (S32)key;
         if (inputCtx.mPressedMouse.count(scanCode) != 0u)
         {
@@ -145,10 +161,12 @@ namespace swizzle ::input
             if (e.mFromKeyboard)
             {
                 inputCtx.mPressedKeys[e.mKey] = e.mPressed;
+                inputCtx.mPressedKeysThisFrame[e.mKey] = e.mPressed;
             }
             else
             {
                 inputCtx.mPressedMouse[e.mKey] = e.mPressed;
+                inputCtx.mPressedMouseThisFrame[e.mKey] = e.mPressed;
             }
 
             break;

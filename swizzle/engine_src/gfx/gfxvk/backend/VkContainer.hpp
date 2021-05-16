@@ -33,16 +33,7 @@ namespace swizzle::gfx // move to vk namespace
 
         VkAllocationCallbacks* mDebugAllocCallbacks;
 
-        //VkQueue mQueue;
-
-        //U32 mQueueFamilyIndex;
-
-        //VkCommandPool mCmdPool;
-        //VkPipelineCache mPiplineCache;
-
         VkDescriptorPool mDescriptorPool; // TODO: Fix me
-
-        //VkAllocationCallbacks* mDebugAllocCallbacks;
     };
 }
 

@@ -6,7 +6,7 @@
 #include "Vk.hpp"
 
 #include "../VulkanInstance.hpp"
-#include "../VulkanPhysicalDevice.hpp"
+#include "../VulkanDevice.hpp"
 
 #include "VkContainer.hpp"
 
@@ -22,17 +22,17 @@
 
 namespace vk
 {
-    class VulkanMemory2
+    class VulkanMemory
     {
     public:
 
-        VulkanMemory2(const swizzle::gfx::VkContainer vkObjects);
-        virtual ~VulkanMemory2();
+        VulkanMemory(const swizzle::gfx::VkContainer vkObjects);
+        virtual ~VulkanMemory();
 
         void allocateMemory(VkMemoryPropertyFlags properties, VkMemoryRequirements memReqs);
 
-        VkDeviceSize getMemorySize();
-        VkDeviceMemory getMemoryHandle();
+        VkDeviceSize getMemorySize() const;
+        VkDeviceMemory getMemoryHandle() const;
 
         void* mapMemory();
         void unmapMemory();

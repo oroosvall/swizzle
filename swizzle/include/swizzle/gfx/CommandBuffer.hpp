@@ -17,9 +17,13 @@ namespace swizzle::gfx
     public:
         virtual ~CommandBuffer() {}
 
+        virtual U32 getDrawCount() = 0;
+        virtual U64 getVertCount() = 0;
+        virtual U64 getTriCount() = 0;
+
         virtual void reset(bool hardReset) = 0;
 
-        virtual void begin(core::Resource<Swapchain> swp = nullptr) = 0;
+        virtual void begin() = 0;
         virtual void end() = 0;
 
         virtual void uploadTexture(core::Resource<Texture> texture) = 0;
@@ -36,6 +40,7 @@ namespace swizzle::gfx
         virtual void setViewport(U32 x, U32 y) = 0;
 
         virtual void draw(core::Resource<Buffer> buffer) = 0;
+        virtual void drawIndexed(core::Resource<Buffer> buffer, core::Resource<Buffer> index) = 0;
 
     };
 }

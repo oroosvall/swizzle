@@ -99,6 +99,7 @@ public:
     struct Mesh
     {
         std::string mName;
+
         std::vector<Vertex3d> mVertices;
         std::vector<Vertex2d> mUvs;
         std::vector<Vertex3d> mNormals;

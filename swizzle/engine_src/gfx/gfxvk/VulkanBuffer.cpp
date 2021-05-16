@@ -1,4 +1,4 @@
-#include "VulkanPhysicalDevice.hpp"
+#include "VulkanDevice.hpp"
 #include "VulkanBuffer.hpp"
 
 #include "backend/VulkanMemory.hpp"
@@ -12,18 +12,15 @@ namespace swizzle::gfx
         , mBuffer(VK_NULL_HANDLE)
         , mBufferMemory(vkObjects)
         , mType(type)
-        , mStride(0U)
-        , mVertCount(0)
+        , mStride(0u)
+        , mVertCount(0u)
+        , mUsedSize(0u)
     {
     }
 
     VulkanBuffer::~VulkanBuffer()
     {
-        if (mBuffer)
-        {
-            vkDestroyBuffer(mVkObjects.mLogicalDevice->getLogical(), mBuffer, mVkObjects.mDebugAllocCallbacks);
-            mBuffer = VK_NULL_HANDLE;
-        }
+        mBuffer.reset();
     }
 
     void VulkanBuffer::setBufferData(void* data, U64 size, U32 stride)
@@ -36,6 +33,11 @@ namespace swizzle::gfx
         memcpy(mappedPtr, data, size);
         mBufferMemory.unmapMemory();
         mStride = stride;
+    }
+
+    U64 VulkanBuffer::getRemainingSize() const
+    {
+        return mBufferMemory.getMemorySize() - mUsedSize;
     }
 
     void* VulkanBuffer::mapMemory(U64 size)
@@ -53,11 +55,14 @@ namespace swizzle::gfx
     void VulkanBuffer::createOrResize(U64 newSize)
     {
         if (newSize <= mBufferMemory.getMemorySize())
-            return;
-
-        if (mBuffer != VK_NULL_HANDLE)
         {
-            vkDestroyBuffer(mVkObjects.mLogicalDevice->getLogical(), mBuffer, mVkObjects.mDebugAllocCallbacks);
+            mUsedSize = newSize;
+            return;
+        }
+
+        if (mBuffer)
+        {
+            mBuffer.reset();
         }
 
         VkBufferUsageFlags usage = 0;
@@ -76,30 +81,21 @@ namespace swizzle::gfx
             break;
         }
 
-        VkBufferCreateInfo bufferInfo = {};
-
         newSize = (newSize * 110) / 100;
 
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.pNext = VK_NULL_HANDLE;
-        bufferInfo.flags = 0;
-        bufferInfo.size = newSize;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
-        bufferInfo.queueFamilyIndexCount = 0;
-        bufferInfo.pQueueFamilyIndices = 0;
-        //bufferInfo.pQueueFamilyIndices = &mVkObjects.mQueueFamilyIndex;
-
-        vkCreateBuffer(mVkObjects.mLogicalDevice->getLogical(), &bufferInfo, mVkObjects.mDebugAllocCallbacks, &mBuffer);
+        mBuffer = mVkObjects.mLogicalDevice->createBuffer(newSize, usage);
 
         VkMemoryRequirements req = {};
-        vkGetBufferMemoryRequirements(mVkObjects.mLogicalDevice->getLogical(), mBuffer, &req);
+        vkGetBufferMemoryRequirements(mVkObjects.mLogicalDevice->getLogical(), mBuffer.get()->mBuffer, &req);
 
         // @ TODO move to device local memory and use staging buffer instead
-        mBufferMemory.allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, req);
+        mBufferMemory.allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, req);
+        //mBufferMemory.allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, req);
+        //mBufferMemory.allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, req);
 
-        vkBindBufferMemory(mVkObjects.mLogicalDevice->getLogical(), mBuffer, mBufferMemory.getMemoryHandle(), 0U);
+        vkBindBufferMemory(mVkObjects.mLogicalDevice->getLogical(), mBuffer.get()->mBuffer, mBufferMemory.getMemoryHandle(), 0U);
 
+        mUsedSize = newSize;
         //mBufferSize = newSize;
     }
 

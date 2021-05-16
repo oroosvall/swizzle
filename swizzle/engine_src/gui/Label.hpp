@@ -44,11 +44,6 @@ namespace swizzle::gui
         Font mFont;
 
         core::Resource<gfx::Buffer> mQuadBuffer;
-
-        core::Resource<gfx::Buffer> mOldBuffer;
-        core::Resource<gfx::Buffer> mOldBuffer2;
-        core::Resource<gfx::Buffer> mOldBuffer3;
-
     };
 }
 

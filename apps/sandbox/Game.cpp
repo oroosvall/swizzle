@@ -9,6 +9,7 @@
 #include <swizzle/profile/Profiler.hpp>
 
 #include <swizzle/asset/TextureLoader.hpp>
+#include <swizzle/asset/MeshLoader.hpp>
 
 Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
@@ -18,7 +19,6 @@ Game::Game()
 
 Game::~Game()
 {
-    delete guiLabel;
 }
 
 void Game::userSetup()
@@ -34,8 +34,6 @@ void Game::userSetup()
     mGameCfg.setValue("AssetDir", v);
 
     mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
-
-    //mFrameBuffer = mGfxContext->createFrameBuffer();
 
     mCmdBuffer = mGfxContext->createCommandBuffer(3);
 
@@ -90,158 +88,79 @@ void Game::userSetup()
 
     cam.setPosition({ 0.0F, 0.0F, 5.5F });
 
-    Model* mesh = new Model();
-    mesh->load("meshes/main_city.obj");
-    //mesh->load("C:/tmp/cobra.obj");
-    //mesh->load("C:/tmp/dragon.obj");
-
     mUniformBuffer = mGfxContext->createBuffer(sw::gfx::BufferType::UniformBuffer);
 
     mUniformBuffer->setBufferData(&lampColor, sizeof(lampColor), 1);
     mMaterial->setDescriptorBufferResource(1u, mUniformBuffer);
 
-    U32 triangleSum = 0u;
-    U32 vertSum = 0u;
+    sw::gfx::ShaderBufferInput bufferInputSky = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
 
-    for (auto& m : mesh->mMeshes)
-    {
-        auto buffer = mGfxContext->createBuffer(sw::gfx::BufferType::Vertex);
-
-        size_t size = m.mTriangles.size() * 3 * (3 + 3 + 2);
-
-        char* data = new char[size * sizeof(float)];
-
-        size_t offset = 0;
-
-        auto& mesh1 = m;
-        auto verts = mesh1.mVertices.data();
-        auto normals = mesh1.mNormals.data();
-        auto uvs = mesh1.mUvs.data();
-        auto& triList = mesh1.mTriangles;
-
-        triangleSum += (U32)triList.size();
-        vertSum += (U32)mesh1.mVertices.size();
-
-        for (auto& tri : triList)
-        {
-            memcpy(&data[offset], &verts[tri.v1], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &normals[tri.v1], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &uvs[tri.v1], sizeof(float) * 2);
-            offset += sizeof(float) * 2;
-            memcpy(&data[offset], &verts[tri.v2], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &normals[tri.v2], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &uvs[tri.v2], sizeof(float) * 2);
-            offset += sizeof(float) * 2;
-            memcpy(&data[offset], &verts[tri.v3], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &normals[tri.v3], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &uvs[tri.v3], sizeof(float) * 2);
-            offset += sizeof(float) * 2;
-        }
-
-        buffer->setBufferData(data, size * sizeof(F32), sizeof(float) * (3U + 3U + 2U));
-        delete[] data;
-
-        mBuffers.push_back(buffer);
-    }
-
-    printf("Rendering total of %d Triangles\n", triangleSum);
-    printf("Rendering total of %d Vertices\n", vertSum);
-
-    delete mesh;
-    mesh = nullptr;
-
-    mesh = new Model();
-    mesh->load("meshes/inverted_sphere.obj");
-
-    sw::gfx::ShaderBufferInput bufferInputWormhole = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
-
-    sw::gfx::ShaderAttribute attributesWormhole[] = {
+    sw::gfx::ShaderAttribute attributesSky[] = {
         { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, 0U},
         { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, sizeof(float) * 3U },
         { 0U, sw::gfx::ShaderAttributeDataType::vec2_16, sizeof(float) * 6U }
     };
 
-    sw::gfx::ShaderAttributeList attribsWormhole = {};
-    attribsWormhole.mNumBuffers = 1U;
-    attribsWormhole.mBufferInput = &bufferInputWormhole;
-    attribsWormhole.mNumAttributes = COUNT_OF(attributesWormhole);
-    attribsWormhole.mAttributes = attributesWormhole;
-    attribsWormhole.mEnableDepthTest = false;
-    attribsWormhole.mEnableBlending = false;
+    sw::gfx::ShaderAttributeList attribsSky = {};
+    attribsSky.mNumBuffers = 1U;
+    attribsSky.mBufferInput = &bufferInputSky;
+    attribsSky.mNumAttributes = COUNT_OF(attributesSky);
+    attribsSky.mAttributes = attributesSky;
+    attribsSky.mEnableDepthTest = false;
+    attribsSky.mEnableBlending = false;
 
-    mSkyShader = mSwapchain->createShader(attribsWormhole);
+    mSkyShader = mSwapchain->createShader(attribsSky);
     mSkyShader->load("shaders/sky.shader");
 
     mSkyMaterial = mSkyShader->createMaterial();
 
-    mSkySphere = mGfxContext->createBuffer(sw::gfx::BufferType::Vertex);
-
-    //mUpperCelestialSphere = sw::asset::LoadTexture2D(mGfxContext, "texture/front.png");
     mSkyTexture = sw::asset::LoadTextureCubeMap(mGfxContext,
         "texture/right.png", "texture/left.png", "texture/top.png", "texture/bottom.png", "texture/front.png", "texture/back.png");
 
     mSkyMaterial->setDescriptorTextureResource(0, mSkyTexture);
 
-    {
-        auto& m = mesh->mMeshes[0];
-        size_t size = m.mTriangles.size() * 3 * (3 + 3 + 2);
+    mSkysphere = sw::asset::LoadMesh(mGfxContext, "meshes/inverted_sphere.obj", true);
 
-        char* data = new char[size * sizeof(float)];
+    // "meshes/main_city.obj"
+    // "C:/tmp/cobra.obj"
+    // "C:/tmp/dragon.obj"
 
-        size_t offset = 0;
+    mMesh = sw::asset::LoadMesh(mGfxContext, "meshes/main_city.obj", true);
 
-        auto& mesh1 = m;
-        auto verts = mesh1.mVertices.data();
-        auto normals = mesh1.mNormals.data();
-        auto uvs = mesh1.mUvs.data();
-        auto& triList = mesh1.mTriangles;
-
-        triangleSum += (U32)triList.size();
-        vertSum += (U32)mesh1.mVertices.size();
-
-        for (auto& tri : triList)
-        {
-            memcpy(&data[offset], &verts[tri.v1], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &normals[tri.v1], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &uvs[tri.v1], sizeof(float) * 2);
-            offset += sizeof(float) * 2;
-            memcpy(&data[offset], &verts[tri.v2], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &normals[tri.v2], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &uvs[tri.v2], sizeof(float) * 2);
-            offset += sizeof(float) * 2;
-            memcpy(&data[offset], &verts[tri.v3], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &normals[tri.v3], sizeof(float) * 3);
-            offset += sizeof(float) * 3;
-            memcpy(&data[offset], &uvs[tri.v3], sizeof(float) * 2);
-            offset += sizeof(float) * 2;
-        }
-
-        mSkySphere->setBufferData(data, size * sizeof(F32), sizeof(float) * (3U + 3U + 2U));
-        delete[] data;
-    }
-
-    delete mesh;
-    mesh = nullptr;
 }
 
 SwBool Game::userUpdate(F32 dt)
 {
+    if (sw::input::WasPressedThisFrame(sw::input::Keys::KeySpace))
+    {
+        extraText++;
+    }
+
     sw::profile::ProfileEvent(__FUNCTION__, sw::profile::ProfileEventType::EventType_Frame);
     mFpsCounter.tick(dt);
-    std::string title = "Heljo world, Fps: ";
 
-    title += std::to_string(mFpsCounter.getFps());
+    auto stats = mGfxContext->getStatistics();
+
+    std::string title = "Heljo world\n";
+
+    title += "Frames: " + std::to_string(mSwapchain->getFrameCounter()) + "\n";
+    title += "FPS: " + std::to_string(mFpsCounter.getFps()) + "\n\n";
+
+    title += "GFX: Gpu Memory usage: " + std::to_string(stats.mGpuMemoryUsage) + "\n";
+    title += "GFX: Cpu Memory usage: " + std::to_string(stats.mCpuMemoryUsage) + "\n";
+    title += "Staged objects: " + std::to_string(stats.mStagedObjects) + "\n";
+    title += "Num Textures: " + std::to_string(stats.mNumTextures) + "\n";
+    title += "Num Buffers: " + std::to_string(stats.mNumBuffers) + "\n";
+    title += "Draw call count: " + std::to_string(mCmdBuffer->getDrawCount()) + "\n";
+    title += "Vertex count: " + std::to_string(mCmdBuffer->getVertCount()) + "\n";
+    title += "Triangle count: " + std::to_string(mCmdBuffer->getTriCount()) + "\n";
+    title += "RemainingSize: " + std::to_string(guiLabel->getBuffer()->getRemainingSize()) + "\n";
+
+    for (int i = 0; i < extraText; i++)
+    {
+        title += "a";
+    }
+
     //mWindow->setTitle(title.c_str());
 
     guiLabel->setText(title.c_str());
@@ -263,19 +182,37 @@ SwBool Game::userUpdate(F32 dt)
 
 void Game::userCleanup()
 {
+    delete guiLabel;
+
     std::string cfgFile = sw::core::GetAppCacheDirectory();
     cfgFile += "engine.cfg";
     mGameCfg.write(cfgFile.c_str());
 
     mCmdBuffer.reset();
-    mUniformBuffer.reset();
 
     mShader.reset();
-    mBuffers.clear();
+    mMaterial.reset();
 
     mTexture.reset();
 
     mFrameBuffer.reset();
+
+    mUniformBuffer.reset();
+
+    mMesh.mVertexBuffer.reset();
+    mMesh.mIndexBuffer.reset();
+
+    mSkysphere.mVertexBuffer.reset();
+    mSkysphere.mIndexBuffer.reset();
+
+    mSkyShader.reset();
+
+    mSkyTexture.reset();
+    mSkyMaterial.reset();
+
+    mTextShader.reset();
+    mTextMaterial.reset();
+
 }
 
 void Game::updateMainWindow()
@@ -323,10 +260,8 @@ void Game::updateMainWindow()
     mCmdBuffer->setViewport(x, y);
 
     mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
-    for (auto& buffer : mBuffers)
-    {
-        mCmdBuffer->draw(buffer);
-    }
+
+    mCmdBuffer->drawIndexed(mMesh.mVertexBuffer, mMesh.mIndexBuffer);
 
     // Wormhole stuff
 
@@ -338,7 +273,8 @@ void Game::updateMainWindow()
     t.model = glm::translate(glm::mat4(1.0F), { 0.0F, 0.0F, 0.0F });
 
     mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
-    mCmdBuffer->draw(mSkySphere);
+
+    mCmdBuffer->draw(mSkysphere.mVertexBuffer);
 
 
     // Text stuff
@@ -364,14 +300,6 @@ void Game::updateMainWindow()
     mCmdBuffer->bindMaterial(mShader, mTextMaterial);
 
     mCmdBuffer->draw(guiLabel->getBuffer());
-
-    /*t.model = glm::translate(t.model, { 0, 10, 0 });
-
-    for (auto& buffer : mBuffers)
-    {
-        mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
-        mCmdBuffer->draw(buffer);
-    }*/
 
     mCmdBuffer->endRenderPass();
     mCmdBuffer->end();

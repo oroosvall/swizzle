@@ -1,5 +1,5 @@
-#ifndef VULKAN_PHYSICAL_DEVICE_2_HPP
-#define VULKAN_PHYSICAL_DEVICE_2_HPP
+#ifndef VULKAN_DEVICE_HPP
+#define VULKAN_DEVICE_HPP
 
 /* Include files */
 
@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <unordered_map>
+#include <memory>
 
 /* Defines */
 
@@ -21,6 +22,10 @@
 
 namespace swizzle
 {
+    namespace gfx
+    {
+        class VkBufferInt;
+    }
     class LogicalDevice;
 }
 
@@ -69,7 +74,7 @@ namespace swizzle
         std::vector<const char*> mActiveExtensions;
     };
 
-    class LogicalDevice
+    class LogicalDevice : public std::enable_shared_from_this<LogicalDevice>
     {
     public:
         LogicalDevice(VkPhysicalDevice phys, const std::vector<const char*>& mExtensions,
@@ -85,12 +90,27 @@ namespace swizzle
 
         VkDevice operator()() const;
 
+        // Resource creation
+        std::shared_ptr<gfx::VkBufferInt> createBuffer(VkDeviceSize size, VkBufferUsageFlags usageFlags);
+        void destroyBuffer(VkBuffer buffer);
+
+        vk::VkOwner<VkDeviceMemory> allocateMemory(VkDeviceSize size, U32 memoryIndex);
+        void dequeFreeMemory(vk::VkOwner<VkDeviceMemory> buffer);
+
+        // Statistics information
+
+        U32 getNumBuffers() { return mNumBuffers; }
+        U32 getNumTextures() { return mNumTextures; }
+
     private:
         VkPhysicalDevice mPhysicalDevice;
         VkDevice mLogicalDevice;
         VkCommandPool mCommandPool;
 
         mutable std::unordered_map<U64, VkQueue> mCahcedQueues;
+
+        U32 mNumBuffers = 0u;
+        U32 mNumTextures = 0u;
     };
 
 } // namespace swizzle

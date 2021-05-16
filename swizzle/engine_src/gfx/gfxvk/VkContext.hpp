@@ -33,9 +33,6 @@ namespace swizzle::gfx
 
         virtual GfxStatistics getStatistics() override;
 
-        virtual void resetFrameCount() override;
-        virtual U32 getFrameCount() override;
-
         virtual core::Resource<Buffer> createBuffer(BufferType type) override;
         virtual core::Resource<CommandBuffer> createCommandBuffer(U32 swapCount) override;
         virtual core::Resource<Swapchain> createSwapchain(core::Resource<core::Window> window, U32 swapCount) override;

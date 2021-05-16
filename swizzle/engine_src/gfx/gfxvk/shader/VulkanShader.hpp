@@ -55,12 +55,12 @@ namespace swizzle::gfx
 
 namespace swizzle::gfx
 {
-    class VulkanShader2 : public Shader
+    class VulkanShader : public Shader
     {
     public:
 
-        VulkanShader2(const VkContainer vkObjects, const PresentFBO& frameBuffer, const ShaderAttributeList& attribList);
-        virtual ~VulkanShader2();
+        VulkanShader(const VkContainer vkObjects, const PresentFBO& frameBuffer, const ShaderAttributeList& attribList);
+        virtual ~VulkanShader();
 
         virtual SwBool load(const SwChar* filePath) override;
 
