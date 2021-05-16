@@ -40,9 +40,9 @@ void Game::userSetup()
     sw::gfx::ShaderBufferInput bufferInput = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
 
     sw::gfx::ShaderAttribute attributes[] = {
-        { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, 0U},
-        { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, sizeof(float) * 3U },
-        { 0U, sw::gfx::ShaderAttributeDataType::vec2_16, sizeof(float) * 6U }
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
+        { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
 
     sw::gfx::ShaderAttributeList attribs = {};
@@ -65,8 +65,8 @@ void Game::userSetup()
     sw::gfx::ShaderBufferInput bufferInputText = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 2U) };
 
     sw::gfx::ShaderAttribute attributesText[] = {
-        { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, 0U},
-        { 0U, sw::gfx::ShaderAttributeDataType::vec2_16, sizeof(float) * 3U }
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
+        { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 3U }
     };
 
     sw::gfx::ShaderAttributeList attribsText = {};
@@ -96,9 +96,9 @@ void Game::userSetup()
     sw::gfx::ShaderBufferInput bufferInputSky = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
 
     sw::gfx::ShaderAttribute attributesSky[] = {
-        { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, 0U},
-        { 0U, sw::gfx::ShaderAttributeDataType::vec3_24, sizeof(float) * 3U },
-        { 0U, sw::gfx::ShaderAttributeDataType::vec2_16, sizeof(float) * 6U }
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
+        { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
 
     sw::gfx::ShaderAttributeList attribsSky = {};

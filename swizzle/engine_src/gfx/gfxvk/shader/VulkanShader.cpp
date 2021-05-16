@@ -6,6 +6,7 @@
 #include "VulkanMaterial.hpp"
 
 #include <swizzle/core/Logging.hpp>
+#include <swizzle/core/Platform.hpp>
 
 #include <fstream>
 #include <string>
@@ -59,19 +60,19 @@ namespace swizzle::gfx
         VkFormat fmt = VK_FORMAT_UNDEFINED;
         switch (type)
         {
-        case ShaderAttributeDataType::vec2_16:
+        case ShaderAttributeDataType::vec2f:
             fmt = VK_FORMAT_R32G32_SFLOAT;
             break;
-        case ShaderAttributeDataType::vec3_24:
+        case ShaderAttributeDataType::vec3f:
             fmt = VK_FORMAT_R32G32B32_SFLOAT;
             break;
-        case ShaderAttributeDataType::vec4_32:
+        case ShaderAttributeDataType::vec4f:
             fmt = VK_FORMAT_R32G32B32A32_SFLOAT;
             break;
-        case ShaderAttributeDataType::int3_24:
+        case ShaderAttributeDataType::vec3i:
             fmt = VK_FORMAT_R8G8B8_SINT;
             break;
-        case ShaderAttributeDataType::int4_32:
+        case ShaderAttributeDataType::vec4i:
             fmt = VK_FORMAT_A8B8G8R8_SINT_PACK32;
             break;
         default:
@@ -355,9 +356,7 @@ namespace swizzle::gfx
             attributeDescriptor[i].offset = attrib.mOffset;
             if (attributeDescriptor[i].format == VK_FORMAT_UNDEFINED)
             {
-                // TODO: move this to platform layer
-                MessageBox(NULL, L"Format was undefined", L"Shader loading", MB_ICONERROR);
-                //exit(-1);
+                core::ShowCriticalMessage("Shader attribute is undefined format");
             }
         }
 

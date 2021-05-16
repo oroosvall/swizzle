@@ -23,11 +23,11 @@ namespace swizzle::gfx
 
     enum class ShaderAttributeDataType
     {
-        vec2_16 = 0,
-        vec3_24 = 1,
-        vec4_32 = 2,
-        int3_24 = 3,
-        int4_32 = 4,
+        vec2f = 0,
+        vec3f = 1,
+        vec4f = 2,
+        vec3i = 3,
+        vec4i = 4,
     };
 
     class ShaderBufferInput
