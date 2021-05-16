@@ -249,6 +249,18 @@ namespace swizzle::core
             return Key2ScanCode(key);
         }
 
+        void PlatformShowCriticalMessage(const SwChar* text)
+        {
+            MessageBoxA(NULL, text, "Error", MB_ICONERROR | MB_OK);
+            terminate();
+        }
+
+        void PlatformShowCriticalMessageW(const SwWChar* text)
+        {
+            MessageBoxW(NULL, text, L"Error", MB_ICONERROR | MB_OK);
+            terminate();
+        }
+
     } // namespace platform
 
 } // namespace swizzle

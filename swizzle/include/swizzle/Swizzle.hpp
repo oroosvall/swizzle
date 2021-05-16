@@ -44,7 +44,7 @@ namespace swizzle
         {
             SwInitialize(appName);
 
-            mWindow = core::CreateWindow(1920, 1080, "Template");
+            mWindow = core::CreateSwWindow(1920, 1080, "Template");
             mWindow->show();
 
             input::SetInputSource(mWindow);

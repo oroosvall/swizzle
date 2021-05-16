@@ -49,7 +49,7 @@ namespace swizzle::core
         return platform::getPlatformCurrentThreadId();
     }
 
-    Resource<Window> CreateWindow(const U32 width, const U32 height, const SwChar* title)
+    Resource<Window> CreateSwWindow(const U32 width, const U32 height, const SwChar* title)
     {
         return platform::createPlatformWindow(width, height, title);
     }
@@ -72,6 +72,16 @@ namespace swizzle::core
     const S32 KeyToScanCode(input::Keys key)
     {
         return platform::PlatformKeyToScanCode(key);
+    }
+
+    void ShowCriticalMessage(const SwChar* text)
+    {
+        platform::PlatformShowCriticalMessage(text);
+    }
+
+    void ShowCriticalMessageW(const SwWChar* text)
+    {
+        platform::PlatformShowCriticalMessageW(text);
     }
 
 

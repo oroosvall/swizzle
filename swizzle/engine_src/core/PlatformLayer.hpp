@@ -33,6 +33,9 @@ namespace swizzle::core
 
         const S32 PlatformKeyToScanCode(input::Keys key);
 
+        void PlatformShowCriticalMessage(const SwChar* text);
+        void PlatformShowCriticalMessageW(const SwWChar* text);
+
     }
 
 } // namespace swizzle
