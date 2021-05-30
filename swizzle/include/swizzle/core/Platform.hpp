@@ -2,8 +2,7 @@
 #define PLATFORM_HPP
 
 #include <swizzle/Api.hpp>
-#include <common/Types.hpp>
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 #include <swizzle/core/Input.hpp>
 
 #include "Window.hpp"
@@ -26,13 +25,13 @@ namespace swizzle::core
     U64 SWIZZLE_API GetCurrentTimeUs();
     U32 SWIZZLE_API GetCurrentThreadId();
 
-    Resource<Window> SWIZZLE_API CreateSwWindow(const U32 width, const U32 height, const SwChar* title);
-    Resource<Thread> SWIZZLE_API CreateThread();
+    common::Resource<SwWindow> SWIZZLE_API CreateSwWindow(const U32 width, const U32 height, const SwChar* title);
+    common::Resource<Thread> SWIZZLE_API CreateThread();
 
-    const SwCharPtr SWIZZLE_API GetKeyText(S32 key);
-    const SwCharPtr SWIZZLE_API GetKeyTextW(S32 key);
+    const SwChar SWIZZLE_API * GetKeyText(S32 key);
+    const SwWChar SWIZZLE_API * GetKeyTextW(S32 key);
 
-    const S32 SWIZZLE_API KeyToScanCode(input::Keys);
+    S32 SWIZZLE_API KeyToScanCode(input::Keys);
 
     void SWIZZLE_API ShowCriticalMessage(const SwChar* text);
     void SWIZZLE_API ShowCriticalMessageW(const SwWChar* text);

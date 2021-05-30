@@ -1,5 +1,6 @@
 #include <utils/ShelfPack.hpp>
 
+
 ShelfPack::ShelfPack(int32_t x, int32_t y) {
 	width = x;
 	height = y;
@@ -99,18 +100,24 @@ bool ShelfPack::Node::insert(Node * n, int32_t maxX, int32_t maxY) {
 	}
 	// could not place node next to us so we try below
 	if (!inserted)
-		if (below) {
+	{
+		if (below)
+		{
 			// the node below us start at the same width that I had, but the height it can place on is what I know is left
 			inserted = below->insert(n, maxX, hLeft);
-		} else {
+		}
+		else
+		{
 			// make sure the height is enough
-			if ((n->width <= wLeft) && (n->height <= hLeft)) {
+			if ((n->width <= wLeft) && (n->height <= hLeft))
+			{
 				inserted = true;
 				below = n;
 				below->x = x;
 				below->y = y + height;
 			}
 		}
+	}
 
 	return inserted;
 }

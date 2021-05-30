@@ -6,6 +6,8 @@
 #include "VulkanCubeMap.hpp"
 #include "backend/VulkanMemory.hpp"
 
+#include <cstring>
+
 /* Defines */
 
 /* Typedefs */
@@ -63,7 +65,7 @@ namespace swizzle::gfx
     {
         mChannels = channels;
         // check to recreate the texture
-        if ((width != mWidth) || (height != mHeight) && ((width != 0U) && (height != 0U)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
+        if (((width != mWidth) || (height != mHeight)) && ((width != 0U) && (height != 0U)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
         {
             destroyResources();
             mWidth = width;

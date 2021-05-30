@@ -2,14 +2,15 @@
 #include "runtime/ProgramContext.hpp"
 
 #include <string>
+#include <cstring>
 
 ProgramContext::ProgramContext(uint32_t stackSize)
     : mStackSize(stackSize)
     , mStack(new uint8_t[stackSize])
     , mProgSize(0U)
     , mProg(nullptr)
-    , mProgramCounter(0U)
     , mRegs()
+    , mProgramCounter(0U)
     , mOverflowFlag(false)
     , mZeroFlag(false)
     , mCarryFlag(false)
@@ -71,12 +72,12 @@ bool ProgramContext::programRead(Reg& reg) const
 
 bool ProgramContext::pushStack(const Reg& r)
 {
-    r;
+    (void)r;
     return true;
 }
 
 bool ProgramContext::popStack(Reg& r)
 {
-    r;
+    (void)r;
     return true;
 }

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cstring>
 
 Mesh* loadObj(const std::string& file)
 {

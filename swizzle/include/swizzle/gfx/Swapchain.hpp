@@ -1,8 +1,7 @@
 #ifndef SWAPCHAIN_HPP
 #define SWAPCHAIN_HPP
 
-#include <common/Types.hpp>
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 
 #include <swizzle/gfx/FrameBuffer.hpp>
 #include <swizzle/gfx/Shader.hpp>
@@ -30,7 +29,7 @@ namespace swizzle::gfx
         virtual void clearFrameCounter() = 0;
         virtual U64 getFrameCounter() = 0;
 
-        virtual core::Resource<Shader> createShader(const ShaderAttributeList& attribs) = 0;
+        virtual common::Resource<Shader> createShader(const ShaderAttributeList& attribs) = 0;
 
         virtual void prepare() = 0;
         virtual void present() = 0;

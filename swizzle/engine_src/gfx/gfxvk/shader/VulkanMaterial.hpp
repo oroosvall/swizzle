@@ -29,8 +29,8 @@ namespace swizzle::gfx
         virtual U32 getNumDescriptors() const override;
         virtual MaterialDescriptorType getDescriptorType(U32 index) override;
 
-        virtual void setDescriptorBufferResource(U32 index, core::Resource<Buffer> buffer) override;
-        virtual void setDescriptorTextureResource(U32 index, core::Resource<Texture> texture) override;
+        virtual void setDescriptorBufferResource(U32 index, common::Resource<Buffer> buffer) override;
+        virtual void setDescriptorTextureResource(U32 index, common::Resource<Texture> texture) override;
 
         VkDescriptorSet getDescriptorSet();
 

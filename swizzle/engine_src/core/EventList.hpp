@@ -1,7 +1,7 @@
 #ifndef EVENT_LIST_HPP
 #define EVENT_LIST_HPP
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include <swizzle/core/Event.hpp>
 
 #include <list>

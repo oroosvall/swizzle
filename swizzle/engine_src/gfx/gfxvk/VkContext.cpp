@@ -29,7 +29,7 @@
 namespace swizzle::gfx
 {
 
-    VkGfxContext::VkGfxContext(core::Resource<VulkanInstance> vkInstance, U32 deviceIndex)
+    VkGfxContext::VkGfxContext(common::Resource<VulkanInstance> vkInstance, U32 deviceIndex)
         : mVkInstance(vkInstance)
         , mPhysicalDevice(VK_NULL_HANDLE)
         , mLogicalDevice(VK_NULL_HANDLE)
@@ -41,7 +41,7 @@ namespace swizzle::gfx
             deviceIndex = 0;
         }
 
-        mPhysicalDevice = core::CreateRef<PhysicalDevice>(devices[deviceIndex]);
+        mPhysicalDevice = common::CreateRef<PhysicalDevice>(devices[deviceIndex]);
 
         auto extensions = mPhysicalDevice->listAvailableExtensions(); // use this to check if an extension is supported
         for (auto& it : extensions)
@@ -97,30 +97,35 @@ namespace swizzle::gfx
         return stats;
     }
 
-    core::Resource<Buffer> VkGfxContext::createBuffer(BufferType type)
+    common::Resource<Buffer> VkGfxContext::createBuffer(BufferType type)
     {
-        return core::CreateRef<VulkanBuffer>(mVkContainer, type);
+        return common::CreateRef<VulkanBuffer>(mVkContainer, type);
     }
 
-    core::Resource<CommandBuffer> VkGfxContext::createCommandBuffer(U32 swapCount)
+    common::Resource<CommandBuffer> VkGfxContext::createCommandBuffer(U32 swapCount)
     {
-        return core::CreateRef<VulkanCommandBuffer>(mVkContainer, swapCount);
+        return common::CreateRef<VulkanCommandBuffer>(mVkContainer, swapCount);
     }
 
-    core::Resource<Swapchain> VkGfxContext::createSwapchain(core::Resource<core::Window> window, U32 swapCount)
+    common::Resource<Swapchain> VkGfxContext::createSwapchain(common::Resource<core::SwWindow> window, U32 swapCount)
     {
-        swapCount;
-        return core::CreateRef<VulkanSwapchain>(mVkContainer, window);
+        UNUSED_ARG(swapCount)
+        return common::CreateRef<VulkanSwapchain>(mVkContainer, window);
     }
 
-    core::Resource<Texture> VkGfxContext::createTexture(U32 width, U32 height, U32 channels, const U8* data)
+    common::Resource<Texture> VkGfxContext::createTexture(U32 width, U32 height, U32 channels, const U8* data)
     {
-        return core::CreateRef<VulkanTexture>(mVkContainer, width, height, channels, data);
+        return common::CreateRef<VulkanTexture>(mVkContainer, width, height, channels, data);
     }
 
-    core::Resource<Texture> VkGfxContext::createCubeMapTexture(U32 width, U32 height, U32 channels, const U8* data)
+    common::Resource<Texture> VkGfxContext::createCubeMapTexture(U32 width, U32 height, U32 channels, const U8* data)
     {
-        return core::CreateRef<VulkanCubeMap>(mVkContainer, width, height, channels, data);
+        return common::CreateRef<VulkanCubeMap>(mVkContainer, width, height, channels, data);
+    }
+
+    const SwChar* VkGfxContext::getDeviceName() const
+    {
+        return mLogicalDevice->getDeviceProperties().deviceName;
     }
 
     VkContainer VkGfxContext::getVkContainer() const

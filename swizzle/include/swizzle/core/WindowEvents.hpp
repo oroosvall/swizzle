@@ -1,7 +1,7 @@
 #ifndef WINDOW_EVENTS_HPP
 #define WINDOW_EVENTS_HPP
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include <swizzle/Api.hpp>
 
 namespace swizzle::core
@@ -26,13 +26,13 @@ namespace swizzle::core
     class WindowEvent
     {
     public:
-        virtual const WindowEventType getEventType() const = 0;
+        virtual WindowEventType getEventType() const = 0;
     };
 
     class WindowResizeEvent : public WindowEvent
     {
     public:
-        virtual const WindowEventType getEventType() const override
+        virtual WindowEventType getEventType() const override
         {
             return WindowEventType::ResizeEvent;
         }
@@ -43,7 +43,7 @@ namespace swizzle::core
     class WindowFocusEvent : public WindowEvent
     {
     public:
-        virtual const WindowEventType getEventType() const override
+        virtual WindowEventType getEventType() const override
         {
             return WindowEventType::FocusEvent;
         }
@@ -53,7 +53,7 @@ namespace swizzle::core
     class WindowCloseEvent : public WindowEvent
     {
     public:
-        virtual const WindowEventType getEventType() const override
+        virtual WindowEventType getEventType() const override
         {
             return WindowEventType::CloseEvent;
         }
@@ -62,7 +62,7 @@ namespace swizzle::core
     class InputEvent : public WindowEvent
     {
     public:
-        virtual const WindowEventType getEventType() const override
+        virtual WindowEventType getEventType() const override
         {
             return WindowEventType::KeyboardInputEvent;
         }
@@ -76,7 +76,7 @@ namespace swizzle::core
     class CharacterEvent : public WindowEvent
     {
     public:
-        virtual const WindowEventType getEventType() const override
+        virtual WindowEventType getEventType() const override
         {
             return WindowEventType::CharacterTypeEvent;
         }
@@ -86,7 +86,7 @@ namespace swizzle::core
     class MouseMoveEvent : public WindowEvent
     {
     public:
-        virtual const WindowEventType getEventType() const override
+        virtual WindowEventType getEventType() const override
         {
             return WindowEventType::MouseMoveEvent;
         }
@@ -98,7 +98,7 @@ namespace swizzle::core
     class MouseMoveDelta : public WindowEvent
     {
     public:
-        virtual const WindowEventType getEventType() const override
+        virtual WindowEventType getEventType() const override
         {
             return WindowEventType::MouseMoveDeltaEvent;
         }
@@ -110,7 +110,7 @@ namespace swizzle::core
     class MouseScrollEvent : public WindowEvent
     {
     public:
-        virtual const WindowEventType getEventType() const override
+        virtual WindowEventType getEventType() const override
         {
             return WindowEventType::MouseScrollEvent;
         }

@@ -1,8 +1,7 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
-#include <common/Types.hpp>
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 #include <swizzle/gfx/Material.hpp>
 
 #include <vector>
@@ -69,7 +68,7 @@ namespace swizzle::gfx
         virtual ~Shader() {}
 
         virtual SwBool load(const SwChar* file) = 0;
-        virtual core::Resource<Material> createMaterial() = 0;
+        virtual common::Resource<Material> createMaterial() = 0;
 
     };
 }

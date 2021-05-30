@@ -3,6 +3,8 @@
 #include <cstdarg>
 #include <string>
 #include <list>
+#include <stdio.h>
+#include <stdarg.h>
 
 namespace swizzle::core
 {
@@ -15,7 +17,7 @@ namespace swizzle::core
 
         SwChar buffer[1024];
 
-        vsnprintf_s(buffer, sizeof(buffer), message, vl);
+        vsnprintf(buffer, sizeof(buffer), message, vl);
 
         for (auto it : gLoggers)
         {

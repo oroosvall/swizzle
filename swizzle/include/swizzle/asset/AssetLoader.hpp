@@ -3,7 +3,7 @@
 
 /* Include files */
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include <swizzle/core/File.hpp>
 
 /* Defines */
@@ -20,7 +20,7 @@
 
 namespace swizzle::asset
 {
-    void AddResourcePath(const core::File& filePath);
+    void AddResourcePath(const common::File& filePath);
 }
 
 #endif

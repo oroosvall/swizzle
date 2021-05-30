@@ -42,20 +42,37 @@ filter "configurations:Release"
     flags { "FatalCompileWarnings" }
     
 filter "system:windows"
-        cppdialect "C++17"
-        staticruntime "On"
-        systemversion "latest"
-        
-        if (platform ~= "vs2019") then -- If on windows and not visual studio manually add some core defines and libs that are used
-            defines
-            {
-                "_WIN32_WINNT=0x0A00", -- Windows 10
-                "UNICODE"
-            }
-            links
-            {
-                "gdi32",
-                "uuid",
-                "ole32"
-            }
-        end
+    cppdialect "C++17"
+    staticruntime "On"
+    systemversion "latest"
+    
+    if (platform ~= "vs2019") then -- If on windows and not visual studio manually add some core defines and libs that are used
+        defines
+        {
+            "_WIN32_WINNT=0x0A00", -- Windows 10
+            "UNICODE"
+        }
+        links
+        {
+            "gdi32",
+            "uuid",
+            "ole32"
+        }
+    elseif (platform == "vs2019") then
+        buildoptions { "/Ob2" }
+    end
+
+filter "system:linux"
+    cppdialect "C++17"
+    staticruntime "On"
+    systemversion "latest"
+
+    links
+    {
+        "pthread",
+        "X11"
+    }
+    defines
+    {
+        "SW_LINUX"
+    }

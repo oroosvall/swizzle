@@ -32,16 +32,16 @@ private:
 
     void updateMainWindow();
 
-    sw::core::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
+    common::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
 
-    sw::core::Resource<sw::gfx::Shader> mShader;
-    sw::core::Resource<sw::gfx::Material> mMaterial;
+    common::Resource<sw::gfx::Shader> mShader;
+    common::Resource<sw::gfx::Material> mMaterial;
 
-    sw::core::Resource<sw::gfx::Texture> mTexture;
+    common::Resource<sw::gfx::Texture> mTexture;
 
-    sw::core::Resource<sw::gfx::FrameBuffer> mFrameBuffer;
+    common::Resource<sw::gfx::FrameBuffer> mFrameBuffer;
 
-    sw::core::Resource<sw::gfx::Buffer> mUniformBuffer;
+    common::Resource<sw::gfx::Buffer> mUniformBuffer;
 
     sw::gfx::RGBA rgba = { 0.4F, 0.17F, 0.05F, 1.0F };
     sw::gfx::RGBA lampColor = { 0.8F, 0.2F, 0.2F, 1.0F };
@@ -51,10 +51,10 @@ private:
     sw::Mesh mMesh;
     sw::Mesh mSkysphere;
 
-    sw::core::Resource<sw::gfx::Shader> mSkyShader;
+    common::Resource<sw::gfx::Shader> mSkyShader;
 
-    sw::core::Resource<sw::gfx::Texture> mSkyTexture;
-    sw::core::Resource<sw::gfx::Material> mSkyMaterial;
+    common::Resource<sw::gfx::Texture> mSkyTexture;
+    common::Resource<sw::gfx::Material> mSkyMaterial;
 
     U8 singlePixel[16] = { 0U, 0U, 0U, 255U, 128, 0, 0, 255, 0, 128, 0, 255, 0, 0, 128, 255 };
 
@@ -63,8 +63,8 @@ private:
 
     // Temp
     sw::gui::GuiLabel* guiLabel;
-    sw::core::Resource<sw::gfx::Shader> mTextShader;
-    sw::core::Resource<sw::gfx::Material> mTextMaterial;
+    common::Resource<sw::gfx::Shader> mTextShader;
+    common::Resource<sw::gfx::Material> mTextMaterial;
 
     int extraText = 0;
 

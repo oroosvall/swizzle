@@ -3,12 +3,11 @@
 
 /* Include files */
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 
 #include <swizzle/Api.hpp>
 #include <swizzle/gfx/Buffer.hpp>
 #include <swizzle/gfx/Context.hpp>
-#include <common/Resource.hpp>
 
 /* Defines */
 
@@ -22,8 +21,8 @@ namespace swizzle
 {
 	struct Mesh
 	{
-		swizzle::core::Resource<swizzle::gfx::Buffer> mVertexBuffer;
-		swizzle::core::Resource<swizzle::gfx::Buffer> mIndexBuffer;
+		common::Resource<swizzle::gfx::Buffer> mVertexBuffer;
+		common::Resource<swizzle::gfx::Buffer> mIndexBuffer;
 	};
 }
 
@@ -34,7 +33,7 @@ namespace swizzle
 namespace swizzle::asset
 {
 
-	swizzle::Mesh SWIZZLE_API LoadMesh(core::Resource<gfx::GfxContext> ctx, const SwCharPtr fileName, SwBool createIndexBuffer);
+	swizzle::Mesh SWIZZLE_API LoadMesh(common::Resource<gfx::GfxContext> ctx, const SwChar* fileName, SwBool createIndexBuffer);
 
 }
 

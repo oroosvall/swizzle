@@ -1,8 +1,7 @@
 #ifndef FRAME_BUFFER_HPP
 #define FRAME_BUFFER_HPP
 
-#include <common/Types.hpp>
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 
 #include <swizzle/gfx/Shader.hpp>
 
@@ -31,7 +30,7 @@ namespace swizzle::gfx
 
         virtual void resize(U32 width, U32 height) = 0;
 
-        virtual core::Resource<Shader> createShader(const ShaderAttributeList& attributeList) = 0;
+        virtual common::Resource<Shader> createShader(const ShaderAttributeList& attributeList) = 0;
 
     };
 }

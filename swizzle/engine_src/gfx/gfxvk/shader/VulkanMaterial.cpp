@@ -75,7 +75,7 @@ namespace swizzle::gfx
         return MaterialDescriptorType::Invalid;
     }
 
-    void VulkanMaterial::setDescriptorBufferResource(U32 index, core::Resource<Buffer> buffer)
+    void VulkanMaterial::setDescriptorBufferResource(U32 index, common::Resource<Buffer> buffer)
     {
         VulkanBuffer* bfr = (VulkanBuffer*)buffer.get();
 
@@ -100,7 +100,7 @@ namespace swizzle::gfx
         vkUpdateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), 1U, &writeDesc, 0U, VK_NULL_HANDLE);
     }
 
-    void VulkanMaterial::setDescriptorTextureResource(U32 index, core::Resource<Texture> texture)
+    void VulkanMaterial::setDescriptorTextureResource(U32 index, common::Resource<Texture> texture)
     {
         VulkanTexture* tex = (VulkanTexture*)(texture.get());
 

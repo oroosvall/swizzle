@@ -9,7 +9,7 @@
 
 #include <swizzle/gfx/FrameBuffer.hpp>
 
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 
 #include <vector>
 
@@ -41,7 +41,7 @@ namespace swizzle::gfx
 
         virtual void resize(U32 width, U32 height) override;
 
-        virtual core::Resource<Shader> createShader(const ShaderAttributeList& attributeList) override;
+        virtual common::Resource<Shader> createShader(const ShaderAttributeList& attributeList) override;
 
         VkRenderPass getRenderPass() const;
         VkSampleCountFlagBits getMultisampleCount() const;

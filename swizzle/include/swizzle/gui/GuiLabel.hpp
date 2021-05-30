@@ -3,8 +3,7 @@
 
 /* Include files */
 
-#include <common/Types.hpp>
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 #include <swizzle/Api.hpp>
 
 #include <swizzle/gfx/Context.hpp>
@@ -30,9 +29,9 @@ namespace swizzle::gui
         // @TODO: Change to core::String once that is added
         virtual void setText(const SwChar* text) = 0;
 
-        virtual core::Resource<gfx::Buffer> getBuffer() const = 0;
+        virtual common::Resource<gfx::Buffer> getBuffer() const = 0;
 
-        virtual core::Resource<gfx::Texture> getTexture() const = 0;
+        virtual common::Resource<gfx::Texture> getTexture() const = 0;
 
     };
 
@@ -44,7 +43,7 @@ namespace swizzle::gui
 namespace swizzle::gui
 {
     typedef GuiLabel* GuiLabelPtr;
-    GuiLabelPtr SWIZZLE_API CreateLabel(core::Resource<gfx::GfxContext> context);
+    GuiLabelPtr SWIZZLE_API CreateLabel(common::Resource<gfx::GfxContext> context);
 }
 
 #endif

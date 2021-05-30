@@ -2,6 +2,7 @@
 
 #include "VulkanTexture.hpp"
 #include "backend/VulkanMemory.hpp"
+#include <cstring>
 
 namespace swizzle::gfx
 {
@@ -40,10 +41,9 @@ namespace swizzle::gfx
 
     void VulkanTexture::setData(U32 width, U32 height, U32 channels, const U8* pixelData)
     {
-        pixelData;
         mChannels = channels;
         // check to recreate the texture
-        if ((width != mWidth) || (height != mHeight) && ((width != 0U) && (height != 0U)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
+        if (((width != mWidth) || (height != mHeight)) && ((width != 0U) && (height != 0U)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
         {
             destroyResources();
             mWidth = width;

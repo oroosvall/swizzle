@@ -2,7 +2,7 @@
 
 #ifdef SW_WINDOWS
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include <swizzle/core/Input.hpp>
 
 namespace swizzle::core

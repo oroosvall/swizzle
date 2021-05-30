@@ -49,27 +49,27 @@ namespace swizzle::core
         return platform::getPlatformCurrentThreadId();
     }
 
-    Resource<Window> CreateSwWindow(const U32 width, const U32 height, const SwChar* title)
+    common::Resource<SwWindow> CreateSwWindow(const U32 width, const U32 height, const SwChar* title)
     {
         return platform::createPlatformWindow(width, height, title);
     }
 
-    Resource<Thread> CreateThread()
+    common::Resource<Thread> CreateThread()
     {
         return nullptr;
     }
 
-    const SwCharPtr GetKeyText(S32 scanCode)
+    const SwChar* GetKeyText(S32 scanCode)
     {
         return platform::GetPlatformKeyText(scanCode);
     }
 
-    const SwCharPtr GetKeyTextW(S32 scanCode)
+    const SwWChar* GetKeyTextW(S32 scanCode)
     {
         return platform::GetPlatformKeyTextW(scanCode);
     }
 
-    const S32 KeyToScanCode(input::Keys key)
+    S32 KeyToScanCode(input::Keys key)
     {
         return platform::PlatformKeyToScanCode(key);
     }

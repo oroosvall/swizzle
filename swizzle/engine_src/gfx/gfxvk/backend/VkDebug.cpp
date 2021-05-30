@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cstring>
 
 #include <memory>
 
@@ -25,11 +26,11 @@ namespace vk
         const char* layerPrefix, const char* msg, void* userData)
     {
 
-        userData;
-        msgCode;
-        location;
-        sourceObj;
-        objType;
+        UNUSED_ARG(userData);
+        UNUSED_ARG(msgCode);
+        UNUSED_ARG(location);
+        UNUSED_ARG(sourceObj);
+        UNUSED_ARG(objType);
 
         std::ostringstream stream;
 
@@ -73,8 +74,7 @@ namespace vk
 
         if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT)
         {
-            int err = 0;
-            err;
+            std::cout << "ERR" << std::endl;
         }
 
         return VK_FALSE;

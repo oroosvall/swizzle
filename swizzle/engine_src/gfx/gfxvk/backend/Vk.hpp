@@ -1,17 +1,23 @@
 #ifndef VK_HPP
 #define VK_HPP
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 
 #if defined(SW_WINDOWS)
 #define VK_USE_PLATFORM_WIN32_KHR
+#elif defined (SW_LINUX_XLIB)
+#define VK_USE_PLATFORM_XLIB_KHR
 #endif
 
+#if defined(SW_WINDOWS)
 #pragma warning(push)
 #pragma warning(disable : 26495)
 #pragma warning(disable : 26812)
+#endif
 #include <vulkan/vulkan.h>
+#if defined(SW_WINDOWS)
 #pragma warning(pop)
+#endif
 
 #include <swizzle/core/Logging.hpp>
 

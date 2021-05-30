@@ -34,7 +34,7 @@ extIncDirs['common'] = "libs/common/include"
 extIncDirs['physics'] = "libs/physics/include"
 extIncDirs['script'] = "libs/script/include"
 extIncDirs['utils'] = "libs/utils/include"
-extIncDirs['vk_sdk'] = os.getenv("VULKAN_SDK") .. "/Include"
+extIncDirs['vk_sdk'] = {os.getenv("VULKAN_SDK") .. "/Include", os.getenv("VULKAN_SDK") .. "/include"}
 
 group("vendor")
     project("google-test")
@@ -61,23 +61,23 @@ group("vendor")
             "vendor/google-test/googletest-master/googlemock/"
         }
         
-    project("glad")
-        location("build/" .. platform .. "/%{prj.name}")
-        kind "staticLib"
-        language "c"
+    -- project("glad")
+    --     location("build/" .. platform .. "/%{prj.name}")
+    --     kind "staticLib"
+    --     language "c"
         
-        files {
-            "vendor/glad/include/glad/glad.h",
-            "vendor/glad/include/glad/glad_wgl.h",
-            "vendor/glad/include/KHR/khrplatform.h",
-            "vendor/glad/src/glad.c",
-            "vendor/glad/src/glad_wgl.c"
-        }
+    --     files {
+    --         "vendor/glad/include/glad/glad.h",
+    --         "vendor/glad/include/glad/glad_wgl.h",
+    --         "vendor/glad/include/KHR/khrplatform.h",
+    --         "vendor/glad/src/glad.c",
+    --         "vendor/glad/src/glad_wgl.c"
+    --     }
         
-        includedirs {
-            "vendor/glad/include/",
-            "vendor/glad/include/glad"
-        }
+    --     includedirs {
+    --         "vendor/glad/include/",
+    --         "vendor/glad/include/glad"
+    --     }
         
     project("stb")
         location("build/" .. platform .. "/%{prj.name}")
@@ -91,7 +91,10 @@ group("vendor")
         
         includedirs {
             "vendor/stb/include/",
-        } 
+        }
+        filter "system:linux"
+            disablewarnings { "sign-compare", "unused-but-set-variable" }
+        pic "On"
 
 group("libs")
     setupPrj("utils", "staticLib",
@@ -143,7 +146,7 @@ group("Engine")
         {"swizzle/include/**.hpp", "swizzle/engine_src/**.hpp", "swizzle/engine_src/**.cpp", extIncDirs['common'].."/**.hpp"}, -- files/filePath
         {"swizzle/include/", "swizzle/engine_src/", extIncDirs['vk_sdk'], "vendor/glm/include", "vendor/stb/include", "swizzle", extIncDirs['utils'], extIncDirs['common']}, -- includePaths
         {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"}, -- defines
-        { "utils", "script", "physics", "vulkan-1", "shaderc_combined", "Xinput", "stb" }, -- links
+        { "utils", "script", "physics", "shaderc_combined", "stb" }, -- links
         function() 
             vpaths { ["engine_src/*"] = "swizzle/engine_src/**.hpp" }
             vpaths { ["engine_src/*"] = "swizzle/engine_src/**.cpp" }
@@ -151,21 +154,35 @@ group("Engine")
             vpaths { ["include/*"] = "swizzle/include/**.hpp" }
             vpaths { ["include/*"] = extIncDirs['common'].."/**.hpp" }
 
-            libdirs { os.getenv("VULKAN_SDK") .. "/Lib" }
+            libdirs { os.getenv("VULKAN_SDK") .. "/Lib", os.getenv("VULKAN_SDK") .. "/lib" }
 
             filter "system:windows"
                 defines
                 {
                     "SW_WINDOWS",
                 }
+                links
+                {
+                    "vulkan-1",
+                    "Xinput"
+                }
+            filter "system:linux"
+                defines
+                {
+                    "SW_LINUX_XLIB",
+                }
+                links
+                {
+                    "vulkan"
+                }
         end
     )
 
 group("Tests")
     setupPrj("scriptTest", "consoleApp",
-        {"Vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/script/**.cpp"}, -- files/filePath
-        {"Vendor/google-test/googletest-master/googletest/include",
-         "Vendor/google-test/googletest-master/googlemock/include" , "libs/script/include", "libs/script/src"}, -- include paths
+        {"vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/script/**.cpp"}, -- files/filePath
+        {"vendor/google-test/googletest-master/googletest/include",
+         "vendor/google-test/googletest-master/googlemock/include" , "libs/script/include", "libs/script/src"}, -- include paths
         "", -- defines
         {"script", "google-test"}, -- links
         function() -- userFunc
@@ -175,8 +192,8 @@ group("Tests")
     )
 
     setupPrj("physicsTest", "consoleApp",
-        {"Vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/physics/**.cpp"}, -- files/filePath
-        {"Vendor/google-test/googletest-master/googletest/include" , "swizzle"}, -- include paths
+        {"vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/physics/**.cpp"}, -- files/filePath
+        {"vendor/google-test/googletest-master/googletest/include" , "swizzle"}, -- include paths
         "", -- defines
         {"physics", "google-test"}, -- links
         function() -- userFunc
@@ -186,8 +203,8 @@ group("Tests")
     )
 
     setupPrj("utilsTest", "consoleApp",
-        {"Vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/utils/**.cpp"}, -- files/filePath
-        {"Vendor/google-test/googletest-master/googletest/include" , "libs/utils/include"}, -- include paths
+        {"vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/utils/**.cpp"}, -- files/filePath
+        {"vendor/google-test/googletest-master/googletest/include" , "libs/utils/include"}, -- include paths
         "", -- defines
         {"utils", "google-test"}, -- links
         function() -- userFunc
@@ -233,5 +250,18 @@ group("Apps")
             vpaths { ["scriptSandbox/*"] = "apps/scriptSandbox/**.cpp" }
 
             -- vpaths { ["include/*"] = "swizzle/include/**.hpp" }
+        end -- userFunc
+    )
+
+    setupPrj("game", "consoleApp",
+        {"swizzle/include/**.hpp", "apps/game/**.hpp", "apps/game/**.cpp"}, -- files/filePath
+        {"apps/game/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common']}, -- include paths
+        {"SWIZZLE_DLL"}, -- defines
+        {"swizzle", "utils"}, -- links
+        function() -- userFunc
+            vpaths { ["game/*"] = "apps/game/**.hpp" }
+            vpaths { ["game/*"] = "apps/game/**.cpp" }
+
+            vpaths { ["include/*"] = "swizzle/include/**.hpp" }
         end -- userFunc
     )

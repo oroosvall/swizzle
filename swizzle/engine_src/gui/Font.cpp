@@ -10,6 +10,9 @@
 #include <utils/ShelfPack.hpp>
 #include <algorithm>
 #include <vector>
+#include <cstring>
+
+#include <stb/stb_image_write.h>
 
 /* Defines */
 
@@ -32,6 +35,7 @@ namespace swizzle::gui
     Font::Font(const SwChar* fontPath, gfx::VkGfxContext* ctx)
         : mFileBuffer(nullptr)
         , mFontInfo()
+        , mCodePointCacheCommon()
         , mCodePointCache()
         , mGlyphCache()
         , mKerningCache()
@@ -41,35 +45,41 @@ namespace swizzle::gui
         , mAscent(1)
         , mBaseline(1)
         , mGlyphPoolMemory(1024 * 1024)
-        , mFontTexture(core::CreateRef<gfx::VulkanTexture>(ctx->getVkContainer(), 100, 100, 1, nullptr))
+        , mFontTexture(common::CreateRef<gfx::VulkanTexture>(ctx->getVkContainer(), 100, 100, 1, nullptr))
     {
+        LOG_INFO("Font %s", fontPath);
+        memset(mCodePointCacheCommon, -1, sizeof(mCodePointCacheCommon));
         // @TODO: replace with input parameter
         std::ifstream inputFile(fontPath, std::ios::binary | std::ios::ate);
-        U64 size = inputFile.tellg();
-        inputFile.clear();
-        inputFile.seekg(0, std::ios::beg);
-
-        mFileBuffer = new U8[size];
-        inputFile.read((char*)mFileBuffer, size);
-
-        if (stbtt_InitFont(&mFontInfo, mFileBuffer, 0u) == 0)
+        if (inputFile.is_open())
         {
-            LOG_ERROR("Font failed to load");
+            U64 size = inputFile.tellg();
+            inputFile.clear();
+            inputFile.seekg(0, std::ios::beg);
+
+            mFileBuffer = new U8[size];
+            inputFile.read((char*)mFileBuffer, size);
+
+            if (stbtt_InitFont(&mFontInfo, mFileBuffer, 0u) == 0)
+            {
+                LOG_ERROR("Font failed to load");
+            }
+
+            mScale = stbtt_ScaleForPixelHeight(&mFontInfo, mFontSize);
+            stbtt_GetFontVMetrics(&mFontInfo, &mAscent, 0, 0);
+            mBaseline = (int)(mAscent * mScale);
         }
-
-        mScale = stbtt_ScaleForPixelHeight(&mFontInfo, mFontSize);
-        stbtt_GetFontVMetrics(&mFontInfo, &mAscent, 0, 0);
-        mBaseline = (int)(mAscent * mScale);
-
     }
 
-    const FontGlyph& Font::getGlyph(U32 codePoint) const
+    const FontGlyph& Font::getGlyph(S32 codePoint) const
     {
         if (mCodePointCache.find(codePoint) == mCodePointCache.end())
         {
-            mCodePointCache[codePoint] = stbtt_FindGlyphIndex(&mFontInfo, (S32)codePoint);
+            mCodePointCache[codePoint] = stbtt_FindGlyphIndex(&mFontInfo, codePoint);
         }
-        U32 glyphIndex = mCodePointCache[codePoint];
+        S32 glyphIndex = mCodePointCache[codePoint];
+
+        //S32 glyphIndex = getCachedCodePoint(codePoint);
 
 
         if (mGlyphCache.find(glyphIndex) == mGlyphCache.end())
@@ -170,11 +180,12 @@ namespace swizzle::gui
 
         S32 imgW = sp.getPackedWidth();
         S32 imgH = sp.getPackedHeight();
+        S32 imgCh = 4;
 
         size_t length = sp.length();
 
-        U8* image = new U8[imgW * imgH];
-        memset(image, 0, imgW * imgH);
+        U8* image = new U8[imgW * imgH * imgCh];
+        memset(image, 0, imgW * imgH * imgCh);
 
         F32 singleX = (1.0F / (F32)imgW);
         F32 singleY = (1.0F / (F32)imgH);
@@ -198,24 +209,31 @@ namespace swizzle::gui
 
             for (U32 j = 0; j < (U32)height; ++j)
             {
-                U8* dst = &image[ ((offsetY + j) * imgW) + offsetX];
+                U8* dst = &image[ ((offsetY + j) * imgW * imgCh) + (offsetX * imgCh)];
                 U8* src = &memBuf[j * width];
-                memcpy(dst, src, width);
+                U32 dstIdx = 0;
+                for (U32 k = 0; k < (U32)width; ++k)
+                {
+                    dst[dstIdx] = src[k];
+                    dstIdx += imgCh;
+                }
             }
         }
 
-        mFontTexture->setData(imgW, imgH, 1, image);
+        mFontTexture->setData(imgW, imgH, imgCh, image);
+
+        //stbi_write_png("test.png", imgW, imgH, imgCh, image, imgW);
 
         delete[] image;
 
         mTextureInvalidated = false;
     }
 
-    F32 Font::getKerning(U32 codePoint1, U32 codePoint2) const
+    F32 Font::getKerning(S32 codePoint1, S32 codePoint2) const
     {
         union
         {
-            U32 codePoint[2];
+            S32 codePoint[2];
             U64 combined;
         } kern = { 0u };
 
@@ -233,6 +251,28 @@ namespace swizzle::gui
         return mKerningCache[kern.combined];
     }
 
+    S32 Font::getCachedCodePoint(S32 codePoint) const
+    {
+        S32 val = 0;
+        if (codePoint >= 512)
+        {
+            if (mCodePointCache.find(codePoint) == mCodePointCache.end())
+            {
+                mCodePointCache[codePoint] = stbtt_FindGlyphIndex(&mFontInfo, codePoint);
+            }
+            mCodePointCache[codePoint];
+        }
+        else
+        {
+            if (mCodePointCacheCommon[codePoint] == -1)
+            {
+                mCodePointCacheCommon[codePoint] = stbtt_FindGlyphIndex(&mFontInfo, codePoint);
+            }
+            val = mCodePointCacheCommon[codePoint];
+        }
+        return val;
+    }
+
     Font::~Font()
     {
         mGlyphCache.clear();
@@ -241,7 +281,6 @@ namespace swizzle::gui
         mFileBuffer = nullptr;
 
         memset(&mFontInfo, 0u, sizeof(mFontInfo));
-
     }
 
 }

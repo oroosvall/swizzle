@@ -1,8 +1,7 @@
 #ifndef PLATFORM_LAYER_HPP
 #define PLATFORM_LAYER_HPP
 
-#include <common/Types.hpp>
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 
 #include <swizzle/core/Platform.hpp>
 
@@ -22,16 +21,16 @@ namespace swizzle::core
         void getPlatformDisplayResolutions(U32 displayIndex, Resolution* resolutions, U32 size);
 
 
-        const U64 getPlatformTimeStampMs();
-        const U64 getPlatformTimeStampUs();
-        const U32 getPlatformCurrentThreadId();
+        U64 getPlatformTimeStampMs();
+        U64 getPlatformTimeStampUs();
+        U32 getPlatformCurrentThreadId();
 
-        Resource<Window> createPlatformWindow(const U32 width, const U32  height, const SwChar* title);
+        common::Resource<SwWindow> createPlatformWindow(const U32 width, const U32  height, const SwChar* title);
 
-        const SwCharPtr GetPlatformKeyText(S32 key);
-        const SwCharPtr GetPlatformKeyTextW(S32 key);
+        const SwChar* GetPlatformKeyText(S32 key);
+        const SwWChar* GetPlatformKeyTextW(S32 key);
 
-        const S32 PlatformKeyToScanCode(input::Keys key);
+        S32 PlatformKeyToScanCode(input::Keys key);
 
         void PlatformShowCriticalMessage(const SwChar* text);
         void PlatformShowCriticalMessageW(const SwWChar* text);

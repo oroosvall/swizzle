@@ -1,7 +1,7 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 
 #include <swizzle/core/Event.hpp>
 #include <swizzle/core/WindowEvents.hpp>
@@ -16,10 +16,10 @@ namespace swizzle::core
         U32 mFrequency;
     };
 
-    class Window
+    class SwWindow
     {
     public:
-        virtual ~Window() {}
+        virtual ~SwWindow() {}
 
         virtual void show() = 0;
         virtual void hide() = 0;
@@ -38,7 +38,8 @@ namespace swizzle::core
 
         virtual void getCursorPos(U32& xPos, U32& yPos) const = 0;
         virtual void getSize(U32& width, U32& height) const = 0;
-        virtual void* getNativeHandle() const = 0;
+        virtual void* getNativeWindowHandle() const = 0;
+        virtual void* getNativeDisplayHandle() const = 0;
 
         virtual void setCursorVisible(SwBool visible) = 0;
         virtual bool isCursorVisible() const = 0;

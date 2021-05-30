@@ -9,6 +9,7 @@
 #include <string>
 
 #include <swizzle/core/Logging.hpp>
+#include <cstring>
 
 /* Defines */
 

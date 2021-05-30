@@ -1,16 +1,19 @@
 
+#if defined(_WIN32)
 #pragma warning(push)
 #pragma warning(disable : 4127)
 #pragma warning(disable : 4251)
 #pragma warning(disable : 4201)
+#endif
 #define GLM_FORCE_INLINE
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#if defined(_WIN32)
 #pragma warning(pop)
-
+#endif
 #include "Camera.hpp"
 
 PerspectiveCamera::PerspectiveCamera(float fov, float width, float heigth)

@@ -12,7 +12,7 @@ namespace swizzle::gfx
 {
 
 
-    VulkanSwapchain::VulkanSwapchain(const VkContainer vkObjects, core::Resource<core::Window> window)
+    VulkanSwapchain::VulkanSwapchain(const VkContainer vkObjects, common::Resource<core::SwWindow> window)
         : mWindow(window)
         , mVkObjects(vkObjects)
         , mSurface(VK_NULL_HANDLE)
@@ -109,7 +109,7 @@ namespace swizzle::gfx
         return mFrameCounter;
     }
 
-    core::Resource<Shader> VulkanSwapchain::createShader(const ShaderAttributeList& attribs)
+    common::Resource<Shader> VulkanSwapchain::createShader(const ShaderAttributeList& attribs)
     {
         return mFrameBuffers[0]->createShader(attribs);
     }
@@ -184,7 +184,7 @@ namespace swizzle::gfx
         mRecreateSwapchain = true;
     }
 
-    core::Resource<FrameBuffer> VulkanSwapchain::getFrameBuffer() const
+    common::Resource<FrameBuffer> VulkanSwapchain::getFrameBuffer() const
     {
         //vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
         return mFrameBuffers[mImageIndex];
@@ -306,11 +306,11 @@ namespace swizzle::gfx
                 break;
             }
         }
-        VkBool32 supported = FALSE;
+        VkBool32 supported = VK_FALSE;
         U32 queueIndex = 0u; // TODO: Fix me
         vkGetPhysicalDeviceSurfaceSupportKHR(mVkObjects.mLogicalDevice->getPhysical(), queueIndex, mSurface, &supported);
 
-        if (!supported)
+        if (!supported && !found)
         {
             throw;
         }
@@ -319,10 +319,10 @@ namespace swizzle::gfx
         VkColorSpaceKHR colorSpace = surfaceFormats[idx].colorSpace;
         mFormat = surfaceFormats[idx].format;
 
-        VkSurfaceFullScreenExclusiveInfoEXT fullscreenExclusice = {};
+        /*VkSurfaceFullScreenExclusiveInfoEXT fullscreenExclusice = {};
         fullscreenExclusice.sType = VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT;
         fullscreenExclusice.pNext = VK_NULL_HANDLE;
-        fullscreenExclusice.fullScreenExclusive = VkFullScreenExclusiveEXT::VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT;
+        fullscreenExclusice.fullScreenExclusive = VkFullScreenExclusiveEXT::VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT;*/
 
         VkSwapchainCreateInfoKHR createInfo = {};
 
@@ -336,7 +336,7 @@ namespace swizzle::gfx
         }
 
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.pNext = &fullscreenExclusice;
+        createInfo.pNext = VK_NULL_HANDLE; // &fullscreenExclusice;
         createInfo.flags = 0;
         createInfo.surface = mSurface;
         createInfo.minImageCount = 3u;
@@ -429,13 +429,13 @@ namespace swizzle::gfx
 
     void VulkanSwapchain::createSwapchainImages()
     {
-        VkResult r = vkGetSwapchainImagesKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, &mSwapchainImageCount, nullptr);
+        vkGetSwapchainImagesKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, &mSwapchainImageCount, nullptr);
 
         mSwapchainImages.resize(mSwapchainImageCount);
 
         std::vector<VkImage> img(mSwapchainImageCount);
 
-        r = vkGetSwapchainImagesKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, &mSwapchainImageCount, img.data());
+        vkGetSwapchainImagesKHR(mVkObjects.mLogicalDevice->getLogical(), mSwapchain, &mSwapchainImageCount, img.data());
 
         for (U32 i = 0u; i < mSwapchainImageCount; ++i)
         {

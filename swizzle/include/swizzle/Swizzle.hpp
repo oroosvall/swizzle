@@ -3,7 +3,7 @@
 
 /* Includes */
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include "swizzle/Api.hpp"
 
 #include "swizzle/core/Logging.hpp"
@@ -100,9 +100,9 @@ namespace swizzle
 
     protected:
 
-        core::Resource<gfx::GfxContext> mGfxContext;
-        core::Resource<core::Window> mWindow;
-        core::Resource<gfx::Swapchain> mSwapchain;
+        common::Resource<gfx::GfxContext> mGfxContext;
+        common::Resource<core::SwWindow> mWindow;
+        common::Resource<gfx::Swapchain> mSwapchain;
 
     };
 

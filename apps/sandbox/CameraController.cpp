@@ -8,8 +8,8 @@ CameraController::CameraController(PerspectiveCamera& cam)
     , mPosition(0.0F)
     , mDirection(0.0F)
     , mStartDir(-1.0F, 0.0F, 0.0F)
-    , mAngleV(0.0F)
     , mAngleH(0.0F)
+    , mAngleV(0.0F)
     , mOldX(0.0F)
     , mOldY(0.0F)
 {
@@ -43,8 +43,6 @@ void CameraController::update(float dt)
 void CameraController::keyPan(float dt)
 {
     const float_t speed = 5.0F * dt;
-
-    glm::vec3 pos = mCamera.getPosition();
 
     if (swizzle::input::IsKeyPressed(swizzle::input::Keys::KeyW))
     {

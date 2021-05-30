@@ -15,7 +15,7 @@ namespace swizzle::gfx
         VulkanInstance();
         ~VulkanInstance();
 
-        const VkInstance getInstance() const;
+        VkInstance getInstance() const;
 
         std::vector<PhysicalDevice> listDevices();
 

@@ -4,7 +4,7 @@
 
 /* Include files */
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include <glm/glm.hpp>
 #include <vector>
 

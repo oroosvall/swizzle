@@ -3,8 +3,7 @@
 
 /* Include files */
 
-#include <common/Resource.hpp>
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 
 #include "backend/Vk.hpp"
 
@@ -63,7 +62,7 @@ namespace swizzle
         @param queuePrios - contains a list of values between 0.0F - 1.0F
         values will be normalized before setting up the device;
         */
-        core::Resource<LogicalDevice> createLogicalDevice(std::vector<F32>& queuePrios);
+        common::Resource<LogicalDevice> createLogicalDevice(std::vector<F32>& queuePrios);
 
         VkPhysicalDeviceMemoryProperties getMemoryProperties() const;
 
@@ -102,6 +101,8 @@ namespace swizzle
         U32 getNumBuffers() { return mNumBuffers; }
         U32 getNumTextures() { return mNumTextures; }
 
+        const VkPhysicalDeviceProperties& getDeviceProperties() const { return mDeviceProperties; };
+
     private:
         VkPhysicalDevice mPhysicalDevice;
         VkDevice mLogicalDevice;
@@ -111,6 +112,9 @@ namespace swizzle
 
         U32 mNumBuffers = 0u;
         U32 mNumTextures = 0u;
+
+        VkPhysicalDeviceProperties mDeviceProperties;
+
     };
 
 } // namespace swizzle

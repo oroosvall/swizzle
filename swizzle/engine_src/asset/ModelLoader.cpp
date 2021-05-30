@@ -1,6 +1,7 @@
 
 /* Include files */
 
+#include <common/Common.hpp>
 #include <swizzle/asset/MeshLoader.hpp>
 
 #include "loaders/ObjLoader.hpp"
@@ -21,9 +22,9 @@
 
 namespace swizzle::asset
 {
-    Mesh LoadMesh(core::Resource<gfx::GfxContext> ctx, const SwCharPtr fileName, SwBool createIndexBuffer)
+    Mesh LoadMesh(common::Resource<gfx::GfxContext> ctx, const SwChar* fileName, SwBool createIndexBuffer)
     {
-        createIndexBuffer;
+        UNUSED_ARG(createIndexBuffer);
         Mesh m = {};
 
         m.mVertexBuffer = ctx->createBuffer(gfx::BufferType::Vertex);

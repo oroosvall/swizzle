@@ -3,7 +3,7 @@
 
 /* Include files */
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 
 /* Defines */
 
@@ -13,9 +13,9 @@ namespace swizzle::core
 {
     enum class FileType
     {
-        None,
-        File,
-        Directory,
+        FtNone,
+        FtFile,
+        FtDirectory,
     };
 }
 

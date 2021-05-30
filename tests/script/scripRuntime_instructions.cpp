@@ -4,8 +4,8 @@
 #include "runtime/Instructions.hpp"
 #include "runtime/ProgramContext.hpp"
 
-MATCHER_P(RegIntMatcher, v, "") { result_listener; return arg.uVal == v.uVal; }
-MATCHER_P(RegFloatMatcher, v, "") { result_listener; return arg.fVal == v.fVal; }
+MATCHER_P(RegIntMatcher, v, "") { (void)result_listener; return arg.uVal == v.uVal; }
+MATCHER_P(RegFloatMatcher, v, "") { (void)result_listener; return arg.fVal == v.fVal; }
 
 class ProgramContextMock : public ProgramContext
 {

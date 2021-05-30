@@ -4,7 +4,7 @@
 /* Include files */
 
 #include <swizzle/Api.hpp>
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include <swizzle/gfx/Context.hpp>
 
 /* Defines */
@@ -21,9 +21,9 @@
 
 namespace swizzle::asset
 {
-    core::Resource<gfx::Texture> SWIZZLE_API LoadTexture2D(core::Resource<gfx::GfxContext> ctx, const SwChar* file);
+    common::Resource<gfx::Texture> SWIZZLE_API LoadTexture2D(common::Resource<gfx::GfxContext> ctx, const SwChar* file);
 
-    core::Resource<gfx::Texture> SWIZZLE_API LoadTextureCubeMap(core::Resource<gfx::GfxContext> ctx,
+    common::Resource<gfx::Texture> SWIZZLE_API LoadTextureCubeMap(common::Resource<gfx::GfxContext> ctx,
         const SwChar* rightFile, const SwChar* leftFile,const SwChar* topFile, const SwChar* bottomFile, const SwChar* frontFile, const SwChar* backFile);
 
 }

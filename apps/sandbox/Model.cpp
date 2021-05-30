@@ -6,6 +6,7 @@
 
 #include <map>
 #include <vector>
+#include <cstring>
 
 #include <swizzle/core/Logging.hpp>
 
@@ -229,9 +230,9 @@ void Model::loadSwm(const std::string& file)
 
 void Model::loadSwm1v0(std::ifstream& file, uint8_t variant)
 {
-    CompressionFlags compressFlags = {0};
+    CompressionFlags compressFlags = {};
 
-    MeshDescr_v1_0_variant_1 descr;
+    MeshDescr_v1_0_variant_1 descr = {};
     file.read((char*)&descr.mNumMeshes, sizeof(descr.mNumMeshes));
 
     LOG_INFO("Loading %d number of meshes\n", descr.mNumMeshes);
@@ -241,7 +242,7 @@ void Model::loadSwm1v0(std::ifstream& file, uint8_t variant)
         mMeshes.emplace_back(Model::Mesh());
 
         Model::Mesh& m = mMeshes.back();
-        MeshFlags meshFlags;
+        MeshFlags meshFlags = {};
 
         uint32_t nameLen = 0;
         file.read((char*)&nameLen, sizeof(nameLen));
@@ -568,7 +569,7 @@ void Model::saveSwm(const std::string& file, bool attemptCompression)
     std::ofstream outFile(file, std::ios::binary);
     if (outFile.is_open())
     {
-        MeshHeader hdr;
+        MeshHeader hdr = {};
         memcpy(hdr.mMagic, MESH_MAGIC, sizeof(MESH_MAGIC));
         hdr.mMajor = 1;
         hdr.mMinor = 0;
@@ -576,7 +577,7 @@ void Model::saveSwm(const std::string& file, bool attemptCompression)
         hdr.mPatch = 0;
         outFile.write((char*)&hdr, sizeof(MeshHeader));
 
-        MeshDescr_v1_0_variant_0 descr;
+        MeshDescr_v1_0_variant_0 descr = {};
         descr.mNumMeshes = static_cast<uint8_t>(mMeshes.size());
         outFile.write((char*)&descr.mNumMeshes, sizeof(descr.mNumMeshes));
 
@@ -589,13 +590,13 @@ void Model::saveSwm(const std::string& file, bool attemptCompression)
             outFile.write((char*)&nameLength, sizeof(nameLength));
             outFile.write((char*)m.mName.c_str(), nameLength);
 
-            CompressionFlags cf{ 0 };
+            CompressionFlags cf = {};
             if (attemptCompression)
             {
                 cf.mVertexIndex = 1;
                 cf.mTriangleIndex = 1;
             }
-            MeshFlags mf{0};
+            MeshFlags mf = {};
 
             size_t vertexSize = 0U;
             size_t triangleSize = 0U;

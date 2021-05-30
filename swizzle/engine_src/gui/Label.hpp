@@ -3,7 +3,7 @@
 
 /* Include files */
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include <swizzle/gui/GuiLabel.hpp>
 
 #include "Font.hpp"
@@ -32,9 +32,9 @@ namespace swizzle::gui
         // @TODO: Change to core::String once that is added
         virtual void setText(const SwChar* text) override;
 
-        virtual core::Resource<gfx::Buffer> getBuffer() const override;
+        virtual common::Resource<gfx::Buffer> getBuffer() const override;
 
-        virtual core::Resource<gfx::Texture> getTexture() const override;
+        virtual common::Resource<gfx::Texture> getTexture() const override;
 
     private:
 
@@ -43,7 +43,7 @@ namespace swizzle::gui
 
         Font mFont;
 
-        core::Resource<gfx::Buffer> mQuadBuffer;
+        common::Resource<gfx::Buffer> mQuadBuffer;
     };
 }
 

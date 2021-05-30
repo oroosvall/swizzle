@@ -3,9 +3,9 @@
 
 /* Include files */
 
+#include <common/Common.hpp>
 #include "swizzle/Api.hpp"
 #include "swizzle/core/Window.hpp"
-#include <common/Resource.hpp>
 
 #include <cstdint>
 
@@ -69,8 +69,8 @@ namespace swizzle::input
 		RightClick,
 		LeftClick,
 		MiddleClick,
-		Button3,
-		Button4,
+		ExtButton3,
+		ExtButton4,
 	};
 }
 
@@ -102,7 +102,7 @@ namespace swizzle::input
 
 namespace swizzle::input
 {
-	void SWIZZLE_API SetInputSource(core::Resource<core::Window> window);
+	void SWIZZLE_API SetInputSource(common::Resource<core::SwWindow> window);
 
 	SwBool SWIZZLE_API RegisterKeyAction(const KeyAction& action);
 

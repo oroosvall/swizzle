@@ -3,15 +3,16 @@
 
 #include "backend/VulkanMemory.hpp"
 
+#include <cstring>
 
 namespace swizzle::gfx
 {
 
     VulkanBuffer::VulkanBuffer(const VkContainer vkObjects, BufferType type)
         : mVkObjects(vkObjects)
+        , mType(type)
         , mBuffer(VK_NULL_HANDLE)
         , mBufferMemory(vkObjects)
-        , mType(type)
         , mStride(0u)
         , mVertCount(0u)
         , mUsedSize(0u)
@@ -40,6 +41,11 @@ namespace swizzle::gfx
         return mBufferMemory.getMemorySize() - mUsedSize;
     }
 
+    void VulkanBuffer::setStride(U32 stride)
+    {
+        mStride = stride;
+    }
+
     void* VulkanBuffer::mapMemory(U64 size)
     {
         createOrResize(size);
@@ -50,6 +56,7 @@ namespace swizzle::gfx
     void VulkanBuffer::unmapMemory()
     {
         mBufferMemory.unmapMemory();
+        mVertCount = (U32)(mUsedSize / (U64)mStride);
     }
 
     void VulkanBuffer::createOrResize(U64 newSize)

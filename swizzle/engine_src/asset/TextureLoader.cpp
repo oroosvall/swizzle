@@ -7,6 +7,8 @@
 
 #include <swizzle/core/Logging.hpp>
 
+#include <cstring>
+
 /* Defines */
 
 /* Typedefs */
@@ -23,9 +25,9 @@
 
 namespace swizzle::asset
 {
-    core::Resource<gfx::Texture>  LoadTexture2D(core::Resource<gfx::GfxContext> ctx, const SwChar* file)
+    common::Resource<gfx::Texture>  LoadTexture2D(common::Resource<gfx::GfxContext> ctx, const SwChar* file)
     {
-        core::Resource<gfx::Texture> texture = nullptr;
+        common::Resource<gfx::Texture> texture = nullptr;
         S32 x = 0;
         S32 y = 0;
         S32 c = 0;
@@ -46,10 +48,10 @@ namespace swizzle::asset
         return texture;
     }
 
-    core::Resource<gfx::Texture> SWIZZLE_API LoadTextureCubeMap(core::Resource<gfx::GfxContext> ctx,
+    common::Resource<gfx::Texture> SWIZZLE_API LoadTextureCubeMap(common::Resource<gfx::GfxContext> ctx,
         const SwChar* rightFile, const SwChar* leftFile, const SwChar* topFile, const SwChar* bottomFile, const SwChar* frontFile, const SwChar* backFile)
     {
-        core::Resource<gfx::Texture> texture = nullptr;
+        common::Resource<gfx::Texture> texture = nullptr;
         S32 x = 0;
         S32 y = 0;
         S32 c = 0;

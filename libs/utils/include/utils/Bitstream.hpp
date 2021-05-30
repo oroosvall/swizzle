@@ -2,6 +2,7 @@
 #define BIT_STREAM_HPP
 
 #include <cstdint>
+#include <cstring>
 
 namespace utils
 {
@@ -120,22 +121,23 @@ namespace utils
 
             mCache |= tmp;
             mBitOffset += nBits;
-            if (mBitOffset >= 32)
+            if (mBitOffset >= 32u)
             {
-                uint32_t d = ((uint32_t*)&mCache)[0];
+                char* pp = (char*)&mCache;
+                uint32_t d = ((uint32_t*)pp)[0];
 
                 write(d);
-                mCache >>= 32;
-                mBitOffset -= 32;
+                mCache >>= 32u;
+                mBitOffset -= 32u;
             }
             return true;
         }
 
         void flush()
         {
-            size_t s = 0;
+            size_t s = 0u;
             uint8_t* d = (uint8_t*)&mCache;
-            for (size_t i = 0; i < (mBitOffset + 7) / 8; i++)
+            for (size_t i = 0u; i < (mBitOffset + 7u) / 8u; i++)
             {
                 mData[mWritten + i] = d[i];
                 s++;

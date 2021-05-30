@@ -11,6 +11,8 @@
 #include <swizzle/asset/TextureLoader.hpp>
 #include <swizzle/asset/MeshLoader.hpp>
 
+#include <cstring>
+
 Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
@@ -125,7 +127,8 @@ void Game::userSetup()
     // "C:/tmp/cobra.obj"
     // "C:/tmp/dragon.obj"
 
-    mMesh = sw::asset::LoadMesh(mGfxContext, "meshes/main_city.obj", true);
+    //mMesh = sw::asset::LoadMesh(mGfxContext, "meshes/main_city.obj", true);
+    mMesh = sw::asset::LoadMesh(mGfxContext, "C:/tmp/cobra.obj", true);
 
 }
 

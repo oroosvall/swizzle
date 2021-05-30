@@ -201,12 +201,12 @@ namespace swizzle::core
             }
         }
 
-        Resource<Window> createPlatformWindow(const U32 width, const U32 height, const SwChar* title)
+        common::Resource<SwWindow> createPlatformWindow(const U32 width, const U32 height, const SwChar* title)
         {
             return std::make_shared<Win32Window>(width, height, title);
         }
 
-        const U64 getPlatformTimeStampMs()
+        U64 getPlatformTimeStampMs()
         {
             LARGE_INTEGER time;
             QueryPerformanceCounter(&time);
@@ -217,7 +217,7 @@ namespace swizzle::core
             return static_cast<uint64_t>(time.QuadPart);
         }
 
-        const U64 getPlatformTimeStampUs()
+        U64 getPlatformTimeStampUs()
         {
             LARGE_INTEGER time;
             QueryPerformanceCounter(&time);
@@ -228,23 +228,23 @@ namespace swizzle::core
             return static_cast<uint64_t>(time.QuadPart);
         }
 
-        const U32 getPlatformCurrentThreadId()
+        U32 getPlatformCurrentThreadId()
         {
             const DWORD threadId = ::GetCurrentThreadId();
             return static_cast<const U32>(threadId);
         }
 
-        const SwCharPtr GetPlatformKeyText(S32 scanCode)
+        const SwChar* GetPlatformKeyText(S32 scanCode)
         {
-            return (const SwCharPtr)GetWinKeyText(scanCode);
+            return GetWinKeyText(scanCode);
         }
 
-        const SwCharPtr GetPlatformKeyTextW(S32 scanCode)
+        const SwWChar* GetPlatformKeyTextW(S32 scanCode)
         {
-            return (const SwCharPtr)GetWinKeyTextW(scanCode);
+            return GetWinKeyTextW(scanCode);
         }
 
-        const S32 PlatformKeyToScanCode(input::Keys key)
+        S32 PlatformKeyToScanCode(input::Keys key)
         {
             return Key2ScanCode(key);
         }

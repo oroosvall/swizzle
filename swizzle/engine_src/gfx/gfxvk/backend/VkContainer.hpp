@@ -3,8 +3,7 @@
 
 /* Include files */
 
-#include <common/Types.hpp>
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 
 #include "Vk.hpp"
 
@@ -27,9 +26,9 @@ namespace swizzle::gfx // move to vk namespace
     // so it is handy to access
     struct VkContainer
     {
-        core::Resource<VulkanInstance> mVkInstance;
-        core::Resource<PhysicalDevice> mPhysicalDevice;
-        core::Resource<LogicalDevice> mLogicalDevice;
+        common::Resource<VulkanInstance> mVkInstance;
+        common::Resource<PhysicalDevice> mPhysicalDevice;
+        common::Resource<LogicalDevice> mLogicalDevice;
 
         VkAllocationCallbacks* mDebugAllocCallbacks;
 

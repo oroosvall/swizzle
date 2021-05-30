@@ -1,4 +1,4 @@
-#include "..\include\utils\FpsCounter.hpp"
+#include <utils/FpsCounter.hpp>
 
 namespace utils
 {

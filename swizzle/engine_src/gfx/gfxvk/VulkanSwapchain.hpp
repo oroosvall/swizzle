@@ -1,7 +1,7 @@
 #ifndef VULKAN_SWAPCHAIN_HPP
 #define VULKAN_SWAPCHAIN_HPP
 
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 #include <swizzle/core/Window.hpp>
 
 #include <swizzle/gfx/Swapchain.hpp>
@@ -25,7 +25,7 @@ namespace swizzle::gfx
     class VulkanSwapchain : public Swapchain
     {
     public:
-        VulkanSwapchain(const VkContainer vkObjects, core::Resource<core::Window> window);
+        VulkanSwapchain(const VkContainer vkObjects, common::Resource<core::SwWindow> window);
         virtual ~VulkanSwapchain();
 
         virtual SwBool isVsyncModeSupported(VSyncTypes sync) const override;
@@ -36,14 +36,14 @@ namespace swizzle::gfx
         virtual void clearFrameCounter() override;
         virtual U64 getFrameCounter() override;
 
-        virtual core::Resource<Shader> createShader(const ShaderAttributeList& attribs) override;
+        virtual common::Resource<Shader> createShader(const ShaderAttributeList& attribs) override;
 
         virtual void prepare() override;
         virtual void present() override;
 
         void resize();
 
-        core::Resource<FrameBuffer> getFrameBuffer() const;
+        common::Resource<FrameBuffer> getFrameBuffer() const;
         VkSemaphore getSemaphoreToSignal() const;
         VkSemaphore getWaitForSemaphore() const;
         VkFence getWaitFence() const;
@@ -64,7 +64,7 @@ namespace swizzle::gfx
 
         void createFrameBuffers();
 
-        core::Resource<core::Window> mWindow;
+        common::Resource<core::SwWindow> mWindow;
         const VkContainer mVkObjects;
 
         VkSurfaceKHR mSurface;
@@ -86,7 +86,7 @@ namespace swizzle::gfx
         U32 mSwapchainImageCount;
         std::vector<SwapchainImage> mSwapchainImages;
 
-        std::vector<core::Resource<PresentFBO>> mFrameBuffers;
+        std::vector<common::Resource<PresentFBO>> mFrameBuffers;
         std::vector<VkSemaphore> mRenderingFinishedSemaphore;
         std::vector<VkSemaphore> mImageAvailableSemaphore;
 

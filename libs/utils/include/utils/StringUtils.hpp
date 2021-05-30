@@ -3,6 +3,7 @@
 #define STRING_UTILS_HPP
 
 #include <cstdint>
+#include <cstddef>
 
 namespace utils
 {

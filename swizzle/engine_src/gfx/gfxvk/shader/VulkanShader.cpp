@@ -14,6 +14,7 @@
 #include <glm/glm.hpp>
 
 #include <vector>
+#include <cstring>
 
 /* Defines */
 
@@ -91,10 +92,10 @@ namespace swizzle::gfx
 {
     VulkanShader::VulkanShader(const VkContainer vkObjects, const PresentFBO& frameBuffer, const ShaderAttributeList& shaderAttributes)
         : mVkObjects(vkObjects)
-        , mPipelineLayout(VK_NULL_HANDLE)
-        , mPipeline(VK_NULL_HANDLE)
         , mFrameBuffer(frameBuffer)
         , mShaderAttributes(shaderAttributes)
+        , mPipelineLayout(VK_NULL_HANDLE)
+        , mPipeline(VK_NULL_HANDLE)
     {
 
         mProperties[PropertyType::SourceBlend].mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
@@ -178,12 +179,12 @@ namespace swizzle::gfx
 
             enum class ParseState
             {
-                None,
-                Prop,
-                Vulkan
+                PsNone,
+                PsProp,
+                PsVulkan
             };
 
-            ParseState state = ParseState::None;
+            ParseState state = ParseState::PsNone;
 
             while (true)
             {
@@ -195,12 +196,12 @@ namespace swizzle::gfx
 
                 if (line == "[properties]")
                 {
-                    state = ParseState::Prop;
+                    state = ParseState::PsProp;
                     continue;
                 }
                 else if (line == "[vulkan]")
                 {
-                    state = ParseState::Vulkan;
+                    state = ParseState::PsVulkan;
                     continue;
                 }
                 else if (line[0] == '[')
@@ -212,11 +213,11 @@ namespace swizzle::gfx
                     // Do Nothing
                 }
 
-                if (state == ParseState::Prop)
+                if (state == ParseState::PsProp)
                 {
                     readProperty(line);
                 }
-                else if (state == ParseState::Vulkan)
+                else if (state == ParseState::PsVulkan)
                 {
                     std::string shaderType = "";
                     std::string path = "";
@@ -236,7 +237,7 @@ namespace swizzle::gfx
         return ok;
     }
 
-    core::Resource<Material> VulkanShader::createMaterial()
+    common::Resource<Material> VulkanShader::createMaterial()
     {
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -249,7 +250,7 @@ namespace swizzle::gfx
 
         vkAllocateDescriptorSets(mVkObjects.mLogicalDevice->getLogical(), &allocInfo, &desc);
 
-        auto material = core::CreateRef<VulkanMaterial>(mVkObjects, desc);
+        auto material = common::CreateRef<VulkanMaterial>(mVkObjects, desc);
 
         return material;
     }

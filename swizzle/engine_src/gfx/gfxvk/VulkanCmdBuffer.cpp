@@ -1,5 +1,5 @@
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 
 #include "VulkanDevice.hpp"
 
@@ -74,6 +74,7 @@ namespace swizzle::gfx
         mTriCount = 0u;
 
         auto fence = getCmdBuffer(mActiveIndex).mFence;
+        getCmdBuffer(mActiveIndex).mBufferReferences.clear();
 
         vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &fence, VK_TRUE, UINT64_MAX);
         vkResetFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &fence);
@@ -110,7 +111,7 @@ namespace swizzle::gfx
         vkEndCommandBuffer(getCmdBuffer(mActiveIndex).mCmdBuffer);
     }
 
-    void VulkanCommandBuffer::uploadTexture(core::Resource<Texture> texture)
+    void VulkanCommandBuffer::uploadTexture(common::Resource<Texture> texture)
     {
         VulkanTextureIfc* tex = (VulkanTextureIfc*)(texture.get());
         if (!tex->isUploaded())
@@ -119,12 +120,12 @@ namespace swizzle::gfx
         }
     }
 
-    void VulkanCommandBuffer::submit(core::Resource<Swapchain> swp)
+    void VulkanCommandBuffer::submit(common::Resource<Swapchain> swp)
     {
         U32 waitCount = 0U;
         VkSemaphore renderComplete = VK_NULL_HANDLE;
         VkSemaphore wait = VK_NULL_HANDLE;
-        VkPipelineStageFlags waitStageMask = VK_NULL_HANDLE;
+        VkPipelineStageFlags waitStageMask = 0u;
         VkFence waitFence = VK_NULL_HANDLE;
 
         if (swp)
@@ -169,13 +170,13 @@ namespace swizzle::gfx
 
     }
 
-    void VulkanCommandBuffer::beginRenderPass(core::Resource<Swapchain> swp)
+    void VulkanCommandBuffer::beginRenderPass(common::Resource<Swapchain> swp)
     {
         VulkanSwapchain* swapchain = (VulkanSwapchain*)(swp.get());
         beginRenderPass(swapchain->getFrameBuffer());
     }
 
-    void VulkanCommandBuffer::beginRenderPass(core::Resource<FrameBuffer> fbo)
+    void VulkanCommandBuffer::beginRenderPass(common::Resource<FrameBuffer> fbo)
     {
         PresentFBO* present = (PresentFBO*)(fbo.get());
 
@@ -198,14 +199,14 @@ namespace swizzle::gfx
         vkCmdEndRenderPass(getCmdBuffer(mActiveIndex).mCmdBuffer);
     }
 
-    void VulkanCommandBuffer::bindShader(core::Resource<Shader> shader)
+    void VulkanCommandBuffer::bindShader(common::Resource<Shader> shader)
     {
         VulkanShader* shad = (VulkanShader*)(shader.get());
 
         vkCmdBindPipeline(getCmdBuffer(mActiveIndex).mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipeline());
     }
 
-    void VulkanCommandBuffer::bindMaterial(core::Resource<Shader> shader, core::Resource<Material> material)
+    void VulkanCommandBuffer::bindMaterial(common::Resource<Shader> shader, common::Resource<Material> material)
     {
         VulkanShader* shad = (VulkanShader*)(shader.get());
         VulkanMaterial* mat = (VulkanMaterial*)(material.get());
@@ -215,7 +216,7 @@ namespace swizzle::gfx
         vkCmdBindDescriptorSets(getCmdBuffer(mActiveIndex).mCmdBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipelineLayout(), 0U, 1U, &descSet, 0U, VK_NULL_HANDLE);
     }
 
-    void VulkanCommandBuffer::setShaderConstant(core::Resource<Shader> shader, U8* data, U32 size)
+    void VulkanCommandBuffer::setShaderConstant(common::Resource<Shader> shader, U8* data, U32 size)
     {
         VulkanShader* shad = (VulkanShader*)(shader.get());
 
@@ -247,7 +248,7 @@ namespace swizzle::gfx
         vkCmdSetScissor(getCmdBuffer(mActiveIndex).mCmdBuffer, 0U, 1U, &r);
     }
 
-    void VulkanCommandBuffer::draw(core::Resource<Buffer> buffer)
+    void VulkanCommandBuffer::draw(common::Resource<Buffer> buffer)
     {
         auto& cmdBuf = getCmdBuffer(mActiveIndex);
         mDrawCount++;
@@ -258,12 +259,13 @@ namespace swizzle::gfx
 
         VkDeviceSize offset = 0U;
         mVertCount += buf->getVertexCount();
+        mTriCount += (buf->getVertexCount() / 3);
 
         vkCmdBindVertexBuffers(cmdBuf.mCmdBuffer, 0U, 1U, &bb, &offset);
         vkCmdDraw(cmdBuf.mCmdBuffer, buf->getVertexCount(), 1U, 0U, 0U);
     }
 
-    void VulkanCommandBuffer::drawIndexed(core::Resource<Buffer> buffer, core::Resource<Buffer> index)
+    void VulkanCommandBuffer::drawIndexed(common::Resource<Buffer> buffer, common::Resource<Buffer> index)
     {
         auto& cmdBuf = getCmdBuffer(mActiveIndex);
 

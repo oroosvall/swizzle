@@ -22,7 +22,7 @@ namespace swizzle::input
 
     static struct
     {
-        core::Resource<core::Window> mActiveWindow = nullptr;
+        common::Resource<core::SwWindow> mActiveWindow = nullptr;
         InputCallback mCb = {};
         F32 mDx = 0.0F;
         F32 mDy = 0.0F;
@@ -49,7 +49,7 @@ namespace swizzle::input
 namespace swizzle::input
 {
 
-    void SetInputSource(core::Resource<core::Window> window)
+    void SetInputSource(common::Resource<core::SwWindow> window)
     {
         if (inputCtx.mActiveWindow)
         {
@@ -64,7 +64,7 @@ namespace swizzle::input
 
     SwBool RegisterKeyAction(const KeyAction& action)
     {
-        action;
+        UNUSED_ARG(action);
         return false;
     }
 
@@ -99,7 +99,7 @@ namespace swizzle::input
 
     SwBool IsActionPressed(const KeyAction& action)
     {
-        action;
+        UNUSED_ARG(action);
         return false;
     }
 

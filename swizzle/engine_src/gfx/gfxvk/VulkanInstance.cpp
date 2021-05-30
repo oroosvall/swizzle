@@ -7,6 +7,8 @@
 #include "surface/Surface.hpp"
 #include "backend/VkDebug.hpp"
 
+#include <cstring>
+
 /* Defines */
 
 /* Typedefs */
@@ -46,7 +48,7 @@ namespace swizzle::gfx
         vkDestroyInstance(mVkInstance, nullptr);
     }
 
-    const VkInstance VulkanInstance::getInstance() const
+    VkInstance VulkanInstance::getInstance() const
     {
         return mVkInstance;
     }

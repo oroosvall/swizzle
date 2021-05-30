@@ -51,7 +51,7 @@ namespace swizzle::core
         {
             POINT pt;
             GetCursorPos(&pt);
-            if (ScreenToClient((HWND)window->getNativeHandle(), &pt))
+            if (ScreenToClient((HWND)window->getNativeWindowHandle(), &pt))
             {
                 MouseMoveEvent moveEvt;
                 moveEvt.mX = pt.x;
@@ -577,9 +577,14 @@ namespace swizzle::core
         height = rect.bottom - rect.top;
     }
 
-    void* Win32Window::getNativeHandle() const
+    void* Win32Window::getNativeWindowHandle() const
     {
         return mWnd;
+    }
+
+    void* Win32Window::getNativeDisplayHandle() const
+    {
+        return nullptr;
     }
 
     void Win32Window::pollEvents()

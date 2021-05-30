@@ -3,7 +3,7 @@
 
 #ifdef SW_WINDOWS
 
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include <swizzle/core/WindowEvents.hpp>
 #include <swizzle/core/Window.hpp>
 
@@ -17,7 +17,7 @@ namespace swizzle::core
     const LPWSTR gWindowClass = L"SwizzleWindowClass";
     LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-    class Win32Window : public Window
+    class Win32Window : public SwWindow
     {
     public:
         Win32Window(const U32 width, const U32 height, const char* title);
@@ -40,7 +40,8 @@ namespace swizzle::core
 
         virtual void getCursorPos(U32& xPos, U32& yPos) const override;
         virtual void getSize(U32& width, U32& height) const override;
-        virtual void* getNativeHandle() const override;
+        virtual void* getNativeWindowHandle() const override;
+        virtual void* getNativeDisplayHandle() const override;
         virtual void pollEvents() override;
 
         virtual void setCursorVisible(bool visible) override;

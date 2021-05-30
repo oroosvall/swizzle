@@ -2,6 +2,8 @@
 #define SHELFPACK_HPP
 
 #include <cstdint>
+#include <cstddef>
+#include <stddef.h>
 #include <vector>
 
 struct PackRect {

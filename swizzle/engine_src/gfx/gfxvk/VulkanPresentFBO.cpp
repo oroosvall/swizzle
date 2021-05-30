@@ -74,7 +74,7 @@ namespace swizzle::gfx
 
     void PresentFBO::setColorAttachmentClearColor(U32 attachmentIndex, ClearColor color)
     {
-        attachmentIndex;
+        UNUSED_ARG(attachmentIndex);
         mClearValue.color.float32[0] = color.r;
         mClearValue.color.float32[1] = color.g;
         mClearValue.color.float32[2] = color.b;
@@ -83,8 +83,8 @@ namespace swizzle::gfx
 
     void PresentFBO::setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue)
     {
-        depthValue;
-        stencilValue;
+        UNUSED_ARG(depthValue);
+        UNUSED_ARG(stencilValue);
     }
 
     void PresentFBO::resize(U32 width, U32 height)
@@ -99,9 +99,9 @@ namespace swizzle::gfx
         createFramebuffer();
     }
 
-    core::Resource<Shader> PresentFBO::createShader(const ShaderAttributeList& attributeList)
+    common::Resource<Shader> PresentFBO::createShader(const ShaderAttributeList& attributeList)
     {
-        return core::CreateRef<VulkanShader>(mVkObjects, *this, attributeList);
+        return common::CreateRef<VulkanShader>(mVkObjects, *this, attributeList);
     }
 
     VkRenderPass PresentFBO::getRenderPass() const

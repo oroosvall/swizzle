@@ -4,7 +4,7 @@
 /* Include files */
 
 #include <swizzle/Api.hpp>
-#include <common/Types.hpp>
+#include <common/Common.hpp>
 #include <string>
 
 /* Defines */

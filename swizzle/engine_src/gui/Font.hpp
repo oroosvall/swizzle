@@ -3,8 +3,7 @@
 
 /* Include files */
 
-#include <common/Types.hpp>
-#include <common/Resource.hpp>
+#include <common/Common.hpp>
 
 #include <utils/MemoryBuffer.hpp>
 
@@ -57,7 +56,7 @@ namespace swizzle::gui
         Font(const SwChar* fontPath, gfx::VkGfxContext* ctx);
         virtual ~Font();
 
-        const FontGlyph& getGlyph(U32 codePoint) const;
+        const FontGlyph& getGlyph(S32 codePoint) const;
 
         F32 getFontSize() const;
         F32 getBaseLine() const;
@@ -65,7 +64,9 @@ namespace swizzle::gui
         SwBool shouldRebuildTexture() const;
         void rebuildTexture();
 
-        F32 getKerning(U32 codePoint1, U32 codePoint2) const;
+        F32 getKerning(S32 codePoint1, S32 codePoint2) const;
+
+        S32 getCachedCodePoint(S32 codePoint) const;
 
         // This is temp
     //private:
@@ -73,7 +74,9 @@ namespace swizzle::gui
         U8* mFileBuffer;
         stbtt_fontinfo mFontInfo;
 
-        mutable std::unordered_map<U32, S32> mCodePointCache;
+        mutable S32 mCodePointCacheCommon[512];
+
+        mutable std::unordered_map<S32, S32> mCodePointCache;
         mutable std::unordered_map<S32, FontGlyph> mGlyphCache;
         mutable std::unordered_map<U64, F32> mKerningCache;
         mutable SwBool mTextureInvalidated;
@@ -85,7 +88,7 @@ namespace swizzle::gui
 
         mutable utils::MemoryBuffer mGlyphPoolMemory;
 
-        core::Resource<gfx::VulkanTexture> mFontTexture;
+        common::Resource<gfx::VulkanTexture> mFontTexture;
 
     };
 }

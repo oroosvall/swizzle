@@ -1,6 +1,7 @@
 
 /* Include files */
 
+#include <common/Common.hpp>
 #include <swizzle/core/Logging.hpp>
 #include "Gfx.hpp"
 #include "gfxvk/VkContext.hpp"
@@ -22,12 +23,12 @@
 namespace swizzle::gfx
 {
 
-    core::Resource<VulkanInstance> gVkInst;
+    common::Resource<VulkanInstance> gVkInst;
 
     SwBool GfxInitialize()
     {
         LOG_INFO("Initializing Graphics!");
-        gVkInst = core::CreateRef<VulkanInstance>();
+        gVkInst = common::CreateRef<VulkanInstance>();
 
         return true;
     }
@@ -41,9 +42,9 @@ namespace swizzle::gfx
         return true;
     }
 
-    core::Resource<GfxContext> CreateContext(const GfxContextCreateInfo& createInfo)
+    common::Resource<GfxContext> CreateContext(const GfxContextCreateInfo& createInfo)
     {
-        return core::CreateRef<VkGfxContext>(gVkInst, createInfo.mDeviceIndex);
+        return common::CreateRef<VkGfxContext>(gVkInst, createInfo.mDeviceIndex);
     }
 
     U32 GetDeviceCount()
@@ -62,9 +63,9 @@ namespace swizzle::gfx
         return preferredDeviceIndex;
     }
 
-    const SwCharPtr GetDeviceName(U32 deviceIndex)
+    const SwChar* GetDeviceName(U32 deviceIndex)
     {
-        deviceIndex;
+        UNUSED_ARG(deviceIndex)
         LOG_WARNING("Not yet implemented\n");
         return "NULL";
     }

@@ -1,10 +1,12 @@
 
+
 #include "runtime/Instructions.hpp"
 #include "runtime/ProgramContext.hpp"
 
 OpReturn opNop(ProgramContext& ctx, uint8_t flags)
 {
-    ctx;
+
+    (void)ctx;
     ErrorCode ec = ErrorCode::OK;
     if (flags != 0U)
     {
@@ -207,7 +209,7 @@ OpReturn opJmp(ProgramContext& ctx, uint8_t flags)
 
 OpReturn opCmp(ProgramContext& ctx, uint8_t flags)
 {
-    ctx;
-    flags;
+    (void)ctx;
+    (void)flags;
     return { 0U, ErrorCode::OK };
 }

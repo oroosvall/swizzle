@@ -63,9 +63,9 @@ namespace swizzle
         return queueCount;
     }
 
-    core::Resource<LogicalDevice> PhysicalDevice::createLogicalDevice(std::vector<F32>& queuPrio)
+    common::Resource<LogicalDevice> PhysicalDevice::createLogicalDevice(std::vector<F32>& queuPrio)
     {
-        return core::CreateRef<LogicalDevice>(mPhysicalDevice, mActiveExtensions, queuPrio);
+        return common::CreateRef<LogicalDevice>(mPhysicalDevice, mActiveExtensions, queuPrio);
     }
 
     VkPhysicalDeviceMemoryProperties PhysicalDevice::getMemoryProperties() const
@@ -76,6 +76,8 @@ namespace swizzle
     LogicalDevice::LogicalDevice(VkPhysicalDevice phys, const std::vector<const char*>& extensions,
                                  std::vector<F32>& queuePrio)
     {
+        vkGetPhysicalDeviceProperties(phys, &mDeviceProperties);
+
         mPhysicalDevice = phys;
         F32* prios = queuePrio.data();
 

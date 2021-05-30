@@ -64,7 +64,7 @@ namespace swizzle::gfx
 
         virtual SwBool load(const SwChar* filePath) override;
 
-        virtual core::Resource<Material> createMaterial() override;
+        virtual common::Resource<Material> createMaterial() override;
 
         VkPipeline getPipeline() const;
         VkPipelineLayout getPipelineLayout() const;
