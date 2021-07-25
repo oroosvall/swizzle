@@ -65,25 +65,26 @@ void printMatrix(const glm::mat4& mat)
 
 U16 FindRoot(const std::vector<U16>& parentList)
 {
-    U32 count = parentList.size();
+    U32 count = (U32)parentList.size();
     for (U32 i = 0u; i < count; ++i)
     {
         if (parentList[i] == i)
         {
-            return i;
+            return (U16)i;
         }
     }
+    return 0u;
 }
 
 std::vector<U16> FindChildren(U16 index, const std::vector<U16>& parentList)
 {
     std::vector<U16> childs;
-    U32 count = parentList.size();
+    U32 count = (U32)parentList.size();
     for (U32 i = 0u; i < count; ++i)
     {
         if ((parentList[i] == index) && (i != index))
         {
-            childs.push_back(i);
+            childs.push_back((U16)i);
         }
     }
 
@@ -144,8 +145,8 @@ namespace loader::swm
         ::swm::Model mdl;
         if (::swm::LoadSwm(fileName, mdl) == ::swm::LoadResult::Success)
         {
-            numVertecies = mdl.mMeshes[0].mPositions.size();
-            numTriangles = mdl.mMeshes[0].mTriangles.size();
+            numVertecies = (U32)mdl.mMeshes[0].mPositions.size();
+            numTriangles = (U32)mdl.mMeshes[0].mTriangles.size();
             ::swm::AnimationInfo animInfo = mdl.mMeshes[0].mAnimationData;
             F32* verts = nullptr;
 
@@ -232,8 +233,6 @@ namespace loader::swm
                 F32* bData = new F32[sizeof(glm::mat4) * numBones];
                 memcpy(bData, pose.data(), sizeof(glm::mat4) * numBones);
                 *boneData = bData;
-
-                int brk = 0;
             }
 
             *vertexData = verts;
