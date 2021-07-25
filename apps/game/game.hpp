@@ -54,6 +54,8 @@ private:
     std::vector<glm::vec3> mBulletPositions;
     sw::Mesh mBulletMesh;
 
+    std::vector<glm::vec3> mEnemyPosisions;
+    sw::Mesh mEnemyShip;
 };
 
 #endif

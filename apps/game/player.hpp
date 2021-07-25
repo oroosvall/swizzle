@@ -24,7 +24,8 @@ public:
     glm::mat4 getMatrix();
     glm::vec3 getPosition();
 
-    common::Resource<sw::gfx::Buffer> getBuffer();
+    common::Resource<sw::gfx::Buffer> getVertexBuffer();
+    common::Resource<sw::gfx::Buffer> getIndexBuffer();
 
 private:
 

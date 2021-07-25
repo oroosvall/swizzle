@@ -27,6 +27,7 @@ namespace swizzle::gfx
         vec4f = 2,
         vec3i = 3,
         vec4i = 4,
+        vec4u = 5,
     };
 
     class ShaderBufferInput

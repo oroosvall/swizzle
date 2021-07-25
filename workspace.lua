@@ -34,13 +34,14 @@ filter "configurations:RelWDbgInfo"
     }
     symbols "On"
     optimize "On"
-    flags { "FatalCompileWarnings" }
+    flags { "FatalCompileWarnings", "NoBufferSecurityCheck" }
 
 filter "configurations:Release"
     defines "SW_RELEASE"
     optimize "Speed"
-    flags { "FatalCompileWarnings" }
-    
+    flags { "FatalCompileWarnings", "NoBufferSecurityCheck", "NoFramePointer" }
+    inlining ("auto")
+
 filter "system:windows"
     cppdialect "C++17"
     staticruntime "On"

@@ -75,14 +75,14 @@ namespace swizzle::gfx
         return MaterialDescriptorType::Invalid;
     }
 
-    void VulkanMaterial::setDescriptorBufferResource(U32 index, common::Resource<Buffer> buffer)
+    void VulkanMaterial::setDescriptorBufferResource(U32 index, common::Resource<Buffer> buffer, U64 size)
     {
         VulkanBuffer* bfr = (VulkanBuffer*)buffer.get();
 
         VkDescriptorBufferInfo descBfr = {};
         descBfr.buffer = bfr->getBuffer()->mBuffer;
         descBfr.offset = 0;
-        descBfr.range = sizeof(float) * 4;
+        descBfr.range = size;
 
         VkWriteDescriptorSet writeDesc = {};
 

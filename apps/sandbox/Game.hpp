@@ -56,6 +56,10 @@ private:
     common::Resource<sw::gfx::Texture> mSkyTexture;
     common::Resource<sw::gfx::Material> mSkyMaterial;
 
+    sw::MeshAnimated mMeshAnimated;
+    common::Resource<sw::gfx::Shader> mAnimationShader;
+    common::Resource<sw::gfx::Material> mAnimationMaterial;
+
     U8 singlePixel[16] = { 0U, 0U, 0U, 255U, 128, 0, 0, 255, 0, 128, 0, 255, 0, 0, 128, 255 };
 
     utils::Config mGameCfg;
@@ -67,6 +71,8 @@ private:
     common::Resource<sw::gfx::Material> mTextMaterial;
 
     int extraText = 0;
+
+    int selectedBone = 0;
 
 };
 

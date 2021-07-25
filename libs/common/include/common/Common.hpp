@@ -34,15 +34,27 @@ typedef bool SwBool;
 
 /* Forward Declared Structs/Classes */
 
+namespace common
+{
+    template<typename T> using Resource = std::shared_ptr<T>;
+}
+
 /* Struct Declaration */
+
+namespace common
+{
+    template <typename R, typename T>
+    struct Result
+    {
+        R result;
+        Resource<T> obj;
+    };
+}
 
 /* Class Declaration */
 
 namespace common
 {
-
-    template<typename T> using Resource = std::shared_ptr<T>;
-
     template <class _Ty, class... _Types>
     [[nodiscard]] Resource<_Ty> CreateRef(_Types&&... _Args)
     {

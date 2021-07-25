@@ -16,7 +16,7 @@ Player::~Player()
 
 void Player::initResources(common::Resource<sw::gfx::GfxContext> ctx)
 {
-    mPlayerShip = sw::asset::LoadMesh(ctx, "meshes/game/ship.obj", true);
+    mPlayerShip = sw::asset::LoadMesh(ctx, "meshes/game/PlayerShip.swm", true);
 }
 
 void Player::cleanupResources()
@@ -74,7 +74,12 @@ glm::vec3 Player::getPosition()
     return mPlayerPos;
 }
 
-common::Resource<sw::gfx::Buffer> Player::getBuffer()
+common::Resource<sw::gfx::Buffer> Player::getVertexBuffer()
 {
     return mPlayerShip.mVertexBuffer;
+}
+
+common::Resource<sw::gfx::Buffer> Player::getIndexBuffer()
+{
+    return mPlayerShip.mIndexBuffer;
 }

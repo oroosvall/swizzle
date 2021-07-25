@@ -8,6 +8,8 @@
 
 #include <iostream>
 
+#include <swm/Swm.hpp>
+
 class StdLogger : public swizzle::core::LogDevice
 {
     // Inherited via LogDevice
@@ -15,6 +17,14 @@ class StdLogger : public swizzle::core::LogDevice
     {
         printf("%s: %s\n", messageType, message);
     }
+
+    StdLogger& operator=(const StdLogger& other)
+    {
+        // Guard self assignment
+        if (this == &other)
+            return *this;
+    }
+
 };
 
 int main(int argv, char* argc[])

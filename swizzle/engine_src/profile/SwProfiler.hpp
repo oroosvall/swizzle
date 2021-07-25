@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <unordered_map>
+#include <array>
 
 /* Defines */
 

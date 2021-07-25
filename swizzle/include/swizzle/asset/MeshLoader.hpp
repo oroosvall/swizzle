@@ -24,6 +24,13 @@ namespace swizzle
 		common::Resource<swizzle::gfx::Buffer> mVertexBuffer;
 		common::Resource<swizzle::gfx::Buffer> mIndexBuffer;
 	};
+
+	struct MeshAnimated
+	{
+		common::Resource<swizzle::gfx::Buffer> mVertexBuffer;
+		common::Resource<swizzle::gfx::Buffer> mIndexBuffer;
+		common::Resource<swizzle::gfx::Buffer> mBoneBuffer;
+	};
 }
 
 /* Class Declaration */
@@ -34,6 +41,7 @@ namespace swizzle::asset
 {
 
 	swizzle::Mesh SWIZZLE_API LoadMesh(common::Resource<gfx::GfxContext> ctx, const SwChar* fileName, SwBool createIndexBuffer);
+	swizzle::MeshAnimated SWIZZLE_API LoadMeshAnimated(common::Resource<gfx::GfxContext> ctx, const SwChar* fileName, SwBool createIndexBuffer);
 
 }
 

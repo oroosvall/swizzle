@@ -76,6 +76,10 @@ namespace swizzle::gfx
         case ShaderAttributeDataType::vec4i:
             fmt = VK_FORMAT_A8B8G8R8_SINT_PACK32;
             break;
+        case ShaderAttributeDataType::vec4u:
+            //fmt = VK_FORMAT_A8B8G8R8_UINT_PACK32;
+            fmt = VK_FORMAT_R32G32B32A32_UINT;
+            break;
         default:
             break;
         }
@@ -120,7 +124,7 @@ namespace swizzle::gfx
         layout_binding[1].binding = 1;
         layout_binding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         layout_binding[1].descriptorCount = 1;
-        layout_binding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        layout_binding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT;
         layout_binding[1].pImmutableSamplers = NULL;
 
         VkDescriptorSetLayoutCreateInfo descriptor_layout = {};

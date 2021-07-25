@@ -140,13 +140,25 @@ group("libs")
         end -- userFunc
     )
 
+    setupPrj("swm", "staticLib",
+        {"libs/swm/include/**.hpp", "libs/swm/src/**.hpp", "libs/swm/src/**.cpp"}, -- files/FilePath
+        {"libs/swm/include/", extIncDirs['utils'], "vendor/glm/include", extIncDirs['common']}, -- includePaths
+        {""}, -- defines
+        nil, -- links
+        function() -- userFunc
+            vpaths { ["swm/*"] = "lib/swm/**.hpp" }
+            vpaths { ["swm/*"] = "lib/swm/**.cpp" }
+            vpaths { ["swm/*"] = "lib/swm/include/**.hpp" }
+        end -- userFunc
+    )
+
 group("Engine")
 
     setupPrj("swizzle", "sharedLib",
         {"swizzle/include/**.hpp", "swizzle/engine_src/**.hpp", "swizzle/engine_src/**.cpp", extIncDirs['common'].."/**.hpp"}, -- files/filePath
-        {"swizzle/include/", "swizzle/engine_src/", extIncDirs['vk_sdk'], "vendor/glm/include", "vendor/stb/include", "swizzle", extIncDirs['utils'], extIncDirs['common']}, -- includePaths
+        {"swizzle/include/", "swizzle/engine_src/", extIncDirs['vk_sdk'], "vendor/glm/include", "vendor/stb/include", "swizzle", extIncDirs['utils'], extIncDirs['common'], "libs/swm/include/"}, -- includePaths
         {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"}, -- defines
-        { "utils", "script", "physics", "shaderc_combined", "stb" }, -- links
+        { "utils", "script", "physics", "shaderc_combined", "stb", "swm" }, -- links
         function() 
             vpaths { ["engine_src/*"] = "swizzle/engine_src/**.hpp" }
             vpaths { ["engine_src/*"] = "swizzle/engine_src/**.cpp" }
@@ -216,9 +228,9 @@ group("Tests")
 group("Apps")
     setupPrj("sandbox", "consoleApp",
         {"swizzle/include/**.hpp", "apps/sandbox/**.hpp", "apps/sandbox/**.cpp"}, -- files/filePath
-        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common']}, -- include paths
+        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common'], "libs/swm/include"}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
-        {"swizzle", "utils"}, -- links
+        {"swizzle", "utils", "swm"}, -- links
         function() -- userFunc
             vpaths { ["sandbox/*"] = "apps/sandbox/**.hpp" }
             vpaths { ["sandbox/*"] = "apps/sandbox/**.cpp" }

@@ -215,6 +215,9 @@ namespace swizzle::gui
                 for (U32 k = 0; k < (U32)width; ++k)
                 {
                     dst[dstIdx] = src[k];
+                    //dst[dstIdx+1] = src[k];
+                    //dst[dstIdx+2] = src[k];
+                    //dst[dstIdx+3] = src[k];
                     dstIdx += imgCh;
                 }
             }
@@ -222,7 +225,7 @@ namespace swizzle::gui
 
         mFontTexture->setData(imgW, imgH, imgCh, image);
 
-        //stbi_write_png("test.png", imgW, imgH, imgCh, image, imgW);
+        //stbi_write_png("test.png", imgW, imgH, imgCh, image, 0);
 
         delete[] image;
 

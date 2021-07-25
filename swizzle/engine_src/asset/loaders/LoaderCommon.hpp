@@ -46,11 +46,36 @@ namespace loader
         F32 z;
     };
 
+    struct Int4D
+    {
+        U32 i1;
+        U32 i2;
+        U32 i3;
+        U32 i4;
+    };
+
+    struct Weight4D
+    {
+        F32 w1;
+        F32 w2;
+        F32 w3;
+        F32 w4;
+    };
+
     struct Vertex
     {
         Vertex3D pos;
         Vertex3D norm;
         Vertex2D uv;
+    };
+
+    struct VertexAnim
+    {
+        Vertex3D pos;
+        Vertex3D norm;
+        Vertex2D uv;
+        Int4D idx;
+        Weight4D wgt;
     };
 
     struct Index

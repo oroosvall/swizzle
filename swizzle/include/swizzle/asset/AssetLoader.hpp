@@ -20,7 +20,7 @@
 
 namespace swizzle::asset
 {
-    void AddResourcePath(const common::File& filePath);
+    void AddResourcePath(const core::File& filePath);
 }
 
 #endif

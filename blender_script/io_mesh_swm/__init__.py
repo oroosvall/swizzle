@@ -139,7 +139,8 @@ class ExportSwm(bpy.types.Operator, ExportHelper):
             name="Version",
             description="",
             items=(('AUTO', "Auto", "Automatic veresion selection"),
-                   ('1.0.x.x', "Version 1.0.x.x", "Save as version 1.0.x.x")
+                   ('1.0', "Version 1.0", "Save as version 1.0"),
+                   ('2.0', "Version 2.0", "Save as version 2.0")
                    ),
             default="AUTO"
     )

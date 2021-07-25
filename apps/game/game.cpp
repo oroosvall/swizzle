@@ -8,6 +8,8 @@
 
 #include <algorithm>
 
+#include <swizzle/profile/Profiler.hpp>
+
 Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
@@ -58,7 +60,7 @@ void Game::userSetup()
     mUniformBuffer = mGfxContext->createBuffer(sw::gfx::BufferType::UniformBuffer);
 
     mUniformBuffer->setBufferData(&lampColor, sizeof(lampColor), 1);
-    mMaterial->setDescriptorBufferResource(1u, mUniformBuffer);
+    mMaterial->setDescriptorBufferResource(1u, mUniformBuffer, sizeof(lampColor));
 
     guiLabel = sw::gui::CreateLabel(mGfxContext);
 
@@ -83,7 +85,17 @@ void Game::userSetup()
     mTextMaterial = mShader->createMaterial();
     mTextMaterial->setDescriptorTextureResource(0u, guiLabel->getTexture());
 
-    mBulletMesh = sw::asset::LoadMesh(mGfxContext, "meshes/game/bullet.obj", true);
+    mBulletMesh = sw::asset::LoadMesh(mGfxContext, "meshes/game/bullet.swm", true);
+
+    mEnemyShip = sw::asset::LoadMesh(mGfxContext, "meshes/game/TheTube.swm", true);
+
+    sw::asset::LoadMesh(mGfxContext, "c:/gme/test2.swm", true);
+
+    mEnemyPosisions = {
+        {0.0f, 5.0f, -70.0f,},
+        {0.0f, 0.0f, -70.0f,},
+        {0.0f, -5.0f, -70.0f, }
+    };
 
 }
 
@@ -107,6 +119,7 @@ void Game::userCleanup()
 
 SwBool Game::userUpdate(F32 dt)
 {
+    sw::profile::ProfileEvent(__FUNCTION__, sw::profile::ProfileEventType::EventType_Frame);
     mWindow->pollEvents();
     mFpsCounter.tick(dt);
     mController.update(0.0F);
@@ -152,6 +165,11 @@ SwBool Game::userUpdate(F32 dt)
         pos.z -= 10.0F * dt;
     }
 
+    for (auto& pos : mEnemyPosisions)
+    {
+        pos.z += 5.0F * dt;
+    }
+
     if (!mBulletPositions.empty())
     {
         mBulletPositions.erase(std::remove_if(mBulletPositions.begin(), mBulletPositions.end(), [](const auto& a) { return a.z < -100.0F; }), mBulletPositions.end());
@@ -165,7 +183,8 @@ SwBool Game::userUpdate(F32 dt)
     hsv.h += 20.0F * dt;
     rgba = sw::gfx::HsvaToRgba(hsv);
 
-    mSwapchain->setClearColor({ rgba.r, rgba.g, rgba.b, rgba.a });
+    //mSwapchain->setClearColor({ rgba.r, rgba.g, rgba.b, rgba.a });
+    mSwapchain->setClearColor({ 0.01F, 0.01F, 0.01F });
 
     mSwapchain->prepare();
     mCmdBuffer->begin();
@@ -196,14 +215,22 @@ SwBool Game::userUpdate(F32 dt)
 
     mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
 
-    //mCmdBuffer->drawIndexed(mPlayerShip.mVertexBuffer, mPlayerShip.mIndexBuffer);
-    mCmdBuffer->draw(mPlayer.getBuffer());
+    mCmdBuffer->drawIndexed(mPlayer.getVertexBuffer(), mPlayer.getIndexBuffer());
+    //mCmdBuffer->draw(mPlayer.getBuffer());
 
     for (auto& pos : mBulletPositions)
     {
         t.model = glm::translate(glm::mat4(1.0F), pos);
         mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
-        mCmdBuffer->draw(mBulletMesh.mVertexBuffer);
+        //mCmdBuffer->draw(mBulletMesh.mVertexBuffer);
+        mCmdBuffer->drawIndexed(mBulletMesh.mVertexBuffer, mBulletMesh.mIndexBuffer);
+    }
+
+    for (auto& pos : mEnemyPosisions)
+    {
+        t.model = glm::translate(glm::mat4(1.0F), pos);
+        mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+        mCmdBuffer->drawIndexed(mEnemyShip.mVertexBuffer, mEnemyShip.mIndexBuffer);
     }
 
     // Text stuff

@@ -26,7 +26,7 @@ namespace swizzle::gfx
         virtual U32 getNumDescriptors() const = 0;
         virtual MaterialDescriptorType getDescriptorType(U32 index) = 0;
 
-        virtual void setDescriptorBufferResource(U32 index, common::Resource<Buffer> buffer) = 0;
+        virtual void setDescriptorBufferResource(U32 index, common::Resource<Buffer> buffer, U64 size) = 0;
         virtual void setDescriptorTextureResource(U32 index, common::Resource<Texture> texture) = 0;
 
     };

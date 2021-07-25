@@ -224,10 +224,10 @@ namespace swizzle
         static const S32 scanCodeMapping[] =
         {
             /* KeyEsc,                                                      */ 1,
-            /*                                                              */ 
-            /* Key0, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9,  */ 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
             /*                                                              */
-            /* KeyHyphen, KeyEquals,                                        */ 12, 13,
+            /* Key0, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9,  */ 11, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            /*                                                              */
+            /* KeyHyphen(-), KeyEquals (=),                                 */ 12, 13,
             /*                                                              */
             /* KeyA, KeyB, KeyC, KeyD, KeyE, KeyF, KeyG, KeyH, KeyI, KeyJ,  */ 30, 48, 46, 32, 18, 33, 34, 35, 23, 36,
             /* KeyK, KeyL, KeyM, KeyN, KeyO, KeyP, KeyQ, KeyR, KeyS, KeyT,  */ 37, 38, 50, 49, 24, 25, 16, 19, 31, 20,
@@ -235,31 +235,31 @@ namespace swizzle
             /*                                                              */
             /* KeyLBracket, KeyRBracket, KeyEnter,                          */ 26, 27, 28,
             /* KeySemiColon, KeyApostrophe, KeyBackslash, KeyForwardslash,  */ 39, 40, 43, 53,
-            /*                                                              */ 
+            /*                                                              */
             /* KeySpace, KeyTilde, KeyPause, KeyScrollLock,                 */ 57, 41, 69, 70,
             /* KeySysReq, KeyNumPad, KeyApplication,                        */ 311, 325, 349,
-            /*                                                              */ 
+            /*                                                              */
             /* KeyArrowUp, KeyArrowDown, KeyArrowLeft, KeyArrowRight,       */ 328, 336, 331, 333,
             /*                                                              */
-            /* KeyF1, KeyF2, KeyF3, KeyF4, KeyF5, KeyF6,                    */ 59, 60, 61, 62, 63, 64, 
+            /* KeyF1, KeyF2, KeyF3, KeyF4, KeyF5, KeyF6,                    */ 59, 60, 61, 62, 63, 64,
             /* KeyF7, KeyF8, KeyF9, KeyF10, KeyF11, KeyF12,                 */ 65, 66, 67, 68, 87, 88,
-            /*                                                              */ 
+            /*                                                              */
             /* KeyLCtrl, KeyRCtrl,                                          */ 29, 285,
             /* KeyLShift, KeyRShift,                                        */ 42, 54,
             /* KeyLAlt, KeyRAlt,                                            */ 56, 312,
             /* KeyLSpecial, KeyRSpecial,                                    */ 347, 348,
-            /*                                                              */ 
+            /*                                                              */
             /* KeyTab, KeyCaps, KeyPipe,                                    */ 15, 58, 86,
             /* KeyComma, KeyPeriod,                                         */ 51, 52,
-            /*                                                              */ 
+            /*                                                              */
             /* KeyNumPad0, KeyNumPad1, KeyNumPad2,                          */ 82, 79, 80,
             /* KeyNumPad3, KeyNumPad4, KeyNumPad5,                          */ 81, 75, 76,
             /* KeyNumPad6, KeyNumPad7, KeyNumPad8,                          */ 77, 71, 72,
             /* KeyNumPad9,                                                  */ 73,
-            /*                                                              */ 
+            /*                                                              */
             /* KeyDelete, KeyInsert, KeyHome,                               */ 339, 338, 327,
             /* KeyEnd, KeyPageUp, KeyPageDown,                              */ 335, 329, 337,
-            /*                                                              */ 
+            /*                                                              */
             /* KeyBackspace,                                                */ 14,
             /* KeyNumPadEnter,                                              */ 284,
             /* KeyNumPadPlus,                                               */ 78,

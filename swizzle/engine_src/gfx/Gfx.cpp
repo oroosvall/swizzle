@@ -23,7 +23,7 @@
 namespace swizzle::gfx
 {
 
-    common::Resource<VulkanInstance> gVkInst;
+    common::Resource<VulkanInstance> gVkInst = nullptr;
 
     SwBool GfxInitialize()
     {

@@ -93,7 +93,7 @@ void Game::userSetup()
     mUniformBuffer = mGfxContext->createBuffer(sw::gfx::BufferType::UniformBuffer);
 
     mUniformBuffer->setBufferData(&lampColor, sizeof(lampColor), 1);
-    mMaterial->setDescriptorBufferResource(1u, mUniformBuffer);
+    mMaterial->setDescriptorBufferResource(1u, mUniformBuffer, sizeof(float) * 4);
 
     sw::gfx::ShaderBufferInput bufferInputSky = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
 
@@ -128,15 +128,49 @@ void Game::userSetup()
     // "C:/tmp/dragon.obj"
 
     //mMesh = sw::asset::LoadMesh(mGfxContext, "meshes/main_city.obj", true);
-    mMesh = sw::asset::LoadMesh(mGfxContext, "C:/tmp/cobra.obj", true);
+    //mMesh = sw::asset::LoadMesh(mGfxContext, "C:/tmp/cobra.obj", true);
+    //mMesh = sw::asset::LoadMesh(mGfxContext, "meshes/test.swm", true);
+    mMeshAnimated = sw::asset::LoadMeshAnimated(mGfxContext, "c:/gme/test.swm", true);
 
+    sw::gfx::ShaderBufferInput bufferInputAnimation = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u + 4u + 4u) };
+
+    sw::gfx::ShaderAttribute attributesAnimation[] = {
+        { 0u, sw::gfx::ShaderAttributeDataType::vec3f, 0u},
+        { 0u, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u },
+        { 0u, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u },
+        { 0u, sw::gfx::ShaderAttributeDataType::vec4u, sizeof(float) * 8u },
+        { 0u, sw::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u }
+    };
+
+    sw::gfx::ShaderAttributeList attribsAnim = {};
+    attribsAnim.mNumBuffers = 1U;
+    attribsAnim.mBufferInput = &bufferInputAnimation;
+    attribsAnim.mNumAttributes = COUNT_OF(attributesAnimation);
+    attribsAnim.mAttributes = attributesAnimation;
+    attribsAnim.mEnableDepthTest = true;
+    attribsAnim.mEnableBlending = false;
+
+    mAnimationShader = mSwapchain->createShader(attribsAnim);
+    mAnimationShader->load("shaders/animated.shader");
+    mAnimationMaterial = mAnimationShader->createMaterial();
+    mAnimationMaterial->setDescriptorTextureResource(0u, mSkyTexture);
+    mAnimationMaterial->setDescriptorBufferResource(1u, mMeshAnimated.mBoneBuffer, ~0ull);
 }
 
 SwBool Game::userUpdate(F32 dt)
 {
-    if (sw::input::WasPressedThisFrame(sw::input::Keys::KeySpace))
+    if (sw::input::WasPressedThisFrame(sw::input::Keys::Key0))
     {
         extraText++;
+    }
+
+    if (sw::input::WasPressedThisFrame(sw::input::Keys::Key1))
+    {
+        selectedBone++;
+    }
+    if (sw::input::WasPressedThisFrame(sw::input::Keys::Key2))
+    {
+        selectedBone--;
     }
 
     sw::profile::ProfileEvent(__FUNCTION__, sw::profile::ProfileEventType::EventType_Frame);
@@ -216,6 +250,12 @@ void Game::userCleanup()
     mTextShader.reset();
     mTextMaterial.reset();
 
+    mMeshAnimated.mBoneBuffer.reset();
+    mMeshAnimated.mIndexBuffer.reset();
+    mMeshAnimated.mVertexBuffer.reset();
+
+    mAnimationShader.reset();
+    mAnimationMaterial.reset();
 }
 
 void Game::updateMainWindow()
@@ -238,6 +278,7 @@ void Game::updateMainWindow()
         glm::mat4 view;
         glm::mat4 proj;
         glm::vec4 eye;
+        int sb;
     };
 
     tmp t = {};
@@ -245,6 +286,7 @@ void Game::updateMainWindow()
     t.view = cam.getView();
     t.proj = cam.getProjection();
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
+    t.sb = selectedBone;
 
     t.model = glm::translate(t.model, { 0, -10, -10 });
 
@@ -257,14 +299,15 @@ void Game::updateMainWindow()
 
     mCmdBuffer->beginRenderPass(mSwapchain);
 
-    mCmdBuffer->bindShader(mShader);
+    mCmdBuffer->bindShader(mAnimationShader);
 
-    mCmdBuffer->bindMaterial(mShader, mMaterial);
+    mCmdBuffer->bindMaterial(mAnimationShader, mAnimationMaterial);
     mCmdBuffer->setViewport(x, y);
 
-    mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+    mCmdBuffer->setShaderConstant(mAnimationShader, (U8*)&t, sizeof(t));
 
-    mCmdBuffer->drawIndexed(mMesh.mVertexBuffer, mMesh.mIndexBuffer);
+    //mCmdBuffer->drawIndexed(mMesh.mVertexBuffer, mMesh.mIndexBuffer);
+    mCmdBuffer->drawIndexed(mMeshAnimated.mVertexBuffer, mMeshAnimated.mIndexBuffer);
 
     // Wormhole stuff
 
