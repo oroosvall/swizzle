@@ -4,7 +4,10 @@
 /* Include files */
 
 #include <common/Common.hpp>
+#include <swizzle/Api.hpp>
+
 #include <swizzle/gfx/CommandBuffer.hpp>
+#include <swizzle/gfx/Context.hpp>
 
 /* Defines */
 
@@ -20,7 +23,8 @@ namespace swizzle::asset
 {
     class IAnimationState
     {
-
+    public:
+        // Todo add stuff here
     };
 
     class IModelAsset
@@ -36,5 +40,10 @@ namespace swizzle::asset
 }
 
 /* Function Declaration */
+
+namespace swizzle::asset
+{
+    common::Resource<IModelAsset> SWIZZLE_API LoadModelAsset(common::Resource<gfx::GfxContext> ctx, const SwChar* fileName);
+}
 
 #endif

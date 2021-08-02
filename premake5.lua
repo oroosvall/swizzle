@@ -225,6 +225,17 @@ group("Tests")
         end -- userFunc
     )
 
+    setupPrj("swmTest", "consoleApp",
+    {"vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "libs/swm/test/**.cpp"}, -- files/filePath
+    {"vendor/google-test/googletest-master/googletest/include" , "libs/swm/include", "libs/swm/src", "libs/utils/include", "libs/common/include"}, -- include paths
+    "", -- defines
+    {"swm", "google-test"}, -- links
+    function() -- userFunc
+        vpaths { ["*"] = "tests/**.hpp" }
+        vpaths { ["*"] = "tests/**.cpp" }
+    end -- userFunc
+)
+
 group("Apps")
     setupPrj("sandbox", "consoleApp",
         {"swizzle/include/**.hpp", "apps/sandbox/**.hpp", "apps/sandbox/**.cpp"}, -- files/filePath

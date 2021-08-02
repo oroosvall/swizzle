@@ -5,6 +5,8 @@
 #include "load/LoadV1.hpp"
 #include "load/LoadV2.hpp"
 
+#include "save/SaveV1.hpp"
+
 /* Defines */
 
 /* Typedefs */
@@ -37,6 +39,12 @@ namespace swm_ver
         }
         return fn;
     }
+
+    SaveFn FindSaver()
+    {
+        return &swm_v1::SaveV1;
+    }
+
 }
 
 /* Class Public Function Definition */

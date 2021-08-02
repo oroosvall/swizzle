@@ -73,6 +73,27 @@ namespace swm_int
 
         return res;
     }
+
+    swm::SaveResult WriteModelInternal(utils::BufferWriter& bw, const swm::Model& model, const swm::SaveOptions& options)
+    {
+        swm::SaveResult res = swm::LoadResult::InvalidVersion;
+
+        swm_int::Magic m{};
+        bw.write(m);
+
+        swm_int::Version v {1u, 0u};
+
+        bw.write(v);
+
+        swm_ver::SaveFn fn = swm_ver::FindSaver();
+        if (fn)
+        {
+            res = fn(bw, model, options);
+        }
+
+        return res;
+    }
+
 }
 
 /* Class Public Function Definition */

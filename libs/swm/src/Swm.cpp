@@ -53,11 +53,18 @@ namespace swm
 
     SaveResult SaveSwm(std::filesystem::path filePath, const Model& model, SaveOptions options)
     {
-        filePath;
-        model;
-        options;
+        SaveResult res = SaveResult::FileIoError;
 
-        return SaveResult::Success;
+        std::ofstream file(filePath, std::ios::binary);
+
+        if (file.is_open())
+        {
+            utils::BufferWriter bw(std::move(file));
+
+            res = swm_int::WriteModelInternal(bw, model, options);
+        }
+
+        return res;
     }
 }
 

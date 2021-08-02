@@ -1,5 +1,5 @@
-#ifndef BASE_TYPES_HPP
-#define BASE_TYPES_HPP
+#ifndef LOAD_BASE_TYPES_HPP
+#define LOAD_BASE_TYPES_HPP
 
 /* Include files */
 

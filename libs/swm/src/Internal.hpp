@@ -7,6 +7,7 @@
 
 #include <common/Common.hpp>
 #include <utils/BufferReader.hpp>
+#include <utils/BufferWriter.hpp>
 
 /* Defines */
 
@@ -26,7 +27,7 @@ namespace swm_int
 
     struct Magic
     {
-        SwChar mMagic[4];
+        SwChar mMagic[4] = { 'S', 'W', 'M', ' ' };
     };
 }
 
@@ -39,6 +40,8 @@ namespace swm_int
     SwBool CheckMagic(const Magic* ver);
 
     swm::LoadResult ParseModelInternal(utils::BufferReader& br, swm::Model& model);
+
+    swm::SaveResult WriteModelInternal(utils::BufferWriter& bw, const swm::Model& model, const swm::SaveOptions& options);
 
 }
 

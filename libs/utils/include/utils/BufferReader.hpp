@@ -24,7 +24,7 @@ namespace utils
     public:
         BufferReader(std::vector<uint8_t>& container)
             : mContainer(std::move(container))
-            , mReadOffset(0u)
+            , mWriteOffset(0u)
         {
         }
 
@@ -32,8 +32,8 @@ namespace utils
         T* read()
         {
             const size_t typeSize = sizeof(T);
-            const size_t offset = mReadOffset;
-            mReadOffset += typeSize;
+            const size_t offset = mWriteOffset;
+            mWriteOffset += typeSize;
             T* result = nullptr;
 
             if (offset + typeSize <= mContainer.size())
@@ -50,8 +50,8 @@ namespace utils
             bool ok = false;
 
             const size_t typeSize = sizeof(T);
-            const size_t offset = mReadOffset;
-            mReadOffset += typeSize;
+            const size_t offset = mWriteOffset;
+            mWriteOffset += typeSize;
 
             if (offset + typeSize <= mContainer.size())
             {
@@ -63,11 +63,11 @@ namespace utils
         }
 
         template<typename T>
-        T* readArrayU32(U32 length)
+        T* readArrayU32(uint32_t length)
         {
             const size_t totalSize = sizeof(T) * length;
-            const size_t offset = mReadOffset;
-            mReadOffset += totalSize;;
+            const size_t offset = mWriteOffset;
+            mWriteOffset += totalSize;;
             T* result = nullptr;
 
 
@@ -81,7 +81,7 @@ namespace utils
 
     private:
         std::vector<uint8_t> mContainer;
-        size_t mReadOffset;
+        size_t mWriteOffset;
     };
 }
 

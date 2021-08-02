@@ -4,6 +4,7 @@
 /* Include files */
 
 #include <swizzle/asset/IModelAsset.hpp>
+#include <swizzle/gfx/Buffer.hpp>
 
 /* Defines */
 
@@ -25,7 +26,8 @@ namespace swizzle::asset
     class ModelAsset : public IModelAsset
     {
     public:
-        virtual ~ModelAsset() {}
+        ModelAsset();
+        virtual ~ModelAsset();
 
         virtual void draw(common::Resource<gfx::CommandBuffer> cmdBuffer) override;
         virtual void update(F32 dt) override;
@@ -34,7 +36,10 @@ namespace swizzle::asset
 
     private:
 
+        common::Resource<gfx::Buffer> mVertexBuffer;
+        common::Resource<gfx::Buffer> mIndexBuffer;
 
+        common::Resource<gfx::Buffer> mBoneBuffer;
     };
 }
 

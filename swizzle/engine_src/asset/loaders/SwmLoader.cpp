@@ -23,9 +23,6 @@ static const glm::mat4 flipYZ = glm::mat4(
 
 /* Static Function Declaration */
 
-void printMatrixList(const std::vector<glm::mat4>& mats, const std::vector<U16>& parentList);
-void printMatrix(const glm::mat4& mat);
-
 U16 FindRoot(const std::vector<U16>& parentList);
 std::vector<U16> FindChildren(U16 index, const std::vector<U16>& parentList);
 
@@ -38,30 +35,6 @@ std::vector<glm::mat4> CalcPose(const std::vector<glm::mat4>& lbp, const std::ve
 
 /* Static Function Definition */
 
-void print2(const std::vector<glm::mat4>& mats, const std::vector<U16>& parentList, U16 idx)
-{
-    printf("%u\n", idx);
-    printMatrix(mats[idx]);
-    for (const auto& c : FindChildren(idx, parentList))
-    {
-        print2(mats, parentList, c);
-    }
-}
-
-void printMatrixList(const std::vector<glm::mat4>& mats, const std::vector<U16>& parentList)
-{
-    U16 root = FindRoot(parentList);
-    print2(mats, parentList, root);
-}
-
-void printMatrix(const glm::mat4& mat)
-{
-    printf("(%f, %f, %f, %f)\n", mat[0][0], mat[0][1], mat[0][2], mat[0][3]);
-    printf("(%f, %f, %f, %f)\n", mat[1][0], mat[1][1], mat[1][2], mat[1][3]);
-    printf("(%f, %f, %f, %f)\n", mat[2][0], mat[2][1], mat[2][2], mat[2][3]);
-    printf("(%f, %f, %f, %f)\n", mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
-    printf("\n");
-}
 
 U16 FindRoot(const std::vector<U16>& parentList)
 {
@@ -224,8 +197,6 @@ namespace loader::swm
 
                 memcpy(mats.data(), animInfo.mAnimations[0].mKeyFrames.data(), sizeof(glm::mat4) * animInfo.mNumBones);
                 CalcLocalBindPose(mats, animInfo.mParentList);
-
-                printMatrixList(mats, animInfo.mParentList);
 
                 std::vector<glm::mat4> pose = CalcPose(mats, inverse);
 

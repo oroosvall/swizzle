@@ -97,7 +97,7 @@ namespace swizzle::gfx
         std::vector<const char*> debugLayers;
 #if _DEBUG
         debugLayers.push_back("VK_LAYER_KHRONOS_validation");
-        //debugLayers.push_back("VK_LAYER_RENDERDOC_Capture");
+        debugLayers.push_back("VK_LAYER_RENDERDOC_Capture");
 #endif
 
         VkApplicationInfo vkAppInfo = {};
