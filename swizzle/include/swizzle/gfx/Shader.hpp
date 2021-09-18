@@ -33,6 +33,7 @@ namespace swizzle::gfx
     class ShaderBufferInput
     {
     public:
+        ShaderBufferInput() : mRate(ShaderBufferInputRate::InputRate_Vertex), mStride(0u) {}
         ShaderBufferInput(ShaderBufferInputRate rate, U32 stride) : mRate(rate), mStride(stride) {}
         virtual ~ShaderBufferInput() {}
 
@@ -55,10 +56,8 @@ namespace swizzle::gfx
 
     struct ShaderAttributeList
     {
-        U32 mNumBuffers;
-        ShaderBufferInput* mBufferInput;
-        U32 mNumAttributes;
-        ShaderAttribute* mAttributes;
+        common::Iteratable<ShaderBufferInput> mBufferInput;
+        common::Iteratable<ShaderAttribute> mAttributes;
         SwBool mEnableDepthTest;
         SwBool mEnableBlending;
     };

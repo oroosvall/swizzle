@@ -44,6 +44,7 @@ namespace swm_v1
 
     swm::SaveResult SaveMeshV1(utils::BufferWriter& bw, const swm::Model::Mesh& mesh, const swm::SaveOptions& options)
     {
+        UNUSED_ARG(options);
         SR res = swm_base::SaveString(bw, mesh.mName);
 
         U16 meshFlags = 0u;

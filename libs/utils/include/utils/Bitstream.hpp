@@ -6,53 +6,23 @@
 
 namespace utils
 {
-    /*
-    uint16_t readBitsTo16(uint8_t numBits)
-    {
-      uint16_t v1 = 0;
-      uint16_t v2 = 0;
-      uint16_t res = 0;
-
-      char* dd = mData;
-
-      v1 = (uint8_t)dd[mOffset];
-      v2 = (uint8_t)dd[mOffset + 1];
-
-      res = v2 | v1 << 8;
-
-      uint16_t mask = (1 << numBits) - 1;
-
-      res >>= (16 - (mBitOffset + numBits));
-      res &= mask;
-
-      mBitOffset += numBits;
-      if (mBitOffset >= 8)
-      {
-        mBitOffset -= 8;
-        mOffset++;
-      }
-
-      return res;
-    }
-    */
-
     class BitStreamReader
     {
     public:
         BitStreamReader(uint8_t* data, size_t dataSize)
             : mData(data)
             , mSize(dataSize)
-            , mCache(0U)
-            , mBitOffset(0U)
-            , mRead(0U)
+            , mCache(0u)
+            , mBitOffset(0u)
+            , mRead(0u)
         {
             read(mCache);
         }
 
         bool readBits(uint32_t& data, uint8_t nBits)
         {
-            uint32_t mask = (1U << nBits) - 1U;
-            uint64_t tmp;
+            uint32_t mask = (1u << nBits) - 1u;
+            uint64_t tmp = 0u;
 
             uint8_t* p1 = (uint8_t*)&tmp;
             uint8_t* p2 = (uint8_t*)&mCache;
@@ -64,10 +34,10 @@ namespace utils
             data &= mask;
 
             mBitOffset += nBits;
-            if (mBitOffset > 32)
+            if (mBitOffset > 32u)
             {
                 read(mCache);
-                mBitOffset -= 32;
+                mBitOffset -= 32u;
             }
 
             return true;
@@ -96,9 +66,9 @@ namespace utils
         BitStreamWriter(uint8_t* data, size_t dataSize)
             : mData(data)
             , mSize(dataSize)
-            , mCache(0U)
-            , mBitOffset(0U)
-            , mWritten(0U)
+            , mCache(0u)
+            , mBitOffset(0u)
+            , mWritten(0u)
         {
         }
 
@@ -107,12 +77,11 @@ namespace utils
         // and write 4 bytes to buffer
         bool writeBits(uint32_t data, uint8_t nBits)
         {
-            
             uint64_t w = static_cast<uint64_t>(data);
 
-            w <<= (static_cast<uint64_t>(64U) - (static_cast<uint64_t>(mBitOffset) + static_cast<uint64_t>(nBits)));
+            w <<= (static_cast<uint64_t>(64u) - (static_cast<uint64_t>(mBitOffset) + static_cast<uint64_t>(nBits)));
 
-            uint64_t tmp = 0;
+            uint64_t tmp = 0ull;
             uint8_t* p1 = (uint8_t*)&tmp;
             uint8_t* p2 = (uint8_t*)&w;
 

@@ -5,6 +5,7 @@
 
 #include <cstring>
 #include <memory>
+#include <array>
 
 /* Defines */
 
@@ -31,6 +32,8 @@ typedef float F32;
 typedef double F64;
 
 typedef bool SwBool;
+
+typedef float DeltaTime;
 
 /* Forward Declared Structs/Classes */
 
@@ -69,6 +72,34 @@ namespace common
         virtual ~IResource() {}
     };
 
+    template<class _Ty>
+    class Iteratable
+    {
+    public:
+        constexpr Iteratable() noexcept : _First(nullptr), _Last(nullptr) {}
+        constexpr Iteratable(const std::initializer_list<_Ty>&& init) noexcept
+            : _First(init.begin()), _Last(init.end())
+        {}
+
+        const U64 size() const noexcept
+        {
+            return static_cast<U64>(_Last - _First);
+        }
+
+        const _Ty* begin() const noexcept
+        {
+            return _First;
+        }
+
+        const _Ty* end() const noexcept
+        {
+            return _Last;
+        }
+
+    private:
+        const _Ty* _First;
+        const _Ty* _Last;
+    };
 }
 
 /* Function Declaration */

@@ -12,10 +12,12 @@
 #include <swizzle/asset/MeshLoader.hpp>
 
 #include <cstring>
+#include <array>
 
 Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
+    , guiLabel(nullptr)
 {
 }
 
@@ -39,19 +41,15 @@ void Game::userSetup()
 
     mCmdBuffer = mGfxContext->createCommandBuffer(3);
 
-    sw::gfx::ShaderBufferInput bufferInput = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
-
-    sw::gfx::ShaderAttribute attributes[] = {
+    sw::gfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = {
+        { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) }
+    };
+    attribs.mAttributes = {
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
         { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
-
-    sw::gfx::ShaderAttributeList attribs = {};
-    attribs.mNumBuffers = 1U;
-    attribs.mBufferInput = &bufferInput;
-    attribs.mNumAttributes = COUNT_OF(attributes);
-    attribs.mAttributes = attributes;
     attribs.mEnableDepthTest = true;
     attribs.mEnableBlending = false;
 
@@ -63,19 +61,14 @@ void Game::userSetup()
     mTexture = swizzle::asset::LoadTexture2D(mGfxContext, "texture/lightGray.png");
     mMaterial->setDescriptorTextureResource(0u, mTexture);
 
-
-    sw::gfx::ShaderBufferInput bufferInputText = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 2U) };
-
-    sw::gfx::ShaderAttribute attributesText[] = {
+    sw::gfx::ShaderAttributeList attribsText = {};
+    attribsText.mBufferInput = {
+        { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 2U) }
+    };
+    attribsText.mAttributes = {
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
         { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 3U }
     };
-
-    sw::gfx::ShaderAttributeList attribsText = {};
-    attribsText.mNumBuffers = 1U;
-    attribsText.mBufferInput = &bufferInputText;
-    attribsText.mNumAttributes = COUNT_OF(attributesText);
-    attribsText.mAttributes = attributesText;
     attribsText.mEnableDepthTest = false;
     attribsText.mEnableBlending = true;
 
@@ -95,19 +88,17 @@ void Game::userSetup()
     mUniformBuffer->setBufferData(&lampColor, sizeof(lampColor), 1);
     mMaterial->setDescriptorBufferResource(1u, mUniformBuffer, sizeof(float) * 4);
 
-    sw::gfx::ShaderBufferInput bufferInputSky = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
 
-    sw::gfx::ShaderAttribute attributesSky[] = {
+
+    sw::gfx::ShaderAttributeList attribsSky = {};
+    attribsSky.mBufferInput = {
+        { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) }
+    };
+    attribsSky.mAttributes = {
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
         { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
-
-    sw::gfx::ShaderAttributeList attribsSky = {};
-    attribsSky.mNumBuffers = 1U;
-    attribsSky.mBufferInput = &bufferInputSky;
-    attribsSky.mNumAttributes = COUNT_OF(attributesSky);
-    attribsSky.mAttributes = attributesSky;
     attribsSky.mEnableDepthTest = false;
     attribsSky.mEnableBlending = false;
 
@@ -132,21 +123,17 @@ void Game::userSetup()
     //mMesh = sw::asset::LoadMesh(mGfxContext, "meshes/test.swm", true);
     mMeshAnimated = sw::asset::LoadMeshAnimated(mGfxContext, "c:/gme/test.swm", true);
 
-    sw::gfx::ShaderBufferInput bufferInputAnimation = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u + 4u + 4u) };
-
-    sw::gfx::ShaderAttribute attributesAnimation[] = {
+    sw::gfx::ShaderAttributeList attribsAnim = {};
+    attribsAnim.mBufferInput = {
+        { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u + 4u + 4u) }
+    };
+    attribsAnim.mAttributes = {
         { 0u, sw::gfx::ShaderAttributeDataType::vec3f, 0u},
         { 0u, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u },
         { 0u, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u },
         { 0u, sw::gfx::ShaderAttributeDataType::vec4u, sizeof(float) * 8u },
         { 0u, sw::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u }
     };
-
-    sw::gfx::ShaderAttributeList attribsAnim = {};
-    attribsAnim.mNumBuffers = 1U;
-    attribsAnim.mBufferInput = &bufferInputAnimation;
-    attribsAnim.mNumAttributes = COUNT_OF(attributesAnimation);
-    attribsAnim.mAttributes = attributesAnimation;
     attribsAnim.mEnableDepthTest = true;
     attribsAnim.mEnableBlending = false;
 
@@ -288,8 +275,6 @@ void Game::updateMainWindow()
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
     t.sb = selectedBone;
 
-    t.model = glm::translate(t.model, { 0, -10, -10 });
-
     mSwapchain->prepare();
     mCmdBuffer->begin();
 
@@ -299,29 +284,30 @@ void Game::updateMainWindow()
 
     mCmdBuffer->beginRenderPass(mSwapchain);
 
-    mCmdBuffer->bindShader(mAnimationShader);
-
-    mCmdBuffer->bindMaterial(mAnimationShader, mAnimationMaterial);
-    mCmdBuffer->setViewport(x, y);
-
-    mCmdBuffer->setShaderConstant(mAnimationShader, (U8*)&t, sizeof(t));
-
-    //mCmdBuffer->drawIndexed(mMesh.mVertexBuffer, mMesh.mIndexBuffer);
-    mCmdBuffer->drawIndexed(mMeshAnimated.mVertexBuffer, mMeshAnimated.mIndexBuffer);
-
-    // Wormhole stuff
-
     mCmdBuffer->bindShader(mSkyShader);
 
     mCmdBuffer->bindMaterial(mSkyShader, mSkyMaterial);
     mCmdBuffer->setViewport(x, y);
 
-    t.model = glm::translate(glm::mat4(1.0F), { 0.0F, 0.0F, 0.0F });
+    t.model = glm::translate(glm::mat4(1.0F), { cam.getPosition()});
 
-    mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+    mCmdBuffer->setShaderConstant(mSkyShader, (U8*)&t, sizeof(t));
 
     mCmdBuffer->draw(mSkysphere.mVertexBuffer);
 
+
+    mCmdBuffer->bindShader(mAnimationShader);
+
+    mCmdBuffer->bindMaterial(mAnimationShader, mAnimationMaterial);
+    mCmdBuffer->setViewport(x, y);
+
+
+    t.model = glm::translate(glm::mat4(1.0F), { 0, 0, 0 });
+
+    mCmdBuffer->setShaderConstant(mAnimationShader, (U8*)&t, sizeof(t));
+
+    //mCmdBuffer->drawIndexed(mMesh.mVertexBuffer, mMesh.mIndexBuffer);
+    mCmdBuffer->drawIndexed(mMeshAnimated.mVertexBuffer, mMeshAnimated.mIndexBuffer);
 
     // Text stuff
 

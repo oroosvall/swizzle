@@ -338,31 +338,33 @@ namespace swizzle::gfx
         }
 
         // Create bindings based on shader attributes
+        int count = 0;
         std::vector<VkVertexInputBindingDescription> bindingDescriptors;
-        bindingDescriptors.resize(mShaderAttributes.mNumBuffers);
-        for (U32 i = 0U; i < mShaderAttributes.mNumBuffers; ++i)
+        bindingDescriptors.resize(mShaderAttributes.mBufferInput.size());
+        for (auto it = mShaderAttributes.mBufferInput.begin(); it != mShaderAttributes.mBufferInput.end(); it++)
         {
-            const ShaderBufferInput& input = mShaderAttributes.mBufferInput[i];
-            bindingDescriptors[i].binding = i;
-            bindingDescriptors[i].inputRate =
-                (input.mRate == ShaderBufferInputRate::InputRate_Vertex ? VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX
+            bindingDescriptors[count].binding = count;
+            bindingDescriptors[count].inputRate =
+                (it->mRate == ShaderBufferInputRate::InputRate_Vertex ? VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX
                     : VkVertexInputRate::VK_VERTEX_INPUT_RATE_INSTANCE);
-            bindingDescriptors[i].stride = input.mStride;
+            bindingDescriptors[count].stride = it->mStride;
+            count++;
         }
 
+        count = 0;
         std::vector<VkVertexInputAttributeDescription> attributeDescriptor;
-        attributeDescriptor.resize(mShaderAttributes.mNumAttributes);
-        for (U32 i = 0U; i < mShaderAttributes.mNumAttributes; ++i)
+        attributeDescriptor.resize(mShaderAttributes.mAttributes.size());
+        for (auto it = mShaderAttributes.mAttributes.begin(); it != mShaderAttributes.mAttributes.end(); it++)
         {
-            const ShaderAttribute& attrib = mShaderAttributes.mAttributes[i];
-            attributeDescriptor[i].location = i;
-            attributeDescriptor[i].binding = attrib.mBufferIndex;
-            attributeDescriptor[i].format = getShaderAttributeFormat(attrib.mDataType);
-            attributeDescriptor[i].offset = attrib.mOffset;
-            if (attributeDescriptor[i].format == VK_FORMAT_UNDEFINED)
+            attributeDescriptor[count].location = count;
+            attributeDescriptor[count].binding = it->mBufferIndex;
+            attributeDescriptor[count].format = getShaderAttributeFormat(it->mDataType);
+            attributeDescriptor[count].offset = it->mOffset;
+            if (attributeDescriptor[count].format == VK_FORMAT_UNDEFINED)
             {
                 core::ShowCriticalMessage("Shader attribute is undefined format");
             }
+            count++;
         }
 
         VkPipelineVertexInputStateCreateInfo vertexInput = {};

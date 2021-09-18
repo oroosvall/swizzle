@@ -29,6 +29,12 @@ namespace utils
     {
         value |= 1 << bit;
     }
+
+    template<typename T>
+    inline void ClearBit(T& value, uint32_t bit)
+    {
+        value &= ~(1 << bit);
+    }
 }
 
 #endif

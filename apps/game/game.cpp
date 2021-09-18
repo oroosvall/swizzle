@@ -31,19 +31,15 @@ void Game::userSetup()
 
     mPlayer.initResources(mGfxContext);
 
-    sw::gfx::ShaderBufferInput bufferInput = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) };
-
-    sw::gfx::ShaderAttribute attributes[] = {
+    sw::gfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = {
+        { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) }
+    };
+    attribs.mAttributes = {
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
         { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
-
-    sw::gfx::ShaderAttributeList attribs = {};
-    attribs.mNumBuffers = 1U;
-    attribs.mBufferInput = &bufferInput;
-    attribs.mNumAttributes = COUNT_OF(attributes);
-    attribs.mAttributes = attributes;
     attribs.mEnableDepthTest = true;
     attribs.mEnableBlending = false;
 
@@ -64,19 +60,14 @@ void Game::userSetup()
 
     guiLabel = sw::gui::CreateLabel(mGfxContext);
 
-
-    sw::gfx::ShaderBufferInput bufferInputText = { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 2U) };
-
-    sw::gfx::ShaderAttribute attributesText[] = {
+    sw::gfx::ShaderAttributeList attribsText = {};
+    attribsText.mBufferInput = {
+        { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 2U) }
+    };
+    attribsText.mAttributes = {
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
         { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 3U }
     };
-
-    sw::gfx::ShaderAttributeList attribsText = {};
-    attribsText.mNumBuffers = 1U;
-    attribsText.mBufferInput = &bufferInputText;
-    attribsText.mNumAttributes = COUNT_OF(attributesText);
-    attribsText.mAttributes = attributesText;
     attribsText.mEnableDepthTest = false;
     attribsText.mEnableBlending = true;
 
@@ -96,6 +87,30 @@ void Game::userSetup()
         {0.0f, 0.0f, -70.0f,},
         {0.0f, -5.0f, -70.0f, }
     };
+
+    sw::gfx::ShaderAttributeList attribsSky = {};
+    attribsSky.mBufferInput = {
+        { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U) }
+    };
+    attribsSky.mAttributes = {
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
+        { 0U, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
+        { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
+    };;
+    attribsSky.mEnableDepthTest = false;
+    attribsSky.mEnableBlending = false;
+
+    mSkyShader = mSwapchain->createShader(attribsSky);
+    mSkyShader->load("shaders/sky.shader");
+
+    mSkyMaterial = mSkyShader->createMaterial();
+
+    mSkyTexture = sw::asset::LoadTextureCubeMap(mGfxContext,
+        "texture/right.png", "texture/left.png", "texture/top.png", "texture/bottom.png", "texture/front.png", "texture/back.png");
+
+    mSkyMaterial->setDescriptorTextureResource(0, mSkyTexture);
+
+    mSkysphere = sw::asset::LoadMesh(mGfxContext, "meshes/inverted_sphere.obj", true);
 
 }
 
@@ -191,6 +206,7 @@ SwBool Game::userUpdate(F32 dt)
 
     mCmdBuffer->uploadTexture(mTexture);
     mCmdBuffer->uploadTexture(guiLabel->getTexture());
+    mCmdBuffer->uploadTexture(mSkyTexture);
 
     mCmdBuffer->beginRenderPass(mSwapchain);
 
@@ -203,11 +219,22 @@ SwBool Game::userUpdate(F32 dt)
     };
 
     tmp t = {};
-    t.model = mPlayer.getMatrix();
     t.view = cam.getView();
     t.proj = cam.getProjection();
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
 
+    mCmdBuffer->bindShader(mSkyShader);
+
+    mCmdBuffer->bindMaterial(mSkyShader, mSkyMaterial);
+    mCmdBuffer->setViewport(x, y);
+
+    t.model = glm::translate(glm::mat4(1.0F), { cam.getPosition() });
+
+    mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+
+    mCmdBuffer->draw(mSkysphere.mVertexBuffer);
+
+    t.model = mPlayer.getMatrix();
     mCmdBuffer->bindShader(mShader);
 
     mCmdBuffer->bindMaterial(mShader, mMaterial);

@@ -39,7 +39,8 @@ filter "configurations:RelWDbgInfo"
 filter "configurations:Release"
     defines "SW_RELEASE"
     optimize "Speed"
-    flags { "FatalCompileWarnings", "NoBufferSecurityCheck", "NoFramePointer" }
+    flags { "FatalCompileWarnings", "NoBufferSecurityCheck" }
+    omitframepointer "On"
     inlining ("auto")
 
 filter "system:windows"

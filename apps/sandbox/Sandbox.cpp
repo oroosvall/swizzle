@@ -1,5 +1,4 @@
-
-#include <swizzle/Swizzle.hpp>
+﻿#include <swizzle/Swizzle.hpp>
 #include <utils/HighResolutionClock.hpp>
 
 #include "Game.hpp"
@@ -8,7 +7,6 @@
 
 #include <iostream>
 
-#include <swm/Swm.hpp>
 
 class StdLogger : public swizzle::core::LogDevice
 {
@@ -29,9 +27,10 @@ class StdLogger : public swizzle::core::LogDevice
 
 int main(int argv, char* argc[])
 {
+    UNUSED_ARG(argv);
+    UNUSED_ARG(argc);
+
     setlocale(LC_CTYPE, "");
-    (void)argc;
-    (void)argv;
 
     StdLogger logger;
 
@@ -39,13 +38,9 @@ int main(int argv, char* argc[])
 
     {
         Game game;
-
         game.initialize("Swizzle-sandbox");
-
         sw::profile::ProfileStart("ProfileTest.prof");
-
         game.run();
-
         sw::profile::ProfileEnd();
     }
 

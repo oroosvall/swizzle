@@ -56,6 +56,14 @@ private:
 
     std::vector<glm::vec3> mEnemyPosisions;
     sw::Mesh mEnemyShip;
+
+    sw::Mesh mSkysphere;
+
+    common::Resource<sw::gfx::Shader> mSkyShader;
+
+    common::Resource<sw::gfx::Texture> mSkyTexture;
+    common::Resource<sw::gfx::Material> mSkyMaterial;
+
 };
 
 #endif

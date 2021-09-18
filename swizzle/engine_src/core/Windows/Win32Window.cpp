@@ -476,8 +476,11 @@ namespace swizzle::core
         , modKeys(0)
     {
 
-        mWnd = CreateWindowEx(0, gWindowClass, L"Window", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width,
-                              height, NULL, NULL, GetModuleHandle(NULL), NULL);
+        mWnd = CreateWindowEx(WS_EX_APPWINDOW,
+            gWindowClass, L"Window",
+            WS_OVERLAPPEDWINDOW,
+            CW_USEDEFAULT, CW_USEDEFAULT, width, height,
+            NULL, NULL, GetModuleHandle(NULL), NULL);
 
         setTitle(title);
         SetWindowLongPtr(mWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
