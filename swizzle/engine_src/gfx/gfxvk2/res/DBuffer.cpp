@@ -137,14 +137,23 @@ namespace vk
 
         if (mMemory)
         {
-            // this free/reallocate can be improved by checking if we can expand the currenly allocated size
-            // for now free it and allocate new memory
-            mDevice->sheduleFreeingMemory(mMemory);
+            if (req.size > mMemory->mSize)
+            {
+                // this free/reallocate can be improved by checking if we can expand the currenly allocated size
+                // for now free it and allocate new memory
+                mDevice->sheduleFreeingMemory(mMemory);
+                mMemory = mDevice->allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                    VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                    req);
+            }
         }
-        // @ TODO move to device local memory and use staging buffer instead
-        mMemory = mDevice->allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                              VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                          req);
+        else
+        {
+            // @ TODO move to device local memory and use staging buffer instead
+            mMemory = mDevice->allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                req);
+        }
 
         mMemory->bind(mDevice, mBuffer);
 

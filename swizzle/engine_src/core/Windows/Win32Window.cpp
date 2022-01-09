@@ -388,6 +388,7 @@ namespace swizzle::core
                 evt.mFocused = true;
                 eventHandler.publishEvent(evt);
                 XInputEnable(true);
+                setupRID(hWnd);
                 break;
             }
             case WM_KILLFOCUS:
