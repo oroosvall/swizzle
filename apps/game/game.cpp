@@ -284,7 +284,7 @@ SwBool Game::userUpdate(F32 dt)
     mCmdBuffer->endRenderPass();
     mCmdBuffer->end();
 
-    mCmdBuffer->submit(mSwapchain);
+    mGfxContext->submit(&mCmdBuffer, 1, mSwapchain);
 
     mSwapchain->present();
 

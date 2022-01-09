@@ -27,8 +27,6 @@ namespace swizzle::gfx
 
         virtual void uploadTexture(common::Resource<Texture> texture) = 0;
 
-        virtual void submit(common::Resource<Swapchain> swp = nullptr) = 0;
-
         virtual void beginRenderPass(common::Resource<Swapchain> swp) = 0;
         virtual void beginRenderPass(common::Resource<FrameBuffer> fbo) = 0;
         virtual void endRenderPass() = 0;

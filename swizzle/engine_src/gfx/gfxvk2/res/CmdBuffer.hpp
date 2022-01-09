@@ -46,8 +46,6 @@ namespace vk
 
         virtual void uploadTexture(common::Resource<swizzle::gfx::Texture> texture) override;
 
-        virtual void submit(common::Resource<swizzle::gfx::Swapchain> swp = nullptr) override;
-
         virtual void beginRenderPass(common::Resource<swizzle::gfx::Swapchain> swp) override;
         virtual void beginRenderPass(common::Resource<swizzle::gfx::FrameBuffer> fbo) override;
         virtual void endRenderPass() override;

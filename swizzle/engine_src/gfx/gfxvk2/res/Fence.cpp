@@ -36,7 +36,7 @@ namespace vk
         , mFence(VK_NULL_HANDLE)
         , mUsers()
     {
-        mFence = mDevice->createFence(vk::FenceCreateFlags::signaled);
+        mFence = mDevice->createFence(vk::FenceCreateFlags::notSignaled);
     }
 
     Fence::~Fence()

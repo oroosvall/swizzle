@@ -43,18 +43,12 @@ namespace vk
         , mDrawCount(0u)
     {
         mCommandBuffers = mCmdPool->allocateCmdBuffer(mBufferCount, VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-        //mFences = mDevice->createFences(mBufferCount, FenceCreateFlags::signaled);
         mFences = new common::Resource<vk::Fence>[mBufferCount];
-        for (U32 i = 0; i < mBufferCount; ++i)
-        {
-            mFences[i] = common::CreateRef<vk::Fence>(mDevice);
-        }
     }
 
     CmdBuffer::~CmdBuffer()
     {
         mCmdPool->freeCmdBuffer(mCommandBuffers, mBufferCount);
-        //mDevice->destroyFences(mFences, mBufferCount);
         delete[] mFences;
     }
 
@@ -176,60 +170,6 @@ namespace vk
         if (!tex->isUploaded())
         {
             tex->uploadImage(getCmdBuffer(mActiveIndex));
-        }
-    }
-
-    void CmdBuffer::submit(common::Resource<swizzle::gfx::Swapchain> swp)
-    {
-        OPTICK_EVENT("CmdBuffer::submit");
-        //{
-        //    OPTICK_GPU_EVENT("VulkanCommandBuffer::submit");
-        //}
-        U32 waitCount = 0U;
-        VkSemaphore renderComplete = VK_NULL_HANDLE;
-        VkSemaphore wait = VK_NULL_HANDLE;
-        VkPipelineStageFlags waitStageMask = 0u;
-        VkFence waitFence = VK_NULL_HANDLE;
-
-        if (swp)
-        {
-            VSwapchain* swapchain = (VSwapchain*)(swp.get());
-            renderComplete = swapchain->getSemaphoreToSignal();
-            wait = swapchain->getWaitForSemaphore();
-            waitStageMask = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            waitFence = swapchain->getWaitFence();
-            waitCount = 1U;
-
-            vkResetFences(mDevice->getDeviceHandle(), 1, &waitFence);
-        }
-
-        // TODO: move into one sumbit call
-        /*if (mVkObjects.stageCmdBuffer->readyToSubmit())
-        {
-            mVkObjects.stageCmdBuffer->endAndSubmitRecording();
-        }*/
-
-        auto cmdBuffer = getCmdBuffer(mActiveIndex);
-        auto fence = getFence(mActiveIndex)->getHandle();
-        //auto fence = getFence(mActiveIndex);
-
-        VkSubmitInfo subinfo = {};
-        subinfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        subinfo.pNext = VK_NULL_HANDLE;
-        subinfo.waitSemaphoreCount = 0u;
-        subinfo.pWaitSemaphores = &wait;
-        subinfo.pWaitDstStageMask = &waitStageMask;
-        subinfo.commandBufferCount = 1U;
-        subinfo.pCommandBuffers = &cmdBuffer;
-        subinfo.signalSemaphoreCount = waitCount;
-        subinfo.pSignalSemaphores = &renderComplete;
-
-        vkQueueSubmit(mDevice->getQueue(), 1u, &subinfo, fence);
-
-        mActiveIndex++;
-        if (mActiveIndex == mBufferCount)
-        {
-            mActiveIndex = 0u;
         }
     }
 
