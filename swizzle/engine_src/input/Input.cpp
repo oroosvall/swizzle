@@ -70,6 +70,7 @@ namespace swizzle::input
 
     void InputFrameReset()
     {
+        OPTICK_EVENT("InputFrameReset");
         inputCtx.mDx = 0.0F;
         inputCtx.mDy = 0.0F;
         inputCtx.mPressedKeysThisFrame.clear();

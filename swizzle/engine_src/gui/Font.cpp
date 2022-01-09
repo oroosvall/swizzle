@@ -45,7 +45,7 @@ namespace swizzle::gui
         , mAscent(1)
         , mBaseline(1)
         , mGlyphPoolMemory(1024 * 1024)
-        , mFontTexture(common::CreateRef<gfx::VulkanTexture>(ctx->getVkContainer(), 100, 100, 1, nullptr))
+        , mFontTexture(ctx->createTexture(100, 100, 1, nullptr))
     {
         LOG_INFO("Font %s", fontPath);
         memset(mCodePointCacheCommon, -1, sizeof(mCodePointCacheCommon));

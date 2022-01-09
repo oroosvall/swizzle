@@ -1,0 +1,9 @@
+[properties]
+sourceBlend=[SRC_ALPHA,SRC_ALPHA]
+destinationBlend=[ONE_MINUS_SRC_ALPHA,ONE]
+[vulkan]
+vertex=gui_base/vert.spv
+fragment=gui_base/frag.spv
+[opengl]
+vertex=gui_base/gui.vert
+fragment=gui_base/gui.frag

@@ -3,10 +3,7 @@
 
 #include "Game.hpp"
 
-#include <swizzle/profile/Profiler.hpp>
-
 #include <iostream>
-
 
 class StdLogger : public swizzle::core::LogDevice
 {
@@ -39,9 +36,7 @@ int main(int argv, char* argc[])
     {
         Game game;
         game.initialize("Swizzle-sandbox");
-        sw::profile::ProfileStart("ProfileTest.prof");
         game.run();
-        sw::profile::ProfileEnd();
     }
 
     sw::core::RemoveLogger(&logger);

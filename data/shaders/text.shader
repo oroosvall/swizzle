@@ -1,6 +1,8 @@
 [properties]
 sourceBlend=[SRC_ALPHA,SRC_ALPHA]
 destinationBlend=[ONE_MINUS_SRC_ALPHA,ONE]
+blending=enabled
+depthTest=disabled
 [vulkan]
 vertex=text/vert.spv
 fragment=text/frag.spv

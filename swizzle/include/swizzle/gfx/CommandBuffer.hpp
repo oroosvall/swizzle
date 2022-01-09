@@ -11,7 +11,7 @@
 
 namespace swizzle::gfx
 {
-    class CommandBuffer
+    class CommandBuffer : public std::enable_shared_from_this<CommandBuffer>
     {
     public:
         virtual ~CommandBuffer() {}

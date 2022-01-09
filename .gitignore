@@ -40,3 +40,4 @@ data/test.nam
 *.ods
 *.pyc
 data/ProfileTest.prof
+*.log

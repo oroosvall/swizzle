@@ -2,8 +2,10 @@
 /* Include files */
 
 #include "Label.hpp"
-#include <gfx/gfxvk/VkContext.hpp>
+#include <gfx/gfxvk2/VkContext.hpp>
 #include <cstring>
+
+#include <optick/optick.h>
 
 /* Defines */
 
@@ -56,6 +58,7 @@ namespace swizzle::gui
 
     void Label::setText(const SwChar* text)
     {
+        OPTICK_EVENT("Label::setText");
         struct TextVertex
         {
             F32 x;

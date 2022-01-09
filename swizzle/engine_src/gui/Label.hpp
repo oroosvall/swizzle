@@ -8,7 +8,7 @@
 
 #include "Font.hpp"
 
-#include <gfx/gfxvk/VkContext.hpp>
+#include <gfx/gfxvk2/VkContext.hpp>
 
 /* Defines */
 

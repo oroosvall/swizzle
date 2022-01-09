@@ -34,7 +34,7 @@ namespace swm_v1
 {
     swm::LoadResult LoadV1(U16 minorVer, utils::BufferReader& br, swm::Model& mdl)
     {
-        minorVer;
+        UNUSED_ARG(minorVer);
         U8 numMeshes = 0u;
 
         swm::LoadResult res = swm_base::LoadNumber<U8, LR::SizeError>(br, numMeshes);

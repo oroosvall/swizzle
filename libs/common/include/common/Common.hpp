@@ -78,10 +78,10 @@ namespace common
     public:
         constexpr Iteratable() noexcept : _First(nullptr), _Last(nullptr) {}
         constexpr Iteratable(const std::initializer_list<_Ty>&& init) noexcept
-            : _First(init.begin()), _Last(init.end())
+            : _First(std::move(init.begin())), _Last(std::move(init.end()))
         {}
 
-        const U64 size() const noexcept
+        U64 size() const noexcept
         {
             return static_cast<U64>(_Last - _First);
         }

@@ -6,8 +6,6 @@
 
 #include <swizzle/core/Input.hpp>
 
-#include <swizzle/profile/Profiler.hpp>
-
 #include <swizzle/asset/TextureLoader.hpp>
 #include <swizzle/asset/MeshLoader.hpp>
 
@@ -37,6 +35,7 @@ void Game::userSetup()
     v.setString(".");
     mGameCfg.setValue("AssetDir", v);
 
+    //mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOn);
     mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
 
     mCmdBuffer = mGfxContext->createCommandBuffer(3);
@@ -146,9 +145,15 @@ void Game::userSetup()
 
 SwBool Game::userUpdate(F32 dt)
 {
+    OPTICK_EVENT("userUpdate");
     if (sw::input::WasPressedThisFrame(sw::input::Keys::Key0))
     {
         extraText++;
+    }
+
+    if (sw::input::WasPressedThisFrame(sw::input::Keys::KeyT))
+    {
+        testMode = !testMode;
     }
 
     if (sw::input::WasPressedThisFrame(sw::input::Keys::Key1))
@@ -160,18 +165,20 @@ SwBool Game::userUpdate(F32 dt)
         selectedBone--;
     }
 
-    sw::profile::ProfileEvent(__FUNCTION__, sw::profile::ProfileEventType::EventType_Frame);
     mFpsCounter.tick(dt);
 
     auto stats = mGfxContext->getStatistics();
 
-    std::string title = "Heljo world\n";
+    std::string title;
+    title.reserve(512);
+    title = "Heljo world\n";
 
     title += "Frames: " + std::to_string(mSwapchain->getFrameCounter()) + "\n";
     title += "FPS: " + std::to_string(mFpsCounter.getFps()) + "\n\n";
 
-    title += "GFX: Gpu Memory usage: " + std::to_string(stats.mGpuMemoryUsage) + "\n";
-    title += "GFX: Cpu Memory usage: " + std::to_string(stats.mCpuMemoryUsage) + "\n";
+    title += std::string(mGfxContext->getSelectedDeviceName()) + "\n";
+    title += "GFX: Gpu Memory usage: " + std::to_string(stats.mGpuMemoryUsage / (1024 * 1024)) + "MB\n";
+    title += "GFX: Cpu Memory usage: " + std::to_string(stats.mCpuMemoryUsage / (1024 * 1024)) + "MB\n";
     title += "Staged objects: " + std::to_string(stats.mStagedObjects) + "\n";
     title += "Num Textures: " + std::to_string(stats.mNumTextures) + "\n";
     title += "Num Buffers: " + std::to_string(stats.mNumBuffers) + "\n";
@@ -179,6 +186,7 @@ SwBool Game::userUpdate(F32 dt)
     title += "Vertex count: " + std::to_string(mCmdBuffer->getVertCount()) + "\n";
     title += "Triangle count: " + std::to_string(mCmdBuffer->getTriCount()) + "\n";
     title += "RemainingSize: " + std::to_string(guiLabel->getBuffer()->getRemainingSize()) + "\n";
+    title += "TestMode (T): " + std::to_string(testMode) + "\n";
 
     for (int i = 0; i < extraText; i++)
     {
@@ -247,7 +255,7 @@ void Game::userCleanup()
 
 void Game::updateMainWindow()
 {
-    sw::profile::ProfileEvent(__FUNCTION__, sw::profile::ProfileEventType::EventType_Generic);
+    OPTICK_EVENT("Game::updateMainWindow");
     U32 x, y;
     mWindow->getSize(x, y);
 
@@ -309,6 +317,22 @@ void Game::updateMainWindow()
     //mCmdBuffer->drawIndexed(mMesh.mVertexBuffer, mMesh.mIndexBuffer);
     mCmdBuffer->drawIndexed(mMeshAnimated.mVertexBuffer, mMeshAnimated.mIndexBuffer);
 
+    if (testMode)
+    {
+        mCmdBuffer->bindShader(mShader);
+        mCmdBuffer->bindMaterial(mShader, mMaterial);
+
+        for (int i = 0; i < 25000; ++i)
+        {
+            t.model = glm::translate(glm::mat4(1.0F), {0, i, 0});
+            mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+            common::Resource<swizzle::gfx::Buffer> test = mGfxContext->createBuffer(swizzle::gfx::BufferType::Vertex);
+            F32 data[] = {0.0, 0.0, 0.0};
+            test->setBufferData(data, 3, 3);
+            mCmdBuffer->draw(test);
+        }
+    }
+
     // Text stuff
 
     mCmdBuffer->bindShader(mTextShader);
@@ -335,6 +359,8 @@ void Game::updateMainWindow()
 
     mCmdBuffer->endRenderPass();
     mCmdBuffer->end();
-    mCmdBuffer->submit(mSwapchain);
+    //mCmdBuffer->submit(mSwapchain);
+    mGfxContext->submit(&mCmdBuffer, 1u, mSwapchain);
     mSwapchain->present();
+    //mSwapchain->present();
 }

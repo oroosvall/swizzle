@@ -10,8 +10,7 @@
 #include <unordered_map>
 #include <stb/stb_truetype.h>
 
-#include <gfx/gfxvk/VulkanTexture.hpp>
-#include <gfx/gfxvk/VkContext.hpp>
+#include <gfx/gfxvk2/VkContext.hpp>
 
 /* Defines */
 
@@ -88,7 +87,7 @@ namespace swizzle::gui
 
         mutable utils::MemoryBuffer mGlyphPoolMemory;
 
-        common::Resource<gfx::VulkanTexture> mFontTexture;
+        common::Resource<gfx::Texture> mFontTexture;
 
     };
 }

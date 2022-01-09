@@ -15,6 +15,8 @@
 
 #include <algorithm>
 
+#include <optick/optick.h>
+
 namespace swizzle::core
 {
 
@@ -437,7 +439,7 @@ namespace swizzle::core
             case WM_SYSCHAR:
             case WM_UNICHAR:
             {
-                const bool plain = (msg != WM_SYSCHAR);
+                //const bool plain = (msg != WM_SYSCHAR);
 
                 if (msg == WM_UNICHAR && wParam == UNICODE_NOCHAR)
                 {
@@ -592,6 +594,7 @@ namespace swizzle::core
 
     void Win32Window::pollEvents()
     {
+        OPTICK_EVENT();
         MSG msg;
 
         // processXInput(this);

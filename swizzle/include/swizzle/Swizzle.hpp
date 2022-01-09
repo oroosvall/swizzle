@@ -16,6 +16,8 @@
 
 #include <utils/HighResolutionClock.hpp>
 
+#include <optick/optick.h>
+
 /* Defines */
 
 /* Typedefs */
@@ -44,12 +46,13 @@ namespace swizzle
         {
             SwInitialize(appName);
 
-            mWindow = core::CreateSwWindow(1920, 1080, "Template");
+            mWindow = core::CreateSwWindow(1920, 1080, appName);
             mWindow->show();
 
             input::SetInputSource(mWindow);
 
             gfx::GfxContextCreateInfo info = {};
+            info.mDebugCallbacks = true;
             info.mDebugMemory = false;
             info.mDeviceIndex = 0u;
 
@@ -68,6 +71,7 @@ namespace swizzle
 
             while (running)
             {
+                OPTICK_FRAME("MainThread");
                 F32 dt = highRes.secondsAsFloat(true);
 
                 swizzle::input::InputFrameReset();

@@ -70,7 +70,9 @@ void main()
     //fragColor = vec4( lambertian*diffuseColor + specular*specColor, 1.0);
 
     //fragColor = vec4((diffuseColor * letThereBeLight).rgb + specular*specColor, 1.0);
-    fragColor = vec4(texture(diffuseTexture, uv).rgb, 1.0) * vec4((diffuseColor * letThereBeLight).rgb + specular*specColor, 1.0);
-    //fragColor = vec4(texture(diffuseTexture, uv).rgb, 1.0);
+    //fragColor = vec4(texture(diffuseTexture, uv).rgb, 1.0) * vec4((diffuseColor * letThereBeLight).rgb + specular*specColor, 1.0);
+    vec2 newUv = vec2(uv.x, 1.0 - uv.y);
+    fragColor = vec4(texture(diffuseTexture, newUv).rgb, 1.0);
+
     //fragColor = vec4(uv, 0.0,  1.0);
 }

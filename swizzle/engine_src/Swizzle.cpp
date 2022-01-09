@@ -27,6 +27,7 @@ namespace swizzle
     SwBool SwInitialize(const SwChar* appName)
     {
         LOG_INFO("Initializing Swizzle Engine");
+
         SwBool status = core::CoreInitialize(appName);
         status &= gfx::GfxInitialize();
 

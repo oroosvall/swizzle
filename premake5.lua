@@ -35,6 +35,7 @@ extIncDirs['physics'] = "libs/physics/include"
 extIncDirs['script'] = "libs/script/include"
 extIncDirs['utils'] = "libs/utils/include"
 extIncDirs['vk_sdk'] = {os.getenv("VULKAN_SDK") .. "/Include", os.getenv("VULKAN_SDK") .. "/include"}
+extIncDirs['optick'] = "vendor/optick/include"
 
 group("vendor")
     project("google-test")
@@ -60,25 +61,7 @@ group("vendor")
             "vendor/google-test/googletest-master/googlemock/include/",
             "vendor/google-test/googletest-master/googlemock/"
         }
-        
-    -- project("glad")
-    --     location("build/" .. platform .. "/%{prj.name}")
-    --     kind "staticLib"
-    --     language "c"
-        
-    --     files {
-    --         "vendor/glad/include/glad/glad.h",
-    --         "vendor/glad/include/glad/glad_wgl.h",
-    --         "vendor/glad/include/KHR/khrplatform.h",
-    --         "vendor/glad/src/glad.c",
-    --         "vendor/glad/src/glad_wgl.c"
-    --     }
-        
-    --     includedirs {
-    --         "vendor/glad/include/",
-    --         "vendor/glad/include/glad"
-    --     }
-        
+            
     project("stb")
         location("build/" .. platform .. "/%{prj.name}")
         kind "staticLib"
@@ -94,7 +77,51 @@ group("vendor")
         }
         filter "system:linux"
             disablewarnings { "sign-compare", "unused-but-set-variable" }
-        pic "On"
+            pic "On"
+
+    project("optick")
+        location("build/" .. platform .. "/%{prj.name}")
+        kind "sharedLib"
+        language "c"
+        
+        files {
+            "vendor/optick/include/optick/*.h",
+            "vendor/optick/src/*.h",
+            "vendor/optick/src/*.cpp",
+        }
+        
+        defines{
+            "OPTICK_EXPORTS",
+            "OPTICK_ENABLE_GPU_D3D12=0",
+            "_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING"
+        }
+
+        includedirs {
+            "vendor/optick/include/",
+            extIncDirs['vk_sdk'],
+        }
+
+        libdirs {
+            os.getenv("VULKAN_SDK") .. "/Lib", os.getenv("VULKAN_SDK") .. "/lib",
+        }
+
+        filter "system:linux"
+            disablewarnings { "sign-compare", "unused-but-set-variable" }
+            pic "On"
+            links
+            {
+                "vulkan"
+            }
+            defines{
+                "OPTICK_ENABLE_GPU_VULKAN=1"
+            }
+
+        filter "system:windows"
+            links
+            {
+                "vulkan-1"
+            }
+
 
 group("libs")
     setupPrj("utils", "staticLib",
@@ -156,9 +183,9 @@ group("Engine")
 
     setupPrj("swizzle", "sharedLib",
         {"swizzle/include/**.hpp", "swizzle/engine_src/**.hpp", "swizzle/engine_src/**.cpp", extIncDirs['common'].."/**.hpp"}, -- files/filePath
-        {"swizzle/include/", "swizzle/engine_src/", extIncDirs['vk_sdk'], "vendor/glm/include", "vendor/stb/include", "swizzle", extIncDirs['utils'], extIncDirs['common'], "libs/swm/include/"}, -- includePaths
+        {"swizzle/include/", "swizzle/engine_src/", extIncDirs['vk_sdk'], "vendor/glm/include", "vendor/stb/include", "swizzle", extIncDirs['utils'], extIncDirs['common'], "libs/swm/include/", extIncDirs['optick']}, -- includePaths
         {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"}, -- defines
-        { "utils", "script", "physics", "shaderc_combined", "stb", "swm" }, -- links
+        { "utils", "script", "physics", "shaderc_combined", "stb", "swm", "optick" }, -- links
         function() 
             vpaths { ["engine_src/*"] = "swizzle/engine_src/**.hpp" }
             vpaths { ["engine_src/*"] = "swizzle/engine_src/**.cpp" }
@@ -166,7 +193,9 @@ group("Engine")
             vpaths { ["include/*"] = "swizzle/include/**.hpp" }
             vpaths { ["include/*"] = extIncDirs['common'].."/**.hpp" }
 
-            libdirs { os.getenv("VULKAN_SDK") .. "/Lib", os.getenv("VULKAN_SDK") .. "/lib" }
+            libdirs {
+                os.getenv("VULKAN_SDK") .. "/Lib", os.getenv("VULKAN_SDK") .. "/lib",
+            }
 
             filter "system:windows"
                 defines
@@ -239,9 +268,9 @@ group("Tests")
 group("Apps")
     setupPrj("sandbox", "consoleApp",
         {"swizzle/include/**.hpp", "apps/sandbox/**.hpp", "apps/sandbox/**.cpp"}, -- files/filePath
-        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common'], "libs/swm/include"}, -- include paths
+        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", "vendor/stb/include", extIncDirs['common'], "libs/swm/include", extIncDirs['optick']}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
-        {"swizzle", "utils", "swm"}, -- links
+        {"swizzle", "utils", "swm", "optick", "stb"}, -- links
         function() -- userFunc
             vpaths { ["sandbox/*"] = "apps/sandbox/**.hpp" }
             vpaths { ["sandbox/*"] = "apps/sandbox/**.cpp" }
@@ -252,9 +281,9 @@ group("Apps")
 
     setupPrj("modelConverter", "consoleApp",
         {"swizzle/include/**.hpp", "apps/modelConverter/**.hpp", "apps/modelConverter/**.cpp"}, -- files/filePath
-        {"apps/modelConverter/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common']}, -- include paths
+        {"apps/modelConverter/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common'], extIncDirs['optick']}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
-        {"swizzle", "utils"}, -- links
+        {"swizzle", "utils", "optick"}, -- links
         function() -- userFunc
             vpaths { ["modelConverter/*"] = "apps/modelConverter/**.hpp" }
             vpaths { ["modelConverter/*"] = "apps/modelConverter/**.cpp" }
@@ -265,9 +294,9 @@ group("Apps")
 
     setupPrj("scriptSandbox", "consoleApp",
         {"apps/scriptSandbox/**.hpp", "apps/scriptSandbox/**.cpp"}, -- files/filePath
-        {"apps/scriptSandbox/", "libs/script/include", "libs/utils/include", extIncDirs['common']}, -- include paths
+        {"apps/scriptSandbox/", "libs/script/include", "libs/utils/include", extIncDirs['common'], extIncDirs['optick']}, -- include paths
         {}, -- defines
-        {"utils", "script"}, -- links
+        {"utils", "script", "optick"}, -- links
         function() -- userFunc
             vpaths { ["scriptSandbox/*"] = "apps/scriptSandbox/**.hpp" }
             vpaths { ["scriptSandbox/*"] = "apps/scriptSandbox/**.cpp" }
@@ -278,9 +307,9 @@ group("Apps")
 
     setupPrj("game", "consoleApp",
         {"swizzle/include/**.hpp", "apps/game/**.hpp", "apps/game/**.cpp"}, -- files/filePath
-        {"apps/game/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common']}, -- include paths
+        {"apps/game/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common'], extIncDirs['optick']}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
-        {"swizzle", "utils"}, -- links
+        {"swizzle", "utils", "optick"}, -- links
         function() -- userFunc
             vpaths { ["game/*"] = "apps/game/**.hpp" }
             vpaths { ["game/*"] = "apps/game/**.cpp" }

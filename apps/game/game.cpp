@@ -8,8 +8,6 @@
 
 #include <algorithm>
 
-#include <swizzle/profile/Profiler.hpp>
-
 Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
@@ -80,7 +78,7 @@ void Game::userSetup()
 
     mEnemyShip = sw::asset::LoadMesh(mGfxContext, "meshes/game/TheTube.swm", true);
 
-    sw::asset::LoadMesh(mGfxContext, "c:/gme/test2.swm", true);
+    sw::asset::LoadMesh(mGfxContext, "c:/gme/test.swm", true);
 
     mEnemyPosisions = {
         {0.0f, 5.0f, -70.0f,},
@@ -134,7 +132,6 @@ void Game::userCleanup()
 
 SwBool Game::userUpdate(F32 dt)
 {
-    sw::profile::ProfileEvent(__FUNCTION__, sw::profile::ProfileEventType::EventType_Frame);
     mWindow->pollEvents();
     mFpsCounter.tick(dt);
     mController.update(0.0F);
@@ -155,7 +152,7 @@ SwBool Game::userUpdate(F32 dt)
     }
     title += " (" + std::to_string(frameTimeUs) + " " + unit + "s)\n\n";
 
-    title += std::string(mGfxContext->getDeviceName()) + "\n";
+    //title += std::string(mGfxContext->getDeviceName(0u)) + "\n";
     title += "Num Bullets: " + std::to_string(mBulletPositions.size()) + "\n";
     //auto stats = mGfxContext->getStatistics();
     //title += "GFX: Gpu Memory usage: " + std::to_string(stats.mGpuMemoryUsage) + "\n";

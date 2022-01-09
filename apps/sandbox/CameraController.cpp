@@ -3,6 +3,8 @@
 #include <swizzle/core/Input.hpp>
 #include <glm/glm.hpp>
 
+#include <optick/optick.h>
+
 CameraController::CameraController(PerspectiveCamera& cam)
     : mCamera(cam)
     , mPosition(0.0F)
@@ -23,6 +25,7 @@ CameraController::~CameraController()
 
 void CameraController::update(float dt)
 {
+    OPTICK_EVENT("CameraController::update");
     mPosition = mCamera.getPosition();
 
     float dx, dy;

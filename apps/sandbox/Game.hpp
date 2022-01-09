@@ -74,6 +74,8 @@ private:
 
     int selectedBone = 0;
 
+    bool testMode = false;
+
 };
 
 #endif

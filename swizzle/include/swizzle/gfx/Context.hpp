@@ -12,6 +12,8 @@
 #include <swizzle/gfx/Swapchain.hpp>
 #include <swizzle/gfx/Texture.hpp>
 
+
+#define CONTEXT_SELECTED_DEVICE_NAME (~0u)
 /* Defines */
 
 /* Typedefs/enums */
@@ -35,7 +37,20 @@ namespace swizzle::gfx
     {
         U32 mDeviceIndex;
         SwBool mDebugMemory;
+        SwBool mDebugCallbacks;
+
+        U32 mNumWorkerQueues;
+        U32 mNumTransferQueues;
     };
+
+    struct GfxContextInitializeInfo
+    {
+        U32 mDeviceIndex;
+
+        U32 mNumWorkerQueues;
+        U32 mNumTransferQueues;
+    };
+
 }
 
 /* Class Declaration */
@@ -47,6 +62,13 @@ namespace swizzle::gfx
     public:
         virtual ~GfxContext() {}
 
+        virtual U32 getDeviceCount() = 0;
+        virtual const SwChar* getDeviceName(U32 deviceIndex) = 0;
+        virtual const SwChar* getSelectedDeviceName() = 0;
+        virtual SwBool initializeDevice(const GfxContextInitializeInfo& createInfo) = 0;
+
+        // All functions below must only be called after a successful call to
+        // initializeDevice(...)
         virtual void waitIdle() = 0;
 
         virtual GfxStatistics getStatistics() = 0;
@@ -57,9 +79,11 @@ namespace swizzle::gfx
         virtual common::Resource<Texture> createTexture(U32 width, U32 height, U32 channels, const U8* data = nullptr) = 0;
         virtual common::Resource<Texture> createCubeMapTexture(U32 width, U32 height, U32 channels, const U8* data = nullptr) = 0;
 
-        virtual const SwChar* getDeviceName() const = 0;
+        virtual void submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount,
+                            common::Resource<Swapchain> swapchain) = 0;
 
     };
+
 }
 
 /* Function Declaration */
