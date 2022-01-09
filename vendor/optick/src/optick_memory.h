@@ -124,11 +124,11 @@ namespace Optick
 				initThread();
 		}
 
-		template<typename T>
-		struct Allocator : public std::allocator<T>
+		template<typename T> 
+		struct Allocator : public std::allocator<T> 
 		{
 			Allocator() {}
-			template<class U>
+			template<class U> 
 			Allocator(const Allocator<U>&) {}
 			template<typename U> struct rebind { typedef Allocator<U> other; };
 
@@ -150,10 +150,10 @@ namespace Optick
 	template <typename T> class list : public std::list<T, Memory::Allocator<T>>{};
 	template <typename T> class unordered_set : public std::unordered_set<T, std::hash<T>, std::equal_to<T>, Memory::Allocator<T>>{};
 	template <typename T, typename V> class unordered_map : public std::unordered_map<T, V, std::hash<T>, std::equal_to<T>, Memory::Allocator<std::pair<const T, V>>>{};
-
+	
 	using string = std::basic_string<char, std::char_traits<char>, Memory::Allocator<char>>;
 	using wstring = std::basic_string<wchar_t, std::char_traits<wchar_t>, Memory::Allocator<wchar_t>>;
-
+	
 	using istringstream = std::basic_istringstream<char, std::char_traits<char>, Memory::Allocator<char>>;
 	using ostringstream = std::basic_ostringstream<char, std::char_traits<char>, Memory::Allocator<char>>;
 	using stringstream = std::basic_stringstream<char, std::char_traits<char>, Memory::Allocator<char>>;
