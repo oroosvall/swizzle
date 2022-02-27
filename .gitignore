@@ -37,6 +37,7 @@ data/cache.dat
 data/test.dat
 data/test.nam
 .vs/
+.vscode/
 *.ods
 *.pyc
 data/ProfileTest.prof

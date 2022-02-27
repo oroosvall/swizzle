@@ -1,0 +1,18 @@
+# Handle line endings automatically for files detected as text 
+# and leave all files detected as binary untouched.
+* text=auto
+
+# Never modify line endings of our bash scripts
+*.sh -crlf
+*.shader -lf
+
+#
+# The above will handle all files NOT found below
+#
+# These files are text and should be normalized (Convert crlf => lf)
+*.cpp text
+
+# These files are binary and should be left untouched
+# (binary is macro for -text -diff)
+*.png binary
+*.spv binary
