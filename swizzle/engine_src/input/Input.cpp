@@ -35,6 +35,10 @@ namespace swizzle::input
         std::unordered_map<S32, SwBool> mPressedMouseThisFrame = {};
 
         SwBool mInputFocused = false;
+
+        S32 mCharacterEventValue = 0;
+        SwBool mCharacterHadEventThisFrame = false;
+
     } inputCtx;
 }
 
@@ -74,6 +78,7 @@ namespace swizzle::input
         inputCtx.mDx = 0.0F;
         inputCtx.mDy = 0.0F;
         inputCtx.mPressedKeysThisFrame.clear();
+        inputCtx.mCharacterHadEventThisFrame = false;
     }
 
     SwBool IsKeyPressed(const Keys key)
@@ -87,7 +92,7 @@ namespace swizzle::input
         return pressed && inputCtx.mInputFocused;
     }
 
-    SwBool WasPressedThisFrame(const Keys key)
+    SwBool WasKeyPressedThisFrame(const Keys key)
     {
         SwBool pressed = false;
         S32 scanCode = swizzle::core::KeyToScanCode(key);
@@ -98,13 +103,24 @@ namespace swizzle::input
         return pressed && inputCtx.mInputFocused;
     }
 
+    SwBool WasKeyReleasedThisFrame(const Keys key)
+    {
+        SwBool pressed = false;
+        S32 scanCode = swizzle::core::KeyToScanCode(key);
+        if (inputCtx.mPressedKeysThisFrame.count(scanCode) != 0u)
+        {
+            pressed = (inputCtx.mPressedKeysThisFrame[scanCode] == false);
+        }
+        return pressed && inputCtx.mInputFocused;
+    }
+
     SwBool IsActionPressed(const KeyAction& action)
     {
         UNUSED_ARG(action);
         return false;
     }
 
-    SwBool SWIZZLE_API IsMouseButtonPressed(const Mouse key)
+    SwBool IsMouseButtonPressed(const Mouse key)
     {
         SwBool pressed = false;
         S32 scanCode = (S32)key;
@@ -115,9 +131,41 @@ namespace swizzle::input
         return pressed && inputCtx.mInputFocused;
     }
 
+    SwBool WasMousePressedThisFrame(const Mouse key)
+    {
+        SwBool pressed = false;
+        S32 scanCode = (S32)key;
+        if (inputCtx.mPressedMouseThisFrame.count(scanCode) != 0u)
+        {
+            pressed = inputCtx.mPressedMouseThisFrame[scanCode];
+        }
+        return pressed && inputCtx.mInputFocused;
+    }
+
+    SwBool WasMouseReleasedThisFrame(const Mouse key)
+    {
+        SwBool pressed = false;
+        S32 scanCode = (S32)key;
+        if (inputCtx.mPressedMouseThisFrame.count(scanCode) != 0u)
+        {
+            pressed = (inputCtx.mPressedMouseThisFrame[scanCode] == false);
+        }
+        return pressed && inputCtx.mInputFocused;
+    }
+
+    SwBool HasReceivedCharacterEvent()
+    {
+        return inputCtx.mCharacterHadEventThisFrame;
+    }
+
+    S32 GetCharacterEventValue()
+    {
+        return inputCtx.mCharacterEventValue;
+    }
+
     void GetMousePosition(int32_t& xPos, int32_t& yPos)
     {
-        if (inputCtx.mInputFocused)
+        //if (inputCtx.mInputFocused)
         {
             xPos = inputCtx.mX;
             yPos = inputCtx.mY;
@@ -139,7 +187,7 @@ namespace swizzle::input
 
 /* Class Protected Function Definition */
 
-namespace swizzle ::input
+namespace swizzle::input
 {
     void InputCallback::publishEvent(const core::WindowEvent& evt)
     {
@@ -147,12 +195,14 @@ namespace swizzle ::input
 
         switch (evtType)
         {
-        case core::WindowEventType::FocusEvent: {
+        case core::WindowEventType::FocusEvent:
+        {
             core::WindowFocusEvent& e = (core::WindowFocusEvent&)evt;
             inputCtx.mInputFocused = e.mFocused;
             break;
         }
-        case core::WindowEventType::KeyboardInputEvent: {
+        case core::WindowEventType::KeyboardInputEvent:
+        {
             core::InputEvent& e = (core::InputEvent&)evt;
 
             if (swizzle::core::KeyToScanCode(Keys::KeyNone) == e.mKey)
@@ -173,14 +223,21 @@ namespace swizzle ::input
             break;
         }
         case core::WindowEventType::CharacterTypeEvent:
+        {
+            core::CharacterEvent& e = (core::CharacterEvent&)evt;
+            inputCtx.mCharacterEventValue = e.mCodePoint;
+            inputCtx.mCharacterHadEventThisFrame = true;
             break;
-        case core::WindowEventType::MouseMoveEvent: {
+        }
+        case core::WindowEventType::MouseMoveEvent:
+        {
             core::MouseMoveEvent& e = (core::MouseMoveEvent&)evt;
             inputCtx.mX = e.mX;
             inputCtx.mY = e.mY;
             break;
         }
-        case core::WindowEventType::MouseMoveDeltaEvent: {
+        case core::WindowEventType::MouseMoveDeltaEvent:
+        {
             core::MouseMoveDelta& e = (core::MouseMoveDelta&)evt;
             inputCtx.mDx += (float)e.dX;
             inputCtx.mDy += (float)e.dY;
