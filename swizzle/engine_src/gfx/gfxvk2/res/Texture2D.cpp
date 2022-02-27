@@ -82,8 +82,6 @@ namespace vk
             mStageMemory.reset();
         }
 
-        const U32 queueIndex = VK_QUEUE_FAMILY_IGNORED;
-
         VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * (U64)channels;
 
         mStageBuffer = mDevice->createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -102,6 +100,12 @@ namespace vk
         vkUnmapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory);
 
         mUploaded = false;
+    }
+
+    void Texture2D::getTextureSize(U32& w, U32& h)
+    {
+        w = mWidth;
+        h = mHeight;
     }
 
     void Texture2D::upload() {}

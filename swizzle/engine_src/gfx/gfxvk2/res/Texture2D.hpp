@@ -31,6 +31,7 @@ namespace vk
 
         virtual void setData(U32 width, U32 height, U32 channels, const U8* pixelData) override;
         virtual void upload() override;
+        virtual void getTextureSize(U32& w, U32& h) override;
 
         virtual SwBool isUploaded() const override;
         virtual void uploadImage(VkCommandBuffer cmdBuffer) override;

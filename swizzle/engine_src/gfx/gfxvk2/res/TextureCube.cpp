@@ -83,8 +83,6 @@ namespace vk
             mStageMemory.reset();
         }
 
-        const U32 queueIndex = VK_QUEUE_FAMILY_IGNORED;
-
         VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * (U64)channels * (U64)mLayers;
 
         mStageBuffer = mDevice->createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -106,6 +104,12 @@ namespace vk
     }
 
     void TextureCube::upload() {}
+
+    void TextureCube::getTextureSize(U32& w, U32& h)
+    {
+        w = mWidth;
+        h = mHeight;
+    }
 
     SwBool TextureCube::isUploaded() const
     {
