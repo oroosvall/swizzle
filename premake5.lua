@@ -36,6 +36,7 @@ extIncDirs['script'] = "libs/script/include"
 extIncDirs['utils'] = "libs/utils/include"
 extIncDirs['vk_sdk'] = {os.getenv("VULKAN_SDK") .. "/Include", os.getenv("VULKAN_SDK") .. "/include"}
 extIncDirs['optick'] = "vendor/optick/include"
+extIncDirs['imgui'] = "vendor/imgui/include"
 
 group("vendor")
     project("google-test")
@@ -121,6 +122,21 @@ group("vendor")
             {
                 "vulkan-1"
             }
+
+    project("imgui")
+        location("build/" .. platform .. "/%{prj.name}")
+        kind "staticLib"
+        language "c"
+        
+        files {
+            "vendor/imgui/include/imgui/*.h",
+            "vendor/imgui/src/*.cpp",
+        }
+        
+        includedirs {
+            "vendor/imgui/include/imgui/",
+        }
+
 
 
 group("libs")
@@ -267,12 +283,13 @@ group("Tests")
 
 group("Apps")
     setupPrj("sandbox", "consoleApp",
-        {"swizzle/include/**.hpp", "apps/sandbox/**.hpp", "apps/sandbox/**.cpp"}, -- files/filePath
-        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", "vendor/stb/include", extIncDirs['common'], "libs/swm/include", extIncDirs['optick']}, -- include paths
+        {"swizzle/include/**.hpp", "apps/sandbox/**.hpp", "apps/sandbox/**.h", "apps/sandbox/**.cpp"}, -- files/filePath
+        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", "vendor/stb/include", extIncDirs['common'], "libs/swm/include", extIncDirs['optick'], extIncDirs['imgui']}, -- include paths
         {"SWIZZLE_DLL"}, -- defines
-        {"swizzle", "utils", "swm", "optick", "stb"}, -- links
+        {"swizzle", "utils", "swm", "optick", "stb", "imgui"}, -- links
         function() -- userFunc
             vpaths { ["sandbox/*"] = "apps/sandbox/**.hpp" }
+            vpaths { ["sandbox/*"] = "apps/sandbox/**.h" }
             vpaths { ["sandbox/*"] = "apps/sandbox/**.cpp" }
 
             vpaths { ["include/*"] = "swizzle/include/**.hpp" }
