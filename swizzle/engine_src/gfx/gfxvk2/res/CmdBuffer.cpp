@@ -41,6 +41,7 @@ namespace vk
         , mCommandBuffers(nullptr)
         , mFences(nullptr)
         , mDrawCount(0u)
+        , mScissorInfo()
     {
         mCommandBuffers = mCmdPool->allocateCmdBuffer(mBufferCount, VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
         mFences = new common::Resource<vk::Fence>[mBufferCount];
@@ -59,11 +60,11 @@ namespace vk
 
     SwBool CmdBuffer::isFrameInProgress(U64 frameCount)
     {
-        SwBool inFlight = false;
+        SwBool inFlight = true;
 
-        if (frameCount + mBufferCount >= mFrameCounter)
+        if ( (frameCount + mBufferCount + 1u) < mFrameCounter)
         {
-            inFlight = true;
+            inFlight = false;
         }
 
         return inFlight;
@@ -154,6 +155,7 @@ namespace vk
         VkResult res = vkBeginCommandBuffer(getCmdBuffer(mActiveIndex), &beginInfo);
         vk::LogVulkanError(res, "vkBeginCommandBuffer");
 
+        mScissorInfo.enableCtr = 0u;
     }
 
     void CmdBuffer::end()
@@ -182,18 +184,32 @@ namespace vk
     void CmdBuffer::beginRenderPass(common::Resource<swizzle::gfx::FrameBuffer> fbo)
     {
         OPTICK_EVENT("CmdBuffer::beginRenderPass");
-        PresentFBO* present = (PresentFBO*)(fbo.get());
+        BaseFrameBuffer* present = (BaseFrameBuffer*)(fbo.get());
 
-        VkClearValue clears[] = {present->mClearValue, present->mDepthClearValue};
+        std::vector<VkClearValue> clears;
+        U32 numAttach = present->getNumColorAttachments();
+
+        for (U32 i = 0u; i < numAttach; ++i)
+        {
+            clears.push_back(present->getColorClearValue(i));
+        }
+
+        if (present->hasDepthAttachment())
+        {
+            clears.push_back(present->getDepthClearValue());
+        }
 
         VkRenderPassBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         beginInfo.pNext = VK_NULL_HANDLE;
-        beginInfo.renderPass = present->mRenderPass;
-        beginInfo.framebuffer = present->mFrameBuffer;
-        beginInfo.renderArea = {0U, 0U, present->mWidth, present->mHeight};
-        beginInfo.clearValueCount = 2U;
-        beginInfo.pClearValues = clears;
+        beginInfo.renderPass = present->getRenderPass();
+        beginInfo.framebuffer = present->getFrameBuffer();
+        U32 width = 0u;
+        U32 height = 0u;
+        present->getSize(width, height);
+        beginInfo.renderArea = {0u, 0u, width, height};
+        beginInfo.clearValueCount = static_cast<U32>(clears.size());
+        beginInfo.pClearValues = clears.data();
 
         vkCmdBeginRenderPass(getCmdBuffer(mActiveIndex), &beginInfo,
                              VkSubpassContents::VK_SUBPASS_CONTENTS_INLINE);
@@ -260,7 +276,43 @@ namespace vk
         r.extent.height = y;
         r.offset.x = 0;
         r.offset.y = 0;
+
+        mScissorInfo.x = 0;
+        mScissorInfo.y = 0;
+        mScissorInfo.w = x;
+        mScissorInfo.h = y;
+
         vkCmdSetScissor(cmdBuf, 0U, 1U, &r);
+    }
+
+    void CmdBuffer::bindVertexBuffer(common::Resource<swizzle::gfx::Buffer> buffer)
+    {
+        OPTICK_EVENT("CmdBuffer::bindVertexBuffer");
+        DBuffer* buff = (DBuffer*)buffer.get();
+
+        auto& res = buff->getBuffer();
+        common::Resource<CmdBuffer> self = shared_from_this();
+        res->addUser(self, mFrameCounter);
+        VkBuffer vkBuf = res->getVkHandle();
+        VkDeviceSize offset = 0u;
+
+        vkCmdBindVertexBuffers(getCmdBuffer(mActiveIndex), 0U, 1U, &vkBuf, &offset);
+    }
+
+    void CmdBuffer::bindIndexBuffer(common::Resource<swizzle::gfx::Buffer> buffer, SwBool bitSize16)
+    {
+        OPTICK_EVENT("CmdBuffer::bindIndexBuffer");
+        DBuffer* buff = (DBuffer*)buffer.get();
+
+        auto& res = buff->getBuffer();
+        common::Resource<CmdBuffer> self = shared_from_this();
+        res->addUser(self, mFrameCounter);
+        VkBuffer idxBuf = res->getVkHandle();
+        VkDeviceSize offset = 0u;
+
+        VkIndexType size[] = { VkIndexType::VK_INDEX_TYPE_UINT32, VkIndexType::VK_INDEX_TYPE_UINT16 };
+
+        vkCmdBindIndexBuffer(getCmdBuffer(mActiveIndex), idxBuf, offset, size[bitSize16]);
     }
 
     void CmdBuffer::draw(common::Resource<swizzle::gfx::Buffer> buffer)
@@ -300,6 +352,57 @@ namespace vk
         vkCmdBindIndexBuffer(getCmdBuffer(mActiveIndex), idxBuf, offset, VkIndexType::VK_INDEX_TYPE_UINT32);
 
         vkCmdDrawIndexed(getCmdBuffer(mActiveIndex), idxBuff->getVertexCount() * 3u, 1u,  0u, 0u, 0u);
+    }
+
+    void CmdBuffer::drawNoBind(U32 vertexCount, U32 first)
+    {
+        vkCmdDraw(getCmdBuffer(mActiveIndex), vertexCount, 1u, first, 0u);
+    }
+
+    void CmdBuffer::drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset)
+    {
+        vkCmdDrawIndexed(getCmdBuffer(mActiveIndex), vertexCount, 1u, first, vertOffset, 0u);
+    }
+
+    const swizzle::gfx::ScissorInfo CmdBuffer::pushScissorRegion(S32 x, S32 y, S32 w, S32 h)
+    {
+        swizzle::gfx::ScissorInfo org = mScissorInfo;
+
+        mScissorInfo.enableCtr++;
+        mScissorInfo.x = x;
+        mScissorInfo.y = y;
+        mScissorInfo.w = w;
+        mScissorInfo.h = h;
+
+        VkRect2D scissor
+        {
+            x, y, (U32)w, (U32)h
+        };
+        vkCmdSetScissor(getCmdBuffer(mActiveIndex), 0, 1, &scissor);
+
+        return org;
+    }
+
+    void CmdBuffer::popScisorInfo(const swizzle::gfx::ScissorInfo& sci)
+    {
+        if (mScissorInfo.enableCtr == sci.enableCtr + 1)
+        {
+            mScissorInfo = sci;
+            VkRect2D scissor
+            {
+                sci.x, sci.y, (U32)sci.w, (U32)sci.h
+            };
+            vkCmdSetScissor(getCmdBuffer(mActiveIndex), 0, 1, &scissor);
+        }
+    }
+
+    void CmdBuffer::setScissor(S32 x, S32 y, S32 w, S32 h)
+    {
+        VkRect2D scissor
+        {
+            x, y, (U32)w, (U32)h
+        };
+        vkCmdSetScissor(getCmdBuffer(mActiveIndex), 0, 1, &scissor);
     }
 
 }

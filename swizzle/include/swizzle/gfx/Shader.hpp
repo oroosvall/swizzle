@@ -28,6 +28,7 @@ namespace swizzle::gfx
         vec3i = 3,
         vec4i = 4,
         vec4u = 5,
+        r8b8g8a8_unorm = 6,
     };
 
     class ShaderBufferInput
@@ -56,10 +57,16 @@ namespace swizzle::gfx
 
     struct ShaderAttributeList
     {
+        #ifdef SW_LINUX
+        std::vector<ShaderBufferInput> mBufferInput;
+        std::vector<ShaderAttribute> mAttributes;
+        #else
         common::Iteratable<ShaderBufferInput> mBufferInput;
         common::Iteratable<ShaderAttribute> mAttributes;
+        #endif
         SwBool mEnableDepthTest;
         SwBool mEnableBlending;
+        SwBool mPoints;
     };
 
     class Shader
@@ -68,6 +75,7 @@ namespace swizzle::gfx
         virtual ~Shader() {}
 
         virtual SwBool load(const SwChar* file) = 0;
+        virtual SwBool loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize, const SwChar* properties) = 0;
         virtual common::Resource<Material> createMaterial() = 0;
 
     };

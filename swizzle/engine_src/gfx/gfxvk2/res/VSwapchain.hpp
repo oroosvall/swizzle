@@ -56,7 +56,7 @@ namespace vk
         virtual void prepare() override;
         virtual void present() override;
 
-        void resize();
+        virtual void resize();
 
         common::Resource<swizzle::gfx::FrameBuffer> getFrameBuffer() const;
         VkSemaphore getSemaphoreToSignal() const;

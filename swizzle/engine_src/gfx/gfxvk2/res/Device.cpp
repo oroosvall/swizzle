@@ -38,28 +38,32 @@ namespace vk
         , mDescriptorPool_TEMP(VK_NULL_HANDLE)
         , mBufferCount(0u)
         , mImageCount(0u)
+        , mPipelineCount(0u)
+        , mDeviceStats()
     {
-        VkPhysicalDeviceMemoryBudgetPropertiesEXT budget{};
-        budget.sType = VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
-        budget.pNext = VK_NULL_HANDLE;
-        VkPhysicalDeviceMemoryProperties2 props {};
-        props.sType = VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
-        props.pNext = &budget;
-        vkGetPhysicalDeviceMemoryProperties2(mPhysDevice, &props);
-        mMemoryProperties = props.memoryProperties;
+        // VkPhysicalDeviceMemoryBudgetPropertiesEXT budget{};
+        // budget.sType = VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
+        // budget.pNext = VK_NULL_HANDLE;
+        // VkPhysicalDeviceMemoryProperties2 props {};
+        // props.sType = VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
+        // props.pNext = &budget;
+        // props.pNext = VK_NULL_HANDLE;
+        //vkGetPhysicalDeviceMemoryProperties2(mPhysDevice, &props);
+        vkGetPhysicalDeviceMemoryProperties(mPhysDevice, &mMemoryProperties);
+        //mMemoryProperties = props.memoryProperties;
 
         vkGetPhysicalDeviceProperties(mPhysDevice, &mPhysicalDeviceProperties);
         vkGetPhysicalDeviceFeatures(mPhysDevice, &mPhysicalDeviuceFeatures);
 
         VkDescriptorPoolSize poolSize{};
         poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSize.descriptorCount = 10u;
+        poolSize.descriptorCount = 1000u;
 
         VkDescriptorPoolCreateInfo descCreateInfo{};
         descCreateInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         descCreateInfo.pNext = VK_NULL_HANDLE;
         descCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        descCreateInfo.maxSets = 10u;
+        descCreateInfo.maxSets = 1000u;
         descCreateInfo.poolSizeCount = 1u;
         descCreateInfo.pPoolSizes = &poolSize;
 
@@ -172,7 +176,8 @@ namespace vk
         createInfo.pQueueFamilyIndices = VK_NULL_HANDLE;
 
         VkBuffer buffer = VK_NULL_HANDLE;
-        vkCreateBuffer(mLogicalDevice, &createInfo, mInstance->getAllocCallbacks(), &buffer);
+        VkResult res = vkCreateBuffer(mLogicalDevice, &createInfo, mInstance->getAllocCallbacks(), &buffer);
+        vk::LogVulkanError(res, "vkCreateBuffer");
         mBufferCount++;
 
         return common::CreateRef<VkResource<VkBuffer>>(buffer, ResourceType::BufferResource);
@@ -203,7 +208,8 @@ namespace vk
         createInfo.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_PREINITIALIZED;
 
         VkImage img = VK_NULL_HANDLE;
-        vkCreateImage(mLogicalDevice, &createInfo, mInstance->getAllocCallbacks(), &img);
+        VkResult res = vkCreateImage(mLogicalDevice, &createInfo, mInstance->getAllocCallbacks(), &img);
+        vk::LogVulkanError(res, "vkCreateImage");
         mImageCount++;
 
         return common::CreateRef<VkResource<VkImage>>(img, ResourceType::ImageResource);
@@ -335,6 +341,29 @@ namespace vk
         return usedMemory;
     }
 
+    void Device::performCleanup()
+    {
+        mCleanup->notify();
+    }
+
+    U32 Device::getMemoryHeapCount() const
+    {
+        return (U32)mMemoryPools.size();
+    }
+
+    swizzle::gfx::MemoryStatistics* Device::getHeapStatsistics(U32 index) const
+    {
+        return mMemoryPools[index]->getMemoryStats();
+    }
+
+    swizzle::gfx::DeviceStatistics* Device::getDeviceStats()
+    {
+        mDeviceStats.mNumBuffers = mBufferCount;
+        mDeviceStats.mNumTextures = mImageCount;
+        mDeviceStats.mNumPipelines = mPipelineCount;
+        return &mDeviceStats;
+    }
+
 }
 
 /* Class Protected Function Definition */
@@ -348,11 +377,13 @@ namespace vk
         for (U32 i = 0u; i < mMemoryProperties.memoryHeapCount; ++i)
         {
             VkDeviceSize chunkSize = 1024llu * 1024llu * 4llu;
+            std::string poolName = "Device Memory (GPU)";
             if(mMemoryProperties.memoryHeaps[i].flags != VkMemoryHeapFlagBits::VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
             {
                 chunkSize = 1024llu * 1024llu * 16llu;
+                poolName = "System Memory (CPU)";
             }
-            mMemoryPools.push_back(common::CreateRef<DeviceMemoryPool>(shared_from_this(), chunkSize));
+            mMemoryPools.push_back(common::CreateRef<DeviceMemoryPool>(shared_from_this(), chunkSize, poolName));
         }
     }
 

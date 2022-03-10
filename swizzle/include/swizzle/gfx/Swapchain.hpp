@@ -34,6 +34,8 @@ namespace swizzle::gfx
         virtual void prepare() = 0;
         virtual void present() = 0;
 
+        virtual void resize() = 0;
+
     };
 }
 

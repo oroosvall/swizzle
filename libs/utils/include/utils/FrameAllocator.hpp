@@ -4,6 +4,7 @@
 /* Include files */
 
 #include <cstdint>
+#include <cstddef>
 
 /* Defines */
 

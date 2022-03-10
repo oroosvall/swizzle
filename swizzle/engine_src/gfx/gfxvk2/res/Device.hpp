@@ -3,6 +3,8 @@
 
 /* Include files */
 
+#include <swizzle/gfx/GfxStats.hpp>
+
 #include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
 
@@ -82,6 +84,12 @@ namespace vk
         U64 getGPUMemUsage() const;
         U64 getCPUMemUsage() const;
 
+        void performCleanup();
+
+        U32 getMemoryHeapCount() const;
+        swizzle::gfx::MemoryStatistics* getHeapStatsistics(U32 index) const;
+        swizzle::gfx::DeviceStatistics* getDeviceStats();
+
     private:
 
         void initMemoryPools();
@@ -107,6 +115,9 @@ namespace vk
 
         std::atomic_uint32_t mBufferCount;
         std::atomic_uint32_t mImageCount;
+        std::atomic_uint32_t mPipelineCount;
+
+        swizzle::gfx::DeviceStatistics mDeviceStats;
 
     };
 }

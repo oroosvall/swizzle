@@ -47,12 +47,12 @@ namespace vk
         , mCurrentFrame(0u)
         , mImageIndex(0u)
         , mSwapchainImages()
+        , mFrameBuffers()
         , mRenderingFinishedSemaphore()
         , mImageAvailableSemaphore()
         , mInFlightFences()
         , mImagesInFlight()
 
-        , mFrameBuffers()
         , mFrameCounter(0ull)
     {
         //mDevice->
@@ -180,7 +180,7 @@ namespace vk
         presentInfo.swapchainCount = 1U;
         presentInfo.pSwapchains = &mSwapchain;
         presentInfo.pImageIndices = &mImageIndex;
-        presentInfo.waitSemaphoreCount = 2U;
+        presentInfo.waitSemaphoreCount = 2u;
         presentInfo.pWaitSemaphores = sems; // &mRenderingFinishedSemaphore[mCurrentFrame];
         presentInfo.pResults = VK_NULL_HANDLE;
 

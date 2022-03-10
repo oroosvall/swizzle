@@ -4,10 +4,13 @@
 #include <swizzle/core/Logging.hpp>
 
 #include "VkContext.hpp"
+#include "Stats.hpp"
+
 #include "res/DBuffer.hpp"
 #include "res/VSwapchain.hpp"
 #include "res/Texture2D.hpp"
 #include "res/TextureCube.hpp"
+#include "res/VFrameBuffer.hpp"
 
 #include <optick/optick.h>
 
@@ -80,6 +83,7 @@ namespace swizzle::gfx
 
         addExtensionIfExisting(extensions, supportedExtensions, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
         addExtensionIfExisting(extensions, supportedExtensions, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        addExtensionIfExisting(extensions, supportedExtensions, VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME);
 
         LOG_INFO("Initializing Vulkan Device");
         mVkDevice = mVkInstance->initializeDevice(createInfo, extensions);
@@ -121,6 +125,15 @@ namespace swizzle::gfx
         return stats;
     }
 
+    common::Resource<swizzle::core::StatisticsIterator<GfxStatsType>> VkGfxContext::getStatisticsIterator()
+    {
+        OPTICK_EVENT("VkGfxContext::getStatisticsIterator()");
+        auto stats = common::CreateRef<StatsIterator>(mVkDevice);
+        stats->addMemoryStats();
+        stats->addDeviceStats();
+        return stats;
+    }
+
     common::Resource<Buffer> VkGfxContext::createBuffer(BufferType type)
     {
         return common::CreateRef<vk::DBuffer>(mVkDevice, type);
@@ -145,6 +158,11 @@ namespace swizzle::gfx
     common::Resource<Texture> VkGfxContext::createCubeMapTexture(U32 width, U32 height, U32 channels, const U8* data)
     {
         return common::CreateRef<vk::TextureCube>(mVkDevice, width, height, channels, data);
+    }
+
+    common::Resource<FrameBuffer> VkGfxContext::createFramebuffer(const FrameBufferCreateInfo& fboInfo)
+    {
+        return common::CreateRef<vk::VFrameBuffer>(mVkDevice, fboInfo);
     }
 
     void VkGfxContext::submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount, common::Resource<Swapchain> swapchain)
@@ -203,7 +221,7 @@ namespace swizzle::gfx
             LOG_ERROR("Failed to allocate frame memory");
         }
 
-        //mVkDevice->performCleanup();
+        mVkDevice->performCleanup();
         //mVkDevice->freeOldMemoryPools();
 
     }

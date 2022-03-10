@@ -10,6 +10,8 @@
 
 #include <optick/optick.h>
 
+#include <assert.h>
+
 /* Defines */
 
 /* Typedefs */
@@ -75,16 +77,19 @@ namespace vk
         return userCount;
     }
 
-    DeviceMemoryPool::DeviceMemoryPool(common::Resource<Device> device, VkDeviceSize chunkSize)
+    DeviceMemoryPool::DeviceMemoryPool(common::Resource<Device> device, VkDeviceSize chunkSize, std::string memoryPoolName)
         : std::enable_shared_from_this<DeviceMemoryPool>()
         , mDevice(device)
         , mMemoryChunks()
         , mChunkSize(chunkSize)
+        , mMemoryPoolName(memoryPoolName)
         , mTotalAllocated(0ull)
         , mUsedSize(0ull)
         , mMaxHeapSize(0ull)
         , mOtherUseSize(0ull)
         , mLock()
+        , mVAllocCount(0u)
+        , mStatistics()
     {
     }
 
@@ -129,7 +134,8 @@ namespace vk
         // TODO: handle alignment from reqs
         common::Resource<DeviceMemory> mem = nullptr;
 
-        Chunk* ch = getChunk(reqs.size, memoryTypeIndex);
+        AlignmentInfo chunkAlignedSize = calcAlignedSize(reqs.size, reqs);
+        Chunk* ch = getChunk(chunkAlignedSize.mSize, memoryTypeIndex);
 
         if (!ch)
         {
@@ -137,23 +143,28 @@ namespace vk
             if (reqs.size > chSize)
             {
                 chSize = reqs.size;
+                chSize = calcAlignedSize(chSize, reqs).mSize;
             }
             allocateNewChunk(chSize, memoryTypeIndex);
-            ch = getChunk(reqs.size, memoryTypeIndex);
+            ch = getChunk(chSize, memoryTypeIndex);
         }
 
         if (ch)
         {
             for (auto& frag : ch->mFreeFragments)
             {
-                if (frag.mSize >= reqs.size)
+                AlignmentInfo alignedSize = calcAlignedSize(frag.mSize, reqs);
+                if (frag.mSize >= alignedSize.mSize)
                 {
-                    mem = common::CreateRef<DeviceMemory>(shared_from_this(), ch->mMemory, frag.mOffset, reqs.size);
+                    mem = common::CreateRef<DeviceMemory>(shared_from_this(), ch->mMemory, frag.mOffset, alignedSize.mSize);
+                    mem->mAlignOffset = alignedSize.mAlignOffset;
 
-                    frag.mSize -= reqs.size;
-                    frag.mOffset += reqs.size;
-                    mUsedSize += reqs.size;
-                    ch->mUsedSize += reqs.size;
+                    frag.mSize -= mem->mSize;
+                    frag.mOffset += mem->mSize;
+                    mUsedSize += mem->mSize;
+                    ch->mUsedSize += mem->mSize;
+                    assert(ch->mUsedSize <= ch->mTotalSize);
+                    mVAllocCount++;
                     break;
                 }
             }
@@ -201,6 +212,11 @@ namespace vk
 
     void DeviceMemoryPool::freeMemory(common::Resource<DeviceMemory> memory)
     {
+        // TODO: fix me, this is a temporary solution to fix double free
+        if (memory->mFreed)
+        {
+            return;
+        }
         std::lock_guard lck(mLock);
         OPTICK_EVENT("DeviceMemoryPool::freeMemory");
         for (auto& ch : mMemoryChunks)
@@ -218,7 +234,9 @@ namespace vk
                         f.mSize += memory->mSize;
                         mUsedSize -= memory->mSize;
                         ch.mUsedSize -= memory->mSize;
+                        mVAllocCount--;
                         checkOffset = ~0ull;
+                        memory->mFreed = true;
                         break;
                     }
                     else if (f.mOffset + f.mSize == memory->mOffset)
@@ -226,7 +244,9 @@ namespace vk
                         f.mSize += memory->mSize;
                         mUsedSize -= memory->mSize;
                         ch.mUsedSize -= memory->mSize;
+                        mVAllocCount--;
                         checkOffset = ~0ull;
+                        memory->mFreed = true;
                         break;
                     }
                     else
@@ -240,11 +260,25 @@ namespace vk
                     ch.mFreeFragments.emplace_back(Fragment{memory->mOffset, memory->mSize});
                     mUsedSize -= memory->mSize;
                     ch.mUsedSize -= memory->mSize;
+                    mVAllocCount--;
+                    memory->mFreed = true;
                 }
 
                 break;
             }
         }
+    }
+
+    swizzle::gfx::MemoryStatistics* DeviceMemoryPool::getMemoryStats()
+    {
+        mStatistics.mName = mMemoryPoolName.c_str();
+        mStatistics.mSize = mTotalAllocated;
+        mStatistics.mUsed = mUsedSize;
+        mStatistics.mFree = mTotalAllocated - mUsedSize;
+        mStatistics.mNumAllocations = (U32)mMemoryChunks.size();
+        mStatistics.mNumVirtualAllocations = mVAllocCount;
+
+        return &mStatistics;
     }
 }
 
@@ -276,6 +310,7 @@ namespace vk
         {
             mTotalAllocated += size;
             mMemoryChunks.emplace_back(ch);
+            LOG_INFO("Allocated new memory chunk, %llu", size);
         }
         else
         {
@@ -310,4 +345,17 @@ namespace vk
 
         return chunk;
     }
+
+    AlignmentInfo DeviceMemoryPool::calcAlignedSize(VkDeviceSize offset, VkMemoryRequirements memreq)
+    {
+        VkDeviceSize alval = memreq.alignment - 1;
+        VkDeviceSize alignedValue = (offset + alval) & ~(alval);
+
+        VkDeviceSize newOffset = alignedValue - offset;
+        VkDeviceSize newSize = memreq.size + newOffset;
+
+        return { newSize, newOffset };
+
+    }
+
 }

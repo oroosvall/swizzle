@@ -2,6 +2,8 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #elif defined (SW_LINUX_XLIB)
 #define VK_USE_PLATFORM_XLIB_KHR
+#elif defined (SW_LINUX_XCB)
+#define VK_USE_PLATFORM_XCB_KHR
 #endif
 
 #include "Surface.hpp"
@@ -17,6 +19,8 @@ namespace vk
         return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
 #elif defined(SW_LINUX_XLIB)
         return VK_KHR_XLIB_SURFACE_EXTENSION_NAME;
+#elif defined(SW_LINUX_XCB)
+        return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
 #else
 #error "undfined platform"
 #endif
@@ -57,6 +61,20 @@ namespace vk
 
         VkSurfaceKHR surface = VK_NULL_HANDLE;
         vkCreateXlibSurfaceKHR(instance, &createInfo, nullptr, &surface);
+
+        return surface;
+#elif defined(SW_LINUX_XCB)
+
+        VkXcbSurfaceCreateInfoKHR  createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        U64 wnd = (U64)window->getNativeWindowHandle();
+        createInfo.window = (xcb_window_t)wnd;
+        createInfo.connection = (xcb_connection_t*)window->getNativeDisplayHandle();
+
+        VkSurfaceKHR surface = VK_NULL_HANDLE;
+        vkCreateXcbSurfaceKHR(instance, &createInfo, nullptr, &surface);
 
         return surface;
 #else

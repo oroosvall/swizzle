@@ -5,6 +5,8 @@
 #include "Device.hpp"
 #include "CmdBuffer.hpp"
 
+#include <optick/optick.h>
+
 /* Defines */
 
 /* Typedefs */
@@ -44,6 +46,7 @@ namespace vk
 
     void DBuffer::setBufferData(void* data, U64 size, U32 stride)
     {
+        OPTICK_EVENT("DBuffer::setBufferData");
         createOrResize(size);
 
         mVertCount = (U32)(size / (U64)stride);
@@ -66,16 +69,32 @@ namespace vk
 
     void* DBuffer::mapMemory(U64 size)
     {
+        OPTICK_EVENT("DBuffer::mapMemory");
         UNUSED_ARG(size);
         createOrResize(size);
         void* ptr = nullptr;
-        vkMapMemory(mDevice->getDeviceHandle(), mMemory->mMemory, mMemory->mOffset, mMemory->mSize, 0, &ptr);
+        VkResult res = vkMapMemory(mDevice->getDeviceHandle(), mMemory->mMemory, mMemory->mOffset + mMemory->mAlignOffset, mMemory->mSize, 0, &ptr);
+        vk::LogVulkanError(res, "vkMapMemory, mapping error");
+
+        //memset(ptr, 0xff, mMemory->mSize);
+        //memset(ptr, 0xAA, size);
 
         return ptr;
     }
 
     void DBuffer::unmapMemory()
     {
+        OPTICK_EVENT("DBuffer::unmapMemory");
+        //VkMappedMemoryRange rng{};
+
+        //rng.memory = mMemory->mMemory;
+        //rng.offset = mMemory->mOffset;
+        //rng.size = mMemory->mSize;
+        //rng.pNext = VK_NULL_HANDLE;
+        //rng.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+
+        //vkFlushMappedMemoryRanges(mDevice->getDeviceHandle(), 1, &rng);
+
         vkUnmapMemory(mDevice->getDeviceHandle(), mMemory->mMemory);
         mVertCount = (U32)(mUsedSize / (U64)mStride);
     }
@@ -100,11 +119,12 @@ namespace vk
 {
     void DBuffer::createOrResize(U64 newSize)
     {
-        if (mMemory && newSize <= mBufferSize)
-        {
-            mUsedSize = newSize;
-            return;
-        }
+        // this causes artifacting due to memory being reused
+        //if (mMemory && newSize <= mBufferSize)
+        //{
+        //    mUsedSize = newSize;
+        //    return;
+        //}
 
         if (mBuffer)
         {
@@ -137,7 +157,7 @@ namespace vk
 
         if (mMemory)
         {
-            if (req.size > mMemory->mSize)
+            //if (req.size > mMemory->mSize)
             {
                 // this free/reallocate can be improved by checking if we can expand the currenly allocated size
                 // for now free it and allocate new memory
@@ -153,6 +173,11 @@ namespace vk
             mMemory = mDevice->allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                 VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 req);
+        }
+
+        if (!mMemory)
+        {
+            LOG_ERROR("Failed to allocate memory");
         }
 
         mMemory->bind(mDevice, mBuffer);

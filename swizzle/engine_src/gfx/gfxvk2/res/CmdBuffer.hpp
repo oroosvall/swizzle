@@ -56,9 +56,20 @@ namespace vk
         virtual void setShaderConstant(common::Resource<swizzle::gfx::Shader> shader, U8* data, U32 size) override;
         virtual void setViewport(U32 x, U32 y) override;
 
+        virtual void bindVertexBuffer(common::Resource<swizzle::gfx::Buffer> buffer) override;
+        virtual void bindIndexBuffer(common::Resource<swizzle::gfx::Buffer> buffer, SwBool bitSize16) override;
+
         virtual void draw(common::Resource<swizzle::gfx::Buffer> buffer) override;
         virtual void drawIndexed(common::Resource<swizzle::gfx::Buffer> buffer,
                                  common::Resource<swizzle::gfx::Buffer> index) override;
+
+        virtual void drawNoBind(U32 vertexCount, U32 first) override;
+        virtual void drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset) override;
+
+        virtual const swizzle::gfx::ScissorInfo pushScissorRegion(S32 x, S32 y, S32 w, S32 h) override;
+        virtual void popScisorInfo(const swizzle::gfx::ScissorInfo& sci) override;
+
+        virtual void setScissor(S32 x, S32 y, S32 w, S32 h) override;
 
     private:
 
@@ -84,6 +95,7 @@ namespace vk
 
         U32 mDrawCount;
 
+        swizzle::gfx::ScissorInfo mScissorInfo;
     };
 }
 

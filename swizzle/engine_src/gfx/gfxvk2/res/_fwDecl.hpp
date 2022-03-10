@@ -26,6 +26,8 @@ namespace vk
     class Texture2D;
     class ShaderPipeline;
     class Fence;
+    class VFrameBuffer;
+    class BaseFrameBuffer;
 }
 
 /* Struct Declaration */

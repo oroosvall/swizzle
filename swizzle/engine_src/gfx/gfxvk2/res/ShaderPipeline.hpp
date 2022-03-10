@@ -21,6 +21,7 @@ namespace vk
     enum class ShaderModuleType
     {
         ShaderModuleType_Vertex,
+        ShaderModuleType_Geometry,
         ShaderModuleType_Fragment
     };
 
@@ -29,6 +30,8 @@ namespace vk
         SourceBlend,
         DestinationBlend,
         CullMode,
+        ColorBlendOp,
+        AlphaBlendOp,
     };
 } // namespace swizzle::gfx
 
@@ -44,6 +47,8 @@ namespace vk
         {
             VkBlendFactor mBlendFactor[2];
             VkCullModeFlagBits mCullMode;
+            VkBlendOp mColorBlendOp;
+            VkBlendOp mAlphaBlendOp;
         };
     };
 } // namespace swizzle::gfx
@@ -55,11 +60,12 @@ namespace vk
     class ShaderPipeline : public swizzle::gfx::Shader
     {
     public:
-        ShaderPipeline(common::Resource<Device> device, const PresentFBO& frameBuffer,
+        ShaderPipeline(common::Resource<Device> device, const BaseFrameBuffer& frameBuffer,
                        const swizzle::gfx::ShaderAttributeList& attribList);
         virtual ~ShaderPipeline();
 
         virtual SwBool load(const SwChar* file) override;
+        virtual SwBool loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize, const SwChar* properties) override;
         virtual common::Resource<swizzle::gfx::Material> createMaterial() override;
 
         VkPipeline getPipeline() const;
@@ -75,7 +81,7 @@ namespace vk
         void readProperty(const std::string& line);
 
         common::Resource<Device> mDevice;
-        const PresentFBO& mFrameBuffer;
+        const BaseFrameBuffer& mFrameBuffer;
         const swizzle::gfx::ShaderAttributeList mShaderAttributes;
 
         VkPipelineLayout mPipelineLayout;

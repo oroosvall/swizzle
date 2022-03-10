@@ -8,6 +8,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <list>
+#include <atomic>
+#include <thread>
 
 #include "_fwDecl.hpp"
 
@@ -44,6 +46,8 @@ namespace vk
 
         void sheduleResourceDestruction(common::Resource<IVkResource> resource);
         void sheduleFreeingMemory(common::Resource<DeviceMemory> memory);
+
+        void notify();
 
     private:
 

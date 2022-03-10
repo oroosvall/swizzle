@@ -69,7 +69,7 @@ namespace vk
 
     SwBool PresentFBO::hasDepthAttachment() const
     {
-        return false;
+        return true;
     }
 
     void PresentFBO::setColorAttachmentClearColor(U32 attachmentIndex, swizzle::gfx::ClearColor color)
@@ -87,16 +87,25 @@ namespace vk
         UNUSED_ARG(stencilValue);
     }
 
+    common::Resource<swizzle::gfx::Texture> PresentFBO::getColorAttachment(U32 index)
+    {
+        UNUSED_ARG(index);
+        return nullptr;
+    }
+
     void PresentFBO::resize(U32 width, U32 height)
     {
-        mWidth = width;
+        UNUSED_ARG(width);
+        UNUSED_ARG(height);
+        throw "This should not be called";
+        /*mWidth = width;
         mHeight = height;
 
         vkDestroyFramebuffer(mDevice->getDeviceHandle(), mFrameBuffer, mDevice->getAllocCallbacks());
         vkDestroyRenderPass(mDevice->getDeviceHandle(), mRenderPass, mDevice->getAllocCallbacks());
 
         createRenderPass();
-        createFramebuffer();
+        createFramebuffer();*/
     }
 
     common::Resource<swizzle::gfx::Shader>
@@ -113,6 +122,28 @@ namespace vk
     VkSampleCountFlagBits PresentFBO::getMultisampleCount() const
     {
         return VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+    }
+
+    VkFramebuffer PresentFBO::getFrameBuffer() const
+    {
+        return mFrameBuffer;
+    }
+
+    void PresentFBO::getSize(U32& width, U32& height) const
+    {
+        width = mWidth;
+        height = mHeight;
+    }
+
+    VkClearValue PresentFBO::getColorClearValue(U32 index) const
+    {
+        UNUSED_ARG(index);
+        return mClearValue;
+    }
+
+    VkClearValue PresentFBO::getDepthClearValue() const
+    {
+        return mDepthClearValue;
     }
 
     //void PresentFBO::allocDepthMemory()

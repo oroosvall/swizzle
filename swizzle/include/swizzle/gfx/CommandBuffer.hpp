@@ -11,6 +11,13 @@
 
 namespace swizzle::gfx
 {
+    struct ScissorInfo
+    {
+        U32 enableCtr;
+        S32 x, y;
+        S32 w, h;
+    };
+
     class CommandBuffer : public std::enable_shared_from_this<CommandBuffer>
     {
     public:
@@ -36,8 +43,19 @@ namespace swizzle::gfx
         virtual void setShaderConstant(common::Resource<Shader> shader, U8* data, U32 size) = 0;
         virtual void setViewport(U32 x, U32 y) = 0;
 
+        virtual void bindVertexBuffer(common::Resource<Buffer> buffer) = 0;
+        virtual void bindIndexBuffer(common::Resource<Buffer> buffer, SwBool bitSize16) = 0;
+
         virtual void draw(common::Resource<Buffer> buffer) = 0;
         virtual void drawIndexed(common::Resource<Buffer> buffer, common::Resource<Buffer> index) = 0;
+
+        virtual void drawNoBind(U32 vertexCount, U32 first) = 0;
+        virtual void drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset) = 0;
+
+        virtual const ScissorInfo pushScissorRegion(S32 x, S32 y, S32 w, S32 h) = 0;
+        virtual void popScisorInfo(const ScissorInfo& sci) = 0;
+
+        virtual void setScissor(S32 x, S32 y, S32 w, S32 h) = 0;
 
     };
 }

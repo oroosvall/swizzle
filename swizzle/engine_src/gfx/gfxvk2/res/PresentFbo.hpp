@@ -3,7 +3,7 @@
 
 /* Include files */
 
-#include <swizzle/gfx/FrameBuffer.hpp>
+#include "BaseFrameBuffer.hpp"
 
 #include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
@@ -22,7 +22,7 @@
 
 namespace vk
 {
-    class PresentFBO : public swizzle::gfx::FrameBuffer
+    class PresentFBO : public BaseFrameBuffer
     {
     public:
         PresentFBO(common::Resource<Device> device, VkImage image, VkImageView imageView, VkFormat imageFormat,
@@ -35,13 +35,20 @@ namespace vk
         virtual void setColorAttachmentClearColor(U32 attachmentIndex, swizzle::gfx::ClearColor color) override;
         virtual void setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue) override;
 
+        virtual common::Resource<swizzle::gfx::Texture> getColorAttachment(U32 index) override;
+
         virtual void resize(U32 width, U32 height) override;
 
         virtual common::Resource<swizzle::gfx::Shader>
         createShader(const swizzle::gfx::ShaderAttributeList& attributeList) override;
 
-        VkRenderPass getRenderPass() const;
-        VkSampleCountFlagBits getMultisampleCount() const;
+        virtual VkRenderPass getRenderPass() const override;
+        virtual VkSampleCountFlagBits getMultisampleCount() const override;
+        virtual VkFramebuffer getFrameBuffer() const override;
+
+        virtual void getSize(U32& width, U32& height) const override;
+        virtual VkClearValue getColorClearValue(U32 index) const override;
+        virtual VkClearValue getDepthClearValue() const override;
 
         // BaseFrameBuffer
         // virtual VkRenderPass getRenderPass() const override;

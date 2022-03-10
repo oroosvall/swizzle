@@ -4,6 +4,7 @@
 #include <utils/FrameAllocator.hpp>
 
 #include <memory>
+#include <cstring>
 
 /* Defines */
 

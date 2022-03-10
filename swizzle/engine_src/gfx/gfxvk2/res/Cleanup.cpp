@@ -75,13 +75,18 @@ namespace vk
     {
         std::lock_guard lock(mMux);
         mLists[mBufferIndex].mResources.emplace_back(resource);
-        mCond.notify_one();
+        //mCond.notify_one();
     }
 
     void CleanupRunnable::sheduleFreeingMemory(common::Resource<DeviceMemory> memory)
     {
         std::lock_guard lock(mMux);
         mLists[mBufferIndex].mMemoryAllocations.emplace_back(memory);
+        //mCond.notify_one();
+    }
+
+    void CleanupRunnable::notify()
+    {
         mCond.notify_one();
     }
 
@@ -126,6 +131,7 @@ namespace vk
             mCleanupIndex = mBufferIndex;
             mBufferIndex = tmp;
 
+
             mMux.unlock();
         }
 
@@ -164,6 +170,6 @@ namespace vk
                 }
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }

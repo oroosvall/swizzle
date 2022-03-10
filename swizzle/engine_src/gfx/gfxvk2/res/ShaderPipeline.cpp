@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <swizzle/core/Platform.hpp>
+#include <sstream>
 
 /* Defines */
 
@@ -78,6 +79,9 @@ namespace vk
             // fmt = VK_FORMAT_A8B8G8R8_UINT_PACK32;
             fmt = VK_FORMAT_R32G32B32A32_UINT;
             break;
+        case swizzle::gfx::ShaderAttributeDataType::r8b8g8a8_unorm:
+            fmt = VK_FORMAT_R8G8B8A8_UNORM;
+            break;
         default:
             break;
         }
@@ -92,7 +96,7 @@ namespace vk
 
 namespace vk
 {
-    ShaderPipeline::ShaderPipeline(common::Resource<Device> device, const PresentFBO& frameBuffer,
+    ShaderPipeline::ShaderPipeline(common::Resource<Device> device, const BaseFrameBuffer& frameBuffer,
                                    const swizzle::gfx::ShaderAttributeList& attribList)
         : mDevice(device)
         , mFrameBuffer(frameBuffer)
@@ -109,6 +113,8 @@ namespace vk
         mProperties[PropertyType::DestinationBlend].mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
         mProperties[PropertyType::DestinationBlend].mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
         mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_NONE;
+        mProperties[PropertyType::ColorBlendOp].mColorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
+        mProperties[PropertyType::AlphaBlendOp].mAlphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
 
         VkPushConstantRange push = {};
 
@@ -134,8 +140,9 @@ namespace vk
         descriptor_layout.pNext = NULL;
         descriptor_layout.bindingCount = 2;
         descriptor_layout.pBindings = layout_binding;
-        vkCreateDescriptorSetLayout(mDevice->getDeviceHandle(), &descriptor_layout, NULL,
+        VkResult res = vkCreateDescriptorSetLayout(mDevice->getDeviceHandle(), &descriptor_layout, NULL,
                                     &mDescriptorLayout);
+        vk::LogVulkanError(res, "vkCreateDescriptorSetLayout");
 
         VkDescriptorSetAllocateInfo descAllocInfo = {};
         descAllocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -144,7 +151,8 @@ namespace vk
         descAllocInfo.descriptorSetCount = 1;
         descAllocInfo.pSetLayouts = &mDescriptorLayout;
 
-        vkAllocateDescriptorSets(mDevice->getDeviceHandle(), &descAllocInfo, &mDescriptorSet);
+        res = vkAllocateDescriptorSets(mDevice->getDeviceHandle(), &descAllocInfo, &mDescriptorSet);
+        vk::LogVulkanError(res, "vkAllocateDescriptorSets");
 
         VkPipelineLayoutCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -155,8 +163,9 @@ namespace vk
         info.pushConstantRangeCount = 1;
         info.pPushConstantRanges = &push;
 
-        vkCreatePipelineLayout(mDevice->getDeviceHandle(), &info, mDevice->getAllocCallbacks(),
+        res = vkCreatePipelineLayout(mDevice->getDeviceHandle(), &info, mDevice->getAllocCallbacks(),
                                &mPipelineLayout);
+        vk::LogVulkanError(res, "vkCreatePipelineLayout");
     }
 
     ShaderPipeline::~ShaderPipeline()
@@ -246,6 +255,46 @@ namespace vk
         return ok;
     }
 
+    SwBool ShaderPipeline::loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize, const SwChar* properties)
+    {
+        std::istringstream propertyString(properties);
+
+        std::string line;
+        while (std::getline(propertyString, line))
+        {
+            readProperty(line);
+        }
+
+        VkShaderModuleCreateInfo vertInfo = {};
+        vertInfo.pCode = vert;
+        vertInfo.codeSize = vertSize;
+        vertInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        vertInfo.pNext = VK_NULL_HANDLE;
+        vertInfo.flags = 0;
+
+        VkShaderModuleCreateInfo fragInfo = {};
+        fragInfo.pCode = frag;
+        fragInfo.codeSize = fragSize;
+        fragInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        fragInfo.pNext = VK_NULL_HANDLE;
+        fragInfo.flags = 0;
+
+        VkShaderModule vertModule = VK_NULL_HANDLE;
+        VkShaderModule fragModule = VK_NULL_HANDLE;
+
+        VkResult res = vkCreateShaderModule(mDevice->getDeviceHandle(), &vertInfo, mDevice->getAllocCallbacks(), &vertModule);
+        vk::LogVulkanError(res, "vkCreateShaderModule");
+        res = vkCreateShaderModule(mDevice->getDeviceHandle(), &fragInfo, mDevice->getAllocCallbacks(), &fragModule);
+        vk::LogVulkanError(res, "vkCreateShaderModule");
+
+        mShaders[ShaderModuleType::ShaderModuleType_Vertex] = vertModule;
+        mShaders[ShaderModuleType::ShaderModuleType_Fragment] = fragModule;
+
+        createPipeline();
+
+        return true;
+    }
+
     common::Resource<swizzle::gfx::Material> ShaderPipeline::createMaterial()
     {
         VkDescriptorSetAllocateInfo allocInfo = {};
@@ -257,7 +306,9 @@ namespace vk
 
         VkDescriptorSet desc = VK_NULL_HANDLE;
 
-        vkAllocateDescriptorSets(mDevice->getDeviceHandle(), &allocInfo, &desc);
+        VkResult res =  vkAllocateDescriptorSets(mDevice->getDeviceHandle(), &allocInfo, &desc);
+
+        vk::LogVulkanError(res, "vkAllocateDescriptorSets, failed to allocate descriptor set");
 
         auto material = common::CreateRef<VMaterial>(mDevice, desc);
 
@@ -306,11 +357,16 @@ namespace vk
             info.pNext = VK_NULL_HANDLE;
             info.flags = 0;
 
-            vkCreateShaderModule(mDevice->getDeviceHandle(), &info, mDevice->getAllocCallbacks(), &mod);
+            VkResult res = vkCreateShaderModule(mDevice->getDeviceHandle(), &info, mDevice->getAllocCallbacks(), &mod);
+            vk::LogVulkanError(res, "vkCreateShaderModule");
 
             if (strcmp(shaderType, "vertex") == 0)
             {
                 mShaders[ShaderModuleType::ShaderModuleType_Vertex] = mod;
+            }
+            else if (strcmp(shaderType, "geometry") == 0)
+            {
+                mShaders[ShaderModuleType::ShaderModuleType_Geometry] = mod;
             }
             else if (strcmp(shaderType, "fragment") == 0)
             {
@@ -327,7 +383,9 @@ namespace vk
             VkShaderStageFlagBits stage = {};
             if (it.first == ShaderModuleType::ShaderModuleType_Vertex)
                 stage = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
-            if (it.first == ShaderModuleType::ShaderModuleType_Fragment)
+            else if (it.first == ShaderModuleType::ShaderModuleType_Geometry)
+                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
+            else if (it.first == ShaderModuleType::ShaderModuleType_Fragment)
                 stage = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
 
             VkPipelineShaderStageCreateInfo shInfo = {};
@@ -386,6 +444,10 @@ namespace vk
         assemblyState.pNext = VK_NULL_HANDLE;
         assemblyState.flags = 0;
         assemblyState.topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        if (mShaderAttributes.mPoints)
+        {
+            assemblyState.topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        }
         assemblyState.primitiveRestartEnable = VK_FALSE;
 
         VkPipelineTessellationStateCreateInfo tessState = {};
@@ -474,8 +536,8 @@ namespace vk
             blendState.srcAlphaBlendFactor = mProperties[PropertyType::SourceBlend].mBlendFactor[1];
             blendState.dstColorBlendFactor = mProperties[PropertyType::DestinationBlend].mBlendFactor[0];
             blendState.dstAlphaBlendFactor = mProperties[PropertyType::DestinationBlend].mBlendFactor[1];
-            blendState.colorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
-            blendState.alphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
+            blendState.colorBlendOp = mProperties[PropertyType::ColorBlendOp].mColorBlendOp;
+            blendState.alphaBlendOp = mProperties[PropertyType::AlphaBlendOp].mAlphaBlendOp;
             blendState.colorWriteMask = VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT |
                                         VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT |
                                         VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT |
@@ -528,6 +590,67 @@ namespace vk
         }
     }
 
+    VkBlendFactor getBlendFactor(std::string& str)
+    {
+        if (str == "ONE")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_ONE;
+        }
+        else if (str == "ZERO")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_ZERO;
+        }
+        else if (str == "SRC_ALPHA")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+        }
+        else if (str == "SRC_COLOR")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_SRC_COLOR;
+        }
+        else if (str == "DST_ALPHA")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_DST_ALPHA;
+        }
+        else if (str == "DST_COLOR")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_DST_COLOR;
+        }
+        else if (str == "ONE_MINUS_SRC_ALPHA")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        }
+        else if (str == "ONE_MINUS_SRC_COLOR")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+        }
+        else if (str == "ONE_MINUS_DST_ALPHA")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+        }
+        else if (str == "ONE_MINUS_DST_COLOR")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+        }
+        else if (str == "ONE_MINUS_SRC_1_ALPHA")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
+        }
+        else if (str == "ONE_MINUS_SRC_1_COLOR")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
+        }
+        else if (str == "CONST_ALPHA")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_CONSTANT_ALPHA;
+        }
+        else if (str == "CONST_COLOR")
+        {
+            return VkBlendFactor::VK_BLEND_FACTOR_CONSTANT_COLOR;
+        }
+        return VkBlendFactor::VK_BLEND_FACTOR_ONE;
+    }
+
     void ShaderPipeline::readProperty(const std::string& line)
     {
         auto index = line.find('=');
@@ -543,23 +666,8 @@ namespace vk
             auto second = value.substr(index2 + 1);
             second.pop_back();
 
-            if (first == "SRC_ALPHA")
-            {
-                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
-            }
-            else if (first == "ONE")
-            {
-                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-            }
-
-            if (second == "SRC_ALPHA")
-            {
-                p.mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
-            }
-            if (first == "ONE")
-            {
-                p.mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-            }
+            p.mBlendFactor[0] = getBlendFactor(first);
+            p.mBlendFactor[1] = getBlendFactor(second);
 
             mProperties[PropertyType::SourceBlend] = p;
         }
@@ -572,27 +680,8 @@ namespace vk
             auto second = value.substr(index2 + 1);
             second.pop_back();
 
-            if (first == "SRC_ALPHA")
-            {
-                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
-            }
-            if (first == "ONE_MINUS_SRC_ALPHA")
-            {
-                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            }
-            else if (first == "ONE")
-            {
-                p.mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-            }
-
-            if (second == "SRC_ALPHA")
-            {
-                p.mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
-            }
-            if (first == "ONE")
-            {
-                p.mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-            }
+            p.mBlendFactor[0] = getBlendFactor(first);
+            p.mBlendFactor[1] = getBlendFactor(second);
 
             mProperties[PropertyType::DestinationBlend] = p;
         }
@@ -609,6 +698,28 @@ namespace vk
             else if (value == "CULL_BACK")
             {
                 mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_BACK_BIT;
+            }
+        }
+        else if (prop == "alphaBlend")
+        {
+            if (value == "MULTIPLY")
+            {
+                mProperties[PropertyType::AlphaBlendOp].mAlphaBlendOp = VkBlendOp::VK_BLEND_OP_MULTIPLY_EXT;
+            }
+            else if (value == "ADD")
+            {
+                mProperties[PropertyType::AlphaBlendOp].mAlphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
+            }
+        }
+        else if (prop == "colorBlend")
+        {
+            if (value == "MULTIPLY")
+            {
+                mProperties[PropertyType::ColorBlendOp].mColorBlendOp = VkBlendOp::VK_BLEND_OP_MULTIPLY_EXT;
+            }
+            else if (value == "ADD")
+            {
+                mProperties[PropertyType::ColorBlendOp].mColorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
             }
         }
     }

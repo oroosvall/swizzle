@@ -12,6 +12,7 @@
 #include <swizzle/gfx/Swapchain.hpp>
 #include <swizzle/gfx/Texture.hpp>
 
+#include <swizzle/gfx/GfxStats.hpp>
 
 #define CONTEXT_SELECTED_DEVICE_NAME (~0u)
 /* Defines */
@@ -72,12 +73,15 @@ namespace swizzle::gfx
         virtual void waitIdle() = 0;
 
         virtual GfxStatistics getStatistics() = 0;
+        virtual common::Resource<swizzle::core::StatisticsIterator<gfx::GfxStatsType>> getStatisticsIterator() = 0;
 
         virtual common::Resource<Buffer> createBuffer(BufferType type) = 0;
         virtual common::Resource<CommandBuffer> createCommandBuffer(U32 swapCount) = 0;
         virtual common::Resource<Swapchain> createSwapchain(common::Resource<core::SwWindow> window, U32 swapCount) = 0;
         virtual common::Resource<Texture> createTexture(U32 width, U32 height, U32 channels, const U8* data = nullptr) = 0;
         virtual common::Resource<Texture> createCubeMapTexture(U32 width, U32 height, U32 channels, const U8* data = nullptr) = 0;
+
+        virtual common::Resource<FrameBuffer> createFramebuffer(const FrameBufferCreateInfo& fboInfo) = 0;
 
         virtual void submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount,
                             common::Resource<Swapchain> swapchain) = 0;

@@ -56,7 +56,7 @@ namespace vk
 
     SwChar* Instance::getDeviceName(U32 index)
     {
-        SwChar* name = "[No GPU]";
+        const SwChar* name = "[No GPU]";
         VkPhysicalDevice dev = getDevice(index);
 
         if (dev)
@@ -65,7 +65,7 @@ namespace vk
             name = mSelectedDeviceProperties.deviceName;
         }
 
-        return name;
+        return (SwChar*)name;
     }
 
     std::vector<std::string> Instance::listAvailableExtensions(U32 index)
@@ -113,8 +113,12 @@ namespace vk
         info.enabledExtensionCount = static_cast<U32>(extensions.size());
         info.enabledLayerCount = 0u;
 
+        VkPhysicalDeviceFeatures features{};
+
+        features.geometryShader = true;
+
         info.flags = 0u;
-        info.pEnabledFeatures = VK_NULL_HANDLE;
+        info.pEnabledFeatures = &features;
         info.pNext = VK_NULL_HANDLE;
         info.ppEnabledExtensionNames = extensions.data();
         info.ppEnabledLayerNames = VK_NULL_HANDLE;
@@ -245,6 +249,8 @@ namespace vk
         instanceLayers.push_back("VK_LAYER_KHRONOS_validation");
         instanceLayers.push_back("VK_LAYER_RENDERDOC_Capture");
 #endif
+
+        //instanceLayers.push_back("VK_LAYER_LUNARG_gfxreconstruct");
 
         VkApplicationInfo vkAppInfo = {};
         vkAppInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO;

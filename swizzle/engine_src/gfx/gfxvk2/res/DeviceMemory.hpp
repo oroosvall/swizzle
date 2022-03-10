@@ -3,6 +3,7 @@
 
 /* Include files */
 
+#include <swizzle/gfx/GfxStats.hpp>
 #include <common/Common.hpp>
 #include "_fwDecl.hpp"
 
@@ -11,6 +12,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <string>
 
 /* Defines */
 
@@ -32,7 +34,9 @@ namespace vk
             , mOffset(offset)
             , mAlignOffset(0ull)
             , mSize(size)
-            , mResources() {}
+            , mResources()
+            , mFreed(false)
+            {}
 
         common::Resource<DeviceMemoryPool> mOwnerPool;
         VkDeviceMemory mMemory;
@@ -41,6 +45,7 @@ namespace vk
         VkDeviceSize mSize;
 
         std::vector<std::weak_ptr<IVkResource>> mResources;
+        SwBool mFreed;
 
         void bind(common::Resource<Device> device, common::Resource<IVkResource> resource);
         U32 activeUserCound();
@@ -61,6 +66,12 @@ namespace vk
         std::vector<Fragment> mFreeFragments;
     };
 
+    struct AlignmentInfo
+    {
+        VkDeviceSize mSize;
+        VkDeviceSize mAlignOffset;
+    };
+
 }
 
 /* Class Declaration */
@@ -71,7 +82,7 @@ namespace vk
     {
     public:
 
-        DeviceMemoryPool(common::Resource<Device> device, VkDeviceSize chunkSize);
+        DeviceMemoryPool(common::Resource<Device> device, VkDeviceSize chunkSize, std::string memoryPoolName);
         ~DeviceMemoryPool();
 
         void updateBudget(VkDeviceSize budget, VkDeviceSize usage);
@@ -83,15 +94,20 @@ namespace vk
         common::Resource<DeviceMemory> allocateMemory(VkMemoryRequirements reqs, U32 memoryTypeIndex);
         void freeMemory(common::Resource<DeviceMemory> memory);
 
+        swizzle::gfx::MemoryStatistics* getMemoryStats();
+
     private:
 
         void allocateNewChunk(VkDeviceSize size, U32 memoryTypeIndex);
 
         Chunk* getChunk(VkDeviceSize size, U32 memoryTypeIndex);
 
+        AlignmentInfo calcAlignedSize(VkDeviceSize offset, VkMemoryRequirements memReq);
+
         common::Resource<Device> mDevice;
         std::vector<Chunk> mMemoryChunks;
         VkDeviceSize mChunkSize;
+        std::string mMemoryPoolName;
 
         VkDeviceSize mTotalAllocated;
         VkDeviceSize mUsedSize;
@@ -100,6 +116,9 @@ namespace vk
         VkDeviceSize mOtherUseSize;
 
         std::mutex mLock;
+
+        U32 mVAllocCount;
+        swizzle::gfx::MemoryStatistics mStatistics;
 
     };
 }
