@@ -12,10 +12,16 @@
 #include <cstring>
 #include <array>
 
+#include <utils/StringUtils.hpp>
+
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_swizzle.hpp>
+
+ImVec4 col = { 0.5, 0.5, 0.5, 1.0 };
+
 Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
-    , guiLabel(nullptr)
 {
 }
 
@@ -25,8 +31,11 @@ Game::~Game()
 
 void Game::userSetup()
 {
-    guiLabel = sw::gui::CreateLabel(mGfxContext);
-    guiLabel->setText("This is amazing!\n");
+    //mWindow->setCursorVisible(false);
+
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplSwizzle_Init(mGfxContext, mWindow);
 
     std::string cfgFile = sw::core::GetAppCacheDirectory();
     cfgFile += "engine.cfg";
@@ -35,8 +44,8 @@ void Game::userSetup()
     v.setString(".");
     mGameCfg.setValue("AssetDir", v);
 
-    //mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOn);
-    mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
+    mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOn);
+    //mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
 
     mCmdBuffer = mGfxContext->createCommandBuffer(3);
 
@@ -59,26 +68,6 @@ void Game::userSetup()
 
     mTexture = swizzle::asset::LoadTexture2D(mGfxContext, "texture/lightGray.png");
     mMaterial->setDescriptorTextureResource(0u, mTexture);
-
-    sw::gfx::ShaderAttributeList attribsText = {};
-    attribsText.mBufferInput = {
-        { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 2U) }
-    };
-    attribsText.mAttributes = {
-        { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
-        { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 3U }
-    };
-    attribsText.mEnableDepthTest = false;
-    attribsText.mEnableBlending = true;
-
-    mTextShader = mSwapchain->createShader(attribsText);
-    mTextShader->load("shaders/text.shader");
-    mTextMaterial = mShader->createMaterial();
-    mTextMaterial->setDescriptorTextureResource(0u, guiLabel->getTexture());
-
-    //mTexture = mGfxContext->createTexture(1024U, 1024U);
-
-    //mTexture->setData(2, 2, 4, singlePixel);
 
     cam.setPosition({ 0.0F, 0.0F, 5.5F });
 
@@ -104,6 +93,15 @@ void Game::userSetup()
     mSkyShader = mSwapchain->createShader(attribsSky);
     mSkyShader->load("shaders/sky.shader");
 
+    sw::gfx::ShaderAttributeList attribFsq = {};
+    attribFsq.mEnableBlending = true;
+
+    mFsq = mSwapchain->createShader(attribFsq);
+    mFsq->load("shaders/fsq.shader");
+
+    mFsqMat = mFsq->createMaterial();
+    ImGui_ImplSwizzle_SetMaterial(mFsqMat);
+
     mSkyMaterial = mSkyShader->createMaterial();
 
     mSkyTexture = sw::asset::LoadTextureCubeMap(mGfxContext,
@@ -120,7 +118,8 @@ void Game::userSetup()
     //mMesh = sw::asset::LoadMesh(mGfxContext, "meshes/main_city.obj", true);
     //mMesh = sw::asset::LoadMesh(mGfxContext, "C:/tmp/cobra.obj", true);
     //mMesh = sw::asset::LoadMesh(mGfxContext, "meshes/test.swm", true);
-    mMeshAnimated = sw::asset::LoadMeshAnimated(mGfxContext, "c:/gme/test.swm", true);
+    //mMeshAnimated = sw::asset::LoadMeshAnimated(mGfxContext, "c:/gme/test.swm", true);
+    mMeshAnimated = sw::asset::LoadMeshAnimated(mGfxContext, "meshes/test.swm", true);
 
     sw::gfx::ShaderAttributeList attribsAnim = {};
     attribsAnim.mBufferInput = {
@@ -146,58 +145,84 @@ void Game::userSetup()
 SwBool Game::userUpdate(F32 dt)
 {
     OPTICK_EVENT("userUpdate");
-    if (sw::input::WasPressedThisFrame(sw::input::Keys::Key0))
-    {
-        extraText++;
-    }
 
-    if (sw::input::WasPressedThisFrame(sw::input::Keys::KeyT))
+    if (sw::input::WasKeyPressedThisFrame(sw::input::Keys::KeyT))
     {
         testMode = !testMode;
     }
 
-    if (sw::input::WasPressedThisFrame(sw::input::Keys::Key1))
+    if (sw::input::WasKeyPressedThisFrame(sw::input::Keys::KeyR))
     {
-        selectedBone++;
-    }
-    if (sw::input::WasPressedThisFrame(sw::input::Keys::Key2))
-    {
-        selectedBone--;
+        mSwapchain->resize();
     }
 
     mFpsCounter.tick(dt);
 
-    auto stats = mGfxContext->getStatistics();
+    // auto stats = mGfxContext->getStatistics();
 
     std::string title;
-    title.reserve(512);
+    title.reserve(1024);
     title = "Heljo world\n";
 
     title += "Frames: " + std::to_string(mSwapchain->getFrameCounter()) + "\n";
     title += "FPS: " + std::to_string(mFpsCounter.getFps()) + "\n\n";
 
     title += std::string(mGfxContext->getSelectedDeviceName()) + "\n";
-    title += "GFX: Gpu Memory usage: " + std::to_string(stats.mGpuMemoryUsage / (1024 * 1024)) + "MB\n";
-    title += "GFX: Cpu Memory usage: " + std::to_string(stats.mCpuMemoryUsage / (1024 * 1024)) + "MB\n";
-    title += "Staged objects: " + std::to_string(stats.mStagedObjects) + "\n";
+
+    auto iter = mGfxContext->getStatisticsIterator();
+
+    do
+    {
+        OPTICK_EVENT("Parse Stats");
+        if (iter->getType() == sw::gfx::GfxStatsType::MemoryStats)
+        {
+            sw::gfx::MemoryStatistics* memStat = (sw::gfx::MemoryStatistics*)iter->getStatisticsData();
+
+            title += "Memory Heap: " + std::string(memStat->mName) + "\n";
+            title += "  Mem: " + utils::toMemoryString(memStat->mUsed) + "/" + utils::toMemoryString(memStat->mSize);
+            title += "; Allocs: " + std::to_string(memStat->mNumAllocations) + "p, " + std::to_string(memStat->mNumVirtualAllocations) + "v\n";
+        }
+        else if (iter->getType() == sw::gfx::GfxStatsType::DeviceStats)
+        {
+            sw::gfx::DeviceStatistics* devStats = (sw::gfx::DeviceStatistics*)iter->getStatisticsData();
+            title += "Device\n";
+            title += "  Num Staged Objects: " + std::to_string(devStats->mNumStagedObjects) + "\n";
+            title += "  Num Textures: " + std::to_string(devStats->mNumTextures) + "\n";
+            title += "  Num Buffers: " + std::to_string(devStats->mNumBuffers) + "\n";
+            title += "  Pipelines: " + std::to_string(devStats->mNumPipelines) + "\n";
+        }
+
+    } while (iter->next());
+
+    /*title += "Staged objects: " + std::to_string(stats.mStagedObjects) + "\n";
     title += "Num Textures: " + std::to_string(stats.mNumTextures) + "\n";
-    title += "Num Buffers: " + std::to_string(stats.mNumBuffers) + "\n";
+    title += "Num Buffers: " + std::to_string(stats.mNumBuffers) + "\n";*/
     title += "Draw call count: " + std::to_string(mCmdBuffer->getDrawCount()) + "\n";
     title += "Vertex count: " + std::to_string(mCmdBuffer->getVertCount()) + "\n";
     title += "Triangle count: " + std::to_string(mCmdBuffer->getTriCount()) + "\n";
-    title += "RemainingSize: " + std::to_string(guiLabel->getBuffer()->getRemainingSize()) + "\n";
     title += "TestMode (T): " + std::to_string(testMode) + "\n";
-
-    for (int i = 0; i < extraText; i++)
-    {
-        title += "a";
-    }
 
     //mWindow->setTitle(title.c_str());
 
-    guiLabel->setText(title.c_str());
+    //guiLabel->setText(title.c_str());
+    //mLabel->setText(title.c_str());
 
-    mController.update(dt);
+    ImGui_ImplSwizzle_NewFrame(mWindow);
+    ImGui::NewFrame();
+
+    ImGui::Begin("Blah");
+    {
+        OPTICK_EVENT("ImGui::Text");
+        ImGui::Text("%s", title.c_str());
+    }
+
+    ImGui::ColorEdit4("Color", (float*)&col);
+
+    ImGui::End();
+
+    ImGui::EndFrame();
+
+    //mController.update(dt);
 
     sw::gfx::HSVA hsv = sw::gfx::RgbaToHsva(rgba);
     hsv.h += 20.0F * dt;
@@ -207,15 +232,13 @@ SwBool Game::userUpdate(F32 dt)
     hsvLamp.h += 20.0F * dt;
     lampColor = sw::gfx::HsvaToRgba(hsvLamp);
 
-    updateMainWindow();
+    updateMainWindow(dt);
 
     return mWindow->isVisible();
 }
 
 void Game::userCleanup()
 {
-    delete guiLabel;
-
     std::string cfgFile = sw::core::GetAppCacheDirectory();
     cfgFile += "engine.cfg";
     mGameCfg.write(cfgFile.c_str());
@@ -242,9 +265,6 @@ void Game::userCleanup()
     mSkyTexture.reset();
     mSkyMaterial.reset();
 
-    mTextShader.reset();
-    mTextMaterial.reset();
-
     mMeshAnimated.mBoneBuffer.reset();
     mMeshAnimated.mIndexBuffer.reset();
     mMeshAnimated.mVertexBuffer.reset();
@@ -253,8 +273,9 @@ void Game::userCleanup()
     mAnimationMaterial.reset();
 }
 
-void Game::updateMainWindow()
+void Game::updateMainWindow(F32 dt)
 {
+    UNUSED_ARG(dt);
     OPTICK_EVENT("Game::updateMainWindow");
     U32 x, y;
     mWindow->getSize(x, y);
@@ -265,7 +286,8 @@ void Game::updateMainWindow()
     memcpy(mem, &lampColor, sizeof(lampColor));
     mUniformBuffer->unmapMemory();
 
-    mSwapchain->setClearColor({ rgba.r, rgba.g, rgba.b, rgba.a });
+    //mSwapchain->setClearColor({ rgba.r, rgba.g, rgba.b, rgba.a });
+    mSwapchain->setClearColor({ 0,0,0,1 });
 
     struct tmp
     {
@@ -273,7 +295,6 @@ void Game::updateMainWindow()
         glm::mat4 view;
         glm::mat4 proj;
         glm::vec4 eye;
-        int sb;
     };
 
     tmp t = {};
@@ -281,14 +302,20 @@ void Game::updateMainWindow()
     t.view = cam.getView();
     t.proj = cam.getProjection();
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
-    t.sb = selectedBone;
 
     mSwapchain->prepare();
     mCmdBuffer->begin();
 
     mCmdBuffer->uploadTexture(mTexture);
-    mCmdBuffer->uploadTexture(guiLabel->getTexture());
     mCmdBuffer->uploadTexture(mSkyTexture);
+
+    ImGui_ImplSwizzle_UploadFontTexture(mCmdBuffer);
+
+    ImGui_ImplSwizzle_BeginDraw(mCmdBuffer);
+
+    ImGui::Render();
+    ImGui_ImplSwizzle_RenderDrawData(ImGui::GetDrawData(), mCmdBuffer);
+    ImGui_ImplSwizzle_EndDraw(mCmdBuffer);
 
     mCmdBuffer->beginRenderPass(mSwapchain);
 
@@ -302,7 +329,6 @@ void Game::updateMainWindow()
     mCmdBuffer->setShaderConstant(mSkyShader, (U8*)&t, sizeof(t));
 
     mCmdBuffer->draw(mSkysphere.mVertexBuffer);
-
 
     mCmdBuffer->bindShader(mAnimationShader);
 
@@ -333,29 +359,9 @@ void Game::updateMainWindow()
         }
     }
 
-    // Text stuff
-
-    mCmdBuffer->bindShader(mTextShader);
-
-    mCmdBuffer->setViewport(x, y);
-
-#pragma pack(push, 1)
-    struct Gui
-    {
-        glm::mat4 mat;
-        glm::vec3 offest;
-    };
-
-#pragma pack(pop)
-    Gui g;
-
-    g.mat = glm::orthoRH_ZO(0.0F, (F32)x, (F32)y, 0.0F, 0.01F, 10.0F);
-    g.offest = { 5.0F, 50.0F, 0.0F };
-
-    mCmdBuffer->setShaderConstant(mTextShader, (U8*)&g, sizeof(g));
-    mCmdBuffer->bindMaterial(mShader, mTextMaterial);
-
-    mCmdBuffer->draw(guiLabel->getBuffer());
+    mCmdBuffer->bindShader(mFsq);
+    mCmdBuffer->bindMaterial(mFsq, mFsqMat);
+    mCmdBuffer->drawNoBind(3u, 0u);
 
     mCmdBuffer->endRenderPass();
     mCmdBuffer->end();

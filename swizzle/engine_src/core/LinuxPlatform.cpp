@@ -3,7 +3,11 @@
 #include <swizzle/core/Logging.hpp>
 #include "PlatformLayer.hpp"
 
+#if defined(SW_LINUX_XLIB)
 #include "Linux/x/X11Window.hpp"
+#elif defined(SW_LINUX_XCB)
+#include "Linux/xcb/XcbWindow.hpp"
+#endif
 
 namespace swizzle::core
 {
@@ -11,6 +15,7 @@ namespace swizzle::core
     {
         void platformInit(const SwChar* appName)
         {
+            UNUSED_ARG(appName);
             LOG_INFO("platformInit() Linux");
         }
 
@@ -42,6 +47,7 @@ namespace swizzle::core
         U32 getPlatformDisplayResolutionCount(U32 displayIndex)
         {
             UNUSED_ARG(displayIndex);
+            return 0u;
         }
 
         void getPlatformDisplayResolutions(U32 displayIndex, Resolution* resolutions, U32 size)
@@ -56,7 +62,11 @@ namespace swizzle::core
             UNUSED_ARG(width);
             UNUSED_ARG(height);
             UNUSED_ARG(title);
+            #if defined(SW_LINUX_XLIB)
             return std::make_shared<XlibWindow>(width, height, title);
+            #elif defined(SW_LINUX_XCB)
+            return std::make_shared<XcbWindow>(width, height, title);
+            #endif
         }
 
         U64 getPlatformTimeStampMs()
@@ -76,25 +86,30 @@ namespace swizzle::core
 
         const SwChar* GetPlatformKeyText(S32 scanCode)
         {
+            UNUSED_ARG(scanCode);
             return "";
         }
 
         const SwWChar* GetPlatformKeyTextW(S32 scanCode)
         {
+            UNUSED_ARG(scanCode);
             return L"";
         }
 
         S32 PlatformKeyToScanCode(input::Keys key)
         {
+            UNUSED_ARG(key);
             return 0;
         }
 
         void PlatformShowCriticalMessage(const SwChar* text)
         {
+            UNUSED_ARG(text);
         }
 
         void PlatformShowCriticalMessageW(const SwWChar* text)
         {
+            UNUSED_ARG(text);
         }
 
     } // namespace platform

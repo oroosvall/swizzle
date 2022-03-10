@@ -12,8 +12,6 @@
 #include <utils/Config.hpp>
 #include <utils/FpsCounter.hpp>
 
-#include <swizzle/gui/GuiLabel.hpp>
-
 #include <swizzle/asset/MeshLoader.hpp>
 
 class Game : public sw::Application
@@ -30,7 +28,7 @@ public:
 
 private:
 
-    void updateMainWindow();
+    void updateMainWindow(F32 dt);
 
     common::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
 
@@ -65,16 +63,10 @@ private:
     utils::Config mGameCfg;
     utils::FpsCounter mFpsCounter;
 
-    // Temp
-    sw::gui::GuiLabel* guiLabel;
-    common::Resource<sw::gfx::Shader> mTextShader;
-    common::Resource<sw::gfx::Material> mTextMaterial;
-
-    int extraText = 0;
-
-    int selectedBone = 0;
-
     bool testMode = false;
+
+    common::Resource<sw::gfx::Shader> mFsq;
+    common::Resource<sw::gfx::Material> mFsqMat;
 
 };
 

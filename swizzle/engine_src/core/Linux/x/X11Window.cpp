@@ -12,6 +12,7 @@ namespace swizzle::core
         : mDisplay(nullptr)
         , mWindow()
     {
+        UNUSED_ARG(title);
         XInitThreads();
 
         mDisplay = XOpenDisplay(NULL);

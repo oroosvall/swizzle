@@ -189,13 +189,13 @@ namespace loader::swm
             {
                 std::vector<glm::mat4> mats;
                 mats.resize(animInfo.mNumBones);
-                memcpy(mats.data(), animInfo.mBindPose.data(), sizeof(glm::mat4) * animInfo.mNumBones);
+                memcpy((F32*)mats.data(), (F32*)animInfo.mBindPose.data(), sizeof(glm::mat4) * animInfo.mNumBones);
 
                 CalcLocalBindPose(mats, animInfo.mParentList);
 
                 std::vector<glm::mat4> inverse = GetInverse(mats, animInfo.mNumBones);
 
-                memcpy(mats.data(), animInfo.mAnimations[0].mKeyFrames.data(), sizeof(glm::mat4) * animInfo.mNumBones);
+                memcpy((F32*)mats.data(), (F32*)animInfo.mAnimations[0].mKeyFrames.data(), sizeof(glm::mat4) * animInfo.mNumBones);
                 CalcLocalBindPose(mats, animInfo.mParentList);
 
                 std::vector<glm::mat4> pose = CalcPose(mats, inverse);

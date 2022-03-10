@@ -38,7 +38,9 @@ data/test.dat
 data/test.nam
 .vs/
 .vscode/
+trash/
 *.ods
 *.pyc
 data/ProfileTest.prof
 *.log
+*.ini

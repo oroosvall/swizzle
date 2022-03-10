@@ -25,4 +25,21 @@ namespace utils
         return s;
     }
 
+    std::string toMemoryString(uint64_t value) noexcept
+    {
+        const char* units[] = {"Bytes", "KB", "MB"};
+        int unitCount = sizeof(units) / sizeof(units[0]) - 1;
+        int idx = 0;
+
+        while (value >= 1024 && idx < unitCount)
+        {
+            value = value / 1024;
+            idx++;
+        }
+
+        std::string str = std::to_string(value) + units[idx];
+
+        return str;
+    }
+
 } // namespace utils

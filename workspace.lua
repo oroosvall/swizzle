@@ -69,10 +69,14 @@ filter "system:linux"
     staticruntime "On"
     systemversion "latest"
 
+    pic "On"
+
     links
     {
         "pthread",
-        "X11"
+        "X11",
+        "xcb",
+        "xcb-randr"
     }
     defines
     {

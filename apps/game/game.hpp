@@ -6,8 +6,6 @@
 #include <utils/Config.hpp>
 #include <utils/FpsCounter.hpp>
 
-#include <swizzle/gui/GuiLabel.hpp>
-
 #include <swizzle/asset/MeshLoader.hpp>
 
 #include "Camera.hpp"
@@ -46,9 +44,6 @@ private:
 
     common::Resource<sw::gfx::Texture> mTexture;
 
-    sw::gui::GuiLabel* guiLabel;
-    common::Resource<sw::gfx::Shader> mTextShader;
-    common::Resource<sw::gfx::Material> mTextMaterial;
     utils::FpsCounter mFpsCounter;
 
     std::vector<glm::vec3> mBulletPositions;

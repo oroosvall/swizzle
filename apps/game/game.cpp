@@ -11,7 +11,6 @@
 Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
-    , guiLabel(nullptr)
 {
 }
 
@@ -56,29 +55,11 @@ void Game::userSetup()
     mUniformBuffer->setBufferData(&lampColor, sizeof(lampColor), 1);
     mMaterial->setDescriptorBufferResource(1u, mUniformBuffer, sizeof(lampColor));
 
-    guiLabel = sw::gui::CreateLabel(mGfxContext);
-
-    sw::gfx::ShaderAttributeList attribsText = {};
-    attribsText.mBufferInput = {
-        { sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 2U) }
-    };
-    attribsText.mAttributes = {
-        { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
-        { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 3U }
-    };
-    attribsText.mEnableDepthTest = false;
-    attribsText.mEnableBlending = true;
-
-    mTextShader = mSwapchain->createShader(attribsText);
-    mTextShader->load("shaders/text.shader");
-    mTextMaterial = mShader->createMaterial();
-    mTextMaterial->setDescriptorTextureResource(0u, guiLabel->getTexture());
-
     mBulletMesh = sw::asset::LoadMesh(mGfxContext, "meshes/game/bullet.swm", true);
 
     mEnemyShip = sw::asset::LoadMesh(mGfxContext, "meshes/game/TheTube.swm", true);
 
-    sw::asset::LoadMesh(mGfxContext, "c:/gme/test.swm", true);
+    sw::asset::LoadMesh(mGfxContext, "meshes/test.swm", true);
 
     mEnemyPosisions = {
         {0.0f, 5.0f, -70.0f,},
@@ -114,11 +95,7 @@ void Game::userSetup()
 
 void Game::userCleanup()
 {
-    delete guiLabel;
-
     mCmdBuffer.reset();
-    mTextMaterial.reset();
-    mTextShader.reset();
 
     mMaterial.reset();
     mUniformBuffer.reset();
@@ -165,8 +142,6 @@ SwBool Game::userUpdate(F32 dt)
     title += "Triangle count: " + std::to_string(mCmdBuffer->getTriCount()) + "\n";
     //title += "RemainingSize: " + std::to_string(guiLabel->getBuffer()->getRemainingSize()) + "\n";
 
-    guiLabel->setText(title.c_str());
-
     if (mPlayer.shouldShoot())
     {
         mBulletPositions.emplace_back(mPlayer.getPosition());
@@ -202,7 +177,6 @@ SwBool Game::userUpdate(F32 dt)
     mCmdBuffer->begin();
 
     mCmdBuffer->uploadTexture(mTexture);
-    mCmdBuffer->uploadTexture(guiLabel->getTexture());
     mCmdBuffer->uploadTexture(mSkyTexture);
 
     mCmdBuffer->beginRenderPass(mSwapchain);
@@ -256,30 +230,6 @@ SwBool Game::userUpdate(F32 dt)
         mCmdBuffer->setShaderConstant(mShader, (U8*)&t, sizeof(t));
         mCmdBuffer->drawIndexed(mEnemyShip.mVertexBuffer, mEnemyShip.mIndexBuffer);
     }
-
-    // Text stuff
-
-    mCmdBuffer->bindShader(mTextShader);
-
-    mCmdBuffer->setViewport(x, y);
-
-#pragma pack(push, 1)
-    struct Gui
-    {
-        glm::mat4 mat;
-        glm::vec3 offest;
-    };
-
-#pragma pack(pop)
-    Gui g;
-
-    g.mat = glm::orthoRH_ZO(0.0F, (F32)x, (F32)y, 0.0F, 0.01F, 10.0F);
-    g.offest = { 5.0F, 50.0F, 0.0F };
-
-    mCmdBuffer->setShaderConstant(mTextShader, (U8*)&g, sizeof(g));
-    mCmdBuffer->bindMaterial(mTextShader, mTextMaterial);
-
-    mCmdBuffer->draw(guiLabel->getBuffer());
 
     mCmdBuffer->endRenderPass();
     mCmdBuffer->end();
