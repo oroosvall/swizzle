@@ -31,8 +31,8 @@ namespace swizzle::input
         KeyLBracket, KeyRBracket, KeyEnter,
         KeySemiColon, KeyApostrophe, KeyBackslash, KeyForwardslash,
 
-        KeySpace, KeyTilde, KeyPause, KeyScrollLock,
-        KeySysReq, KeyNumPad, KeyApplication,
+        KeySpace, KeyGraveAccent, KeyPause, KeyScrollLock,
+        KeySysReq, KeyNumLock, KeyApplication,
 
         KeyArrowUp, KeyArrowDown, KeyArrowLeft, KeyArrowRight,
 
@@ -57,10 +57,10 @@ namespace swizzle::input
 
         KeyBackspace,
         KeyNumPadEnter,
-        KeyNumPadPlus,
-        KeyNumPadHyphon,
-        KeyNumPadAsterisk,
-        KeyNumPadSlash,
+        KeyNumPadAdd,
+        KeyNumPadSubtract,
+        KeyNumPadMultiply,
+        KeyNumPadDivide,
         KeyNumPadDelete,
     };
 

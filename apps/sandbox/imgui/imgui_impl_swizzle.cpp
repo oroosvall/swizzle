@@ -2,8 +2,11 @@
 /* Include files */
 
 #include "imgui_impl_swizzle.hpp"
+#include "ImGuiTranslateKey.hpp"
+
 
 #include <swizzle/core/Input.hpp>
+#include <swizzle/core/Platform.hpp>
 #include <swizzle/core/Event.hpp>
 #include <swizzle/core/WindowEvents.hpp>
 
@@ -198,7 +201,8 @@ void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
         swizzle::core::InputEvent& e = (swizzle::core::InputEvent&)evt;
         if (e.mFromKeyboard)
         {
-            //io.AddKeyEvent(e.mKey, e.mPressed);
+            io.AddKeyEvent(fromScanCode(e.mKey), e.mPressed);
+            puts(swizzle::core::GetKeyText(e.mKey));
         }
         else
         {

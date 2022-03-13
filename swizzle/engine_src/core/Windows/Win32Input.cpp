@@ -52,7 +52,7 @@ namespace swizzle
         //    /* 38 */ input::Keys::KeyL,
         //    /* 39 */ input::Keys::KeySemiColon,
         //    /* 40 */ input::Keys::KeyApostrophe,
-        //    /* 41 */ input::Keys::KeyTilde,
+        //    /* 41 */ input::Keys::KeyGraveAccent,
         //    /* 42 */ input::Keys::KeyLShift,
         //    /* 43 */ input::Keys::KeyBackslash,
         //    /* 44 */ input::Keys::KeyZ,
@@ -66,7 +66,7 @@ namespace swizzle
         //    /* 52 */ input::Keys::KeyPeriod,
         //    /* 53 */ input::Keys::KeyForwardslash,
         //    /* 54 */ input::Keys::KeyRShift,
-        //    /* 55 */ input::Keys::KeyNumPadAsterisk,
+        //    /* 55 */ input::Keys::KeyNumPadMultiply,
         //    /* 56 */ input::Keys::KeyLAlt,
         //    /* 57 */ input::Keys::KeySpace,
         //    /* 58 */ input::Keys::KeyCaps,
@@ -85,11 +85,11 @@ namespace swizzle
         //    /* 71 */ input::Keys::KeyNumPad7,
         //    /* 72 */ input::Keys::KeyNumPad8,
         //    /* 73 */ input::Keys::KeyNumPad9,
-        //    /* 74 */ input::Keys::KeyNumPadHyphon,
+        //    /* 74 */ input::Keys::KeyNumPadSubtract,
         //    /* 75 */ input::Keys::KeyNumPad4,
         //    /* 76 */ input::Keys::KeyNumPad5,
         //    /* 77 */ input::Keys::KeyNumPad6,
-        //    /* 78 */ input::Keys::KeyNumPadPlus,
+        //    /* 78 */ input::Keys::KeyNumPadAdd,
         //    /* 79 */ input::Keys::KeyNumPad1,
         //    /* 80 */ input::Keys::KeyNumPad2,
         //    /* 81 */ input::Keys::KeyNumPad3,
@@ -158,7 +158,7 @@ namespace swizzle
         //    /* 306 */ input::Keys::KeyNone, // This key is not mapped
         //    /* 307 */ input::Keys::KeyNone, // This key is not mapped
         //    /* 308 */ input::Keys::KeyNone, // This key is not mapped
-        //    /* 309 */ input::Keys::KeyNumPadSlash,
+        //    /* 309 */ input::Keys::KeyNumPadDivide,
         //    /* 310 */ input::Keys::KeyNone, // This key is not mapped
         //    /* 311 */ input::Keys::KeySysReq,
         //    /* 312 */ input::Keys::KeyRAlt,
@@ -174,7 +174,7 @@ namespace swizzle
         //    /* 322 */ input::Keys::KeyNone, // This key is not mapped
         //    /* 323 */ input::Keys::KeyNone, // This key is not mapped
         //    /* 324 */ input::Keys::KeyNone, // This key is not mapped
-        //    /* 325 */ input::Keys::KeyNumPad,
+        //    /* 325 */ input::Keys::KeyNumLock,
         //    /* 326 */ input::Keys::KeyNone, // This key is not mapped
         //    /* 327 */ input::Keys::KeyHome,
         //    /* 328 */ input::Keys::KeyArrowUp,
@@ -236,8 +236,8 @@ namespace swizzle
             /* KeyLBracket, KeyRBracket, KeyEnter,                          */ 26, 27, 28,
             /* KeySemiColon, KeyApostrophe, KeyBackslash, KeyForwardslash,  */ 39, 40, 43, 53,
             /*                                                              */
-            /* KeySpace, KeyTilde, KeyPause, KeyScrollLock,                 */ 57, 41, 69, 70,
-            /* KeySysReq, KeyNumPad, KeyApplication,                        */ 311, 325, 349,
+            /* KeySpace, KeyGraveAccent, KeyPause, KeyScrollLock,                 */ 57, 41, 69, 70,
+            /* KeySysReq, KeyNumLock, KeyApplication,                        */ 311, 325, 349,
             /*                                                              */
             /* KeyArrowUp, KeyArrowDown, KeyArrowLeft, KeyArrowRight,       */ 328, 336, 331, 333,
             /*                                                              */
@@ -262,10 +262,10 @@ namespace swizzle
             /*                                                              */
             /* KeyBackspace,                                                */ 14,
             /* KeyNumPadEnter,                                              */ 284,
-            /* KeyNumPadPlus,                                               */ 78,
-            /* KeyNumPadHyphon,                                             */ 74,
-            /* KeyNumPadAsterisk,                                           */ 55,
-            /* KeyNumPadSlash,                                              */ 309,
+            /* KeyNumPadAdd,                                               */ 78,
+            /* KeyNumPadSubtract,                                             */ 74,
+            /* KeyNumPadMultiply,                                           */ 55,
+            /* KeyNumPadDivide,                                              */ 309,
             /* KeyNumPadDelete,                                             */ 83,
         };
 
