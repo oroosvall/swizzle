@@ -246,15 +246,15 @@ namespace vk
 #if _DEBUG
         extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         //extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        instanceLayers.push_back("VK_LAYER_KHRONOS_validation");
-        instanceLayers.push_back("VK_LAYER_RENDERDOC_Capture");
+        addLayerIfExisting(instanceLayers, layers, "VK_LAYER_KHRONOS_validation");
+        addLayerIfExisting(instanceLayers, layers, "VK_LAYER_RENDERDOC_Capture");
 #endif
 
         //instanceLayers.push_back("VK_LAYER_LUNARG_gfxreconstruct");
 
         VkApplicationInfo vkAppInfo = {};
         vkAppInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        vkAppInfo.apiVersion = VK_API_VERSION_1_2;
+        vkAppInfo.apiVersion = VK_API_VERSION_1_3;
         vkAppInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         vkAppInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         vkAppInfo.pApplicationName = "App";
