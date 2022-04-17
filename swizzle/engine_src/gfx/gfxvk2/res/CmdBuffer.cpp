@@ -405,6 +405,27 @@ namespace vk
         vkCmdSetScissor(getCmdBuffer(mActiveIndex), 0, 1, &scissor);
     }
 
+    void CmdBuffer::copyBuffer(common::Resource<swizzle::gfx::Buffer> to, common::Resource<swizzle::gfx::Buffer> from)
+    {
+        DBuffer* source= (DBuffer*)from.get();
+        DBuffer* destination = (DBuffer*)to.get();
+
+        auto& resSrc = source->getBuffer();
+        auto& resDst = destination->getBuffer();
+        resSrc->addUser(shared_from_this(), mFrameCounter);
+        resDst->addUser(shared_from_this(), mFrameCounter);
+        VkBuffer srcBuf = resSrc->getVkHandle();
+        VkBuffer dstBuf = resDst->getVkHandle();
+
+        VkBufferCopy bufferCopy = {};
+
+        bufferCopy.srcOffset = 0u;
+        bufferCopy.dstOffset = 0u;
+        bufferCopy.size = from->getSize();
+
+        vkCmdCopyBuffer(getCmdBuffer(mActiveIndex), srcBuf, dstBuf, 1, &bufferCopy);
+    }
+
 }
 
 /* Class Protected Function Definition */

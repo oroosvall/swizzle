@@ -47,7 +47,6 @@ namespace vk
     void DBuffer::setBufferData(void* data, U64 size, U32 stride)
     {
         OPTICK_EVENT("DBuffer::setBufferData");
-        createOrResize(size);
 
         mVertCount = (U32)(size / (U64)stride);
         mStride = stride;
@@ -60,6 +59,11 @@ namespace vk
     U64 DBuffer::getRemainingSize() const
     {
         return mMemory->mSize - mUsedSize;
+    }
+
+    U64 DBuffer::getSize() const
+    {
+        return mMemory->mSize;
     }
 
     void DBuffer::setStride(U32 stride)

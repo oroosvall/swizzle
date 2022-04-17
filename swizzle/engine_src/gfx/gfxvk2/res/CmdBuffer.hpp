@@ -71,6 +71,8 @@ namespace vk
 
         virtual void setScissor(S32 x, S32 y, S32 w, S32 h) override;
 
+        virtual void copyBuffer(common::Resource<swizzle::gfx::Buffer> to, common::Resource<swizzle::gfx::Buffer> from) override;
+
     private:
 
         std::shared_ptr<CmdBuffer> shared_from_this()

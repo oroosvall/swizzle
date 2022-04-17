@@ -57,6 +57,8 @@ namespace swizzle::gfx
 
         virtual void setScissor(S32 x, S32 y, S32 w, S32 h) = 0;
 
+        virtual void copyBuffer(common::Resource<Buffer> to, common::Resource<Buffer> from) = 0;
+
     };
 }
 
