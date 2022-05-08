@@ -61,6 +61,12 @@ void PerspectiveCamera::setRotation(glm::vec3 rot)
     recalculateViewProj();
 }
 
+void PerspectiveCamera::getCameraSize(float& width, float& height)
+{
+    width = mWidth;
+    height = mHeight;
+}
+
 void PerspectiveCamera::lookAt(glm::vec3 pos, glm::vec3 dir, glm::vec3 up)
 {
     mViewMatrix = glm::lookAt(pos, dir, up);

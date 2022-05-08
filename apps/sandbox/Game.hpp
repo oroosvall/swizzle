@@ -13,6 +13,8 @@
 #include <utils/FpsCounter.hpp>
 
 #include <swizzle/asset/MeshLoader.hpp>
+#include "assetManager/AssetManager.hpp"
+#include "scene/Scene.hpp"
 
 class Game : public sw::Application
 {
@@ -30,43 +32,24 @@ private:
 
     void updateMainWindow(F32 dt);
 
+    void imGuiRender();
+
     common::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
-
-    common::Resource<sw::gfx::Shader> mShader;
-    common::Resource<sw::gfx::Material> mMaterial;
-
-    common::Resource<sw::gfx::Texture> mTexture;
 
     common::Resource<sw::gfx::FrameBuffer> mFrameBuffer;
 
-    common::Resource<sw::gfx::Buffer> mUniformBuffer;
-
-    sw::gfx::RGBA rgba = { 0.4F, 0.17F, 0.05F, 1.0F };
-    sw::gfx::RGBA lampColor = { 0.8F, 0.2F, 0.2F, 1.0F };
     PerspectiveCamera cam;
     CameraController mController;
-
-    sw::Mesh mMesh;
-    sw::Mesh mSkysphere;
-
-    common::Resource<sw::gfx::Shader> mSkyShader;
-
-    common::Resource<sw::gfx::Texture> mSkyTexture;
-    common::Resource<sw::gfx::Material> mSkyMaterial;
-
-    sw::MeshAnimated mMeshAnimated;
-    common::Resource<sw::gfx::Shader> mAnimationShader;
-    common::Resource<sw::gfx::Material> mAnimationMaterial;
-
-    U8 singlePixel[16] = { 0U, 0U, 0U, 255U, 128, 0, 0, 255, 0, 128, 0, 255, 0, 0, 128, 255 };
 
     utils::Config mGameCfg;
     utils::FpsCounter mFpsCounter;
 
-    bool testMode = false;
-
     common::Resource<sw::gfx::Shader> mFsq;
     common::Resource<sw::gfx::Material> mFsqMat;
+
+    common::Resource<AssetManager> mAssetManager;
+    common::Resource<Compositor> mCompositor;
+    common::Resource<Scene> mScene;
 
 };
 
