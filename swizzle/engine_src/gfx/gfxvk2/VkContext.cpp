@@ -197,14 +197,17 @@ namespace swizzle::gfx
             U32 signalCount = 0u;
             VkSemaphore signalSemaphores = VK_NULL_HANDLE;
             VkPipelineStageFlags waitStageMask{};
+            VkSemaphore waitSem = VK_NULL_HANDLE;
+            U32 waitCount = 0u;
 
             if (swapchain)
             {
                 vk::VSwapchain* swp = (vk::VSwapchain*)(swapchain.get());
                 signalSemaphores = swp->getSemaphoreToSignal();
                 waitStageMask = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-                // wait = swapchain->getWaitForSemaphore();
-                signalCount = 1U;
+                waitSem = swp->getWaitForSemaphore();
+                waitCount = 1u;
+                signalCount = 1u;
 
                 VkFence waitFence = swp->getWaitFence();
                 vkResetFences(mVkDevice->getDeviceHandle(), 1, &waitFence);
@@ -213,8 +216,8 @@ namespace swizzle::gfx
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.pNext = VK_NULL_HANDLE;
-            submitInfo.waitSemaphoreCount = 0u;
-            submitInfo.pWaitSemaphores = VK_NULL_HANDLE;
+            submitInfo.waitSemaphoreCount = waitCount;
+            submitInfo.pWaitSemaphores = &waitSem;
             submitInfo.pWaitDstStageMask = &waitStageMask;
             submitInfo.commandBufferCount = cmdBufferCount;
             submitInfo.pCommandBuffers = buffers;
