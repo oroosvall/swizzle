@@ -72,7 +72,7 @@ namespace vk
         void createSwapchain(VkSwapchainKHR oldSwapchain);
 
         void createSynchronizationObjects();
-        void destroySunchronizationObjects();
+        void destroySynchronizationObjects();
 
         void createSwapchainImages();
         void createSwapchainImageViews();

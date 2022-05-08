@@ -55,7 +55,6 @@ namespace vk
 
         , mFrameCounter(0ull)
     {
-        //mDevice->
         mSurface = CreateOsSurface(window, mInstance->getInstanceHandle());
 
         createSwapchain(VK_NULL_HANDLE);
@@ -80,7 +79,7 @@ namespace vk
                                mDevice->getAllocCallbacks());
         }
 
-        destroySunchronizationObjects();
+        destroySynchronizationObjects();
 
         vkDestroySwapchainKHR(mDevice->getDeviceHandle(), mSwapchain, mDevice->getAllocCallbacks());
         vkDestroySurfaceKHR(mInstance->getInstanceHandle(), mSurface, nullptr);
@@ -140,15 +139,6 @@ namespace vk
         OPTICK_EVENT("VSwapchain::prepare");
         VkResult result = vkAcquireNextImageKHR(mDevice->getDeviceHandle(), mSwapchain, UINT64_MAX,
                                                 mImageAvailableSemaphore[mCurrentFrame], VK_NULL_HANDLE, &mImageIndex);
-
-        /*if (mImagesInFlight[mImageIndex] != VK_NULL_HANDLE)
-        {
-            vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1u, &mImagesInFlight[mImageIndex], VK_TRUE,
-        UINT64_MAX);
-        }
-
-        mImagesInFlight[mImageIndex] = mInFlightFences[mCurrentFrame];*/
-
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
             LOG_INFO("Recrating swapchain: %s", vk::VkResultToString(result));
@@ -170,21 +160,18 @@ namespace vk
     void VSwapchain::present()
     {
         OPTICK_EVENT("VSwapchain::Present");
-        /*vkWaitForFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(mVkObjects.mLogicalDevice->getLogical(), 1U, &mAcquireImageFence);*/
 
-        VkSemaphore sems[] = {mImageAvailableSemaphore[mCurrentFrame], mRenderingFinishedSemaphore[mCurrentFrame]};
+        VkSemaphore sems[] = { mRenderingFinishedSemaphore[mCurrentFrame] };
 
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.swapchainCount = 1U;
         presentInfo.pSwapchains = &mSwapchain;
         presentInfo.pImageIndices = &mImageIndex;
-        presentInfo.waitSemaphoreCount = 2u;
-        presentInfo.pWaitSemaphores = sems; // &mRenderingFinishedSemaphore[mCurrentFrame];
+        presentInfo.waitSemaphoreCount = COUNT_OF(sems);
+        presentInfo.pWaitSemaphores = sems;
         presentInfo.pResults = VK_NULL_HANDLE;
 
-        //VkQueue queue = mVkObjects.mLogicalDevice->getQueue(0, 0);
         VkQueue queue = mDevice->getQueue();
 
         // VkResult res =
@@ -276,7 +263,7 @@ namespace vk
                                mDevice->getAllocCallbacks());
         }
 
-        destroySunchronizationObjects();
+        destroySynchronizationObjects();
         mSwapchainImages.clear();
 
         createSwapchainImages();
@@ -449,7 +436,7 @@ namespace vk
         }
     }
 
-    void VSwapchain::destroySunchronizationObjects()
+    void VSwapchain::destroySynchronizationObjects()
     {
         for (U32 i = 0u; i < (U32)mSwapchainImages.size(); ++i)
         {
