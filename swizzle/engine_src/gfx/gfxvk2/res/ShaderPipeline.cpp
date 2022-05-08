@@ -106,7 +106,6 @@ namespace vk
         , mShaders()
         , mProperties()
         , mDescriptorLayout(VK_NULL_HANDLE)
-        , mDescriptorSet(VK_NULL_HANDLE)
     {
         mProperties[PropertyType::SourceBlend].mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
         mProperties[PropertyType::SourceBlend].mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
@@ -140,19 +139,9 @@ namespace vk
         descriptor_layout.pNext = NULL;
         descriptor_layout.bindingCount = 2;
         descriptor_layout.pBindings = layout_binding;
-        VkResult res = vkCreateDescriptorSetLayout(mDevice->getDeviceHandle(), &descriptor_layout, NULL,
+        VkResult res = vkCreateDescriptorSetLayout(mDevice->getDeviceHandle(), &descriptor_layout, mDevice->getAllocCallbacks(),
                                     &mDescriptorLayout);
         vk::LogVulkanError(res, "vkCreateDescriptorSetLayout");
-
-        VkDescriptorSetAllocateInfo descAllocInfo = {};
-        descAllocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        descAllocInfo.pNext = VK_NULL_HANDLE;
-        descAllocInfo.descriptorPool = mDevice->getDescriptorPool_TEMP();
-        descAllocInfo.descriptorSetCount = 1;
-        descAllocInfo.pSetLayouts = &mDescriptorLayout;
-
-        res = vkAllocateDescriptorSets(mDevice->getDeviceHandle(), &descAllocInfo, &mDescriptorSet);
-        vk::LogVulkanError(res, "vkAllocateDescriptorSets");
 
         VkPipelineLayoutCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -170,9 +159,6 @@ namespace vk
 
     ShaderPipeline::~ShaderPipeline()
     {
-        vkFreeDescriptorSets(mDevice->getDeviceHandle(), mDevice->getDescriptorPool_TEMP(), 1,
-                             &mDescriptorSet); // TODO: Fixme
-
         vkDestroyDescriptorSetLayout(mDevice->getDeviceHandle(), mDescriptorLayout,
                                      mDevice->getAllocCallbacks());
 
@@ -295,26 +281,6 @@ namespace vk
         return true;
     }
 
-    common::Resource<swizzle::gfx::Material> ShaderPipeline::createMaterial()
-    {
-        VkDescriptorSetAllocateInfo allocInfo = {};
-        allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.pNext = VK_NULL_HANDLE;
-        allocInfo.descriptorPool = mDevice->getDescriptorPool_TEMP();
-        allocInfo.descriptorSetCount = 1;
-        allocInfo.pSetLayouts = &mDescriptorLayout;
-
-        VkDescriptorSet desc = VK_NULL_HANDLE;
-
-        VkResult res =  vkAllocateDescriptorSets(mDevice->getDeviceHandle(), &allocInfo, &desc);
-
-        vk::LogVulkanError(res, "vkAllocateDescriptorSets, failed to allocate descriptor set");
-
-        auto material = common::CreateRef<VMaterial>(mDevice, desc);
-
-        return material;
-    }
-
     VkPipeline ShaderPipeline::getPipeline() const
     {
         return mPipeline;
@@ -325,10 +291,11 @@ namespace vk
         return mPipelineLayout;
     }
 
-    VkDescriptorSet ShaderPipeline::getDescriptorSet() const
+    VkDescriptorSetLayout ShaderPipeline::getDescriptorLayout() const
     {
-        return mDescriptorSet;
+        return mDescriptorLayout;
     }
+
 }
 
 /* Class Protected Function Definition */

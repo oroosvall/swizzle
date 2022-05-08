@@ -43,7 +43,7 @@ void Game::userSetup()
     mShader = mSwapchain->createShader(attribs);
     mShader->load("shaders/simple.shader");
 
-    mMaterial = mShader->createMaterial();
+    mMaterial = mGfxContext->createMaterial(mShader);
 
     mTexture = swizzle::asset::LoadTexture2D(mGfxContext, "texture/lightGray.png");
     mMaterial->setDescriptorTextureResource(0u, mTexture);
@@ -82,7 +82,7 @@ void Game::userSetup()
     mSkyShader = mSwapchain->createShader(attribsSky);
     mSkyShader->load("shaders/sky.shader");
 
-    mSkyMaterial = mSkyShader->createMaterial();
+    mSkyMaterial = mGfxContext->createMaterial(mSkyShader);
 
     mSkyTexture = sw::asset::LoadTextureCubeMap(mGfxContext,
         "texture/right.png", "texture/left.png", "texture/top.png", "texture/bottom.png", "texture/front.png", "texture/back.png");

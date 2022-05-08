@@ -76,7 +76,6 @@ namespace swizzle::gfx
 
         virtual SwBool load(const SwChar* file) = 0;
         virtual SwBool loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize, const SwChar* properties) = 0;
-        virtual common::Resource<Material> createMaterial() = 0;
 
     };
 }

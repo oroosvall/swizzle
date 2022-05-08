@@ -234,12 +234,15 @@ namespace vk
         OPTICK_EVENT("CmdBuffer::bindMaterial");
         ShaderPipeline* shad = (ShaderPipeline*)(shader.get());
         VMaterial* mat = (VMaterial*)(material.get());
+        mat->setDirty();
 
-        VkDescriptorSet descSet = mat->getDescriptorSet();
+        common::Resource<VkResource<VkDescriptorSet>> descSet = mat->getDescriptorSet();
+        descSet->addUser(shared_from_this(), mFrameCounter);
+        VkDescriptorSet descriptorHandle = descSet->getVkHandle();
 
         vkCmdBindDescriptorSets(getCmdBuffer(mActiveIndex),
                                 VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, shad->getPipelineLayout(), 0U, 1U,
-                                &descSet, 0U, VK_NULL_HANDLE);
+                                &descriptorHandle, 0U, VK_NULL_HANDLE);
     }
 
     void CmdBuffer::setShaderConstant(common::Resource<swizzle::gfx::Shader> shader, U8* data, U32 size)

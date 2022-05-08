@@ -21,6 +21,7 @@ namespace vk
     {
         BufferResource,
         ImageResource,
+        DescriptorResource
     };
 } // namespace vk
 

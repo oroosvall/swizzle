@@ -25,8 +25,9 @@
 
 /* Class Public Function Definition */
 
-Scene::Scene(common::Resource<AssetManager> assetManager, common::Resource<Compositor> compositor)
-    : mAssetManager(assetManager)
+Scene::Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<AssetManager> assetManager, common::Resource<Compositor> compositor)
+    : mContext(ctx)
+    , mAssetManager(assetManager)
     , mCompositor(compositor)
     , mSceneState(SceneState::NotLoaded)
 {
@@ -98,7 +99,7 @@ void Scene::loadSky()
     skyShader = mCompositor->createShader(0u, attribsSky);
     skyShader->load("shaders/sky.shader");
 
-    skyMaterial = skyShader->createMaterial();
+    skyMaterial = mContext->createMaterial(skyShader);
 
     skyTexture = mAssetManager->loadCubeTexture(
         "texture/right.png", "texture/left.png", "texture/top.png", "texture/bottom.png", "texture/front.png", "texture/back.png");
@@ -136,7 +137,7 @@ void Scene::loadAnimMesh()
 
     shader = mCompositor->createShader(0u, attribsAnim);
     shader->load("shaders/animated.shader");
-    material = shader->createMaterial();
+    material = mContext->createMaterial(shader);
     material->setDescriptorTextureResource(0u, texture);
     material->setDescriptorBufferResource(1u, meshAnimated.mBoneBuffer, ~0ull);
 

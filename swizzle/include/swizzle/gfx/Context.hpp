@@ -86,6 +86,8 @@ namespace swizzle::gfx
         virtual void submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount,
                             common::Resource<Swapchain> swapchain) = 0;
 
+        virtual common::Resource<Material> createMaterial(common::Resource<Shader> shader) = 0;
+
     };
 
 }

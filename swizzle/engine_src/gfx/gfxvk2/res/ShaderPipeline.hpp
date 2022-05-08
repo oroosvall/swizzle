@@ -66,12 +66,10 @@ namespace vk
 
         virtual SwBool load(const SwChar* file) override;
         virtual SwBool loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize, const SwChar* properties) override;
-        virtual common::Resource<swizzle::gfx::Material> createMaterial() override;
 
         VkPipeline getPipeline() const;
         VkPipelineLayout getPipelineLayout() const;
-
-        VkDescriptorSet getDescriptorSet() const;
+        VkDescriptorSetLayout getDescriptorLayout() const;
 
     private:
 
@@ -91,7 +89,6 @@ namespace vk
         std::map<PropertyType, Property> mProperties;
 
         VkDescriptorSetLayout mDescriptorLayout;
-        VkDescriptorSet mDescriptorSet;
 
     };
 }

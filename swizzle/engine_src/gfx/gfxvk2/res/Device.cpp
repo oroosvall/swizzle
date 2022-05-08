@@ -4,6 +4,7 @@
 #include "../backend/VkDebug.hpp"
 #include "Device.hpp"
 #include "Instance.hpp"
+#include "ShaderPipeline.hpp"
 
 #include <optick/optick.h>
 
@@ -215,6 +216,24 @@ namespace vk
         return common::CreateRef<VkResource<VkImage>>(img, ResourceType::ImageResource);
     }
 
+    common::Resource<VkResource<VkDescriptorSet>> Device::allocateDescriptorSet(common::Resource<ShaderPipeline> shader)
+    {
+        VkDescriptorSetAllocateInfo allocInfo = {};
+        allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.pNext = VK_NULL_HANDLE;
+        allocInfo.descriptorPool = getDescriptorPool_TEMP();
+        allocInfo.descriptorSetCount = 1;
+        auto layout = shader->getDescriptorLayout();
+        allocInfo.pSetLayouts = &layout;
+
+        VkDescriptorSet desc = VK_NULL_HANDLE;
+
+        VkResult res = vkAllocateDescriptorSets(mLogicalDevice, &allocInfo, &desc);
+        vk::LogVulkanError(res, "vkAllocateDescriptorSets");
+
+        return common::CreateRef<VkResource<VkDescriptorSet>>(desc, ResourceType::DescriptorResource);
+    }
+
     void Device::destroyResource(common::Resource<IVkResource>& resource)
     {
         if (resource->getType() == ResourceType::BufferResource)
@@ -224,6 +243,10 @@ namespace vk
         else if (resource->getType() == ResourceType::ImageResource)
         {
             destroyTexture((common::Resource<VkResource<VkImage>>&)resource);
+        }
+        else if (resource->getType() == ResourceType::DescriptorResource)
+        {
+            freeDescriptorSet((common::Resource<VkResource<VkDescriptorSet>>&)resource);
         }
     }
 
@@ -258,28 +281,15 @@ namespace vk
     void Device::sheduleResourceDestruction(common::Resource<IVkResource> resource)
     {
         OPTICK_EVENT("Device::sheduleResourceDestruction");
-        // no need to schedule destruction if there are no users, just destroy it
-        if (resource->activeUserCount() == 0u)
-        {
-            destroyResource(resource);
-        }
-        else
-        {
-            mCleanup->sheduleResourceDestruction(resource);
-        }
+        // send to cleanup thread
+        mCleanup->sheduleResourceDestruction(resource);
     }
 
     void Device::sheduleFreeingMemory(common::Resource<DeviceMemory> memory)
     {
-        // no need to schedule freeing if there are no users, just free it
-        if (memory->activeUserCound() == 0u)
-        {
-            freeMemory(memory);
-        }
-        else
-        {
-            mCleanup->sheduleFreeingMemory(memory);
-        }
+        OPTICK_EVENT("Device::sheduleFreeingMemory");
+        // send to cleanup thread
+        mCleanup->sheduleFreeingMemory(memory);
     }
 
     void Device::updateHeapBudget()
@@ -404,6 +414,13 @@ namespace vk
         VkImage img = resource->reset();
         vkDestroyImage(mLogicalDevice, img, mInstance->getAllocCallbacks());
         mImageCount--;
+    }
+
+    void Device::freeDescriptorSet(common::Resource<VkResource<VkDescriptorSet>> resource)
+    {
+        VkDescriptorSet set = resource->reset();
+        vkFreeDescriptorSets(mLogicalDevice, getDescriptorPool_TEMP(), 1, &set);
+
     }
 
 } // namespace vk

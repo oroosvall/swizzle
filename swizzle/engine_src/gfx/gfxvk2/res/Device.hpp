@@ -65,6 +65,7 @@ namespace vk
         common::Resource<VkResource<VkBuffer>> createBuffer(VkDeviceSize size, VkBufferUsageFlags flags);
         common::Resource<VkResource<VkImage>> createImage(VkImageType type, VkFormat format,
                                                           VkImageUsageFlags usage, VkExtent3D size, U32 layerCount);
+        common::Resource<VkResource<VkDescriptorSet>> allocateDescriptorSet(common::Resource<ShaderPipeline> shader);
 
         void destroyResource(common::Resource<IVkResource>& resource);
 
@@ -97,6 +98,7 @@ namespace vk
 
         void destroyBuffer(common::Resource<VkResource<VkBuffer>> resource);
         void destroyTexture(common::Resource<VkResource<VkImage>> resource);
+        void freeDescriptorSet(common::Resource<VkResource<VkDescriptorSet>> resource);
 
         common::Resource<Instance> mInstance;
 

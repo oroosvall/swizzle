@@ -279,7 +279,7 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx, comm
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
     bd->mFontTexture = ctx->createTexture(width, height, 4, pixels);
-    bd->mFontMaterial = bd->mShader->createMaterial();
+    bd->mFontMaterial = ctx->createMaterial(bd->mShader);
     bd->mFontMaterial->setDescriptorTextureResource(0, bd->mFontTexture);
 
     bd->mVertexBuffer = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
@@ -521,9 +521,9 @@ void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, common::Resource<s
     } data = {};
 
     data.scale[0] = 2.0f / draw_data->DisplaySize.x;
-    data.scale[1] = -2.0f / draw_data->DisplaySize.y;
-    data.translate[0] = -1.0f - draw_data->DisplayPos.x * data.scale[0];
-    data.translate[1] = 1.0f - draw_data->DisplayPos.y * data.scale[1];
+    data.scale[1] = (-2.0f) / draw_data->DisplaySize.y;
+    data.translate[0] = (-1.0f) - (draw_data->DisplayPos.x * data.scale[0]);
+    data.translate[1] = 1.0f - (draw_data->DisplayPos.y * data.scale[1]);
 
     command_buffer->setShaderConstant(bd->mShader, (U8*)&data, sizeof(data));
     if (draw_data->TotalVtxCount > 0)

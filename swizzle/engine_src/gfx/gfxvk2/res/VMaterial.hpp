@@ -8,6 +8,7 @@
 #include "_fwDecl.hpp"
 
 #include "../backend/Vk.hpp"
+#include "VkResource.hpp"
 
 /* Defines */
 
@@ -21,29 +22,37 @@
 
 namespace vk
 {
-
     class VMaterial : public swizzle::gfx::Material
     {
     public:
-        VMaterial(common::Resource<Device> device, VkDescriptorSet descrSet);
+        VMaterial(common::Resource<Device> device, common::Resource<swizzle::gfx::Shader> shader);
         virtual ~VMaterial();
 
         virtual U32 getNumDescriptors() const override;
         virtual swizzle::gfx::MaterialDescriptorType getDescriptorType(U32 index) override;
 
         virtual void setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::Buffer> buffer,
-                                                 U64 size) override;
+            U64 size) override;
         virtual void setDescriptorTextureResource(U32 index, common::Resource<swizzle::gfx::Texture> texture) override;
 
-        VkDescriptorSet getDescriptorSet();
+        common::Resource<VkResource<VkDescriptorSet>> getDescriptorSet();
+        void setDirty();
 
     private:
+
+        void copyDescriptor();
+
         common::Resource<Device> mDevice;
-        VkDescriptorSet mDescriptorSet;
+        common::Resource<swizzle::gfx::Shader> mShader;
+
+        common::Resource<VkResource<VkDescriptorSet>> mDescriptorSet;
 
         // Temp
         VkSampler mSampler;
+        SwBool mDirty;
     };
+
+
 } // namespace swizzle::gfx
 
 /* Function Declaration */

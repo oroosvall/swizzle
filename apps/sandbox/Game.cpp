@@ -43,7 +43,7 @@ void Game::userSetup()
 
     mAssetManager = common::CreateRef<AssetManager>(mGfxContext);
     mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain);
-    mScene = common::CreateRef<Scene>(mAssetManager, mCompositor);
+    mScene = common::CreateRef<Scene>(mGfxContext, mAssetManager, mCompositor);
     mScene->loadScene("scenes/test.scene");
     mScene->loadSky();
     mScene->loadAnimMesh();
@@ -61,7 +61,7 @@ void Game::userSetup()
     mFsq = mSwapchain->createShader(attribFsq);
     mFsq->load("shaders/fsq.shader");
 
-    mFsqMat = mFsq->createMaterial();
+    mFsqMat = mGfxContext->createMaterial(mFsq);
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
 }
 

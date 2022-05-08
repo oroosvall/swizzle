@@ -56,6 +56,8 @@ namespace swizzle::gfx
         virtual void submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount,
                     common::Resource<Swapchain> swapchain) override;
 
+        virtual common::Resource<Material> createMaterial(common::Resource<Shader> shader) override;
+
         void resetCommandPool();
 
         void updateHeapBudget();
