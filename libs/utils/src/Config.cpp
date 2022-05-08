@@ -107,7 +107,7 @@ namespace utils
     {
         bool added = false;
 
-        for (auto it : mValues)
+        for (auto& it : mValues)
         {
             if (it.first == name)
             {
@@ -156,10 +156,10 @@ namespace utils
 
         if (outFile.is_open())
         {
-            for (auto it : mValues)
+            for (auto& it : mValues)
             {
 
-                auto name = it.first;
+                auto& name = it.first;
                 Value v = it.second;
 
                 outFile << name;
@@ -174,7 +174,7 @@ namespace utils
 
     void Config::getValue(std::string name, Value& value) const
     {
-        for (auto it : mValues)
+        for (auto& it : mValues)
         {
             if (it.first == name)
             {
