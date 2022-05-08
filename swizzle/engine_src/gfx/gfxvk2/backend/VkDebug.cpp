@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include <memory>
+#include <atomic>
 
 namespace vk
 {
@@ -111,41 +112,56 @@ namespace vk
         return str;
     }
 
+    std::atomic_uint64_t gAllocCount = 0ull;
+    std::atomic_uint64_t gInternalAllocCount = 0ull;
+
     void* vkAllocFunc(void* pUser, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
     {
-        pUser; allocationScope;
+        UNUSED_ARG(pUser);
+        UNUSED_ARG(allocationScope);
         void* ptr = _aligned_malloc(size, alignment);
-        printf("[VK_ALLOC_%s]: %p\n", allocScope(allocationScope), ptr);
+        //printf("[VK_ALLOC_%s]: %p\n", allocScope(allocationScope), ptr);
+        gAllocCount++;
+
         return ptr;
     }
 
     void vkFreeFunc(void* pUser, void* pMemory)
     {
+        UNUSED_ARG(pUser);
         if (pMemory)
         {
-            pUser;
-            printf("[VK_FREE]: %p\n", pMemory);
+            //printf("[VK_FREE]: %p\n", pMemory);
             _aligned_free(pMemory);
+            gAllocCount--;
         }
     }
 
     void* vkReallocFunc(void* pUser, void* pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
     {
         pUser; allocationScope;
-        printf("[VK_REALLOC_%s]: %p\n", allocScope(allocationScope), pOriginal);
+        //printf("[VK_REALLOC_%s]: %p\n", allocScope(allocationScope), pOriginal);
         return _aligned_realloc(pOriginal, size, alignment);
     }
 
     void vkInternalAlloc(void* pUser, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope)
     {
-        pUser; size; allocationType; allocationScope;
-        printf("Internal Alloc\n");
+        UNUSED_ARG(pUser);
+        UNUSED_ARG(size);
+        UNUSED_ARG(allocationType);
+        UNUSED_ARG(allocationScope);
+        //printf("Internal Alloc\n");
+        gInternalAllocCount++;
     }
 
     void vkInternalFree(void* pUser, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope)
     {
-        pUser; size; allocationType; allocationScope;
+        UNUSED_ARG(pUser);
+        UNUSED_ARG(size);
+        UNUSED_ARG(allocationType);
+        UNUSED_ARG(allocationScope);
         printf("Internal Free\n");
+        gInternalAllocCount--;
     }
 
 #endif
@@ -172,4 +188,26 @@ namespace vk
         return VK_NULL_HANDLE;
 #endif
     }
+
+#if _DEBUG
+    U64 getAllocCount()
+    {
+        return gAllocCount;
+    }
+
+    U64 getAllocInternalCount()
+    {
+        return gInternalAllocCount;
+    }
+#else
+    U64 getAllocCount()
+    {
+        return 0ull;
+    }
+
+    U64 getAllocInternalCount()
+    {
+        return 0ull;
+    }
+#endif
 }

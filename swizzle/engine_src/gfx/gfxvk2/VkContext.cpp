@@ -132,6 +132,7 @@ namespace swizzle::gfx
         auto stats = common::CreateRef<StatsIterator>(mVkDevice);
         stats->addMemoryStats();
         stats->addDeviceStats();
+        stats->addInstanceStats();
         return stats;
     }
 

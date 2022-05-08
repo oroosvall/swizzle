@@ -53,12 +53,12 @@ namespace swizzle
 
             gfx::GfxContextCreateInfo info = {};
             info.mDebugCallbacks = true;
-            info.mDebugMemory = false;
+            info.mDebugMemory = true;
             info.mDeviceIndex = 0u;
 
             mGfxContext = gfx::CreateContext(info);
 
-            mSwapchain = mGfxContext->createSwapchain(mWindow, 3);
+            mSwapchain = mGfxContext->createSwapchain(mWindow, 2);
             mSwapchain->setVsync(gfx::VSyncTypes::vSyncAdaptive);
 
             userSetup();

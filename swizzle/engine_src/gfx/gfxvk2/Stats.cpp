@@ -3,6 +3,8 @@
 
 #include "Stats.hpp"
 
+#include "backend/VkDebug.hpp"
+
 #include <optick/optick.h>
 
 /* Defines */
@@ -79,6 +81,15 @@ namespace swizzle::gfx
         mStats.push_back(std::make_pair(GfxStatsType::DeviceStats, mDevice->getDeviceStats()));
     }
 
+    void StatsIterator::addInstanceStats()
+    {
+        OPTICK_EVENT("StatsIterator::addInstanceStats()");
+        static InstanceStatistics stats = {};
+        stats.mAllocCount = vk::getAllocCount();
+        stats.mInternalAllocCount = vk::getAllocInternalCount();
+        mStats.push_back(std::make_pair(gfx::GfxStatsType::InstanceStats, &stats));
+
+    }
 }
 
 /* Class Protected Function Definition */

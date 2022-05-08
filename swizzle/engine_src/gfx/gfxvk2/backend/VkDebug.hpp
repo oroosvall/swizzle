@@ -10,6 +10,9 @@ namespace vk
 
     VkAllocationCallbacks* GetDebugAllocCallback(SwBool enable);
 
+    U64 getAllocCount();
+    U64 getAllocInternalCount();
+
     struct VkStatisics
     {
         U64 mFrameCounter;

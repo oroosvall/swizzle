@@ -16,7 +16,8 @@ namespace swizzle::gfx
     {
         InvalidStats,
         MemoryStats,
-        DeviceStats
+        DeviceStats,
+        InstanceStats
     };
 }
 
@@ -35,6 +36,12 @@ namespace swizzle::gfx
         U64 mSize;
         U32 mNumAllocations;
         U32 mNumVirtualAllocations;
+    };
+
+    struct InstanceStatistics : public swizzle::core::StatsBase
+    {
+        U64 mAllocCount;
+        U64 mInternalAllocCount;
     };
 
     struct DeviceStatistics : public swizzle::core::StatsBase
