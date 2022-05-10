@@ -44,9 +44,7 @@ namespace vk
 
         common::Resource<VkResource<VkBuffer>>& getBuffer();
 
-        U32 getVertexCount();
-
-        void upload();
+        U32 getCount();
 
     private:
 
@@ -66,5 +64,10 @@ namespace vk
 }
 
 /* Function Declaration */
+
+namespace vk
+{
+    common::Resource<DBuffer> GetBufferAsDBuffer(common::Resource<swizzle::gfx::Buffer> buffer);
+}
 
 #endif

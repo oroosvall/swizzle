@@ -63,6 +63,12 @@ namespace vk
         virtual void drawIndexed(common::Resource<swizzle::gfx::Buffer> buffer,
                                  common::Resource<swizzle::gfx::Buffer> index) override;
 
+        virtual void drawInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
+                                   common::Resource<swizzle::gfx::Buffer> instanceData) override;
+        virtual void drawIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
+                                          common::Resource<swizzle::gfx::Buffer> index,
+                                          common::Resource<swizzle::gfx::Buffer> instanceData) override;
+
         virtual void drawNoBind(U32 vertexCount, U32 first) override;
         virtual void drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset) override;
 
@@ -71,7 +77,8 @@ namespace vk
 
         virtual void setScissor(S32 x, S32 y, S32 w, S32 h) override;
 
-        virtual void copyBuffer(common::Resource<swizzle::gfx::Buffer> to, common::Resource<swizzle::gfx::Buffer> from) override;
+        virtual void copyBuffer(common::Resource<swizzle::gfx::Buffer> to,
+                                common::Resource<swizzle::gfx::Buffer> from) override;
 
     private:
 

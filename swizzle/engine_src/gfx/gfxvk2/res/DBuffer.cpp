@@ -21,6 +21,14 @@
 
 /* Function Definition */
 
+namespace vk
+{
+    common::Resource<DBuffer> GetBufferAsDBuffer(common::Resource<swizzle::gfx::Buffer> buffer)
+    {
+        return std::dynamic_pointer_cast<DBuffer>(buffer);
+    }
+}
+
 /* Class Public Function Definition */
 
 namespace vk
@@ -108,7 +116,7 @@ namespace vk
         return mBuffer;
     }
 
-    U32 DBuffer::getVertexCount()
+    U32 DBuffer::getCount()
     {
         return mVertCount;
     }

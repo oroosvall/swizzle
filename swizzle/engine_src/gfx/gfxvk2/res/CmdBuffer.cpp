@@ -62,7 +62,7 @@ namespace vk
     {
         SwBool inFlight = true;
 
-        if ( (frameCount + mBufferCount + 1u) < mFrameCounter)
+        if ((frameCount + mBufferCount + 1u) < mFrameCounter)
         {
             inFlight = false;
         }
@@ -102,7 +102,7 @@ namespace vk
         if (hardReset)
         {
             VkResult res = vkResetCommandBuffer(getCmdBuffer(mActiveIndex),
-                                 VkCommandBufferResetFlagBits::VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+                                                VkCommandBufferResetFlagBits::VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
             vk::LogVulkanError(res, "vkResetCommandBuffer");
         }
         else
@@ -207,7 +207,7 @@ namespace vk
         U32 width = 0u;
         U32 height = 0u;
         present->getSize(width, height);
-        beginInfo.renderArea = {0u, 0u, width, height};
+        beginInfo.renderArea = { 0u, 0u, width, height };
         beginInfo.clearValueCount = static_cast<U32>(clears.size());
         beginInfo.pClearValues = clears.data();
 
@@ -229,7 +229,7 @@ namespace vk
     }
 
     void CmdBuffer::bindMaterial(common::Resource<swizzle::gfx::Shader> shader,
-                               common::Resource<swizzle::gfx::Material> material)
+                                 common::Resource<swizzle::gfx::Material> material)
     {
         OPTICK_EVENT("CmdBuffer::bindMaterial");
         ShaderPipeline* shad = (ShaderPipeline*)(shader.get());
@@ -325,17 +325,19 @@ namespace vk
         DBuffer* buff = (DBuffer*)buffer.get();
 
         auto& res = buff->getBuffer();
-        common::Resource<CmdBuffer> self = shared_from_this();
-        res->addUser(self, mFrameCounter);
+
+        res->addUser(shared_from_this(), mFrameCounter);
+
         VkBuffer vkBuf = res->getVkHandle();
+
         VkDeviceSize offset = 0u;
 
         vkCmdBindVertexBuffers(getCmdBuffer(mActiveIndex), 0U, 1U, &vkBuf, &offset);
-        vkCmdDraw(getCmdBuffer(mActiveIndex), buff->getVertexCount(), 1U, 0U, 0U);
+        vkCmdDraw(getCmdBuffer(mActiveIndex), buff->getCount(), 1U, 0U, 0U);
     }
 
     void CmdBuffer::drawIndexed(common::Resource<swizzle::gfx::Buffer> buffer,
-                              common::Resource<swizzle::gfx::Buffer> index)
+                                common::Resource<swizzle::gfx::Buffer> index)
     {
         OPTICK_EVENT("CmdBuffer::drawIndexed");
         mDrawCount++;
@@ -344,8 +346,10 @@ namespace vk
 
         auto& resVert = buff->getBuffer();
         auto& resIdx = idxBuff->getBuffer();
+
         resVert->addUser(shared_from_this(), mFrameCounter);
         resIdx->addUser(shared_from_this(), mFrameCounter);
+
         VkBuffer vertBuf = resVert->getVkHandle();
         VkBuffer idxBuf = resIdx->getVkHandle();
 
@@ -354,7 +358,56 @@ namespace vk
         vkCmdBindVertexBuffers(getCmdBuffer(mActiveIndex), 0U, 1U, &vertBuf, &offset);
         vkCmdBindIndexBuffer(getCmdBuffer(mActiveIndex), idxBuf, offset, VkIndexType::VK_INDEX_TYPE_UINT32);
 
-        vkCmdDrawIndexed(getCmdBuffer(mActiveIndex), idxBuff->getVertexCount() * 3u, 1u,  0u, 0u, 0u);
+        vkCmdDrawIndexed(getCmdBuffer(mActiveIndex), idxBuff->getCount() * 3u, 1u, 0u, 0u, 0u);
+    }
+
+    void CmdBuffer::drawInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
+                                  common::Resource<swizzle::gfx::Buffer> instanceData)
+    {
+        OPTICK_EVENT("CmdBuffer::drawInstanced");
+        mDrawCount++;
+
+        auto vertex = GetBufferAsDBuffer(buffer);
+        auto instance = GetBufferAsDBuffer(instanceData);
+
+        vertex->getBuffer()->addUser(shared_from_this(), mFrameCounter);
+        instance->getBuffer()->addUser(shared_from_this(), mFrameCounter);
+
+        VkBuffer vertexHandle = vertex->getBuffer()->getVkHandle();
+        VkBuffer instanceHandle = instance->getBuffer()->getVkHandle();
+        VkDeviceSize offset = 0u;
+
+        vkCmdBindVertexBuffers(getCmdBuffer(mActiveIndex), 0u, 1u, &vertexHandle, &offset);
+        vkCmdBindVertexBuffers(getCmdBuffer(mActiveIndex), 1u, 1u, &instanceHandle, &offset);
+        vkCmdDraw(getCmdBuffer(mActiveIndex), vertex->getCount(), instance->getCount(), 0u, 0u);
+    }
+
+    void CmdBuffer::drawIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
+                                         common::Resource<swizzle::gfx::Buffer> index,
+                                         common::Resource<swizzle::gfx::Buffer> instanceData)
+    {
+        OPTICK_EVENT("CmdBuffer::drawIndexed");
+        mDrawCount++;
+
+        auto vertex = GetBufferAsDBuffer(buffer);
+        auto idx = GetBufferAsDBuffer(index);
+        auto instance = GetBufferAsDBuffer(instanceData);
+
+        vertex->getBuffer()->addUser(shared_from_this(), mFrameCounter);
+        idx->getBuffer()->addUser(shared_from_this(), mFrameCounter);
+        instance->getBuffer()->addUser(shared_from_this(), mFrameCounter);
+
+        VkBuffer vertBuf = vertex->getBuffer()->getVkHandle();
+        VkBuffer idxBuf = idx->getBuffer()->getVkHandle();
+        VkBuffer inst = instance->getBuffer()->getVkHandle();
+
+        VkDeviceSize offset = 0u;
+
+        vkCmdBindVertexBuffers(getCmdBuffer(mActiveIndex), 0U, 1U, &vertBuf, &offset);
+        vkCmdBindVertexBuffers(getCmdBuffer(mActiveIndex), 1U, 1U, &inst, &offset);
+        vkCmdBindIndexBuffer(getCmdBuffer(mActiveIndex), idxBuf, offset, VkIndexType::VK_INDEX_TYPE_UINT32);
+
+        vkCmdDrawIndexed(getCmdBuffer(mActiveIndex), idx->getCount() * 3u, instance->getCount(), 0u, 0u, 0u);
     }
 
     void CmdBuffer::drawNoBind(U32 vertexCount, U32 first)
@@ -410,7 +463,7 @@ namespace vk
 
     void CmdBuffer::copyBuffer(common::Resource<swizzle::gfx::Buffer> to, common::Resource<swizzle::gfx::Buffer> from)
     {
-        DBuffer* source= (DBuffer*)from.get();
+        DBuffer* source = (DBuffer*)from.get();
         DBuffer* destination = (DBuffer*)to.get();
 
         auto& resSrc = source->getBuffer();
@@ -437,13 +490,14 @@ namespace vk
 
 namespace vk
 {
+
     VkCommandBuffer CmdBuffer::getCmdBuffer(U32 index)
     {
         return mCommandBuffers[index];
     }
 
     common::Resource<vk::Fence> CmdBuffer::getFence(U32 index)
-    //VkFence CmdBuffer::getFence(U32 index)
+        //VkFence CmdBuffer::getFence(U32 index)
     {
         return mFences[index];
     }

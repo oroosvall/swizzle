@@ -49,6 +49,9 @@ namespace swizzle::gfx
         virtual void draw(common::Resource<Buffer> buffer) = 0;
         virtual void drawIndexed(common::Resource<Buffer> buffer, common::Resource<Buffer> index) = 0;
 
+        virtual void drawInstanced(common::Resource<Buffer> buffer, common::Resource<Buffer> instanceData) = 0;
+        virtual void drawIndexedInstanced(common::Resource<Buffer> buffer, common::Resource<Buffer> index, common::Resource<Buffer> instanceData) = 0;
+
         virtual void drawNoBind(U32 vertexCount, U32 first) = 0;
         virtual void drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset) = 0;
 

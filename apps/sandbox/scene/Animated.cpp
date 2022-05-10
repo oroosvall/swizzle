@@ -23,14 +23,16 @@
 /* Class Public Function Definition */
 
 Animated::Animated(common::Resource<swizzle::gfx::Buffer> mesh,
-    common::Resource<swizzle::gfx::Buffer> index,
-    common::Resource<swizzle::gfx::Buffer> bone,
-    common::Resource<swizzle::gfx::Texture> texture,
-    common::Resource<swizzle::gfx::Material> material,
-    common::Resource<swizzle::gfx::Shader> shader)
+                   common::Resource<swizzle::gfx::Buffer> index,
+                   common::Resource<swizzle::gfx::Buffer> bone,
+                   common::Resource<swizzle::gfx::Buffer> inst,
+                   common::Resource<swizzle::gfx::Texture> texture,
+                   common::Resource<swizzle::gfx::Material> material,
+                   common::Resource<swizzle::gfx::Shader> shader)
     : mMesh(mesh)
     , mIndex(index)
     , mBone(bone)
+    , mInst(inst)
     , mTexture(texture)
     , mMaterial(material)
     , mShader(shader)
@@ -48,9 +50,7 @@ void Animated::render(common::Resource<swizzle::gfx::CommandBuffer> cmd, Perspec
 {
     struct tmp
     {
-        glm::mat4 model;
-        glm::mat4 view;
-        glm::mat4 proj;
+        glm::mat4 viewProj;
         glm::vec4 eye;
     };
 
@@ -59,9 +59,7 @@ void Animated::render(common::Resource<swizzle::gfx::CommandBuffer> cmd, Perspec
     cam.getCameraSize(x, y);
 
     tmp t = {};
-    t.model = glm::translate(glm::mat4(1.0F), { 0, 0, 0 });
-    t.view = cam.getView();
-    t.proj = cam.getProjection();
+    t.viewProj = cam.getProjection() * cam.getView();
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
 
     cmd->bindShader(mShader);
@@ -71,7 +69,8 @@ void Animated::render(common::Resource<swizzle::gfx::CommandBuffer> cmd, Perspec
 
     cmd->setShaderConstant(mShader, (U8*)&t, sizeof(t));
 
-    cmd->drawIndexed(mMesh, mIndex);
+    //cmd->drawIndexed(mMesh, mIndex);
+    cmd->drawIndexedInstanced(mMesh, mIndex, mInst);
 }
 
 /* Class Protected Function Definition */

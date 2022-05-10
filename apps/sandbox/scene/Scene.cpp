@@ -9,6 +9,8 @@
 #include "Sky.hpp"
 #include "Animated.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 /* Defines */
 
 /* Typedefs */
@@ -115,20 +117,37 @@ void Scene::loadSky()
 void Scene::loadAnimMesh()
 {
     swizzle::MeshAnimated meshAnimated = mAssetManager->loadAnimMesh("meshes/test.swm");
+
+    common::Resource<swizzle::gfx::Buffer> instBuffer = mContext->createBuffer(swizzle::gfx::BufferType::Vertex);
+
+    std::vector<glm::mat4> positions;
+
+    for (int i = -4; i < 4; ++i)
+    {
+        positions.push_back(glm::translate(glm::mat4(1.0F), { i, 0, 0 }));
+    }
+
+    instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
+
     common::Resource<swizzle::gfx::Shader> shader;
     common::Resource<swizzle::gfx::Texture> texture;
     common::Resource<swizzle::gfx::Material> material;
 
     swizzle::gfx::ShaderAttributeList attribsAnim = {};
     attribsAnim.mBufferInput = {
-        { swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u + 4u + 4u) }
+        { swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u + 4u + 4u) },
+        { swizzle::gfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u) }
     };
     attribsAnim.mAttributes = {
         { 0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
         { 0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u },
         { 0u, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u },
         { 0u, swizzle::gfx::ShaderAttributeDataType::vec4u, sizeof(float) * 8u },
-        { 0u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u }
+        { 0u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u },
+        { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, 0u },
+        { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u },
+        { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u },
+        { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u },
     };
     attribsAnim.mEnableDepthTest = true;
     attribsAnim.mEnableBlending = false;
@@ -136,12 +155,12 @@ void Scene::loadAnimMesh()
     texture = mAssetManager->loadTexture("texture/lightGray.png");
 
     shader = mCompositor->createShader(0u, attribsAnim);
-    shader->load("shaders/animated.shader");
+    shader->load("shaders/animated_inst.shader");
     material = mContext->createMaterial(shader);
     material->setDescriptorTextureResource(0u, texture);
     material->setDescriptorBufferResource(1u, meshAnimated.mBoneBuffer, ~0ull);
 
-    mRenderables.emplace_back(common::CreateRef<Animated>( meshAnimated.mVertexBuffer, meshAnimated.mIndexBuffer, meshAnimated.mBoneBuffer, texture, material, shader));
+    mRenderables.emplace_back(common::CreateRef<Animated>(meshAnimated.mVertexBuffer, meshAnimated.mIndexBuffer, meshAnimated.mBoneBuffer, instBuffer, texture, material, shader));
 }
 
 SceneState Scene::update(DeltaTime dt, common::Resource<swizzle::gfx::CommandBuffer> cmdBuf)

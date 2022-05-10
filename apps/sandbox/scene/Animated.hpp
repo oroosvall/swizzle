@@ -20,11 +20,12 @@ class Animated : public Renderable
 public:
 
     Animated(common::Resource<swizzle::gfx::Buffer> mesh,
-        common::Resource<swizzle::gfx::Buffer> index,
-        common::Resource<swizzle::gfx::Buffer> bone,
-        common::Resource<swizzle::gfx::Texture> texture,
-        common::Resource<swizzle::gfx::Material> material,
-        common::Resource<swizzle::gfx::Shader> shader);
+             common::Resource<swizzle::gfx::Buffer> index,
+             common::Resource<swizzle::gfx::Buffer> bone,
+             common::Resource<swizzle::gfx::Buffer> inst,
+             common::Resource<swizzle::gfx::Texture> texture,
+             common::Resource<swizzle::gfx::Material> material,
+             common::Resource<swizzle::gfx::Shader> shader);
 
     virtual void update(DeltaTime dt, common::Resource<swizzle::gfx::CommandBuffer> cmd) override;
     virtual void render(common::Resource<swizzle::gfx::CommandBuffer> cmd, PerspectiveCamera& cam) override;
@@ -34,6 +35,7 @@ private:
     common::Resource<swizzle::gfx::Buffer> mMesh;
     common::Resource<swizzle::gfx::Buffer> mIndex;
     common::Resource<swizzle::gfx::Buffer> mBone;
+    common::Resource<swizzle::gfx::Buffer> mInst;
     common::Resource<swizzle::gfx::Texture> mTexture;
     common::Resource<swizzle::gfx::Material> mMaterial;
     common::Resource<swizzle::gfx::Shader> mShader;
