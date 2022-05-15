@@ -44,3 +44,4 @@ trash/
 data/ProfileTest.prof
 *.log
 *.ini
+projectConfig.json

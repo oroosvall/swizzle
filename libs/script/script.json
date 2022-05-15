@@ -1,0 +1,27 @@
+{
+    "kind": "StaticLib",
+    "language": "c++",
+    "files": [
+        "include/**.hpp",
+        "src/**.hpp",
+        "src/**.cpp"
+    ],
+    "pub_inc_dirs": [
+        "include/",
+        "include/"
+    ],
+    "vpaths": [
+        {
+            "name": "script/*",
+            "value": "src/**.hpp"
+        },
+        {
+            "name": "script/*",
+            "value": "src/**.cpp"
+        },
+        {
+            "name": "include/*",
+            "value": "include/**.hpp"
+        }
+    ]
+}

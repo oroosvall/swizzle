@@ -1,0 +1,21 @@
+{
+    "kind": "ConsoleApp",
+    "language": "c++",
+    "files": [
+        "sandbox/**.hpp",
+        "sandbox/**.cpp"
+    ],
+    "includedirs":[
+        "sandbox/"
+    ],
+    "vpaths": [
+        {
+            "name": "sandbox/*",
+            "value": "sandbox/**.hpp"
+        },
+        {
+            "name": "sandbox/*",
+            "value": "sandbox/**.cpp"
+        }
+    ]
+}

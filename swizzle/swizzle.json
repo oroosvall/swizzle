@@ -1,0 +1,29 @@
+{
+    "kind": "SharedLib",
+    "language": "c++",
+    "files": [
+        "include/**.hpp",
+        "engine_src/**.hpp",
+        "engine_src/**.cpp"
+    ],
+    "pub_inc_dirs": [
+        "include/"
+    ],
+    "includedirs": [
+        "engine_src/"
+    ],
+    "vpaths": [
+        {
+            "name": "swizzle/*",
+            "value": "engine_src/**.hpp"
+        },
+        {
+            "name": "swizzle/*",
+            "value": "engine_src/**.cpp"
+        },
+        {
+            "name": "include/*",
+            "value": "include/**.hpp"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "kind": "ConsoleApp",
+    "language": "c++",
+    "files": [
+        "modelConverter/**.hpp",
+        "modelConverter/**.cpp"
+    ],
+    "vpaths": [
+        {
+            "name": "modelConverter/*",
+            "value": "modelConverter/**.hpp"
+        },
+        {
+            "name": "modelConverter/*",
+            "value": "modelConverter/**.cpp"
+        }
+    ]
+}

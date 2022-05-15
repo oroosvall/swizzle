@@ -1,336 +1,124 @@
-include "workspace.lua"
+include "build_scripts/workspace_funcs.lua"
+include "build_scripts/project_funcs.lua"
 
+setupWorkspace()
 
-function setupPrj(prjName, prjType, filePath, includePath, defs, lnk, userFunc)
-    project(prjName)
+projectConfig = loadWorkspaceConfig("projectConfig.json")
 
-        location("build/" .. platform .."/%{prj.name}")
-        kind(prjType)
-        language "c++"
+print(table.tostring(projectConfig))
 
-        files {
-            filePath
-        }
-        includedirs {
-            includePath
-        }
-        if (defs ~= "" or type(defs) == "table") then
-            for i,j in pairs(defs) do
-                if(j ~= "") then
-                    defines {j}
-                end
-            end
-        end
-        links {
-            lnk
-        }
-        if userFunc then
-            userFunc()
-        end
+-- vulkan sdk
+vulkanIncludeDirs = {os.getenv("VULKAN_SDK") .. "/Include", os.getenv("VULKAN_SDK") .. "/include"}
+vulkanLibDirs = {os.getenv("VULKAN_SDK") .. "/Lib", os.getenv("VULKAN_SDK") .. "/lib"}
+
+-- glm include dirs
+glmIncludeDirs = "vendor/glm/include"
+
+-- common include dirs
+commonIncludeDirs = "libs/common/include"
+
+projects = {}
+
+-- projects
+projects["utils"] = loadProjectConfig("libs/utils/utils.json")
+projects["script"] = loadProjectConfig("libs/script/script.json")
+projects["swm"] = loadProjectConfig("libs/swm/swm.json")
+projects["physics"] = loadProjectConfig("libs/physics/physics.json")
+projects["swizzle"] = loadProjectConfig("swizzle/swizzle.json")
+-- vendor
+projects["google-test"] = loadProjectConfig("vendor/google-test/gtest.json")
+projects["imgui"] = loadProjectConfig("vendor/imgui/imgui.json")
+projects["optick"] = loadProjectConfig("vendor/optick/optick.json")
+projects["stb"] = loadProjectConfig("vendor/stb/stb.json")
+-- tests
+projects["utilsTest"] = loadProjectConfig("libs/utils/utilsTests.json")
+projects["scriptTest"] = loadProjectConfig("libs/script/scriptTests.json")
+projects["swmTest"] = loadProjectConfig("libs/swm/swmTests.json")
+-- apps
+projects["game"] = loadProjectConfig("apps/game.json")
+projects["sandbox"] = loadProjectConfig("apps/sandbox.json")
+projects["modelConverter"] = loadProjectConfig("apps/modelConverter.json")
+
+addDependencies(projects["utilsTest"], {"utils", "google-test"})
+addDependencies(projects["scriptTest"], {"script", "google-test"})
+addDependencies(projects["swmTest"], {"swm", "google-test", "utils"})
+addDependencies(projects["swm"], {"utils"})
+addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "optick", "imgui", "stb"})
+
+addDependencies(projects["game"], {"swizzle", "utils", "optick"})
+addDependencies(projects["sandbox"], {"swizzle", "imgui", "utils", "optick"})
+addDependencies(projects["modelConverter"], {"swizzle", "utils", "optick"})
+
+addExternalHeaders(projects["swm"], glmIncludeDirs)
+addExternalHeaders(projects["swizzle"], glmIncludeDirs)
+addExternalHeaders(projects["game"], glmIncludeDirs)
+addExternalHeaders(projects["sandbox"], glmIncludeDirs)
+addExternalHeaders(projects["modelConverter"], glmIncludeDirs)
+
+addExternalHeaders(projects["swm"], commonIncludeDirs)
+addExternalHeaders(projects["swizzle"], commonIncludeDirs)
+
+addExternalHeaders(projects["game"], commonIncludeDirs)
+addExternalHeaders(projects["sandbox"], commonIncludeDirs)
+addExternalHeaders(projects["modelConverter"], commonIncludeDirs)
+
+addExternalHeaders(projects["scriptTest"], commonIncludeDirs)
+addExternalHeaders(projects["swmTest"], commonIncludeDirs)
+
+addExternalHeaders(projects["swizzle"], vulkanIncludeDirs)
+addExternalLibDir(projects["swizzle"], vulkanLibDirs)
+
+addExternalHeaders(projects["optick"], vulkanIncludeDirs)
+addExternalLibDir(projects["optick"], vulkanLibDirs)
+
+addDefine(projects["swizzle"], {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"})
+
+addDefine(projects["sandbox"], "SWIZZLE_DLL")
+addDefine(projects["game"], "SWIZZLE_DLL")
+addDefine(projects["modelConverter"], "SWIZZLE_DLL")
+
+if os.target() == "windows" then
+    addExternalLib(projects["optick"], "vulkan-1")
+    addExternalLib(projects["swizzle"], "vulkan-1")
+    addExternalLib(projects["swizzle"], "Xinput")
+    addDefine(projects["swizzle"], "SW_WINDOWS")
+elseif os.target() == "linux" then
+    addExternalLib(projects["optick"], "vulkan")
+    addExternalLib(projects["swizzle"], "vulkan")
+    addDefine(projects["swizzle"], "SW_LINUX_XLIB")
 end
 
-extIncDirs = {}
-extIncDirs['common'] = "libs/common/include"
-extIncDirs['physics'] = "libs/physics/include"
-extIncDirs['script'] = "libs/script/include"
-extIncDirs['utils'] = "libs/utils/include"
-extIncDirs['vk_sdk'] = {os.getenv("VULKAN_SDK") .. "/Include", os.getenv("VULKAN_SDK") .. "/include"}
-extIncDirs['optick'] = "vendor/optick/include"
-extIncDirs['imgui'] = "vendor/imgui/include"
-
 group("vendor")
-    project("google-test")
-        location("build/" .. platform .."/%{prj.name}")
-        kind "staticLib"
-        language "c++"
-        
-        files {
-            "vendor/google-test/googletest-master/googletest/include/**.h",
-            "vendor/google-test/googletest-master/googletest/include/**.cc",
-            "vendor/google-test/googletest-master/googletest/src/**.h",
-            "vendor/google-test/googletest-master/googletest/src/gtest-all.cc",
-
-            "vendor/google-test/googletest-master/googlemock/include/**.h",
-            "vendor/google-test/googletest-master/googlemock/include/**.cc",
-            "vendor/google-test/googletest-master/googlemock/src/**.h",
-            "vendor/google-test/googletest-master/googlemock/src/gmock-all.cc",
-        }
-
-        includedirs {
-            "vendor/google-test/googletest-master/googletest/include/",
-            "vendor/google-test/googletest-master/googletest/",
-            "vendor/google-test/googletest-master/googlemock/include/",
-            "vendor/google-test/googletest-master/googlemock/"
-        }
-            
-    project("stb")
-        location("build/" .. platform .. "/%{prj.name}")
-        kind "staticLib"
-        language "c"
-        
-        files {
-            "vendor/stb/include/stb/*.h",
-            "libs/vendor/stb/*.c"
-        }
-        
-        includedirs {
-            "vendor/stb/include/",
-        }
-        filter "system:linux"
-            disablewarnings { "sign-compare", "unused-but-set-variable" }
-            pic "On"
-
-    project("optick")
-        location("build/" .. platform .. "/%{prj.name}")
-        kind "sharedLib"
-        language "c"
-        
-        files {
-            "vendor/optick/include/optick/*.h",
-            "vendor/optick/src/*.h",
-            "vendor/optick/src/*.cpp",
-        }
-        
-        defines{
-            "OPTICK_EXPORTS",
-            "OPTICK_ENABLE_GPU_D3D12=0",
-            "_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING"
-        }
-
-        includedirs {
-            "vendor/optick/include/",
-            extIncDirs['vk_sdk'],
-        }
-
-        libdirs {
-            os.getenv("VULKAN_SDK") .. "/Lib", os.getenv("VULKAN_SDK") .. "/lib",
-        }
-
-        filter "system:linux"
-            disablewarnings { "sign-compare", "unused-but-set-variable" }
-            pic "On"
-            links
-            {
-                "vulkan"
-            }
-            defines{
-                "OPTICK_ENABLE_GPU_VULKAN=1"
-            }
-
-        filter "system:windows"
-            links
-            {
-                "vulkan-1"
-            }
-
-    project("imgui")
-        location("build/" .. platform .. "/%{prj.name}")
-        kind "staticLib"
-        language "c"
-        
-        files {
-            "vendor/imgui/include/imgui/*.h",
-            "vendor/imgui/src/*.cpp",
-        }
-        
-        includedirs {
-            "vendor/imgui/include/imgui/",
-        }
-
-
+generateProject(projects, "imgui")
+generateProject(projects, "optick")
+generateProject(projects, "stb")
 
 group("libs")
-    setupPrj("utils", "staticLib",
-        {"libs/utils/include/**.hpp", "libs/utils/src/**.hpp", "libs/utils/src/**.cpp"}, -- files/filePath
-        {extIncDirs['utils']}, -- include paths
-        "", -- defines
-        nil, -- links
-        function() -- userFunc
-            vpaths { ["utils/*"] = "libs/utils/src/**.hpp" }
-            vpaths { ["utils/*"] = "libs/utils/src/**.cpp" }
-            vpaths { ["include/*"] = "libs/utils/include/**.hpp" }
-        end  -- userFunc
-    )
+generateProject(projects, "utils")
+generateProject(projects, "script")
+generateProject(projects, "swm")
+generateProject(projects, "physics")
 
-    setupPrj("script", "staticLib",
-        {"libs/script/include/**.hpp", "libs/script/scr/**.hpp", "libs/script/src/**.cpp"}, -- files/FilePath
-        {"libs/script/include/", extIncDirs['utils']}, -- includePaths
-        {""}, -- defines
-        {"utils"}, -- links
-        function() -- userFunc
-            vpaths { ["script/*"] = "swizzle/script/**.hpp" }
-            vpaths { ["script/*"] = "swizzle/script/**.cpp" }
+group("engine")
+generateProject(projects, "swizzle")
 
-            vpaths { ["script/*"] = "swizzle/include/**.hpp" }
-        end -- userFunc
-    )
+if not projectConfig.disableApps then
+    group("apps")
+    generateProject(projects, "game")
+    generateProject(projects, "sandbox")
+    generateProject(projects, "modelConverter")
+end
 
-    setupPrj("physics", "staticLib",
-        {"libs/physics/include/**.hpp", "libs/physics/src/**.hpp", "libs/physics/src/**.cpp"}, -- files/FilePath
-        {"libs/physics/include/", "vendor/glm/include"}, -- includePaths
-        {""}, -- defines
-        nil, -- links
-        function() -- userFunc
-            vpaths { ["physics/*"] = "lib/physics/**.hpp" }
-            vpaths { ["physics/*"] = "lib/physics/**.cpp" }
-            vpaths { ["physics/*"] = "lib/physics/include/**.hpp" }
+if not projectConfig.disableTests then
+    group("tests")
+    generateProject(projects, "google-test")
+    generateProject(projects, "utilsTest")
+    generateProject(projects, "scriptTest")
+    generateProject(projects, "swmTest")
+end
 
-            filter "system:windows"
-                defines
-                {
-                    "SW_WINDOWS",
-                }
-        end -- userFunc
-    )
+if not os.isfile("projectConfig.json") then
+    storeWorkspaceConfig("projectConfig.json", projectConfig)
+end
 
-    setupPrj("swm", "staticLib",
-        {"libs/swm/include/**.hpp", "libs/swm/src/**.hpp", "libs/swm/src/**.cpp"}, -- files/FilePath
-        {"libs/swm/include/", extIncDirs['utils'], "vendor/glm/include", extIncDirs['common']}, -- includePaths
-        {""}, -- defines
-        nil, -- links
-        function() -- userFunc
-            vpaths { ["swm/*"] = "lib/swm/**.hpp" }
-            vpaths { ["swm/*"] = "lib/swm/**.cpp" }
-            vpaths { ["swm/*"] = "lib/swm/include/**.hpp" }
-        end -- userFunc
-    )
-
-group("Engine")
-
-    setupPrj("swizzle", "sharedLib",
-        {"swizzle/include/**.hpp", "swizzle/engine_src/**.hpp", "swizzle/engine_src/**.cpp", extIncDirs['common'].."/**.hpp"}, -- files/filePath
-        {"swizzle/include/", "swizzle/engine_src/", extIncDirs['vk_sdk'], "vendor/glm/include", "vendor/stb/include", "swizzle", extIncDirs['utils'], extIncDirs['common'], "libs/swm/include/", extIncDirs['optick']}, -- includePaths
-        {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"}, -- defines
-        { "utils", "script", "physics", "shaderc_combined", "stb", "swm", "optick" }, -- links
-        function() 
-            vpaths { ["engine_src/*"] = "swizzle/engine_src/**.hpp" }
-            vpaths { ["engine_src/*"] = "swizzle/engine_src/**.cpp" }
-
-            vpaths { ["include/*"] = "swizzle/include/**.hpp" }
-            vpaths { ["include/*"] = extIncDirs['common'].."/**.hpp" }
-
-            libdirs {
-                os.getenv("VULKAN_SDK") .. "/Lib", os.getenv("VULKAN_SDK") .. "/lib",
-            }
-
-            filter "system:windows"
-                defines
-                {
-                    "SW_WINDOWS",
-                }
-                links
-                {
-                    "vulkan-1",
-                    "Xinput"
-                }
-            filter "system:linux"
-                defines
-                {
-                    "SW_LINUX_XLIB",
-                }
-                links
-                {
-                    "vulkan"
-                }
-        end
-    )
-
-group("Tests")
-    setupPrj("scriptTest", "consoleApp",
-        {"vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/script/**.cpp"}, -- files/filePath
-        {"vendor/google-test/googletest-master/googletest/include",
-         "vendor/google-test/googletest-master/googlemock/include" , "libs/script/include", "libs/script/src"}, -- include paths
-        "", -- defines
-        {"script", "google-test"}, -- links
-        function() -- userFunc
-            vpaths { ["*"] = "tests/**.hpp" }
-            vpaths { ["*"] = "tests/**.cpp" }
-        end -- userFunc
-    )
-
-    setupPrj("physicsTest", "consoleApp",
-        {"vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/physics/**.cpp"}, -- files/filePath
-        {"vendor/google-test/googletest-master/googletest/include" , "swizzle"}, -- include paths
-        "", -- defines
-        {"physics", "google-test"}, -- links
-        function() -- userFunc
-            vpaths { ["*"] = "tests/**.hpp" }
-            vpaths { ["*"] = "tests/**.cpp" }
-        end -- userFunc
-    )
-
-    setupPrj("utilsTest", "consoleApp",
-        {"vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "tests/utils/**.cpp"}, -- files/filePath
-        {"vendor/google-test/googletest-master/googletest/include" , "libs/utils/include"}, -- include paths
-        "", -- defines
-        {"utils", "google-test"}, -- links
-        function() -- userFunc
-            vpaths { ["*"] = "tests/**.hpp" }
-            vpaths { ["*"] = "tests/**.cpp" }
-        end -- userFunc
-    )
-
-    setupPrj("swmTest", "consoleApp",
-    {"vendor/google-test/googletest-master/googletest/src/gtest_main.cc", "libs/swm/test/**.cpp"}, -- files/filePath
-    {"vendor/google-test/googletest-master/googletest/include" , "libs/swm/include", "libs/swm/src", "libs/utils/include", "libs/common/include"}, -- include paths
-    "", -- defines
-    {"swm", "google-test"}, -- links
-    function() -- userFunc
-        vpaths { ["*"] = "tests/**.hpp" }
-        vpaths { ["*"] = "tests/**.cpp" }
-    end -- userFunc
-)
-
-group("Apps")
-    setupPrj("sandbox", "consoleApp",
-        {"swizzle/include/**.hpp", "apps/sandbox/**.hpp", "apps/sandbox/**.h", "apps/sandbox/**.cpp"}, -- files/filePath
-        {"apps/sandbox/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", "vendor/stb/include", extIncDirs['common'], "libs/swm/include", extIncDirs['optick'], extIncDirs['imgui']}, -- include paths
-        {"SWIZZLE_DLL"}, -- defines
-        {"swizzle", "utils", "swm", "optick", "stb", "imgui"}, -- links
-        function() -- userFunc
-            vpaths { ["sandbox/*"] = "apps/sandbox/**.hpp" }
-            vpaths { ["sandbox/*"] = "apps/sandbox/**.h" }
-            vpaths { ["sandbox/*"] = "apps/sandbox/**.cpp" }
-
-            vpaths { ["include/*"] = "swizzle/include/**.hpp" }
-        end -- userFunc
-    )
-
-    setupPrj("modelConverter", "consoleApp",
-        {"swizzle/include/**.hpp", "apps/modelConverter/**.hpp", "apps/modelConverter/**.cpp"}, -- files/filePath
-        {"apps/modelConverter/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common'], extIncDirs['optick']}, -- include paths
-        {"SWIZZLE_DLL"}, -- defines
-        {"swizzle", "utils", "optick"}, -- links
-        function() -- userFunc
-            vpaths { ["modelConverter/*"] = "apps/modelConverter/**.hpp" }
-            vpaths { ["modelConverter/*"] = "apps/modelConverter/**.cpp" }
-
-            vpaths { ["include/*"] = "swizzle/include/**.hpp" }
-        end -- userFunc
-    )
-
-    setupPrj("scriptSandbox", "consoleApp",
-        {"apps/scriptSandbox/**.hpp", "apps/scriptSandbox/**.cpp"}, -- files/filePath
-        {"apps/scriptSandbox/", "libs/script/include", "libs/utils/include", extIncDirs['common'], extIncDirs['optick']}, -- include paths
-        {}, -- defines
-        {"utils", "script", "optick"}, -- links
-        function() -- userFunc
-            vpaths { ["scriptSandbox/*"] = "apps/scriptSandbox/**.hpp" }
-            vpaths { ["scriptSandbox/*"] = "apps/scriptSandbox/**.cpp" }
-
-            -- vpaths { ["include/*"] = "swizzle/include/**.hpp" }
-        end -- userFunc
-    )
-
-    setupPrj("game", "consoleApp",
-        {"swizzle/include/**.hpp", "apps/game/**.hpp", "apps/game/**.cpp"}, -- files/filePath
-        {"apps/game/", "swizzle/include/", "vendor/glm/include", "libs/utils/include", extIncDirs['common'], extIncDirs['optick']}, -- include paths
-        {"SWIZZLE_DLL"}, -- defines
-        {"swizzle", "utils", "optick"}, -- links
-        function() -- userFunc
-            vpaths { ["game/*"] = "apps/game/**.hpp" }
-            vpaths { ["game/*"] = "apps/game/**.cpp" }
-
-            vpaths { ["include/*"] = "swizzle/include/**.hpp" }
-        end -- userFunc
-    )
+-- print(table.tostring(projects, 2))

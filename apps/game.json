@@ -1,0 +1,18 @@
+{
+    "kind": "ConsoleApp",
+    "language": "c++",
+    "files": [
+        "game/**.hpp",
+        "game/**.cpp"
+    ],
+    "vpaths": [
+        {
+            "name": "game/*",
+            "value": "game/**.hpp"
+        },
+        {
+            "name": "game/*",
+            "value": "game/**.cpp"
+        }
+    ]
+}

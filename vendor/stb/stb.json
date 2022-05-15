@@ -1,0 +1,12 @@
+{
+    "kind": "StaticLib",
+    "language": "c++",
+    "files":[
+        "include/*.h",
+        "src/*.c"
+    ],
+    "pub_inc_dirs":[
+        "include/"
+    ]
+
+}
