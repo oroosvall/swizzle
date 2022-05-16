@@ -1,10 +1,16 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
+/* Include files */
+
 #include <common/Common.hpp>
 #include <swizzle/gfx/Material.hpp>
 
 #include <vector>
+
+/* Defines */
+
+/* Typedefs/enums */
 
 namespace swizzle::gfx
 {
@@ -31,6 +37,34 @@ namespace swizzle::gfx
         r8b8g8a8_unorm = 6,
     };
 
+    enum class ShaderBindingType
+    {
+        imageSampler = 0,
+        uniformBuffer = 1
+    };
+
+    enum class StageType
+    {
+        vertexStage = 0,
+        fragmentStage
+    };
+
+    typedef U32 Count;
+
+#ifdef SW_LINUX
+    template<typename T> using IterType = std::vector<T>;
+#else
+    template<typename T> using IterType = common::Iteratable<T>;
+#endif
+
+}
+
+/* Forward Declared Structs/Classes */
+
+/* Struct/Class Declaration */
+
+namespace swizzle::gfx
+{
     class ShaderBufferInput
     {
     public:
@@ -55,15 +89,22 @@ namespace swizzle::gfx
         U32 mOffset;
     };
 
+    class ShaderDescriptorBindings
+    {
+    public:
+        ShaderDescriptorBindings(ShaderBindingType type, U32 descriptorCount, IterType<StageType> stages) : mType(type), mDescriptorCount(descriptorCount), mStages(stages) { }
+        virtual ~ShaderDescriptorBindings() { }
+
+        ShaderBindingType mType;
+        U32 mDescriptorCount;
+        IterType<StageType> mStages;
+    };
+
     struct ShaderAttributeList
     {
-        #ifdef SW_LINUX
-        std::vector<ShaderBufferInput> mBufferInput;
-        std::vector<ShaderAttribute> mAttributes;
-        #else
-        common::Iteratable<ShaderBufferInput> mBufferInput;
-        common::Iteratable<ShaderAttribute> mAttributes;
-        #endif
+        IterType<ShaderBufferInput> mBufferInput;
+        IterType<ShaderAttribute> mAttributes;
+        IterType<ShaderDescriptorBindings> mDescriptors;
         U32 mPushConstantSize;
         SwBool mEnableDepthTest;
         SwBool mEnableBlending;
@@ -80,5 +121,9 @@ namespace swizzle::gfx
 
     };
 }
+
+
+/* Function Declaration */
+
 
 #endif

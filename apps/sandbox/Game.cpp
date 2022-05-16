@@ -53,6 +53,9 @@ void Game::userSetup()
     cam.setPosition({ 0.0F, 0.0F, 5.5F });
 
     sw::gfx::ShaderAttributeList attribFsq = {};
+    attribFsq.mDescriptors = {
+        {sw::gfx::ShaderBindingType::imageSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+    };
     attribFsq.mPushConstantSize = 0u;
     attribFsq.mEnableBlending = true;
 

@@ -95,6 +95,9 @@ void Scene::loadSky()
         { 0U, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
         { 0U, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
+    attribsSky.mDescriptors = {
+        {swizzle::gfx::ShaderBindingType::imageSampler, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::fragmentStage}},
+    };
     attribsSky.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribsSky.mEnableDepthTest = false;
     attribsSky.mEnableBlending = false;
@@ -117,9 +120,10 @@ void Scene::loadSky()
 
 void Scene::loadAnimMesh()
 {
+    namespace sgfx = swizzle::gfx;
     swizzle::MeshAnimated meshAnimated = mAssetManager->loadAnimMesh("meshes/test.swm");
 
-    common::Resource<swizzle::gfx::Buffer> instBuffer = mContext->createBuffer(swizzle::gfx::BufferType::Vertex);
+    common::Resource<sgfx::Buffer> instBuffer = mContext->createBuffer(sgfx::BufferType::Vertex);
 
     std::vector<glm::mat4> positions;
 
@@ -130,25 +134,29 @@ void Scene::loadAnimMesh()
 
     instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
 
-    common::Resource<swizzle::gfx::Shader> shader;
-    common::Resource<swizzle::gfx::Texture> texture;
-    common::Resource<swizzle::gfx::Material> material;
+    common::Resource<sgfx::Shader> shader;
+    common::Resource<sgfx::Texture> texture;
+    common::Resource<sgfx::Material> material;
 
-    swizzle::gfx::ShaderAttributeList attribsAnim = {};
+    sgfx::ShaderAttributeList attribsAnim = {};
     attribsAnim.mBufferInput = {
-        { swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u + 4u + 4u) },
-        { swizzle::gfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u) }
+        { sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u + 4u + 4u) },
+        { sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u) }
     };
     attribsAnim.mAttributes = {
-        { 0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
-        { 0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u },
-        { 0u, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u },
-        { 0u, swizzle::gfx::ShaderAttributeDataType::vec4u, sizeof(float) * 8u },
-        { 0u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u },
-        { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, 0u },
-        { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u },
-        { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u },
-        { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u },
+        { 0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
+        { 0u, sgfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u },
+        { 0u, sgfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u },
+        { 0u, sgfx::ShaderAttributeDataType::vec4u, sizeof(float) * 8u },
+        { 0u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u },
+        { 1u, sgfx::ShaderAttributeDataType::vec4f, 0u },
+        { 1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u },
+        { 1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u },
+        { 1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u },
+    };
+    attribsAnim.mDescriptors = {
+        {sgfx::ShaderBindingType::imageSampler, sgfx::Count(1u), {sgfx::StageType::fragmentStage}},
+        {sgfx::ShaderBindingType::uniformBuffer, sgfx::Count(1u), {sgfx::StageType::fragmentStage, sgfx::StageType::vertexStage}},
     };
     attribsAnim.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribsAnim.mEnableDepthTest = true;

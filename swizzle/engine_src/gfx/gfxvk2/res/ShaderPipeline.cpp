@@ -88,6 +88,48 @@ namespace vk
 
         return fmt;
     }
+
+    static VkDescriptorType getDescriptorType(swizzle::gfx::ShaderBindingType type)
+    {
+        VkDescriptorType ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
+
+        switch (type)
+        {
+        case swizzle::gfx::ShaderBindingType::imageSampler:
+            ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            break;
+        case swizzle::gfx::ShaderBindingType::uniformBuffer:
+            ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            break;
+        default:
+            break;
+        }
+
+        return ttype;
+    }
+
+    static VkShaderStageFlags getStageFlags(swizzle::gfx::IterType<swizzle::gfx::StageType> &types)
+    {
+        VkShaderStageFlags flags = 0u;
+
+        for (auto& it: types)
+        {
+            switch (it)
+            {
+            case swizzle::gfx::StageType::fragmentStage:
+                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
+                break;
+            case swizzle::gfx::StageType::vertexStage:
+                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
+                break;
+            default:
+                break;
+            }
+        }
+
+        return flags;
+    }
+
 } // namespace swizzle::gfx
 
 /* Function Definition */
@@ -117,28 +159,45 @@ namespace vk
 
         VkPushConstantRange push = {};
 
-        push.size = attribList.mPushConstantSize;
+        push.size = mShaderAttributes.mPushConstantSize;
         push.offset = 0;
         push.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
 
-        VkDescriptorSetLayoutBinding layout_binding[2] = {};
-        layout_binding[0].binding = 0;
-        layout_binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        layout_binding[0].descriptorCount = 1;
-        layout_binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        layout_binding[0].pImmutableSamplers = NULL;
+        std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+        layoutBindings.resize(mShaderAttributes.mDescriptors.size());
 
-        layout_binding[1].binding = 1;
-        layout_binding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        layout_binding[1].descriptorCount = 1;
-        layout_binding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT;
-        layout_binding[1].pImmutableSamplers = NULL;
+        int count = 0;
+        for (auto it = mShaderAttributes.mDescriptors.begin(); it != mShaderAttributes.mDescriptors.end(); it++)
+        {
+
+            layoutBindings[count].binding = count;
+            layoutBindings[count].descriptorType = getDescriptorType(it->mType);
+            layoutBindings[count].descriptorCount = it->mDescriptorCount;
+            auto stages = it->mStages;
+            layoutBindings[count].stageFlags = getStageFlags(stages);
+            layoutBindings[count].pImmutableSamplers = VK_NULL_HANDLE;
+
+            count++;
+        }
+
+        //VkDescriptorSetLayoutBinding layout_binding[2] = {};
+        //layout_binding[0].binding = 0;
+        //layout_binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        //layout_binding[0].descriptorCount = 1;
+        //layout_binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        //layout_binding[0].pImmutableSamplers = NULL;
+
+        //layout_binding[1].binding = 1;
+        //layout_binding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        //layout_binding[1].descriptorCount = 1;
+        //layout_binding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT;
+        //layout_binding[1].pImmutableSamplers = NULL;
 
         VkDescriptorSetLayoutCreateInfo descriptor_layout = {};
         descriptor_layout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         descriptor_layout.pNext = NULL;
-        descriptor_layout.bindingCount = 2;
-        descriptor_layout.pBindings = layout_binding;
+        descriptor_layout.bindingCount = (U32)layoutBindings.size();
+        descriptor_layout.pBindings = layoutBindings.data();
         VkResult res = vkCreateDescriptorSetLayout(mDevice->getDeviceHandle(), &descriptor_layout, mDevice->getAllocCallbacks(),
                                     &mDescriptorLayout);
         vk::LogVulkanError(res, "vkCreateDescriptorSetLayout");
