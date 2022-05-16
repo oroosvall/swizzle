@@ -9,9 +9,6 @@
 #include <swizzle/asset/TextureLoader.hpp>
 #include <swizzle/asset/MeshLoader.hpp>
 
-#include <cstring>
-#include <array>
-
 #include <utils/StringUtils.hpp>
 
 #include <imgui/imgui.h>
@@ -56,6 +53,7 @@ void Game::userSetup()
     cam.setPosition({ 0.0F, 0.0F, 5.5F });
 
     sw::gfx::ShaderAttributeList attribFsq = {};
+    attribFsq.mPushConstantSize = 0u;
     attribFsq.mEnableBlending = true;
 
     mFsq = mSwapchain->createShader(attribFsq);

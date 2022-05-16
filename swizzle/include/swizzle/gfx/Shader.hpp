@@ -64,6 +64,7 @@ namespace swizzle::gfx
         common::Iteratable<ShaderBufferInput> mBufferInput;
         common::Iteratable<ShaderAttribute> mAttributes;
         #endif
+        U32 mPushConstantSize;
         SwBool mEnableDepthTest;
         SwBool mEnableBlending;
         SwBool mPoints;

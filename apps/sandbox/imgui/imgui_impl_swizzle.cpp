@@ -267,6 +267,7 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx, comm
         { swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(ImDrawVert) }
     };
 
+    attributeList.mPushConstantSize = sizeof(float) * 4u;
     attributeList.mEnableDepthTest = false;
     attributeList.mEnableBlending = true;
     attributeList.mPoints = false;

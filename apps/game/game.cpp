@@ -37,6 +37,7 @@ void Game::userSetup()
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
         { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribs.mEnableDepthTest = true;
     attribs.mEnableBlending = false;
 
@@ -75,7 +76,8 @@ void Game::userSetup()
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, 0U},
         { 0U, sw::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
         { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
-    };;
+    };
+    attribsSky.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribsSky.mEnableDepthTest = false;
     attribsSky.mEnableBlending = false;
 

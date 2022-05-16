@@ -117,7 +117,7 @@ namespace vk
 
         VkPushConstantRange push = {};
 
-        push.size = sizeof(glm::mat4) * 4;
+        push.size = attribList.mPushConstantSize;
         push.offset = 0;
         push.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
 
@@ -149,7 +149,7 @@ namespace vk
         info.flags = 0;
         info.setLayoutCount = 1;
         info.pSetLayouts = &mDescriptorLayout;
-        info.pushConstantRangeCount = 1;
+        info.pushConstantRangeCount = (attribList.mPushConstantSize != 0) ? 1 : 0;
         info.pPushConstantRanges = &push;
 
         res = vkCreatePipelineLayout(mDevice->getDeviceHandle(), &info, mDevice->getAllocCallbacks(),

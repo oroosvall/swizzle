@@ -95,6 +95,7 @@ void Scene::loadSky()
         { 0U, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U },
         { 0U, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
+    attribsSky.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribsSky.mEnableDepthTest = false;
     attribsSky.mEnableBlending = false;
 
@@ -149,6 +150,7 @@ void Scene::loadAnimMesh()
         { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u },
         { 1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u },
     };
+    attribsAnim.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribsAnim.mEnableDepthTest = true;
     attribsAnim.mEnableBlending = false;
 
