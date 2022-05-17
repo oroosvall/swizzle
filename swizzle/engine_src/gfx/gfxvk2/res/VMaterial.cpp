@@ -74,10 +74,10 @@ namespace vk
         return 0;
     }
 
-    swizzle::gfx::MaterialDescriptorType VMaterial::getDescriptorType(U32 index)
+    swizzle::gfx::DescriptorType VMaterial::getDescriptorType(U32 index)
     {
         (void)index;
-        return swizzle::gfx::MaterialDescriptorType::Invalid;
+        return swizzle::gfx::DescriptorType::Invalid;
     }
 
     void VMaterial::setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::Buffer> buffer, U64 size)

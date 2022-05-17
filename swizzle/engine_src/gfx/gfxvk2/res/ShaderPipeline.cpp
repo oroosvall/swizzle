@@ -89,17 +89,20 @@ namespace vk
         return fmt;
     }
 
-    static VkDescriptorType getDescriptorType(swizzle::gfx::ShaderBindingType type)
+    static VkDescriptorType getDescriptorType(swizzle::gfx::DescriptorType type)
     {
         VkDescriptorType ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
 
         switch (type)
         {
-        case swizzle::gfx::ShaderBindingType::imageSampler:
+        case swizzle::gfx::DescriptorType::TextureSampler:
             ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             break;
-        case swizzle::gfx::ShaderBindingType::uniformBuffer:
+        case swizzle::gfx::DescriptorType::UniformBuffer:
             ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            break;
+        case swizzle::gfx::DescriptorType::StorageBuffer:
+            ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             break;
         default:
             break;

@@ -29,7 +29,7 @@ namespace vk
         virtual ~VMaterial();
 
         virtual U32 getNumDescriptors() const override;
-        virtual swizzle::gfx::MaterialDescriptorType getDescriptorType(U32 index) override;
+        virtual swizzle::gfx::DescriptorType getDescriptorType(U32 index) override;
 
         virtual void setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::Buffer> buffer,
             U64 size) override;

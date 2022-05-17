@@ -267,7 +267,7 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx, comm
         { swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(ImDrawVert) }
     };
     attributeList.mDescriptors = {
-        {swizzle::gfx::ShaderBindingType::imageSampler, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::fragmentStage}},
+        {swizzle::gfx::DescriptorType::TextureSampler, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::fragmentStage}},
     };
     attributeList.mPushConstantSize = sizeof(float) * 4u;
     attributeList.mEnableDepthTest = false;

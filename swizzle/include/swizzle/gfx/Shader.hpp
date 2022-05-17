@@ -4,6 +4,7 @@
 /* Include files */
 
 #include <common/Common.hpp>
+#include <swizzle/gfx/Descriptor.hpp>
 #include <swizzle/gfx/Material.hpp>
 
 #include <vector>
@@ -35,12 +36,6 @@ namespace swizzle::gfx
         vec4i = 4,
         vec4u = 5,
         r8b8g8a8_unorm = 6,
-    };
-
-    enum class ShaderBindingType
-    {
-        imageSampler = 0,
-        uniformBuffer = 1
     };
 
     enum class StageType
@@ -92,10 +87,10 @@ namespace swizzle::gfx
     class ShaderDescriptorBindings
     {
     public:
-        ShaderDescriptorBindings(ShaderBindingType type, U32 descriptorCount, IterType<StageType> stages) : mType(type), mDescriptorCount(descriptorCount), mStages(stages) { }
+        ShaderDescriptorBindings(DescriptorType type, U32 descriptorCount, IterType<StageType> stages) : mType(type), mDescriptorCount(descriptorCount), mStages(stages) { }
         virtual ~ShaderDescriptorBindings() { }
 
-        ShaderBindingType mType;
+        DescriptorType mType;
         U32 mDescriptorCount;
         IterType<StageType> mStages;
     };

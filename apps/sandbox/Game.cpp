@@ -54,7 +54,7 @@ void Game::userSetup()
 
     sw::gfx::ShaderAttributeList attribFsq = {};
     attribFsq.mDescriptors = {
-        {sw::gfx::ShaderBindingType::imageSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
     };
     attribFsq.mPushConstantSize = 0u;
     attribFsq.mEnableBlending = true;

@@ -38,8 +38,8 @@ void Game::userSetup()
         { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
     attribs.mDescriptors = {
-        {sw::gfx::ShaderBindingType::imageSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
-        {sw::gfx::ShaderBindingType::uniformBuffer, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage, sw::gfx::StageType::vertexStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::UniformBuffer, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage, sw::gfx::StageType::vertexStage}},
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribs.mEnableDepthTest = true;
@@ -82,7 +82,7 @@ void Game::userSetup()
         { 0U, sw::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
     attribsSky.mDescriptors = {
-        {sw::gfx::ShaderBindingType::imageSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
     };
     attribsSky.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribsSky.mEnableDepthTest = false;

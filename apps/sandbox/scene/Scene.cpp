@@ -96,7 +96,7 @@ void Scene::loadSky()
         { 0U, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U }
     };
     attribsSky.mDescriptors = {
-        {swizzle::gfx::ShaderBindingType::imageSampler, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::fragmentStage}},
+        {swizzle::gfx::DescriptorType::TextureSampler, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::fragmentStage}},
     };
     attribsSky.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribsSky.mEnableDepthTest = false;
@@ -155,8 +155,8 @@ void Scene::loadAnimMesh()
         { 1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u },
     };
     attribsAnim.mDescriptors = {
-        {sgfx::ShaderBindingType::imageSampler, sgfx::Count(1u), {sgfx::StageType::fragmentStage}},
-        {sgfx::ShaderBindingType::uniformBuffer, sgfx::Count(1u), {sgfx::StageType::fragmentStage, sgfx::StageType::vertexStage}},
+        {sgfx::DescriptorType::TextureSampler, sgfx::Count(1u), {sgfx::StageType::fragmentStage}},
+        {sgfx::DescriptorType::UniformBuffer, sgfx::Count(1u), {sgfx::StageType::fragmentStage, sgfx::StageType::vertexStage}},
     };
     attribsAnim.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribsAnim.mEnableDepthTest = true;
