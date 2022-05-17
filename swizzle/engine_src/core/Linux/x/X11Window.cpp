@@ -38,9 +38,14 @@ namespace swizzle::core
             height, 0, visualInfo->depth, InputOutput, visualInfo->visual,
             CWBackPixel | CWBorderPixel | CWEventMask | CWColormap, &windowAttributes);
 
-        XSelectInput(mDisplay, mWindow, ExposureMask | KeyPressMask);
+        // XSelectInput(mDisplay, mWindow, KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask);
         XMapWindow(mDisplay, mWindow);
+        
+        mWmDeleteWindow = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
+        XSetWMProtocols(mDisplay, mWindow, &mWmDeleteWindow, 1);
+
         XFlush(mDisplay);
+        mVisible = true;
     }
 
     XlibWindow::~XlibWindow()
@@ -61,12 +66,12 @@ namespace swizzle::core
 
     void XlibWindow::addEventListener(EventHandler<WindowEvent>* listener)
     {
-        UNUSED_ARG(listener);
+        mEventHandlers.addListener(listener);
     }
 
     void XlibWindow::removeEventListener(EventHandler<WindowEvent>* listener)
     {
-        UNUSED_ARG(listener);
+        mEventHandlers.removeListener(listener);
     }
 
     void XlibWindow::setTitle(const char* title)
@@ -81,13 +86,12 @@ namespace swizzle::core
 
     void XlibWindow::setSize(const U32 width, const U32 height)
     {
-        UNUSED_ARG(width);
-        UNUSED_ARG(height);
+        XResizeWindow(mDisplay, mWindow, width, height);
     }
 
     bool XlibWindow::isVisible() const
     {
-        return true;
+        return mVisible;
     }
 
     void XlibWindow::setBorderless(bool borderless)
@@ -135,6 +139,15 @@ namespace swizzle::core
                 e.mHeight = evt.xconfigure.height;
                 e.mWidth = evt.xconfigure.width;
                 mEventHandlers.publishEvent(e);
+                break;
+            }
+            case ClientMessage:
+            {
+                if ((Atom)evt.xclient.data.l[0] == mWmDeleteWindow)
+                {
+                    mVisible = false;
+                }
+                break;
             }
             default:
                 break;

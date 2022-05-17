@@ -236,6 +236,18 @@ namespace vk
         extensions.push_back(GetOsSurfaceExtension());
         extensions.push_back(GetKHRSurfaceExtension());
 
+        uint32_t extensionCount = 0u;
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+        std::vector<VkExtensionProperties> extensionList(extensionCount);
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensionList.data());
+
+        LOG_INFO("Available extensions");
+
+        for(auto& prop: extensionList)
+        {
+            LOG_INFO("%s ", prop.extensionName);
+        }
+
         uint32_t layerCount = 0;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
         std::vector<VkLayerProperties> layers(layerCount);

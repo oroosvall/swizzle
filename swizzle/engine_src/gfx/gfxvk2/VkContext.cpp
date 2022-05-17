@@ -86,7 +86,7 @@ namespace swizzle::gfx
         addExtensionIfExisting(extensions, supportedExtensions, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         addExtensionIfExisting(extensions, supportedExtensions, VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME);
 
-        LOG_INFO("Initializing Vulkan Device");
+        LOG_INFO("Initializing Vulkan Device: %s", getDeviceName(createInfo.mDeviceIndex));
         mVkDevice = mVkInstance->initializeDevice(createInfo, extensions);
 
         SwBool ok = false;

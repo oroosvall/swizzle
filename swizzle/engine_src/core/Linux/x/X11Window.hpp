@@ -51,8 +51,10 @@ namespace swizzle::core
     private:
         Display* mDisplay;
         Window mWindow;
+        Atom mWmDeleteWindow;
 
         bool mCursorVisible;
+        bool mVisible;
 
         EventHandlerList<WindowEvent> mEventHandlers;
     };
