@@ -11,6 +11,7 @@ namespace swizzle::gfx
         Vertex,
         Index,
         UniformBuffer,
+        StorageBuffer,
     };
 
     class Buffer

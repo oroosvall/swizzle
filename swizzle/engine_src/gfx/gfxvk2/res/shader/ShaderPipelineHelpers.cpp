@@ -202,7 +202,7 @@ namespace vk::shader
         return ttype;
     }
 
-    VkShaderStageFlags GetStageFlags(swizzle::gfx::IterType<swizzle::gfx::StageType>& types)
+    VkShaderStageFlags GetStageFlags(common::IterType<swizzle::gfx::StageType>& types)
     {
         VkShaderStageFlags flags = 0u;
 

@@ -6,6 +6,7 @@
 #include <cstring>
 #include <memory>
 #include <array>
+#include <vector>
 
 /* Defines */
 
@@ -100,6 +101,12 @@ namespace common
         const _Ty* _First;
         const _Ty* _Last;
     };
+
+#ifdef SW_LINUX
+    template<typename T> using IterType = std::vector<T>;
+#else
+    template<typename T> using IterType = Iteratable<T>;
+#endif
 }
 
 /* Function Declaration */

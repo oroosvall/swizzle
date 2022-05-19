@@ -46,12 +46,6 @@ namespace swizzle::gfx
 
     typedef U32 Count;
 
-#ifdef SW_LINUX
-    template<typename T> using IterType = std::vector<T>;
-#else
-    template<typename T> using IterType = common::Iteratable<T>;
-#endif
-
 }
 
 /* Forward Declared Structs/Classes */
@@ -87,19 +81,19 @@ namespace swizzle::gfx
     class ShaderDescriptorBindings
     {
     public:
-        ShaderDescriptorBindings(DescriptorType type, U32 descriptorCount, IterType<StageType> stages) : mType(type), mDescriptorCount(descriptorCount), mStages(stages) { }
+        ShaderDescriptorBindings(DescriptorType type, U32 descriptorCount, common::IterType<StageType> stages) : mType(type), mDescriptorCount(descriptorCount), mStages(stages) { }
         virtual ~ShaderDescriptorBindings() { }
 
         DescriptorType mType;
         U32 mDescriptorCount;
-        IterType<StageType> mStages;
+        common::IterType<StageType> mStages;
     };
 
     struct ShaderAttributeList
     {
-        IterType<ShaderBufferInput> mBufferInput;
-        IterType<ShaderAttribute> mAttributes;
-        IterType<ShaderDescriptorBindings> mDescriptors;
+        common::IterType<ShaderBufferInput> mBufferInput;
+        common::IterType<ShaderAttribute> mAttributes;
+        common::IterType<ShaderDescriptorBindings> mDescriptors;
         U32 mPushConstantSize;
         SwBool mEnableDepthTest;
         SwBool mEnableBlending;

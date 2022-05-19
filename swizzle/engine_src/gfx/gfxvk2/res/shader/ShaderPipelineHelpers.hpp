@@ -37,7 +37,7 @@ namespace vk::shader
     void ReadShaderInfo(const std::string& info, std::string& type, std::string& path);
     VkFormat GetShaderAttributeFormat(swizzle::gfx::ShaderAttributeDataType type);
     VkDescriptorType GetDescriptorType(swizzle::gfx::DescriptorType type);
-    VkShaderStageFlags GetStageFlags(swizzle::gfx::IterType<swizzle::gfx::StageType>& types);
+    VkShaderStageFlags GetStageFlags(common::IterType<swizzle::gfx::StageType>& types);
     SwBool GetShaderType(const SwChar* shaderType, shader::ShaderModuleType& type);
 
 

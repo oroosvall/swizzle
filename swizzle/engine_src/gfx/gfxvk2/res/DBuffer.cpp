@@ -156,6 +156,9 @@ namespace vk
         case swizzle::gfx::BufferType::UniformBuffer:
             usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
             break;
+        case swizzle::gfx::BufferType::StorageBuffer:
+            usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+            break;
         default:
             break;
         }
