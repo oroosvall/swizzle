@@ -25,7 +25,6 @@ namespace swizzle::asset
 {
     Mesh LoadMesh(common::Resource<gfx::GfxContext> ctx, const SwChar* fileName, SwBool createIndexBuffer)
     {
-        UNUSED_ARG(createIndexBuffer);
         Mesh m = {};
 
         m.mVertexBuffer = ctx->createBuffer(gfx::BufferType::Vertex);
