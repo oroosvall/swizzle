@@ -82,6 +82,8 @@ namespace vk
 
     void VMaterial::setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::Buffer> buffer, U64 size)
     {
+        copyDescriptorIfDirty();
+
         DBuffer* bfr = (DBuffer*)buffer.get();
 
         VkDescriptorBufferInfo descBfr = {};
@@ -107,6 +109,8 @@ namespace vk
 
     void VMaterial::setDescriptorTextureResource(U32 index, common::Resource<swizzle::gfx::Texture> texture)
     {
+        copyDescriptorIfDirty();
+
         TextureBase* tex = (TextureBase*)(texture.get());
 
         VkDescriptorImageInfo descImg = {};
@@ -148,7 +152,7 @@ namespace vk
 
 namespace vk
 {
-    void VMaterial::copyDescriptor()
+    void VMaterial::copyDescriptorIfDirty()
     {
         if (mDirty)
         {

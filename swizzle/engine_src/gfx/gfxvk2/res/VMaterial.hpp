@@ -40,7 +40,7 @@ namespace vk
 
     private:
 
-        void copyDescriptor();
+        void copyDescriptorIfDirty();
 
         common::Resource<Device> mDevice;
         common::Resource<swizzle::gfx::Shader> mShader;
