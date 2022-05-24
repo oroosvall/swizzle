@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <common/common.hpp>
+#include <common/Common.hpp>
 #include <utils/BufferReader.hpp>
 
 #include "Internal.hpp"

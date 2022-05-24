@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <common/common.hpp>
+#include <common/Common.hpp>
 
 #include "VersionSelect.hpp"
 #include "load/LoadV1.hpp"
