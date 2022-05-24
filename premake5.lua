@@ -121,4 +121,7 @@ if not os.isfile("projectConfig.json") then
     storeWorkspaceConfig("projectConfig.json", projectConfig)
 end
 
+os.mkdir(".vscode")
+generateVSCodeProjectSettings(projects, ".vscode/c_cpp_properties.json")
+
 -- print(table.tostring(projects, 2))

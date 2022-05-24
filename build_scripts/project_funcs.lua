@@ -42,6 +42,49 @@ function loadProjectConfig(configFile)
     end
 
     return config
+end
+
+function generateVSCodeProjectSettings(projectTable, configFile)
+
+    projectDefines = ""
+    projectIncludes = [[
+                "${workspaceFolder}/**",
+                "${VULKAN_SDK}/include/**"
+]]
+
+    -- for proj_name, proj in pairs(projectTable) do
+    --     for i, define in pairs(proj.defines) do
+    --         if projectDefines ~= "" then
+    --             projectDefines = projectDefines .. ",\n" .. string.format("%q", define)
+    --         else
+    --             projectDefines = string.format("%q", define)
+    --         end
+    --     end
+    --     for i, inc in pairs(proj.pub_inc_dirs) do
+    --         projectIncludes = projectIncludes .. ",\n" .. string.format("%q", "${workspaceFolder}/" .. inc)
+    --     end    
+    -- end
+    vscodeProjectConfig =
+[[{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+]] .. projectIncludes .. [[
+            ],
+            "defines": [
+]] .. projectDefines .. [[
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}]]
+
+    io.writefile(configFile, vscodeProjectConfig)
 
 end
 
