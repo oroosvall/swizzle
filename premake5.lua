@@ -35,7 +35,6 @@ projects["utilsTest"] = loadProjectConfig("libs/utils/utilsTests.json")
 projects["scriptTest"] = loadProjectConfig("libs/script/scriptTests.json")
 projects["swmTest"] = loadProjectConfig("libs/swm/swmTests.json")
 -- apps
-projects["game"] = loadProjectConfig("apps/game.json")
 projects["sandbox"] = loadProjectConfig("apps/sandbox.json")
 projects["modelConverter"] = loadProjectConfig("apps/modelConverter.json")
 
@@ -45,20 +44,17 @@ addDependencies(projects["swmTest"], {"swm", "google-test", "utils"})
 addDependencies(projects["swm"], {"utils"})
 addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "optick", "imgui", "stb"})
 
-addDependencies(projects["game"], {"swizzle", "utils", "optick"})
 addDependencies(projects["sandbox"], {"swizzle", "imgui", "utils", "optick"})
 addDependencies(projects["modelConverter"], {"swizzle", "utils", "optick"})
 
 addExternalHeaders(projects["swm"], glmIncludeDirs)
 addExternalHeaders(projects["swizzle"], glmIncludeDirs)
-addExternalHeaders(projects["game"], glmIncludeDirs)
 addExternalHeaders(projects["sandbox"], glmIncludeDirs)
 addExternalHeaders(projects["modelConverter"], glmIncludeDirs)
 
 addExternalHeaders(projects["swm"], commonIncludeDirs)
 addExternalHeaders(projects["swizzle"], commonIncludeDirs)
 
-addExternalHeaders(projects["game"], commonIncludeDirs)
 addExternalHeaders(projects["sandbox"], commonIncludeDirs)
 addExternalHeaders(projects["modelConverter"], commonIncludeDirs)
 
@@ -74,7 +70,6 @@ addExternalLibDir(projects["optick"], vulkanLibDirs)
 addDefine(projects["swizzle"], {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"})
 
 addDefine(projects["sandbox"], "SWIZZLE_DLL")
-addDefine(projects["game"], "SWIZZLE_DLL")
 addDefine(projects["modelConverter"], "SWIZZLE_DLL")
 
 if os.target() == "windows" then
@@ -104,7 +99,6 @@ generateProject(projects, "swizzle")
 
 if not projectConfig.disableApps then
     group("apps")
-    generateProject(projects, "game")
     generateProject(projects, "sandbox")
     generateProject(projects, "modelConverter")
 end
