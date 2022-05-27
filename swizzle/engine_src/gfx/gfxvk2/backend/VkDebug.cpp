@@ -34,47 +34,36 @@ namespace vk
 
         std::ostringstream stream;
 
-        if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
-        {
-            stream << "INFO: ";
-            //return VK_FALSE;
-        }
-        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_WARNING_BIT_EXT)
-        {
-            stream << "WARNING: ";
-            //return VK_FALSE;
-        }
-        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
-        {
-            stream << "PERF: ";
-            //return VK_FALSE;
-        }
-        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_DEBUG_BIT_EXT)
-        {
-            stream << "DEBUG: ";
-            //return VK_FALSE;
-        }
-        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT)
-        {
-            stream << "ERROR: ";
-        }
         stream << "@[" << layerPrefix << "]:\n";
         std::string msgStr(msg);
 
         replace(msgStr, ". ", ".\n");
 
-        //msgStr.replace(msgStr.begin(), ". ", ".\n");
-
-        stream << msgStr << std::endl << std::endl;
-
-        if (strcmp(layerPrefix, "MEM") != 0)
+        if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
         {
-            std::cout << stream.str();
+            stream << msgStr << std::endl;
+            LOG_INFO("%s", stream.str().c_str());
         }
-
-        if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT)
+        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_WARNING_BIT_EXT)
         {
-            std::cout << "ERR" << std::endl;
+            stream << msgStr << std::endl;
+            LOG_WARNING("%s", stream.str().c_str());
+        }
+        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
+        {
+            stream << "PERF: ";
+            stream << msgStr << std::endl;
+            LOG_INFO("%s", stream.str().c_str());
+        }
+        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_DEBUG_BIT_EXT)
+        {
+            stream << "DEBUG: ";
+            stream << msgStr << std::endl;
+            LOG_INFO("%s", stream.str().c_str());
+        }
+        else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT)
+        {
+            LOG_ERROR("%s", stream.str().c_str());
         }
 
         return VK_FALSE;
