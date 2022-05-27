@@ -4,6 +4,8 @@
 /* Include files */
 
 #include <swizzle/gfx/Shader.hpp>
+#include "shader/ShaderProperty.hpp"
+#include "shader/ShaderPropertyParser.hpp"
 
 #include "_fwDecl.hpp"
 
@@ -16,42 +18,9 @@
 
 /* Typedefs/enums */
 
-namespace vk
-{
-    enum class ShaderModuleType
-    {
-        ShaderModuleType_Vertex,
-        ShaderModuleType_Geometry,
-        ShaderModuleType_Fragment
-    };
-
-    enum class PropertyType
-    {
-        SourceBlend,
-        DestinationBlend,
-        CullMode,
-        ColorBlendOp,
-        AlphaBlendOp,
-    };
-} // namespace swizzle::gfx
-
 /* Forward Declared Structs/Classes */
 
 /* Struct Declaration */
-
-namespace vk
-{
-    struct Property
-    {
-        union
-        {
-            VkBlendFactor mBlendFactor[2];
-            VkCullModeFlagBits mCullMode;
-            VkBlendOp mColorBlendOp;
-            VkBlendOp mAlphaBlendOp;
-        };
-    };
-} // namespace swizzle::gfx
 
 /* Class Declaration */
 
@@ -73,10 +42,12 @@ namespace vk
 
     private:
 
-        void loadShader(const SwChar* shaderType, const SwChar* binaryFile);
-        void createPipeline();
+        SwBool loadShader(shader::ShaderModuleType, const SwChar* binaryFile);
+        SwBool createPipeline();
 
-        void readProperty(const std::string& line);
+        void createShaderInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderInfos);
+        void createBindingDescriptions(std::vector<VkVertexInputBindingDescription>& bindingDescriptors);
+        void createAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptor);
 
         common::Resource<Device> mDevice;
         const BaseFrameBuffer& mFrameBuffer;
@@ -85,8 +56,8 @@ namespace vk
         VkPipelineLayout mPipelineLayout;
         VkPipeline mPipeline;
 
-        std::map<ShaderModuleType, VkShaderModule> mShaders;
-        std::map<PropertyType, Property> mProperties;
+        std::map<shader::ShaderModuleType, VkShaderModule> mShaders;
+        std::map<shader::PropertyType, shader::Property> mProperties;
 
         VkDescriptorSetLayout mDescriptorLayout;
 

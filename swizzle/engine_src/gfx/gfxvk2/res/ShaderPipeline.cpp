@@ -2,6 +2,7 @@
 /* Include files */
 
 #include "ShaderPipeline.hpp"
+#include "shader/ShaderPipelineHelpers.hpp"
 
 #include "Device.hpp"
 #include "PresentFbo.hpp"
@@ -28,11 +29,6 @@ namespace vk
     // @ TODO: move to File handling api
     static std::string getPathFromFileName(const std::string& fileName);
 
-    // @ TODO: move to shader helper functions
-    static void readShaderInfo(const std::string& info, std::string& type, std::string& path);
-
-    // @ TODO: move to shader helper functions
-    static VkFormat getShaderAttributeFormat(swizzle::gfx::ShaderAttributeDataType type);
 } // namespace swizzle::gfx
 
 /* Static Function Definition */
@@ -46,92 +42,6 @@ namespace vk
         return fileName.substr(0, found + 1);
     }
 
-    // @ TODO: move to shader helper functions
-    static void readShaderInfo(const std::string& info, std::string& type, std::string& path)
-    {
-        auto index = info.find('=');
-        type = info.substr(0, index);
-        path = info.substr(index + 1);
-    }
-
-    // @ TODO: move to shader helper functions
-    static VkFormat getShaderAttributeFormat(swizzle::gfx::ShaderAttributeDataType type)
-    {
-        VkFormat fmt = VK_FORMAT_UNDEFINED;
-        switch (type)
-        {
-        case swizzle::gfx::ShaderAttributeDataType::vec2f:
-            fmt = VK_FORMAT_R32G32_SFLOAT;
-            break;
-        case swizzle::gfx::ShaderAttributeDataType::vec3f:
-            fmt = VK_FORMAT_R32G32B32_SFLOAT;
-            break;
-        case swizzle::gfx::ShaderAttributeDataType::vec4f:
-            fmt = VK_FORMAT_R32G32B32A32_SFLOAT;
-            break;
-        case swizzle::gfx::ShaderAttributeDataType::vec3i:
-            fmt = VK_FORMAT_R8G8B8_SINT;
-            break;
-        case swizzle::gfx::ShaderAttributeDataType::vec4i:
-            fmt = VK_FORMAT_A8B8G8R8_SINT_PACK32;
-            break;
-        case swizzle::gfx::ShaderAttributeDataType::vec4u:
-            // fmt = VK_FORMAT_A8B8G8R8_UINT_PACK32;
-            fmt = VK_FORMAT_R32G32B32A32_UINT;
-            break;
-        case swizzle::gfx::ShaderAttributeDataType::r8b8g8a8_unorm:
-            fmt = VK_FORMAT_R8G8B8A8_UNORM;
-            break;
-        default:
-            break;
-        }
-
-        return fmt;
-    }
-
-    static VkDescriptorType getDescriptorType(swizzle::gfx::DescriptorType type)
-    {
-        VkDescriptorType ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
-
-        switch (type)
-        {
-        case swizzle::gfx::DescriptorType::TextureSampler:
-            ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            break;
-        case swizzle::gfx::DescriptorType::UniformBuffer:
-            ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            break;
-        case swizzle::gfx::DescriptorType::StorageBuffer:
-            ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            break;
-        default:
-            break;
-        }
-
-        return ttype;
-    }
-
-    static VkShaderStageFlags getStageFlags(swizzle::gfx::IterType<swizzle::gfx::StageType> &types)
-    {
-        VkShaderStageFlags flags = 0u;
-
-        for (auto& it: types)
-        {
-            switch (it)
-            {
-            case swizzle::gfx::StageType::fragmentStage:
-                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
-                break;
-            case swizzle::gfx::StageType::vertexStage:
-                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
-                break;
-            default:
-                break;
-            }
-        }
-
-        return flags;
-    }
 
 } // namespace swizzle::gfx
 
@@ -152,13 +62,13 @@ namespace vk
         , mProperties()
         , mDescriptorLayout(VK_NULL_HANDLE)
     {
-        mProperties[PropertyType::SourceBlend].mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-        mProperties[PropertyType::SourceBlend].mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-        mProperties[PropertyType::DestinationBlend].mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-        mProperties[PropertyType::DestinationBlend].mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
-        mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_NONE;
-        mProperties[PropertyType::ColorBlendOp].mColorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
-        mProperties[PropertyType::AlphaBlendOp].mAlphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
+        mProperties[shader::PropertyType::SourceBlend].mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+        mProperties[shader::PropertyType::SourceBlend].mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+        mProperties[shader::PropertyType::DestinationBlend].mBlendFactor[0] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+        mProperties[shader::PropertyType::DestinationBlend].mBlendFactor[1] = VkBlendFactor::VK_BLEND_FACTOR_ONE;
+        mProperties[shader::PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_NONE;
+        mProperties[shader::PropertyType::ColorBlendOp].mColorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
+        mProperties[shader::PropertyType::AlphaBlendOp].mAlphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
 
         VkPushConstantRange push = {};
 
@@ -174,27 +84,14 @@ namespace vk
         {
 
             layoutBindings[count].binding = count;
-            layoutBindings[count].descriptorType = getDescriptorType(it->mType);
+            layoutBindings[count].descriptorType = shader::GetDescriptorType(it->mType);
             layoutBindings[count].descriptorCount = it->mDescriptorCount;
             auto stages = it->mStages;
-            layoutBindings[count].stageFlags = getStageFlags(stages);
+            layoutBindings[count].stageFlags = shader::GetStageFlags(stages);
             layoutBindings[count].pImmutableSamplers = VK_NULL_HANDLE;
 
             count++;
         }
-
-        //VkDescriptorSetLayoutBinding layout_binding[2] = {};
-        //layout_binding[0].binding = 0;
-        //layout_binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        //layout_binding[0].descriptorCount = 1;
-        //layout_binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        //layout_binding[0].pImmutableSamplers = NULL;
-
-        //layout_binding[1].binding = 1;
-        //layout_binding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        //layout_binding[1].descriptorCount = 1;
-        //layout_binding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT;
-        //layout_binding[1].pImmutableSamplers = NULL;
 
         VkDescriptorSetLayoutCreateInfo descriptor_layout = {};
         descriptor_layout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -236,7 +133,7 @@ namespace vk
 
     SwBool ShaderPipeline::load(const SwChar* file)
     {
-        SwBool ok = false;
+        SwBool ok = true;
 
         std::ifstream inFile(file);
 
@@ -282,22 +179,40 @@ namespace vk
 
                 if (state == ParseState::PsProp)
                 {
-                    readProperty(line);
+                    shader::Property prop;
+                    shader::PropertyType type;
+                    if (shader::ReadProperty(line, prop, type))
+                    {
+                        mProperties[type] = prop;
+                    }
                 }
                 else if (state == ParseState::PsVulkan)
                 {
                     std::string shaderType = "";
                     std::string path = "";
 
-                    readShaderInfo(line, shaderType, path);
+                    shader::ReadShaderInfo(line, shaderType, path);
                     path.insert(0, getPathFromFileName(file));
-                    loadShader(shaderType.c_str(), path.c_str());
+                    shader::ShaderModuleType type = shader::ShaderModuleType::ShaderModuleType_Vertex;
+                    ok = shader::GetShaderType(shaderType.c_str(), type);
+                    if (ok)
+                    {
+                        LOG_INFO("Loading shader [type=%s] from %s", shaderType.c_str(), path.c_str());
+                        ok = loadShader(type, path.c_str());
+                    }
+                }
 
-                    LOG_INFO("Load shader [type=%s] from %s", shaderType.c_str(), path.c_str());
+                if (!ok)
+                {
+                    LOG_ERROR("Failed to load shader");
+                    break;
                 }
             }
 
-            createPipeline();
+            if (ok)
+            {
+                ok = createPipeline();
+            }
         }
 
         return ok;
@@ -305,12 +220,18 @@ namespace vk
 
     SwBool ShaderPipeline::loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize, const SwChar* properties)
     {
+        SwBool ok = false;
         std::istringstream propertyString(properties);
 
         std::string line;
         while (std::getline(propertyString, line))
         {
-            readProperty(line);
+            shader::Property prop;
+            shader::PropertyType type;
+            if (shader::ReadProperty(line, prop, type))
+            {
+                mProperties[type] = prop;
+            }
         }
 
         VkShaderModuleCreateInfo vertInfo = {};
@@ -335,12 +256,12 @@ namespace vk
         res = vkCreateShaderModule(mDevice->getDeviceHandle(), &fragInfo, mDevice->getAllocCallbacks(), &fragModule);
         vk::LogVulkanError(res, "vkCreateShaderModule");
 
-        mShaders[ShaderModuleType::ShaderModuleType_Vertex] = vertModule;
-        mShaders[ShaderModuleType::ShaderModuleType_Fragment] = fragModule;
+        mShaders[shader::ShaderModuleType::ShaderModuleType_Vertex] = vertModule;
+        mShaders[shader::ShaderModuleType::ShaderModuleType_Fragment] = fragModule;
 
-        createPipeline();
+        ok = createPipeline();
 
-        return true;
+        return ok;
     }
 
     VkPipeline ShaderPipeline::getPipeline() const
@@ -366,9 +287,9 @@ namespace vk
 
 namespace vk
 {
-
-    void ShaderPipeline::loadShader(const SwChar* shaderType, const SwChar* binaryFile)
+    SwBool ShaderPipeline::loadShader(shader::ShaderModuleType shaderType, const SwChar* binaryFile)
     {
+        SwBool ok = false;
         std::ifstream inFile(binaryFile, std::ios::binary | std::ios::ate);
 
         if (inFile.is_open())
@@ -389,165 +310,64 @@ namespace vk
             VkResult res = vkCreateShaderModule(mDevice->getDeviceHandle(), &info, mDevice->getAllocCallbacks(), &mod);
             vk::LogVulkanError(res, "vkCreateShaderModule");
 
-            if (strcmp(shaderType, "vertex") == 0)
+            if (mod != VK_NULL_HANDLE)
             {
-                mShaders[ShaderModuleType::ShaderModuleType_Vertex] = mod;
-            }
-            else if (strcmp(shaderType, "geometry") == 0)
-            {
-                mShaders[ShaderModuleType::ShaderModuleType_Geometry] = mod;
-            }
-            else if (strcmp(shaderType, "fragment") == 0)
-            {
-                mShaders[ShaderModuleType::ShaderModuleType_Fragment] = mod;
+                mShaders[shaderType] = mod;
+                ok = true;
             }
         }
+
+        return ok;
     }
 
-    void ShaderPipeline::createPipeline()
+    SwBool ShaderPipeline::createPipeline()
     {
         std::vector<VkPipelineShaderStageCreateInfo> shaderInfos;
-        for (auto& it : mShaders)
-        {
-            VkShaderStageFlagBits stage = {};
-            if (it.first == ShaderModuleType::ShaderModuleType_Vertex)
-                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
-            else if (it.first == ShaderModuleType::ShaderModuleType_Geometry)
-                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
-            else if (it.first == ShaderModuleType::ShaderModuleType_Fragment)
-                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
-
-            VkPipelineShaderStageCreateInfo shInfo = {};
-            shInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            shInfo.pNext = VK_NULL_HANDLE;
-            shInfo.flags = 0;
-            shInfo.stage = stage;
-            shInfo.module = it.second;
-            shInfo.pName = "main";
-            shInfo.pSpecializationInfo = VK_NULL_HANDLE;
-
-            shaderInfos.push_back(shInfo);
-        }
+        createShaderInfo(shaderInfos);
 
         // Create bindings based on shader attributes
-        int count = 0;
         std::vector<VkVertexInputBindingDescription> bindingDescriptors;
-        bindingDescriptors.resize(mShaderAttributes.mBufferInput.size());
-        for (auto it = mShaderAttributes.mBufferInput.begin(); it != mShaderAttributes.mBufferInput.end(); it++)
-        {
-            bindingDescriptors[count].binding = count;
-            bindingDescriptors[count].inputRate = (it->mRate == swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex
-                                                       ? VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX
-                                                       : VkVertexInputRate::VK_VERTEX_INPUT_RATE_INSTANCE);
-            bindingDescriptors[count].stride = it->mStride;
-            count++;
-        }
+        createBindingDescriptions(bindingDescriptors);
 
-        count = 0;
         std::vector<VkVertexInputAttributeDescription> attributeDescriptor;
-        attributeDescriptor.resize(mShaderAttributes.mAttributes.size());
-        for (auto it = mShaderAttributes.mAttributes.begin(); it != mShaderAttributes.mAttributes.end(); it++)
-        {
-            attributeDescriptor[count].location = count;
-            attributeDescriptor[count].binding = it->mBufferIndex;
-            attributeDescriptor[count].format = getShaderAttributeFormat(it->mDataType);
-            attributeDescriptor[count].offset = it->mOffset;
-            if (attributeDescriptor[count].format == VK_FORMAT_UNDEFINED)
-            {
-                swizzle::core::ShowCriticalMessage("Shader attribute is undefined format");
-            }
-            count++;
-        }
+        createAttributeDescriptions(attributeDescriptor);
 
-        VkPipelineVertexInputStateCreateInfo vertexInput = {};
-        vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInput.pNext = VK_NULL_HANDLE;
-        vertexInput.flags = 0;
-        vertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptors.size());
-        vertexInput.pVertexBindingDescriptions = bindingDescriptors.data();
-        vertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptor.size());
-        vertexInput.pVertexAttributeDescriptions = attributeDescriptor.data();
+        // Create VertexInput based on binding/attribute descriptors
+        VkPipelineVertexInputStateCreateInfo vertexInput = shader::CreateVertexInput(bindingDescriptors, attributeDescriptor);
 
-        VkPipelineInputAssemblyStateCreateInfo assemblyState = {};
-        assemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        assemblyState.pNext = VK_NULL_HANDLE;
-        assemblyState.flags = 0;
-        assemblyState.topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        // Setup InputAssembly
+        auto topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         if (mShaderAttributes.mPoints)
         {
-            assemblyState.topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+            topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
         }
-        assemblyState.primitiveRestartEnable = VK_FALSE;
+        VkPipelineInputAssemblyStateCreateInfo assemblyState = shader::CreateInputAssembly(topology);
 
-        VkPipelineTessellationStateCreateInfo tessState = {};
-        tessState.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-        tessState.pNext = VK_NULL_HANDLE;
-        tessState.flags = 0;
-        tessState.patchControlPoints = 0;
+        // Setup TesselationState
+        VkPipelineTessellationStateCreateInfo tessState = shader::CreateTesselationState();
 
-        VkViewport viewport = {};
-        viewport.x = 0;
-        viewport.y = 0;
-        viewport.height = 100;
-        viewport.width = 100;
-        viewport.minDepth = 0.0F;
-        viewport.maxDepth = 1.0F;
-
+        // Create rect for viewport/scissors
         VkRect2D r = {};
         r.extent.height = 100;
         r.extent.width = 100;
         r.offset.x = 0;
         r.offset.y = 0;
 
-        VkPipelineViewportStateCreateInfo viewState = {};
-        viewState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewState.pNext = VK_NULL_HANDLE;
-        viewState.flags = 0;
-        viewState.viewportCount = 1;
-        viewState.pViewports = &viewport;
-        viewState.scissorCount = 1;
-        viewState.pScissors = &r;
+        // Setup Viewport
+        VkViewport viewport = shader::CreateViewport(r);
 
-        VkPipelineRasterizationStateCreateInfo rasterState = {};
-        rasterState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-        rasterState.pNext = VK_NULL_HANDLE;
-        rasterState.flags = 0;
-        rasterState.depthClampEnable = VK_FALSE;
-        rasterState.rasterizerDiscardEnable = VK_FALSE;
-        rasterState.polygonMode = VkPolygonMode::VK_POLYGON_MODE_FILL;
-        rasterState.cullMode = mProperties[PropertyType::CullMode].mCullMode;
-        rasterState.frontFace = VkFrontFace::VK_FRONT_FACE_CLOCKWISE;
-        rasterState.depthBiasEnable = VK_FALSE;
-        rasterState.depthBiasConstantFactor = 0.0F;
-        rasterState.depthBiasClamp = 0.0F;
-        rasterState.depthBiasSlopeFactor = 0.0F;
-        rasterState.lineWidth = 1.0F;
+        // Setup ViewportState
+        VkPipelineViewportStateCreateInfo viewState = shader::CreateViewportState(&viewport, &r);
 
-        VkPipelineMultisampleStateCreateInfo multiSampleState = {};
-        multiSampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        multiSampleState.pNext = VK_NULL_HANDLE;
-        multiSampleState.flags = 0;
-        multiSampleState.rasterizationSamples = mFrameBuffer.getMultisampleCount();
-        multiSampleState.sampleShadingEnable = VK_FALSE;
-        multiSampleState.minSampleShading = 1.0F;
-        multiSampleState.pSampleMask = VK_NULL_HANDLE;
-        multiSampleState.alphaToCoverageEnable = VK_FALSE;
-        multiSampleState.alphaToOneEnable = VK_FALSE;
+        // Setup RasterizationState
+        VkPipelineRasterizationStateCreateInfo rasterState = shader::CreateRasterizationState(mProperties[shader::PropertyType::CullMode].mCullMode);
 
-        VkPipelineDepthStencilStateCreateInfo depthState = {};
-        depthState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-        depthState.pNext = VK_NULL_HANDLE;
-        depthState.flags = 0;
-        depthState.depthTestEnable = mShaderAttributes.mEnableDepthTest;
-        depthState.depthWriteEnable = mShaderAttributes.mEnableDepthTest;
-        depthState.depthCompareOp =
-            mShaderAttributes.mEnableDepthTest ? VkCompareOp::VK_COMPARE_OP_LESS : VkCompareOp::VK_COMPARE_OP_ALWAYS;
-        depthState.depthBoundsTestEnable = VK_FALSE;
-        depthState.stencilTestEnable = VK_FALSE;
-        depthState.front = {};
-        depthState.back = {};
-        depthState.minDepthBounds = 0.0F;
-        depthState.maxDepthBounds = 1.0F;
+        // Setup MultisampleState
+        VkPipelineMultisampleStateCreateInfo multiSampleState = shader::CreateMultisampleState(mFrameBuffer.getMultisampleCount());
+
+        // Setup DepthStencilState
+        auto depthCompare = mShaderAttributes.mEnableDepthTest ? VkCompareOp::VK_COMPARE_OP_LESS : VkCompareOp::VK_COMPARE_OP_ALWAYS;
+        VkPipelineDepthStencilStateCreateInfo depthState = shader::CreateDepthStencilState(mShaderAttributes.mEnableDepthTest, depthCompare);
 
         VkPipelineColorBlendStateCreateInfo colorState = {};
         colorState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -561,12 +381,12 @@ namespace vk
         {
             VkPipelineColorBlendAttachmentState blendState = {};
             blendState.blendEnable = mShaderAttributes.mEnableBlending;
-            blendState.srcColorBlendFactor = mProperties[PropertyType::SourceBlend].mBlendFactor[0];
-            blendState.srcAlphaBlendFactor = mProperties[PropertyType::SourceBlend].mBlendFactor[1];
-            blendState.dstColorBlendFactor = mProperties[PropertyType::DestinationBlend].mBlendFactor[0];
-            blendState.dstAlphaBlendFactor = mProperties[PropertyType::DestinationBlend].mBlendFactor[1];
-            blendState.colorBlendOp = mProperties[PropertyType::ColorBlendOp].mColorBlendOp;
-            blendState.alphaBlendOp = mProperties[PropertyType::AlphaBlendOp].mAlphaBlendOp;
+            blendState.srcColorBlendFactor = mProperties[shader::PropertyType::SourceBlend].mBlendFactor[0];
+            blendState.srcAlphaBlendFactor = mProperties[shader::PropertyType::SourceBlend].mBlendFactor[1];
+            blendState.dstColorBlendFactor = mProperties[shader::PropertyType::DestinationBlend].mBlendFactor[0];
+            blendState.dstAlphaBlendFactor = mProperties[shader::PropertyType::DestinationBlend].mBlendFactor[1];
+            blendState.colorBlendOp = mProperties[shader::PropertyType::ColorBlendOp].mColorBlendOp;
+            blendState.alphaBlendOp = mProperties[shader::PropertyType::AlphaBlendOp].mAlphaBlendOp;
             blendState.colorWriteMask = VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT |
                                         VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT |
                                         VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT |
@@ -586,7 +406,7 @@ namespace vk
         dynState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynState.pNext = VK_NULL_HANDLE;
         dynState.flags = 0;
-        dynState.dynamicStateCount = 2U;
+        dynState.dynamicStateCount = COUNT_OF(dynamicStates);
         dynState.pDynamicStates = dynamicStates;
 
         VkGraphicsPipelineCreateInfo createInfo = {};
@@ -617,139 +437,65 @@ namespace vk
         {
             LOG_ERROR("Graphics pipeline creation failed %s", vk::VkResultToString(res));
         }
+
+        return (mPipeline != nullptr);
     }
 
-    VkBlendFactor getBlendFactor(std::string& str)
+    void ShaderPipeline::createShaderInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderInfos)
     {
-        if (str == "ONE")
+        for (auto& it : mShaders)
         {
-            return VkBlendFactor::VK_BLEND_FACTOR_ONE;
+            VkShaderStageFlagBits stage = {};
+            if (it.first == shader::ShaderModuleType::ShaderModuleType_Vertex)
+                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
+            else if (it.first == shader::ShaderModuleType::ShaderModuleType_Geometry)
+                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
+            else if (it.first == shader::ShaderModuleType::ShaderModuleType_Fragment)
+                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
+
+            VkPipelineShaderStageCreateInfo shInfo = {};
+            shInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            shInfo.pNext = VK_NULL_HANDLE;
+            shInfo.flags = 0;
+            shInfo.stage = stage;
+            shInfo.module = it.second;
+            shInfo.pName = "main";
+            shInfo.pSpecializationInfo = VK_NULL_HANDLE;
+
+            shaderInfos.push_back(shInfo);
         }
-        else if (str == "ZERO")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_ZERO;
-        }
-        else if (str == "SRC_ALPHA")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
-        }
-        else if (str == "SRC_COLOR")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_SRC_COLOR;
-        }
-        else if (str == "DST_ALPHA")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_DST_ALPHA;
-        }
-        else if (str == "DST_COLOR")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_DST_COLOR;
-        }
-        else if (str == "ONE_MINUS_SRC_ALPHA")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        }
-        else if (str == "ONE_MINUS_SRC_COLOR")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-        }
-        else if (str == "ONE_MINUS_DST_ALPHA")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-        }
-        else if (str == "ONE_MINUS_DST_COLOR")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-        }
-        else if (str == "ONE_MINUS_SRC_1_ALPHA")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
-        }
-        else if (str == "ONE_MINUS_SRC_1_COLOR")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
-        }
-        else if (str == "CONST_ALPHA")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_CONSTANT_ALPHA;
-        }
-        else if (str == "CONST_COLOR")
-        {
-            return VkBlendFactor::VK_BLEND_FACTOR_CONSTANT_COLOR;
-        }
-        return VkBlendFactor::VK_BLEND_FACTOR_ONE;
     }
 
-    void ShaderPipeline::readProperty(const std::string& line)
+    void ShaderPipeline::createBindingDescriptions(std::vector<VkVertexInputBindingDescription>& bindingDescriptors)
     {
-        auto index = line.find('=');
-        auto prop = line.substr(0, index);
-        auto value = line.substr(index + 1);
-
-        if (prop == "sourceBlend")
+        S32 count = 0;
+        bindingDescriptors.resize(mShaderAttributes.mBufferInput.size());
+        for (auto it = mShaderAttributes.mBufferInput.begin(); it != mShaderAttributes.mBufferInput.end(); it++)
         {
-            Property p = {};
-
-            auto index2 = value.find(",");
-            auto first = value.substr(1, index2 - 1);
-            auto second = value.substr(index2 + 1);
-            second.pop_back();
-
-            p.mBlendFactor[0] = getBlendFactor(first);
-            p.mBlendFactor[1] = getBlendFactor(second);
-
-            mProperties[PropertyType::SourceBlend] = p;
+            bindingDescriptors[count].binding = count;
+            bindingDescriptors[count].inputRate = (it->mRate == swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex
+                                                   ? VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX
+                                                   : VkVertexInputRate::VK_VERTEX_INPUT_RATE_INSTANCE);
+            bindingDescriptors[count].stride = it->mStride;
+            count++;
         }
-        else if (prop == "destinationBlend")
-        {
-            Property p = {};
+    }
 
-            auto index2 = value.find(",");
-            auto first = value.substr(1, index2 - 1);
-            auto second = value.substr(index2 + 1);
-            second.pop_back();
-
-            p.mBlendFactor[0] = getBlendFactor(first);
-            p.mBlendFactor[1] = getBlendFactor(second);
-
-            mProperties[PropertyType::DestinationBlend] = p;
-        }
-        else if (prop == "cullMode")
+    void ShaderPipeline::createAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptor)
+    {
+        S32 count = 0;
+        attributeDescriptor.resize(mShaderAttributes.mAttributes.size());
+        for (auto it = mShaderAttributes.mAttributes.begin(); it != mShaderAttributes.mAttributes.end(); it++)
         {
-            if (value == "CULL_NONE")
+            attributeDescriptor[count].location = count;
+            attributeDescriptor[count].binding = it->mBufferIndex;
+            attributeDescriptor[count].format = shader::GetShaderAttributeFormat(it->mDataType);
+            attributeDescriptor[count].offset = it->mOffset;
+            if (attributeDescriptor[count].format == VK_FORMAT_UNDEFINED)
             {
-                mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_NONE;
+                swizzle::core::ShowCriticalMessage("Shader attribute is undefined format");
             }
-            else if (value == "CULL_FRONT")
-            {
-                mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_FRONT_BIT;
-            }
-            else if (value == "CULL_BACK")
-            {
-                mProperties[PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_BACK_BIT;
-            }
-        }
-        else if (prop == "alphaBlend")
-        {
-            if (value == "MULTIPLY")
-            {
-                mProperties[PropertyType::AlphaBlendOp].mAlphaBlendOp = VkBlendOp::VK_BLEND_OP_MULTIPLY_EXT;
-            }
-            else if (value == "ADD")
-            {
-                mProperties[PropertyType::AlphaBlendOp].mAlphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
-            }
-        }
-        else if (prop == "colorBlend")
-        {
-            if (value == "MULTIPLY")
-            {
-                mProperties[PropertyType::ColorBlendOp].mColorBlendOp = VkBlendOp::VK_BLEND_OP_MULTIPLY_EXT;
-            }
-            else if (value == "ADD")
-            {
-                mProperties[PropertyType::ColorBlendOp].mColorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
-            }
+            count++;
         }
     }
 
