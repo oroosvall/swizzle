@@ -32,6 +32,7 @@ namespace vk
     typedef std::weak_ptr<CmdBuffer> WeakCmdBuffer;
     typedef std::pair<WeakCmdBuffer, U64> FrameUser;
     typedef std::vector<FrameUser> FrameResourceUser;
+
 } // namespace vk
 
 /* Struct Declaration */
@@ -71,6 +72,11 @@ namespace vk
             found.second = frameCount;
         }
 
+        void addResourceDependency(common::Resource<IVkResource> resource)
+        {
+            addNewResourceDependencyIfNotFound(resource);
+        }
+
         T reset()
         {
             T ret = mResource;
@@ -103,6 +109,11 @@ namespace vk
                         count++;
                     }
                 }
+            }
+
+            for (const auto& dep : mResourceDependencies)
+            {
+                count += dep->activeUserCount();
             }
 
             return count;
@@ -139,9 +150,31 @@ namespace vk
             return mCommandBufferUsers[index];
         }
 
+        void addNewResourceDependencyIfNotFound(common::Resource<IVkResource> resource)
+        {
+            size_t index = ~0ull;
+            size_t ctr = 0ull;
+
+            for (const auto& p : mResourceDependencies)
+            {
+                if (p.get() == resource.get())
+                {
+                    index = ctr;
+                    break;
+                }
+                ctr++;
+            }
+
+            if (index == ~0ull)
+            {
+                mResourceDependencies.emplace_back(resource);
+            }
+        }
+
         T mResource;
         ResourceType mResourceType;
         FrameResourceUser mCommandBufferUsers;
+        std::vector<common::Resource<IVkResource>> mResourceDependencies;
     };
 } // namespace vk
 

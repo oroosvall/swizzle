@@ -7,7 +7,6 @@
 #include <swizzle/core/Input.hpp>
 
 #include <swizzle/asset/TextureLoader.hpp>
-#include <swizzle/asset/MeshLoader.hpp>
 
 #include <utils/StringUtils.hpp>
 

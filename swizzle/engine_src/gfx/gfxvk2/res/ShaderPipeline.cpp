@@ -279,6 +279,11 @@ namespace vk
         return mDescriptorLayout;
     }
 
+    const swizzle::gfx::ShaderAttributeList ShaderPipeline::getAttributes() const
+    {
+        return mShaderAttributes;
+    }
+
 }
 
 /* Class Protected Function Definition */

@@ -1,6 +1,8 @@
 
 /* Include files */
 
+#include <swizzle/gfx/Descriptor.hpp>
+
 #include "VMaterial.hpp"
 
 #include "Device.hpp"
@@ -34,9 +36,16 @@ namespace vk
         , mDescriptorSet(nullptr)
         , mSampler(VK_NULL_HANDLE)
         , mDirty(false)
+        , mDescrTypes()
     {
         auto shad = std::dynamic_pointer_cast<ShaderPipeline>(shader);
         mDescriptorSet = mDevice->allocateDescriptorSet(shad);
+        const auto& attribs = shad->getAttributes();
+
+        for (const auto& descr : attribs.mDescriptors)
+        {
+            mDescrTypes.push_back(descr.mType);
+        }
 
         VkSamplerCreateInfo samplerInfo = {};
         samplerInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -71,13 +80,17 @@ namespace vk
 
     U32 VMaterial::getNumDescriptors() const
     {
-        return 0;
+        return static_cast<U32>(mDescrTypes.size());
     }
 
     swizzle::gfx::DescriptorType VMaterial::getDescriptorType(U32 index)
     {
-        (void)index;
-        return swizzle::gfx::DescriptorType::Invalid;
+        auto ret = swizzle::gfx::DescriptorType::Invalid;
+        if (index < mDescrTypes.size())
+        {
+            ret = mDescrTypes[index];
+        }
+        return ret;
     }
 
     void VMaterial::setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::Buffer> buffer, U64 size)
@@ -85,6 +98,8 @@ namespace vk
         copyDescriptorIfDirty();
 
         DBuffer* bfr = (DBuffer*)buffer.get();
+
+        bfr->getBuffer()->addResourceDependency(mDescriptorSet);
 
         VkDescriptorBufferInfo descBfr = {};
         descBfr.buffer = bfr->getBuffer()->getVkHandle();
@@ -159,17 +174,21 @@ namespace vk
             auto shad = std::dynamic_pointer_cast<ShaderPipeline>(mShader);
             auto newDescr = mDevice->allocateDescriptorSet(shad);
 
-            VkCopyDescriptorSet cpy = {};
-            cpy.sType = VkStructureType::VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
-            cpy.pNext = VK_NULL_HANDLE;
-            cpy.srcSet = mDescriptorSet->getVkHandle();
-            cpy.srcBinding = 0;
-            cpy.srcArrayElement = 0;
-            cpy.dstSet = newDescr->getVkHandle();
-            cpy.dstBinding = 0;
-            cpy.dstArrayElement = 0;
-            cpy.descriptorCount = 2;
-            vkUpdateDescriptorSets(mDevice->getDeviceHandle(), 0, VK_NULL_HANDLE, 1, &cpy);
+            for (U32 i = 0u; i < mDescrTypes.size(); ++i)
+            {
+                VkCopyDescriptorSet cpy = {};
+                cpy.sType = VkStructureType::VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+                cpy.pNext = VK_NULL_HANDLE;
+                cpy.srcSet = mDescriptorSet->getVkHandle();
+                cpy.srcBinding = i;
+                cpy.srcArrayElement = 0;
+                cpy.dstSet = newDescr->getVkHandle();
+                cpy.dstBinding = i;
+                cpy.dstArrayElement = 0;
+                cpy.descriptorCount = 1;
+
+                vkUpdateDescriptorSets(mDevice->getDeviceHandle(), 0, VK_NULL_HANDLE, 1, &cpy);
+            }
 
             mDevice->sheduleResourceDestruction(mDescriptorSet);
             mDescriptorSet = newDescr;

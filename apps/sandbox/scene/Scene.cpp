@@ -11,6 +11,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <swizzle/asset2/Assets.hpp>
 #include <algorithm>
 
 /* Defines */
@@ -83,7 +84,6 @@ SwBool Scene::loadScene(std::string file)
 
 void Scene::loadSky()
 {
-    swizzle::Mesh skysphere;
     common::Resource<swizzle::gfx::Shader> skyShader;
     common::Resource<swizzle::gfx::Texture> skyTexture;
     common::Resource<swizzle::gfx::Material> skyMaterial;
@@ -114,16 +114,42 @@ void Scene::loadSky()
 
     skyMaterial->setDescriptorTextureResource(0, skyTexture);
 
-    skysphere = mAssetManager->loadMesh2("meshes/inverted_sphere.obj");
+    swizzle::asset2::MeshAssetLoaderDescription ldi = {};
+    ldi.mLoadPossitions = {
+        {swizzle::asset2::AttributeTypes::VertexPosition, 0u},
+        {swizzle::asset2::AttributeTypes::NormalVector,   sizeof(float) * 3u},
+        {swizzle::asset2::AttributeTypes::UvCoordinates,  sizeof(float) * 6u},
+    };
 
-    mRenderables.emplace_back(common::CreateRef<Sky>(skysphere.mVertexBuffer, skyTexture, skyMaterial, skyShader));
+    auto mesh2 = swizzle::asset2::LoadMesh("meshes/inverted_sphere.obj", ldi);
+
+    auto vertexBuffer = mContext->createBuffer(swizzle::gfx::BufferType::Vertex);
+    vertexBuffer->setBufferData((U8*)mesh2->getVertexDataPtr(), mesh2->getVertexDataSize(), sizeof(float) * (3 + 3 + 2));
+
+    mRenderables.emplace_back(common::CreateRef<Sky>(vertexBuffer, skyTexture, skyMaterial, skyShader));
 
 }
 
 void Scene::loadAnimMesh()
 {
     namespace sgfx = swizzle::gfx;
-    swizzle::MeshAnimated meshAnimated = mAssetManager->loadAnimMesh("meshes/test.swm");
+
+    swizzle::asset2::MeshAssetLoaderDescription ldi = {};
+    ldi.mLoadPossitions = {
+        {swizzle::asset2::AttributeTypes::VertexPosition, 0u},
+        {swizzle::asset2::AttributeTypes::NormalVector,   sizeof(float) * 3u},
+        {swizzle::asset2::AttributeTypes::UvCoordinates,  sizeof(float) * 6u},
+        {swizzle::asset2::AttributeTypes::BoneIndices,    sizeof(float) * 8u},
+        {swizzle::asset2::AttributeTypes::BoneWeights,    sizeof(float) * 12u},
+    };
+
+    auto mesh2 = swizzle::asset2::LoadMesh("meshes/test.swm", ldi);
+
+    common::Resource<sgfx::Buffer> verts = mContext->createBuffer(sgfx::BufferType::Vertex);
+    common::Resource<sgfx::Buffer> idx = mContext->createBuffer(sgfx::BufferType::Index);
+
+    verts->setBufferData((U8*)mesh2->getVertexDataPtr(), mesh2->getVertexDataSize(), sizeof(float) * (3u + 3u + 2u + 4u + 4u));
+    idx->setBufferData((U8*)mesh2->getIndexDataPtr(), mesh2->getIndexDataSize(), sizeof(U32) * 3u);
 
     common::Resource<sgfx::Buffer> instBuffer = mContext->createBuffer(sgfx::BufferType::Vertex);
 
@@ -131,14 +157,16 @@ void Scene::loadAnimMesh()
 
     for (int i = -4; i < 4; ++i)
     {
-        positions.push_back(glm::translate(glm::mat4(1.0F), { i, 0, 0 }));
+        glm::mat4 m = glm::mat4(1.0f);
+        m = glm::translate(m, { i, 0, 0 });
+        m = glm::rotate(m, 90.0f, glm::vec3(0, 1.0, 0));
+        positions.push_back(m);
     }
 
     instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
 
     common::Resource<sgfx::Shader> shader;
     common::Resource<sgfx::Texture> texture;
-    common::Resource<sgfx::Material> material;
 
     sgfx::ShaderAttributeList attribsAnim = {};
     attribsAnim.mBufferInput = {
@@ -168,11 +196,8 @@ void Scene::loadAnimMesh()
 
     shader = mCompositor->createShader(0u, attribsAnim);
     shader->load("shaders/animated_inst.shader");
-    material = mContext->createMaterial(shader);
-    material->setDescriptorTextureResource(0u, texture);
-    material->setDescriptorBufferResource(1u, meshAnimated.mBoneBuffer, ~0ull);
 
-    mRenderables.emplace_back(common::CreateRef<Animated>(meshAnimated.mVertexBuffer, meshAnimated.mIndexBuffer, meshAnimated.mBoneBuffer, instBuffer, texture, material, shader));
+    mRenderables.emplace_back(common::CreateRef<Animated>(mContext, mesh2, instBuffer, texture, shader));
 }
 
 SceneState Scene::update(DeltaTime dt, common::Resource<swizzle::gfx::CommandBuffer> cmdBuf)

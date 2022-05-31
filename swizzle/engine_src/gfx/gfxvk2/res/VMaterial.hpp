@@ -50,6 +50,9 @@ namespace vk
         // Temp
         VkSampler mSampler;
         SwBool mDirty;
+
+        std::vector<swizzle::gfx::DescriptorType> mDescrTypes;
+
     };
 
 

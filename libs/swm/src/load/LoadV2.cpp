@@ -195,8 +195,15 @@ namespace swm_v2
             res = swm_base::LoadNumber<U16, LR::SizeError>(br, numKeyframes);
             if (swm_base::ResultIsOk(res))
             {
-                U32 numMatrices = numKeyframes * numBones;
-                res = swm_base::LoadArray<SMatrix, LR::MatrixError>(br, animation.mKeyFrames, numMatrices);
+                animation.mKeyFrames.resize(numKeyframes);
+                for (auto& frame : animation.mKeyFrames)
+                {
+                    res = swm_base::LoadArray<SMatrix, LR::MatrixError>(br, frame.mFrameData, numBones);
+                    if (!swm_base::ResultIsOk(res))
+                    {
+                        break;
+                    }
+                }
             }
         }
 

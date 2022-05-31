@@ -12,7 +12,6 @@
 #include <utils/Config.hpp>
 #include <utils/FpsCounter.hpp>
 
-#include <swizzle/asset/MeshLoader.hpp>
 #include "assetManager/AssetManager.hpp"
 #include "scene/Scene.hpp"
 

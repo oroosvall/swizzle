@@ -78,10 +78,15 @@ namespace swm
         F32 mMat[16];
     };
 
+    struct AnimationFrame
+    {
+        std::vector<Matrix4x4> mFrameData;
+    };
+
     struct Animation
     {
         std::string mName;
-        std::vector<Matrix4x4> mKeyFrames;
+        std::vector<AnimationFrame> mKeyFrames;
     };
 
     struct AnimationInfo

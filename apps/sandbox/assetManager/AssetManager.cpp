@@ -3,7 +3,6 @@
 
 #include "AssetManager.hpp"
 
-#include <swizzle/asset/MeshLoader.hpp>
 #include <swizzle/asset/TextureLoader.hpp>
 
 /* Defines */
@@ -40,26 +39,21 @@ void AssetManager::clear()
 
 SwBool AssetManager::loadMesh(U32 id, const SwChar* filePath)
 {
-    SwBool loadedOk = false;
-
-    auto mesh = swizzle::asset::LoadMesh(mContext, filePath, true);
-    if (mesh.mVertexBuffer && mesh.mIndexBuffer)
-    {
-        mMeshAssets[id] = mesh;
-        loadedOk = true;
-    }
-
-    return loadedOk;
+    UNUSED_ARG(id);
+    UNUSED_ARG(filePath);
+    return false;
 }
 
-swizzle::Mesh AssetManager::loadMesh2(const SwChar* filePath)
+common::Resource<swizzle::asset2::IMeshAsset> AssetManager::loadMesh2(const SwChar* filePath)
 {
-    return swizzle::asset::LoadMesh(mContext, filePath, true);
+    UNUSED_ARG(filePath);
+    return nullptr;
 }
 
-swizzle::MeshAnimated AssetManager::loadAnimMesh(const SwChar* filePath)
+common::Resource<swizzle::asset2::IMeshAsset> AssetManager::loadAnimMesh(const SwChar* filePath)
 {
-    return swizzle::asset::LoadMeshAnimated(mContext, filePath, true);
+    UNUSED_ARG(filePath);
+    return nullptr;
 }
 
 common::Resource<swizzle::gfx::Texture> AssetManager::loadTexture(const SwChar* filePath)

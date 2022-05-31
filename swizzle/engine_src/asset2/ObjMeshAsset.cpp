@@ -1,15 +1,13 @@
 
 /* Include files */
 
-#include "ObjLoader.hpp"
-
-#include <fstream>
-#include <vector>
-#include <iostream>
-#include <string>
+#include "ObjMeshAsset.hpp"
 
 #include <swizzle/core/Logging.hpp>
-#include <cstring>
+
+#include <vector>
+#include <map>
+#include <fstream>
 
 /* Defines */
 
@@ -17,33 +15,90 @@
 
 /* Structs/Classes */
 
-/* Static Variables */
+namespace swizzle::asset2::_int
+{
+    struct Vertex2D
+    {
+        F32 u;
+        F32 v;
+    };
+
+    struct Vertex3D
+    {
+        F32 x;
+        F32 y;
+        F32 z;
+    };
+
+    struct Int4D
+    {
+        U32 i1;
+        U32 i2;
+        U32 i3;
+        U32 i4;
+    };
+
+    struct Weight4D
+    {
+        F32 w1;
+        F32 w2;
+        F32 w3;
+        F32 w4;
+    };
+
+    struct Vertex
+    {
+        Vertex3D pos;
+        Vertex3D norm;
+        Vertex2D uv;
+    };
+
+    struct VertexAnim
+    {
+        Vertex3D pos;
+        Vertex3D norm;
+        Vertex2D uv;
+        Int4D idx;
+        Weight4D wgt;
+    };
+
+    struct Index
+    {
+        U32 i1;
+        U32 i2;
+        U32 i3;
+    };
+}
 
 /* Static Function Declaration */
+
+/* Static Variables */
 
 /* Static Function Definition */
 
 /* Function Definition */
 
-namespace loader::obj
+namespace swizzle::asset2
 {
-    SwBool loadObjFile(const SwChar* fileName, F32** vertexData, U32& numVertecies, U32** indexData, U32& numTriangles)
+    common::Resource<IMeshAsset> LoadObjMesh(const SwChar* fileName, MeshAssetLoaderDescription& loadInfo)
     {
-        SwBool loaded = false;
+        UNUSED_ARG(loadInfo);
+
+        common::Resource<IMeshAsset> loadedModel = nullptr;
 
         std::ifstream input(fileName);
-        if (input.is_open() && vertexData && indexData)
+        if (input.is_open())
         {
             std::string line;
             //uint32_t offset = 0u;
             //uint32_t loadCounter = 1u;
             LOG_INFO("Loading obj file %s\n", fileName);
 
-            std::vector<Vertex3D> verts;
-            std::vector<Vertex3D> normals;
-            std::vector<Vertex2D> uvs;
-            std::vector<Vertex> combinedVerts;
-            std::vector<Index> tris;
+            std::vector<_int::Vertex3D> verts;
+            std::vector<_int::Vertex3D> normals;
+            std::vector<_int::Vertex2D> uvs;
+            std::vector<_int::Vertex> combinedVerts;
+            std::vector<_int::Index> tris;
 
             bool hasNormal = false;
             bool hasUv = false;
@@ -82,9 +137,9 @@ namespace loader::obj
                 else if (line[0] == 'f')
                 {
 
-                    Vertex vert1 = {};
-                    Vertex vert2 = {};
-                    Vertex vert3 = {};
+                    _int::Vertex vert1 = {};
+                    _int::Vertex vert2 = {};
+                    _int::Vertex vert3 = {};
 
                     std::string line_ll_1 = line.substr(off0, off1 - off0);
                     std::string line_ll_2 = line.substr(off1, off2 - off1);
@@ -158,28 +213,22 @@ namespace loader::obj
                     size_t len = combinedVerts.size();
 
                     tris.push_back({ uint32_t(len - 3U), uint32_t(len - 2U), uint32_t(len - 1U) });
-
                 }
             }
 
-            *vertexData = new F32[combinedVerts.size() * sizeof(Vertex)];
-            numVertecies = (U32)combinedVerts.size();
+            IndexData vertexData;
+            vertexData.resize(combinedVerts.size() * sizeof(_int::Vertex));
+            memcpy(vertexData.data(), combinedVerts.data(), combinedVerts.size() * sizeof(_int::Vertex));
 
-            memcpy(*vertexData, combinedVerts.data(), combinedVerts.size() * sizeof(Vertex));
+            IndexData indexData;
+            indexData.resize(tris.size() * sizeof(_int::Index));
+            memcpy(indexData.data(), tris.data(), tris.size() * sizeof(_int::Index));
 
-            *indexData = new U32[tris.size() * sizeof(Index)];
-            numTriangles = (U32)tris.size();
-
-            memcpy(*indexData, tris.data(), tris.size() * sizeof(Index));
-
-            loaded = true;
-
+            loadedModel = common::CreateRef<MeshAsset>(vertexData, indexData, nullptr);
         }
-
-        return loaded;
+        return loadedModel;
     }
 }
-
 
 /* Class Public Function Definition */
 

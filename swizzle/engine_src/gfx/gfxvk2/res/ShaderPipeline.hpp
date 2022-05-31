@@ -40,6 +40,8 @@ namespace vk
         VkPipelineLayout getPipelineLayout() const;
         VkDescriptorSetLayout getDescriptorLayout() const;
 
+        const swizzle::gfx::ShaderAttributeList getAttributes() const;
+
     private:
 
         SwBool loadShader(shader::ShaderModuleType, const SwChar* binaryFile);

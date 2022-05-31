@@ -2,8 +2,14 @@
 /* Include files */
 
 #include "MeshAsset.hpp"
+#include "SwmMeshAsset.hpp"
+#include "ObjMeshAsset.hpp"
+#include "AssetUtils.hpp"
 
-#include <swm/Swm.hpp>
+#include <swizzle/core/Logging.hpp>
+
+#include <vector>
+#include <map>
 
 /* Defines */
 
@@ -11,11 +17,82 @@
 
 /* Structs/Classes */
 
+namespace swizzle::asset2
+{
+    struct OffsetItem
+    {
+        U32 mOffset;
+        U64 mSize;
+    };
+}
+
 /* Static Variables */
 
 /* Static Function Declaration */
 
+namespace swizzle::asset2
+{
+    static SwBool ValidateLoadInfo(MeshAssetLoaderDescription& loadInfo);
+}
+
 /* Static Function Definition */
+
+namespace swizzle::asset2
+{
+    static SwBool ValidateLoadInfo(MeshAssetLoaderDescription& loadInfo)
+    {
+        std::map<swizzle::asset2::AttributeTypes, U32> attribCount;
+        std::vector<OffsetItem> offsetList;
+
+        SwBool hasPositions = false;
+
+        for (auto it = loadInfo.mLoadPossitions.begin(); it != loadInfo.mLoadPossitions.end(); ++it)
+        {
+            if (it->mAttributeType == swizzle::asset2::AttributeTypes::VertexPosition)
+            {
+                hasPositions = true;
+            }
+            offsetList.push_back(OffsetItem{ it->mByteOffset, AttributeSize(it->mAttributeType) });
+            auto attr = attribCount.find(it->mAttributeType);
+
+            if (attr != attribCount.end())
+            {
+                attr->second++;
+            }
+            else
+            {
+                attribCount.insert(std::make_pair(it->mAttributeType, 1));
+            }
+        }
+
+        SwBool occursOnce = true;
+
+        for (auto& it : attribCount)
+        {
+            if (it.second != 1)
+            {
+                occursOnce = false;
+                break;
+            }
+        }
+
+        SwBool noOverlap = true;
+        std::sort(offsetList.begin(), offsetList.end(), [](const OffsetItem& a, const OffsetItem& b) {
+            return a.mOffset < b.mOffset;
+                  });
+        U64 off = 0u;
+        for (auto& it : offsetList)
+        {
+            if (off != it.mOffset)
+            {
+                noOverlap = false;
+            }
+            off += it.mSize;
+        }
+
+        return hasPositions && occursOnce && noOverlap;
+    }
+}
 
 /* Function Definition */
 
@@ -23,17 +100,26 @@ namespace swizzle::asset2
 {
     common::Resource<IMeshAsset> LoadMesh(const SwChar* fileName, MeshAssetLoaderDescription& loadInfo)
     {
-        swm::Model mdl;
-        swm::LoadResult res = swm::LoadSwm(fileName, mdl);
-
-        common::Resource<IMeshAsset> loadedModel = nullptr; 
-
-        if (res != swm::LoadResult::Success)
+        if (!ValidateLoadInfo(loadInfo))
         {
-                
+            return nullptr;
         }
 
-        return loadedModel;
+        LOG_INFO("Loading mesh %s", fileName);
+
+        common::Resource<IMeshAsset> asset = LoadSwmMesh(fileName, loadInfo);
+        if (asset)
+        {
+            return asset;
+        }
+
+        asset = LoadObjMesh(fileName, loadInfo);
+        if (asset)
+        {
+            return asset;
+        }
+
+        return nullptr;
     }
 }
 
@@ -41,50 +127,45 @@ namespace swizzle::asset2
 
 namespace swizzle::asset2
 {
-    MeshAsset::MeshAsset(VertexInformation vertexInfo, IndexInformation* indexInfo, AnimationDataInformation* animationInfo)
-        : mVertexData(vertexInfo.mVertexData)
-        , mVertexDataSize(vertexInfo.mVertexDataSize)
-        , mHasIndexData(indexInfo)
-        , mIndexData(nullptr)
-        , mIndexDataSize(0ull)
+    MeshAsset::MeshAsset(VertexData& vertexData, IndexData& indexData, AnimationDataInformation* animationInfo)
+        : mVertexData(std::move(vertexData))
+        , mIndexData(std::move(indexData))
         , mHasAnimationData(animationInfo)
     {
-        if (mHasIndexData)
+        if (mHasAnimationData)
         {
-            mIndexData = indexInfo->mIndexData;
-            mIndexDataSize = indexInfo->mIndexDataSize;
+            mNumBoneCount = animationInfo->mNumBoneCount;
+            mAnimations = std::move(animationInfo->mAnimations);
         }
     }
 
     MeshAsset::~MeshAsset()
     {
-        delete [] mVertexData;
-        delete [] mIndexData;
     }
 
     U64 MeshAsset::getVertexDataSize() const
     {
-        return mVertexDataSize;
+        return mVertexData.size();
     }
 
-    U8* MeshAsset::getVertexDataPtr() const
+    const U8* MeshAsset::getVertexDataPtr() const
     {
-        return mVertexData;
+        return mVertexData.data();
     }
 
     SwBool MeshAsset::hasIndexData() const
     {
-        return mHasIndexData;    
+        return mIndexData.size() != 0ull;
     }
 
     U64 MeshAsset::getIndexDataSize() const
     {
-        return mIndexDataSize;
+        return mIndexData.size();
     }
 
-    U8* MeshAsset::getIndexDataPtr() const
+    const U8* MeshAsset::getIndexDataPtr() const
     {
-        return mIndexData;
+        return mIndexData.data();
     }
 
     SwBool MeshAsset::hasAnimations() const
@@ -94,26 +175,27 @@ namespace swizzle::asset2
 
     U32 MeshAsset::getNumberOfAnimations() const
     {
-        return 0ull;
+        return (U32)mAnimations.size();
     }
 
-    U32 MeshAsset::getNumberOfBones() const 
+    U32 MeshAsset::getNumberOfBones() const
     {
-        return 0ull;
+        return mNumBoneCount;
     }
 
     U32 MeshAsset::getNumberOfKeyFrames(U32 animationIndex) const
     {
-        UNUSED_ARG(animationIndex);
-        return 0ull;
+        return (U32)mAnimations[animationIndex].mKeyFrames.size();
     }
 
-    U8* MeshAsset::getAnimationDataPtr(U32 animationIndex, U32 keyFrameIndex) const
+    const SwChar* MeshAsset::getAnimationName(U32 animationIndex) const
     {
-        UNUSED_ARG(animationIndex);
-        UNUSED_ARG(keyFrameIndex);
+        return mAnimations[animationIndex].mName.c_str();
+    }
 
-        return 0ull;
+    const U8* MeshAsset::getAnimationDataPtr(U32 animationIndex, U32 keyFrameIndex) const
+    {
+        return (const U8*)mAnimations[animationIndex].mKeyFrames[keyFrameIndex].mFrameData.data();
     }
 }
 
