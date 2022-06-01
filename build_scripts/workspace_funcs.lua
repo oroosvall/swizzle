@@ -2,6 +2,7 @@ if _ACTION ~= nil then platform = _ACTION end
 
 function defaultWorkspaceConfig()
     config = {}
+    config["buildDir"] = "build/"
     config["disableTests"] = false
     config["disableApps"] = false
 
@@ -21,10 +22,10 @@ function storeWorkspaceConfig(configFile, config)
     io.writefile(configFile, json.encode(config))
 end
 
-function setupWorkspace()
+function setupWorkspace(buildDir)
 workspace "Swizzle"
     architecture "x64"
-    location("build/" .. platform)
+    location(buildDir .. platform)
     debugdir("data/")
     configurations
     {
@@ -35,8 +36,8 @@ workspace "Swizzle"
     flags { "MultiProcessorCompile" }
     startproject "sandbox"
 
-targetdir ("build/" .. platform .. "/bin-%{cfg.shortname}/")
-objdir ("build/" .. platform .. "/int-%{cfg.shortname}/")
+targetdir (buildDir .. platform .. "/bin-%{cfg.shortname}/")
+objdir (buildDir .. platform .. "/int-%{cfg.shortname}/")
 
 warnings "Extra"
 

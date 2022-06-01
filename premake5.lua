@@ -1,9 +1,9 @@
 include "build_scripts/workspace_funcs.lua"
 include "build_scripts/project_funcs.lua"
 
-setupWorkspace()
 
 projectConfig = loadWorkspaceConfig("projectConfig.json")
+setupWorkspace(projectConfig.buildDir)
 
 print(table.tostring(projectConfig))
 
@@ -84,31 +84,31 @@ elseif os.target() == "linux" then
 end
 
 group("vendor")
-generateProject(projects, "imgui")
-generateProject(projects, "optick")
-generateProject(projects, "stb")
+generateProject(projects, projectConfig.buildDir, "imgui")
+generateProject(projects, projectConfig.buildDir, "optick")
+generateProject(projects, projectConfig.buildDir, "stb")
 
 group("libs")
-generateProject(projects, "utils")
-generateProject(projects, "script")
-generateProject(projects, "swm")
-generateProject(projects, "physics")
+generateProject(projects, projectConfig.buildDir, "utils")
+generateProject(projects, projectConfig.buildDir, "script")
+generateProject(projects, projectConfig.buildDir, "swm")
+generateProject(projects, projectConfig.buildDir, "physics")
 
 group("engine")
-generateProject(projects, "swizzle")
+generateProject(projects, projectConfig.buildDir, "swizzle")
 
 if not projectConfig.disableApps then
     group("apps")
-    generateProject(projects, "sandbox")
-    generateProject(projects, "modelConverter")
+    generateProject(projects, projectConfig.buildDir, "sandbox")
+    generateProject(projects, projectConfig.buildDir, "modelConverter")
 end
 
 if not projectConfig.disableTests then
     group("tests")
-    generateProject(projects, "google-test")
-    generateProject(projects, "utilsTest")
-    generateProject(projects, "scriptTest")
-    generateProject(projects, "swmTest")
+    generateProject(projects, projectConfig.buildDir, "google-test")
+    generateProject(projects, projectConfig.buildDir, "utilsTest")
+    generateProject(projects, projectConfig.buildDir, "scriptTest")
+    generateProject(projects, projectConfig.buildDir, "swmTest")
 end
 
 if not os.isfile("projectConfig.json") then

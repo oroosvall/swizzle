@@ -52,18 +52,6 @@ function generateVSCodeProjectSettings(projectTable, configFile)
                 "${VULKAN_SDK}/include/**"
 ]]
 
-    -- for proj_name, proj in pairs(projectTable) do
-    --     for i, define in pairs(proj.defines) do
-    --         if projectDefines ~= "" then
-    --             projectDefines = projectDefines .. ",\n" .. string.format("%q", define)
-    --         else
-    --             projectDefines = string.format("%q", define)
-    --         end
-    --     end
-    --     for i, inc in pairs(proj.pub_inc_dirs) do
-    --         projectIncludes = projectIncludes .. ",\n" .. string.format("%q", "${workspaceFolder}/" .. inc)
-    --     end    
-    -- end
     vscodeProjectConfig =
 [[{
     "configurations": [
@@ -108,7 +96,7 @@ function addDefine(project, define)
     project.defines = table.join(project.defines, define)
 end
 
-function generateProject(projectTable, prjName)
+function generateProject(projectTable, buildDir, prjName)
     projectName = prjName
     prj = projectTable[prjName]
     projectFiles = prj.files
@@ -127,7 +115,7 @@ function generateProject(projectTable, prjName)
     end
 
     project(prjName)
-    location("build/" .. platform .."/%{prj.name}")
+    location(buildDir .. platform .."/%{prj.name}")
     kind(prj.kind)
     language(prj.language)
     files(projectFiles)
