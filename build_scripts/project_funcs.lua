@@ -13,6 +13,7 @@ function generateDefaultProjectConfig()
     defaultConfig['dep'] = {}
     defaultConfig['defines'] = {}
     defaultConfig['vpaths'] = {}
+    defaultConfig['postbuildcommands'] = {}
 
     return defaultConfig
 end
@@ -96,6 +97,10 @@ function addDefine(project, define)
     project.defines = table.join(project.defines, define)
 end
 
+function addPostBuildCommands(project, commands)
+    project.postbuildcommands = table.join(project.postbuildcommands, commands)
+end
+
 function generateProject(projectTable, buildDir, prjName)
     projectName = prjName
     prj = projectTable[prjName]
@@ -116,6 +121,7 @@ function generateProject(projectTable, buildDir, prjName)
 
     project(prjName)
     location(buildDir .. platform .."/%{prj.name}")
+    objdir ("!" .. buildDir .. platform .. "/int-%{cfg.shortname}/%{prj.name}/")
     kind(prj.kind)
     language(prj.language)
     files(projectFiles)
@@ -128,9 +134,22 @@ function generateProject(projectTable, buildDir, prjName)
             end
         end
     end
+    for i,j in pairs(prj.postbuildcommands) do
+        postbuildcommands(j)
+    end
     for i,vp in pairs(prj.vpaths) do
         vpaths({[vp.name] = vp.value})
     end
 
     links(projectLinks)
+end
+
+function generateTestProject(projectTable, buildDir, prjName)
+    generateProject(projectTable, buildDir, prjName)
+    filter {"system:linux", "toolset:gcc"}
+        buildoptions {"-fprofile-arcs -ftest-coverage "}
+        linkoptions {"-lgcov --coverage"}
+        postbuildcommands("{MKDIR} %{wks.location}/reports/")
+        postbuildcommands("./%{cfg.linktarget.relpath}")
+        postbuildcommands("gcovr -r . --html-details %{wks.location}/reports/%{prj.name}.html --object-directory %{cfg.objdir} %{cfg.objdir} -f '(.+)?[ch]pp$$'")
 end

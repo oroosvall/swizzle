@@ -40,7 +40,7 @@ projects["modelConverter"] = loadProjectConfig("apps/modelConverter.json")
 
 addDependencies(projects["utilsTest"], {"utils", "google-test"})
 addDependencies(projects["scriptTest"], {"script", "google-test"})
-addDependencies(projects["swmTest"], {"swm", "google-test", "utils"})
+addDependencies(projects["swmTest"], {"google-test", "utils"})
 addDependencies(projects["swm"], {"utils"})
 addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "optick", "imgui", "stb"})
 
@@ -48,6 +48,7 @@ addDependencies(projects["sandbox"], {"swizzle", "imgui", "utils", "optick"})
 addDependencies(projects["modelConverter"], {"swizzle", "utils", "optick"})
 
 addExternalHeaders(projects["swm"], glmIncludeDirs)
+addExternalHeaders(projects["swmTest"], glmIncludeDirs)
 addExternalHeaders(projects["swizzle"], glmIncludeDirs)
 addExternalHeaders(projects["sandbox"], glmIncludeDirs)
 addExternalHeaders(projects["modelConverter"], glmIncludeDirs)
@@ -104,11 +105,15 @@ if not projectConfig.disableApps then
 end
 
 if not projectConfig.disableTests then
+
+    -- addPostBuildCommands(projects['swmTest'], "./%{cfg.linktarget.abspath}")
+
     group("tests")
     generateProject(projects, projectConfig.buildDir, "google-test")
-    generateProject(projects, projectConfig.buildDir, "utilsTest")
+    generateTestProject(projects, projectConfig.buildDir, "utilsTest")
     generateProject(projects, projectConfig.buildDir, "scriptTest")
-    generateProject(projects, projectConfig.buildDir, "swmTest")
+    -- generateProject(projects, projectConfig.buildDir, "swmTest")
+    generateTestProject(projects, projectConfig.buildDir, "swmTest")
 end
 
 if not os.isfile("projectConfig.json") then
@@ -117,5 +122,5 @@ end
 
 os.mkdir(".vscode")
 generateVSCodeProjectSettings(projects, ".vscode/c_cpp_properties.json")
-
+os.execute("{ECHO} $VULKAN_SDK")
 -- print(table.tostring(projects, 2))

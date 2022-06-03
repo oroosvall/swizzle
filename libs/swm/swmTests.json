@@ -2,6 +2,9 @@
     "kind": "ConsoleApp",
     "language": "c++",
     "files": [
+        "src/**.cpp",
+        "src/**.hpp",
+        "include/**.hpp",
         "test/**.cpp"
     ],
     "includedirs":[
