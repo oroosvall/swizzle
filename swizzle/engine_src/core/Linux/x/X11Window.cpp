@@ -40,7 +40,7 @@ namespace swizzle::core
 
         // XSelectInput(mDisplay, mWindow, KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask);
         XMapWindow(mDisplay, mWindow);
-        
+
         mWmDeleteWindow = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
         XSetWMProtocols(mDisplay, mWindow, &mWmDeleteWindow, 1);
 
@@ -97,6 +97,11 @@ namespace swizzle::core
     void XlibWindow::setBorderless(bool borderless)
     {
         UNUSED_ARG(borderless);
+    }
+
+    void XlibWindow::setFullscreen(bool fullscreen)
+    {
+        UNUSED_ARG(fullscreen);
     }
 
     void XlibWindow::getCursorPos(U32& xPos, U32& yPos) const

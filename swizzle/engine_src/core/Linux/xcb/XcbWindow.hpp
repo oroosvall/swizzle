@@ -34,6 +34,7 @@ namespace swizzle::core
         virtual bool isVisible() const override;
 
         virtual void setBorderless(bool borderless) override;
+        virtual void setFullscreen(bool fullscreen) override;
 
         virtual void getCursorPos(U32& xPos, U32& yPos) const override;
         virtual void getSize(U32& width, U32& height) const override;

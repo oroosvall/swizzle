@@ -475,8 +475,12 @@ namespace swizzle::core
     Win32Window::Win32Window(const U32 width, const U32 height, const char* title)
         : mWnd(NULL)
         , mCursorVisible(true)
+        , mFullscreen(false)
+        , mBorderless(false)
+        , mWindowPlacementSet(false)
         , mEventHandlers()
         , modKeys(0)
+        , mWindowPlacement({sizeof(mWindowPlacement)})
     {
 
         mWnd = CreateWindowEx(WS_EX_APPWINDOW,
@@ -547,15 +551,14 @@ namespace swizzle::core
 
     void Win32Window::setBorderless(bool borderless)
     {
-        DWORD style = GetWindowLong(mWnd, GWL_STYLE);
-        if (borderless)
-        {
-            SetWindowLong(mWnd, GWL_STYLE, style & ~WS_OVERLAPPEDWINDOW);
-        }
-        else
-        {
-            SetWindowLong(mWnd, GWL_STYLE, style | WS_OVERLAPPEDWINDOW);
-        }
+        mBorderless = borderless;
+        changeScreenMode();
+    }
+
+    void Win32Window::setFullscreen(bool fullscreen)
+    {
+        mFullscreen = fullscreen;
+        changeScreenMode();
     }
 
     void Win32Window::getCursorPos(U32& xPos, U32& yPos) const
@@ -620,6 +623,44 @@ namespace swizzle::core
     EventHandlerList<WindowEvent>& Win32Window::getEventHandler()
     {
         return mEventHandlers;
+    }
+
+    void Win32Window::changeScreenMode()
+    {
+        DWORD style = GetWindowLong(mWnd, GWL_STYLE);
+        if (mBorderless || mFullscreen)
+        {
+            SetWindowLong(mWnd, GWL_STYLE, style & ~WS_OVERLAPPEDWINDOW);
+        }
+        else
+        {
+            SetWindowLong(mWnd, GWL_STYLE, style | WS_OVERLAPPEDWINDOW);
+        }
+
+        if (mFullscreen)
+        {
+            MONITORINFO mi = { sizeof(mi) };
+            if (GetWindowPlacement(mWnd, &mWindowPlacement) &&
+                GetMonitorInfo(MonitorFromWindow(mWnd, MONITOR_DEFAULTTOPRIMARY), &mi))
+            {
+                SetWindowPos(mWnd, HWND_TOP,
+                             mi.rcMonitor.left, mi.rcMonitor.top,
+                             mi.rcMonitor.right - mi.rcMonitor.left,
+                             mi.rcMonitor.bottom - mi.rcMonitor.top,
+                             SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+                mWindowPlacementSet = true;
+            }
+        }
+        else
+        {
+            if (mWindowPlacementSet)
+            {
+                SetWindowPlacement(mWnd, &mWindowPlacement);
+                SetWindowPos(mWnd, NULL, 0, 0, 0, 0,
+                             SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                             SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+            }
+        }
     }
 
 } // namespace swizzle

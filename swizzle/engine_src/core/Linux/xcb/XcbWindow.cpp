@@ -108,6 +108,11 @@ xcb_gcontext_t foreground;
         UNUSED_ARG(borderless);
     }
 
+    void XcbWindow::setFullscreen(bool fullscreen)
+    {
+        UNUSED_ARG(fullscreen);
+    }
+
     void XcbWindow::getCursorPos(U32& xPos, U32& yPos) const
     {
         xPos = 0u;
