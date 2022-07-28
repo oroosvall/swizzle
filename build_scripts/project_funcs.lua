@@ -85,6 +85,14 @@ function addExternalHeaders(project, headerPath)
     project.extheaders = table.join(project.extheaders, headerPath)
 end
 
+function addExternalHeadersProjectList(project, projects, headerPath)
+    tbl = table.join(projects)
+    for i, prj in pairs(tbl) do
+        addExternalHeaders(project[prj], headerPath)
+    end
+    project.extheaders = table.join(project.extheaders, headerPath)
+end
+
 function addExternalLibDir(project, libDir)
     project.extlibdir = table.join(project.extlibdir, libDir)
 end
@@ -140,16 +148,22 @@ function generateProject(projectTable, buildDir, prjName)
     for i,vp in pairs(prj.vpaths) do
         vpaths({[vp.name] = vp.value})
     end
-
+    
     links(projectLinks)
 end
 
-function generateTestProject(projectTable, buildDir, prjName)
+function generateTestProject(projectTable, buildDir, prjName, reportLinks)
     generateProject(projectTable, buildDir, prjName)
     filter {"system:linux", "toolset:gcc"}
         buildoptions {"-fprofile-arcs -ftest-coverage "}
         linkoptions {"-lgcov --coverage"}
         postbuildcommands("{MKDIR} %{wks.location}/reports/")
         postbuildcommands("./%{cfg.linktarget.relpath}")
-        postbuildcommands("gcovr -r . --html-details %{wks.location}/reports/%{prj.name}.html --object-directory %{cfg.objdir} %{cfg.objdir} -f '(.+)?[ch]pp$$'")
+        l = ""
+        if (reportLinks ~= nil) then
+            for i,j in pairs(table.join(reportLinks)) do
+                l = l .. "%{cfg.objdir}/../" .. j .. " "
+            end
+        end
+        postbuildcommands("gcovr -r . --html-details %{wks.location}/reports/%{prj.name}.html --object-directory %{cfg.objdir} %{cfg.objdir} " .. l .." -f '(.+)?[ch]pp$$'")
 end
