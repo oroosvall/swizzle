@@ -22,9 +22,9 @@ projects = {}
 -- projects
 projects["utils"] = loadProjectConfig("libs/utils/utils.json")
 projects["script"] = loadProjectConfig("libs/script/script.json")
-projects["swm"] = loadProjectConfig("libs/swm/swm.json")
 projects["physics"] = loadProjectConfig("libs/physics/physics.json")
 projects["swizzle"] = loadProjectConfig("swizzle/swizzle.json")
+projects["swm"] = loadProjectConfig("swizzle/module_swm/swm.json")
 -- vendor
 projects["google-test"] = loadProjectConfig("vendor/google-test/gtest.json")
 projects["imgui"] = loadProjectConfig("vendor/imgui/imgui.json")
@@ -33,34 +33,23 @@ projects["stb"] = loadProjectConfig("vendor/stb/stb.json")
 -- tests
 projects["utilsTest"] = loadProjectConfig("libs/utils/utilsTests.json")
 projects["scriptTest"] = loadProjectConfig("libs/script/scriptTests.json")
-projects["swmTest"] = loadProjectConfig("libs/swm/swmTests.json")
+projects["swmTest"] = loadProjectConfig("swizzle/module_swm/swmTests.json")
 -- apps
 projects["sandbox"] = loadProjectConfig("apps/sandbox.json")
 projects["modelConverter"] = loadProjectConfig("apps/modelConverter.json")
 
 addDependencies(projects["utilsTest"], {"utils", "google-test"})
 addDependencies(projects["scriptTest"], {"script", "google-test"})
-addDependencies(projects["swmTest"], {"google-test", "utils"})
+addDependencies(projects["swmTest"], {"swm", "google-test", "utils"})
 addDependencies(projects["swm"], {"utils"})
 addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "optick", "imgui", "stb"})
 
 addDependencies(projects["sandbox"], {"swizzle", "imgui", "utils", "optick"})
 addDependencies(projects["modelConverter"], {"swizzle", "utils", "optick"})
 
-addExternalHeaders(projects["swm"], glmIncludeDirs)
-addExternalHeaders(projects["swmTest"], glmIncludeDirs)
-addExternalHeaders(projects["swizzle"], glmIncludeDirs)
-addExternalHeaders(projects["sandbox"], glmIncludeDirs)
-addExternalHeaders(projects["modelConverter"], glmIncludeDirs)
+addExternalHeadersProjectList(projects, {"swm", "swmTest", "swizzle", "sandbox", "modelConverter"}, glmIncludeDirs)
 
-addExternalHeaders(projects["swm"], commonIncludeDirs)
-addExternalHeaders(projects["swizzle"], commonIncludeDirs)
-
-addExternalHeaders(projects["sandbox"], commonIncludeDirs)
-addExternalHeaders(projects["modelConverter"], commonIncludeDirs)
-
-addExternalHeaders(projects["scriptTest"], commonIncludeDirs)
-addExternalHeaders(projects["swmTest"], commonIncludeDirs)
+addExternalHeadersProjectList(projects, {"swm", "swizzle", "sandbox", "modelConverter", "scriptTest", "swmTest"}, commonIncludeDirs)
 
 addExternalHeaders(projects["swizzle"], vulkanIncludeDirs)
 addExternalLibDir(projects["swizzle"], vulkanLibDirs)
@@ -105,15 +94,11 @@ if not projectConfig.disableApps then
 end
 
 if not projectConfig.disableTests then
-
-    -- addPostBuildCommands(projects['swmTest'], "./%{cfg.linktarget.abspath}")
-
     group("tests")
     generateProject(projects, projectConfig.buildDir, "google-test")
     generateTestProject(projects, projectConfig.buildDir, "utilsTest")
     generateProject(projects, projectConfig.buildDir, "scriptTest")
-    -- generateProject(projects, projectConfig.buildDir, "swmTest")
-    generateTestProject(projects, projectConfig.buildDir, "swmTest")
+    generateTestProject(projects, projectConfig.buildDir, "swmTest", "swm")
 end
 
 if not os.isfile("projectConfig.json") then
@@ -122,5 +107,3 @@ end
 
 os.mkdir(".vscode")
 generateVSCodeProjectSettings(projects, ".vscode/c_cpp_properties.json")
-os.execute("{ECHO} $VULKAN_SDK")
--- print(table.tostring(projects, 2))

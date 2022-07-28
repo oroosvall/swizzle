@@ -9,7 +9,7 @@ namespace utils
     class BitStreamReader
     {
     public:
-        BitStreamReader(uint8_t* data, size_t dataSize)
+        BitStreamReader(const uint8_t* data, size_t dataSize)
             : mData(data)
             , mSize(dataSize)
             , mCache(0u)
@@ -52,7 +52,7 @@ namespace utils
             return true;
         }
 
-        uint8_t* mData;
+        const uint8_t* mData;
         size_t mSize;
 
         uint64_t mCache;
@@ -106,7 +106,8 @@ namespace utils
         {
             size_t s = 0u;
             uint8_t* d = (uint8_t*)&mCache;
-            for (size_t i = 0u; i < (mBitOffset + 7u) / 8u; i++)
+            size_t offset = mBitOffset;
+            for (size_t i = 0u; i < (offset + 7ull) / 8ull; i++)
             {
                 mData[mWritten + i] = d[i];
                 s++;

@@ -29,11 +29,11 @@ namespace swizzle::asset2
     common::Resource<IMeshAsset> LoadSwmMesh(const SwChar* fileName, MeshAssetLoaderDescription& loadInfo)
     {
         swm::Model mdl;
-        swm::LoadResult res = swm::LoadSwm(fileName, mdl);
+        swm::Result res = swm::LoadSwm(fileName, mdl);
 
         common::Resource<IMeshAsset> loadedModel = nullptr;
 
-        if (res == swm::LoadResult::Success)
+        if (res == swm::Result::Success)
         {
             const auto& mesh = mdl.mMeshes.front();
             U64 vertexCount = mesh.mPositions.size();
@@ -56,7 +56,7 @@ namespace swizzle::asset2
                 {
                 case swizzle::asset2::AttributeTypes::VertexPosition:
                     src = (U8*)mesh.mPositions.data();
-                    stride = sizeof(swm::Vertex);
+                    stride = sizeof(swm::types::Vector3F);
                     break;
                 case swizzle::asset2::AttributeTypes::UvCoordinates:
                     if (mesh.mUvs.size() == 0u)
@@ -65,7 +65,7 @@ namespace swizzle::asset2
                         continue;
                     }
                     src = (U8*)mesh.mUvs.data();
-                    stride = sizeof(swm::Uv);
+                    stride = sizeof(swm::types::Vector2F);
                     break;
                 case swizzle::asset2::AttributeTypes::NormalVector:
                     if (mesh.mNormals.size() == 0u)
@@ -74,7 +74,7 @@ namespace swizzle::asset2
                         continue;
                     }
                     src = (U8*)mesh.mNormals.data();
-                    stride = sizeof(swm::Vertex);
+                    stride = sizeof(swm::types::Vector3F);
                     break;
                 case swizzle::asset2::AttributeTypes::BoneIndices:
                 case swizzle::asset2::AttributeTypes::BoneWeights:
@@ -84,7 +84,7 @@ namespace swizzle::asset2
                         continue;
                     }
                     src = (U8*)mesh.mBoneInfo.data();
-                    stride = sizeof(swm::BoneInfo);
+                    stride = sizeof(swm::types::BoneInfo);
                     break;
                 default:
                     LOG_ERROR("Reached default state\n  Nothing to do");
@@ -106,11 +106,11 @@ namespace swizzle::asset2
 
                         if (info.mAttributeType == swizzle::asset2::AttributeTypes::BoneWeights)
                         {
-                            src2 = &src2[sizeof(swm::BoneIndex)];
+                            src2 = &src2[sizeof(swm::types::BoneIndex)];
                         }
                         else if (info.mAttributeType == swizzle::asset2::AttributeTypes::BoneIndices)
                         {
-                            swm::BoneIndex* bi = (swm::BoneIndex*)src2;
+                            swm::types::BoneIndex* bi = (swm::types::BoneIndex*)src2;
                             iddx.i1 = bi->b1;
                             iddx.i2 = bi->b2;
                             iddx.i3 = bi->b3;
@@ -123,7 +123,7 @@ namespace swizzle::asset2
                 }
             }
 
-            U64 indexDataSize = mesh.mTriangles.size() * sizeof(swm::Triangle);
+            U64 indexDataSize = mesh.mTriangles.size() * sizeof(swm::types::Triangle);
 
             IndexData indexData;
             indexData.resize(indexDataSize);
@@ -136,6 +136,10 @@ namespace swizzle::asset2
             LoadAnimations(mesh, ani.mAnimations);
 
             loadedModel = common::CreateRef<MeshAsset>(vertexData, indexData, &ani);
+        }
+        else
+        {
+            LOG_ERROR("%s\n", swm::GetErrorDescription(res));
         }
         return loadedModel;
     }

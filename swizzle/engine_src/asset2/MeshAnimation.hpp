@@ -37,7 +37,7 @@ namespace swizzle::asset2
 
 namespace swizzle::asset2
 {
-    void LoadAnimations(const swm::Model::Mesh& mesh, std::vector<Animation>& animationData);
+    void LoadAnimations(const swm::types::Mesh& mesh, std::vector<Animation>& animationData);
 }
 
 #endif
