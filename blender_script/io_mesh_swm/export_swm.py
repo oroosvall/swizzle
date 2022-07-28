@@ -184,18 +184,9 @@ def is_bit_set(value, bit):
 
 def select_version(ver, objs):
     if ver == "1.0":
-        return (1, 0, False)
-    elif ver == "2.0":
-        return (2, 0, True)
+        return (1, 0, True)
     else:
-        hasArmature = False
-        for ob, me in objs:
-            for mod in ob.modifiers:
-                if mod.type == 'ARMATURE':
-                    hasArmature = True
-        if hasArmature:
-            return (2, 0, hasArmature)
-        return (1, 0, False)
+        return (1, 0, True)
 
 
 def write_header(fw, major, minor):
