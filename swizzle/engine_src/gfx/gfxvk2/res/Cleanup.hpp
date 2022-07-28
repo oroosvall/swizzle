@@ -44,8 +44,8 @@ namespace vk
         void run();
         void stop();
 
-        void sheduleResourceDestruction(common::Resource<IVkResource> resource);
-        void sheduleFreeingMemory(common::Resource<DeviceMemory> memory);
+        void scheduleResourceDestruction(common::Resource<IVkResource> resource);
+        void scheduleFreeingMemory(common::Resource<DeviceMemory> memory);
 
         void notify();
 

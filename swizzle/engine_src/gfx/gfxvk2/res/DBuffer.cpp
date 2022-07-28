@@ -48,8 +48,8 @@ namespace vk
 
     DBuffer::~DBuffer()
     {
-        mDevice->sheduleResourceDestruction(mBuffer);
-        mDevice->sheduleFreeingMemory(mMemory);
+        mDevice->scheduleResourceDestruction(mBuffer);
+        mDevice->scheduleFreeingMemory(mMemory);
     }
 
     void DBuffer::setBufferData(void* data, U64 size, U32 stride)
@@ -140,7 +140,7 @@ namespace vk
 
         if (mBuffer)
         {
-            mDevice->sheduleResourceDestruction(mBuffer);
+            mDevice->scheduleResourceDestruction(mBuffer);
             mBuffer.reset();
         }
 
@@ -176,7 +176,7 @@ namespace vk
             {
                 // this free/reallocate can be improved by checking if we can expand the currenly allocated size
                 // for now free it and allocate new memory
-                mDevice->sheduleFreeingMemory(mMemory);
+                mDevice->scheduleFreeingMemory(mMemory);
                 mMemory = mDevice->allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                     VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                     req);

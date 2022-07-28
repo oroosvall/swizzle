@@ -172,7 +172,7 @@ namespace vk
         {
             common::Resource<IVkResource> res = img.mImage;
             mDevice->destroyResource(res);
-            mDevice->sheduleFreeingMemory(img.mImageMemory);
+            mDevice->scheduleFreeingMemory(img.mImageMemory);
             vkDestroyImageView(mDevice->getDeviceHandle(), img.mImageView, mDevice->getAllocCallbacks());
         }
         mImages.clear();
@@ -181,7 +181,7 @@ namespace vk
         {
             common::Resource<IVkResource> res = mDepthImage.mImage;
             mDevice->destroyResource(res);
-            mDevice->sheduleFreeingMemory(mDepthImage.mImageMemory);
+            mDevice->scheduleFreeingMemory(mDepthImage.mImageMemory);
             vkDestroyImageView(mDevice->getDeviceHandle(), mDepthImage.mImageView, mDevice->getAllocCallbacks());
 
             mDepthImage.mImage.reset();

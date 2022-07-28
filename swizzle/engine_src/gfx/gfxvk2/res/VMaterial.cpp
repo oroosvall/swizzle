@@ -75,7 +75,7 @@ namespace vk
     {
         vkDestroySampler(mDevice->getDeviceHandle(), mSampler, mDevice->getAllocCallbacks());
         mSampler = VK_NULL_HANDLE;
-        mDevice->sheduleResourceDestruction(mDescriptorSet);
+        mDevice->scheduleResourceDestruction(mDescriptorSet);
     }
 
     U32 VMaterial::getNumDescriptors() const
@@ -124,9 +124,11 @@ namespace vk
 
     void VMaterial::setDescriptorTextureResource(U32 index, common::Resource<swizzle::gfx::Texture> texture)
     {
-        copyDescriptorIfDirty();
+        //copyDescriptorIfDirty();
 
         TextureBase* tex = (TextureBase*)(texture.get());
+
+        tex->getImg()->addResourceDependency(mDescriptorSet);
 
         VkDescriptorImageInfo descImg = {};
         descImg.sampler = mSampler;
@@ -190,7 +192,7 @@ namespace vk
                 vkUpdateDescriptorSets(mDevice->getDeviceHandle(), 0, VK_NULL_HANDLE, 1, &cpy);
             }
 
-            mDevice->sheduleResourceDestruction(mDescriptorSet);
+            mDevice->scheduleResourceDestruction(mDescriptorSet);
             mDescriptorSet = newDescr;
 
             mDirty = false;

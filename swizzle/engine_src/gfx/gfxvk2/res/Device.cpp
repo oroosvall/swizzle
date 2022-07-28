@@ -278,18 +278,18 @@ namespace vk
         pool->freeMemory(memory);
     }
 
-    void Device::sheduleResourceDestruction(common::Resource<IVkResource> resource)
+    void Device::scheduleResourceDestruction(common::Resource<IVkResource> resource)
     {
-        OPTICK_EVENT("Device::sheduleResourceDestruction");
+        OPTICK_EVENT("Device::scheduleResourceDestruction");
         // send to cleanup thread
-        mCleanup->sheduleResourceDestruction(resource);
+        mCleanup->scheduleResourceDestruction(resource);
     }
 
-    void Device::sheduleFreeingMemory(common::Resource<DeviceMemory> memory)
+    void Device::scheduleFreeingMemory(common::Resource<DeviceMemory> memory)
     {
-        OPTICK_EVENT("Device::sheduleFreeingMemory");
+        OPTICK_EVENT("Device::scheduleFreeingMemory");
         // send to cleanup thread
-        mCleanup->sheduleFreeingMemory(memory);
+        mCleanup->scheduleFreeingMemory(memory);
     }
 
     void Device::updateHeapBudget()

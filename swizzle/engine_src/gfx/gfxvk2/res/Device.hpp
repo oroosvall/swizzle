@@ -72,8 +72,8 @@ namespace vk
         common::Resource<DeviceMemory> allocateMemory(VkMemoryPropertyFlags properties, VkMemoryRequirements req);
         void freeMemory(common::Resource<DeviceMemory> memory);
 
-        void sheduleResourceDestruction(common::Resource<IVkResource> resource);
-        void sheduleFreeingMemory(common::Resource<DeviceMemory> memory);
+        void scheduleResourceDestruction(common::Resource<IVkResource> resource);
+        void scheduleFreeingMemory(common::Resource<DeviceMemory> memory);
 
         void updateHeapBudget();
 

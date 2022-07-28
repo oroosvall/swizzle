@@ -188,7 +188,7 @@ namespace vk
 
         if (mImage)
         {
-            mDevice->sheduleResourceDestruction(mImage);
+            mDevice->scheduleResourceDestruction(mImage);
             mImage.reset();
         }
 
@@ -203,7 +203,7 @@ namespace vk
 
         if (mImageMemory)
         {
-            mDevice->sheduleFreeingMemory(mImageMemory);
+            mDevice->scheduleFreeingMemory(mImageMemory);
             mImageMemory.reset();
         }
 
@@ -240,8 +240,8 @@ namespace vk
     void Texture2D::destroyResources()
     {
         vkDestroyImageView(mDevice->getDeviceHandle(), mImageView, mDevice->getAllocCallbacks());
-        mDevice->sheduleResourceDestruction(mImage);
-        mDevice->sheduleFreeingMemory(mImageMemory);
+        mDevice->scheduleResourceDestruction(mImage);
+        mDevice->scheduleFreeingMemory(mImageMemory);
         /*vkFreeMemory(mVkObjects.mLogicalDevice->getLogical(), mMemory, mVkObjects.mDebugAllocCallbacks);
         vkDestroyImage(mVkObjects.mLogicalDevice->getLogical(), mImage, mVkObjects.mDebugAllocCallbacks);*/
 

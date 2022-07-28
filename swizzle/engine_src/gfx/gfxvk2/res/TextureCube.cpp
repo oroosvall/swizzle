@@ -227,8 +227,8 @@ namespace vk
     void TextureCube::destroyResources()
     {
         vkDestroyImageView(mDevice->getDeviceHandle(), mImageView, mDevice->getAllocCallbacks());
-        mDevice->sheduleResourceDestruction(mImage);
-        mDevice->sheduleFreeingMemory(mImageMemory);
+        mDevice->scheduleResourceDestruction(mImage);
+        mDevice->scheduleFreeingMemory(mImageMemory);
         /*vkFreeMemory(mVkObjects.mLogicalDevice->getLogical(), mMemory, mVkObjects.mDebugAllocCallbacks);
         vkDestroyImage(mVkObjects.mLogicalDevice->getLogical(), mImage, mVkObjects.mDebugAllocCallbacks);*/
 

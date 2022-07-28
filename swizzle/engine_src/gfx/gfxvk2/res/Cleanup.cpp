@@ -71,14 +71,14 @@ namespace vk
         mThread.join();
     }
 
-    void CleanupRunnable::sheduleResourceDestruction(common::Resource<IVkResource> resource)
+    void CleanupRunnable::scheduleResourceDestruction(common::Resource<IVkResource> resource)
     {
         std::lock_guard lock(mMux);
         mLists[mBufferIndex].mResources.emplace_back(resource);
         //mCond.notify_one();
     }
 
-    void CleanupRunnable::sheduleFreeingMemory(common::Resource<DeviceMemory> memory)
+    void CleanupRunnable::scheduleFreeingMemory(common::Resource<DeviceMemory> memory)
     {
         std::lock_guard lock(mMux);
         mLists[mBufferIndex].mMemoryAllocations.emplace_back(memory);
