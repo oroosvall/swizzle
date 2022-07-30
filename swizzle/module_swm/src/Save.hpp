@@ -108,6 +108,7 @@ namespace swm::save
 
         virtual Result saveVertexDataCompressed(const types::Mesh& mesh, const U16 flags) = 0;
         virtual Result saveTriangleDataCompressed(const types::Mesh& mesh) = 0;
+        virtual Result saveAnimationDataCompressed(const types::Mesh& mesh) = 0;
     };
 
 }

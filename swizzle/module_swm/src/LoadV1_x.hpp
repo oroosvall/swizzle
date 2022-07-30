@@ -59,6 +59,7 @@ namespace swm::load
 
         virtual Result loadVertexDataCompressed(types::Mesh& mesh) override;
         virtual Result loadTriangleDataCompressed(types::Mesh& mesh) override;
+        virtual Result loadAnimationDataCompressed(types::Mesh& mesh) override;
 
     private:
 

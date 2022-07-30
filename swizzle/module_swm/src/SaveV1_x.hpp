@@ -68,6 +68,7 @@ namespace swm::save
 
         virtual Result saveVertexDataCompressed(const types::Mesh& mesh, const U16 flags) override;
         virtual Result saveTriangleDataCompressed(const types::Mesh& mesh) override;
+        virtual Result saveAnimationDataCompressed(const types::Mesh& mesh) override;
 
     private:
 

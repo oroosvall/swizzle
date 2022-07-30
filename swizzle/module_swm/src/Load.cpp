@@ -139,6 +139,11 @@ namespace swm::load
         return tLoadArray(vec, count);
     }
 
+    Result LoaderCommon::loadArray(std::vector<F32>& vec, size_t count)
+    {
+        return tLoadArray(vec, count);
+    }
+
     Result LoaderCommon::loadArray(std::vector<types::Vector3F>& vec, size_t count)
     {
         return tLoadArray(vec, count);

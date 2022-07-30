@@ -18,6 +18,7 @@ namespace swm::types::meshFlags
         NORMAL_BIT = 0x01,
         COLOR_BIT = 0x02,
         ANIMATION_BIT = 0x08,
+        ANIMATION_COMPRESS_BIT = 0x0D,
         VERTEX_COMPRESS_BIT = 0x0E,
         INDEX_COMPRESS_BIT = 0x0F
     };

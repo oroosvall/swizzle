@@ -34,6 +34,7 @@ namespace mocks
 
         MOCK_METHOD(swm::Result, loadArray, (std::vector<U8>& vec, size_t count), (override));
         MOCK_METHOD(swm::Result, loadArray, (std::vector<U16>& vec, size_t count), (override));
+        MOCK_METHOD(swm::Result, loadArray, (std::vector<F32>& vec, size_t count), (override));
 
         MOCK_METHOD(swm::Result, loadArray, (std::vector<swm::types::Vector3F>& vec, size_t count), (override));
         MOCK_METHOD(swm::Result, loadArray, (std::vector<swm::types::Vector2F>& vec, size_t count), (override));
@@ -57,8 +58,7 @@ namespace mocks
 
         MOCK_METHOD(swm::Result, loadVertexDataCompressed, (swm::types::Mesh& mesh), (override));
         MOCK_METHOD(swm::Result, loadTriangleDataCompressed, (swm::types::Mesh& mesh), (override));
-
-
+        MOCK_METHOD(swm::Result, loadAnimationDataCompressed, (swm::types::Mesh& mesh), (override));
 
     };
 

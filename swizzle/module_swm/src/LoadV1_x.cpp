@@ -212,9 +212,13 @@ namespace swm::load
         {
             res = Ok(res) ? mVtLoader.loadTriangleData(mesh) : res;
         }
+
         if (utils::IsBitSet(mesh.mFlags, types::meshFlags::ANIMATION_BIT))
         {
-            res = Ok(res) ? mVtLoader.loadAnimationData(mesh) : res;
+            if (utils::IsBitSet(mesh.mFlags, types::meshFlags::ANIMATION_COMPRESS_BIT))
+                res = Ok(res) ? mVtLoader.loadAnimationDataCompressed(mesh) : res;
+            else
+                res = Ok(res) ? mVtLoader.loadAnimationData(mesh) : res;
         }
 
         return res;
@@ -368,9 +372,63 @@ namespace swm::load
             }
         }
 
-        return Result::Success;
+        return res;
     }
 
+    Result VTLoaderV1_x::loadAnimationDataCompressed(types::Mesh& mesh)
+    {
+        types::AnimationInfo& ai = mesh.mAnimationData;
+
+        Result res = mCommonLdr.loadNumber(ai.mFramerate);
+        res = Ok(res) ? mCommonLdr.loadNumber(ai.mNumBones) : res;
+        res = Ok(res) ? mCommonLdr.loadArray(ai.mParentList, ai.mNumBones) : res;
+        res = Ok(res) ? mCommonLdr.loadArray(ai.mBindPose, ai.mNumBones) : res;
+
+        U16 animCount = 0u;
+        res = Ok(res) ? mCommonLdr.loadNumber(animCount) : res;
+
+        U32 elementCount = 0u;
+        res = Ok(res) ? mCommonLdr.loadNumber(elementCount) : res;
+        std::vector<F32> elements;
+        res = Ok(res) ? mCommonLdr.loadArray(elements, elementCount) : res;
+
+        U8 bitCount = utils::bits_needed(elementCount);
+
+        for (U16 i = 0u; (i < animCount) && Ok(res); ++i)
+        {
+            types::Animation anim;
+            res = Ok(res) ? mCommonLdr.loadShortString(anim.mName) : res;
+            U16 keyframeCount = 0u;
+            res = Ok(res) ? mCommonLdr.loadNumber(keyframeCount) : res;
+
+            anim.mKeyFrames.resize(keyframeCount);
+
+            for (auto& frame : anim.mKeyFrames)
+            {
+                U64 size = ((ai.mNumBones * 16ull * bitCount) + 7ull) / 8ull;
+                std::vector<U8> data;
+                res = Ok(res) ? mCommonLdr.loadArray(data, size) : res;
+                if (Ok(res))
+                {
+                    utils::BitStreamReader bsr(data.data(), size);
+                    frame.mFrameData.resize(ai.mNumBones);
+                    for (auto& mat : frame.mFrameData)
+                    {
+                        for (auto& f : mat.mMat)
+                        {
+                            U32 idx = 0ul;
+                            bsr.readBits(idx, bitCount);
+                            f = elements[idx];
+                        }
+                    }
+                }
+            }
+
+            ai.mAnimations.emplace_back(anim);
+        }
+
+        return res;
+    }
 }
 
 /* Class Protected Function Definition */

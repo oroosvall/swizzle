@@ -115,6 +115,7 @@ namespace swm::options
     {
         SwBool mCompressVertex;
         SwBool mCompressIndex;
+        SwBool mCompressAnimations;
     };
 }
 

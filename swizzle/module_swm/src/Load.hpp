@@ -34,6 +34,7 @@ namespace swm::load
 
         virtual Result loadArray(std::vector<U8>& vec, size_t count) = 0;
         virtual Result loadArray(std::vector<U16>& vec, size_t count) = 0;
+        virtual Result loadArray(std::vector<F32>& vec, size_t count) = 0;
 
         virtual Result loadArray(std::vector<types::Vector3F>& vec, size_t count) = 0;
         virtual Result loadArray(std::vector<types::Vector2F>& vec, size_t count) = 0;
@@ -58,6 +59,7 @@ namespace swm::load
 
         virtual Result loadArray(std::vector<U8>& vec, size_t count) override;
         virtual Result loadArray(std::vector<U16>& vec, size_t count) override;
+        virtual Result loadArray(std::vector<F32>& vec, size_t count) override;
 
         virtual Result loadArray(std::vector<types::Vector3F>& vec, size_t count) override;
         virtual Result loadArray(std::vector<types::Vector2F>& vec, size_t count) override;
@@ -105,6 +107,7 @@ namespace swm::load
 
         virtual Result loadVertexDataCompressed(types::Mesh& mesh) = 0;
         virtual Result loadTriangleDataCompressed(types::Mesh& mesh) = 0;
+        virtual Result loadAnimationDataCompressed(types::Mesh& mesh) = 0;
 
     };
 

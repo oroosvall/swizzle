@@ -99,6 +99,7 @@ namespace swm::save
             if (!mesh.mBoneInfo.empty()) { utils::SetBit(f, types::meshFlags::ANIMATION_BIT); }
             if (options.mCompressVertex) {utils::SetBit(f, types::meshFlags::VERTEX_COMPRESS_BIT); }
             if (options.mCompressIndex) {utils::SetBit(f, types::meshFlags::INDEX_COMPRESS_BIT); }
+            if (options.mCompressAnimations) {utils::SetBit(f, types::meshFlags::ANIMATION_COMPRESS_BIT); }
             return f;
         };
 
@@ -117,7 +118,10 @@ namespace swm::save
 
         if (utils::IsBitSet(mesh.mFlags, types::meshFlags::ANIMATION_BIT))
         {
-            res = Ok(res) ? mVtSaver.saveAnimationData(mesh) : res;
+            if (options.mCompressAnimations)
+                res = Ok(res) ? mVtSaver.saveAnimationDataCompressed(mesh) : res;
+            else
+                res = Ok(res) ? mVtSaver.saveAnimationData(mesh) : res;
         }
 
         return res;
@@ -262,6 +266,71 @@ namespace swm::save
         res = Ok(res) ? mCommonLdr.saveNumber(bitsPerVertex) : res;
         res = Ok(res) ? mCommonLdr.saveNumber(numTriangles) : res;
         res = Ok(res) ? mCommonLdr.saveArray(data, bsw.getWrittenSize()) : res;
+
+        return res;
+    }
+
+    Result VTSaverV1_x::saveAnimationDataCompressed(const types::Mesh& mesh)
+    {
+        const types::AnimationInfo& ai = mesh.mAnimationData;
+
+        Result res = mCommonLdr.saveNumber(ai.mFramerate);
+        res = Ok(res) ? mCommonLdr.saveNumber(ai.mNumBones) : res;
+        res = Ok(res) ? mCommonLdr.saveArray(ai.mParentList) : res;
+        res = Ok(res) ? mCommonLdr.saveArray(ai.mBindPose) : res;
+
+        U16 animCount = static_cast<U16>(ai.mAnimations.size());
+        res = Ok(res) ? mCommonLdr.saveNumber(animCount) : res;
+
+        std::set<F32> dataSet;
+
+        for (U16 i = 0u; (i < animCount) && Ok(res); ++i)
+        {
+            const types::Animation& anim = ai.mAnimations[i];
+
+            for (auto& frame : anim.mKeyFrames)
+            {
+                for (auto& mat : frame.mFrameData)
+                {
+                    for (auto& f : mat.mMat)
+                    {
+                        dataSet.insert(f);
+                    }
+                }
+            }
+        }
+        std::vector<F32> v(dataSet.begin(), dataSet.end());
+        U32 elementCount = (U32)v.size();
+        mCommonLdr.saveNumber(elementCount);
+        mCommonLdr.saveArray((U8*)v.data(), v.size() * sizeof(F32));
+        U8 bitCount = utils::bits_needed(elementCount - 1u);
+
+        for (U16 i = 0u; (i < animCount) && Ok(res); ++i)
+        {
+            const types::Animation& anim = ai.mAnimations[i];
+            res = Ok(res) ? mCommonLdr.saveShortString(anim.mName) : res;
+            U16 keyframeCount = static_cast<U16>(anim.mKeyFrames.size());
+            res = Ok(res) ? mCommonLdr.saveNumber(keyframeCount) : res;
+
+            for (auto& frame : anim.mKeyFrames)
+            {
+                U64 size = ((ai.mNumBones * 16ull * bitCount) + 7ull) / 8ull;
+                U8* data = new U8[size];
+                utils::BitStreamWriter bsw(data, size);
+                for (auto& mat : frame.mFrameData)
+                {
+                    for (auto& f : mat.mMat)
+                    {
+                        auto it = std::lower_bound(v.begin(), v.end(), f);
+                        U32 idx = (U32)(it - v.begin());
+                        bsw.writeBits(idx, bitCount);
+                    }
+                }
+                bsw.flush();
+                mCommonLdr.saveArray(data, bsw.getWrittenSize());
+                delete[] data;
+            }
+        }
 
         return res;
     }

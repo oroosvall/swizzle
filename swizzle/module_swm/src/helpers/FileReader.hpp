@@ -49,7 +49,7 @@ namespace swm::file
         bool readArray(std::vector<T>& vec, uint64_t length)
         {
             // check that we can actually read amount of bytes we want
-            if (getRemainingSize() > length)
+            if (getRemainingSize() >= length)
             {
                 vec.resize(length);
                 mStream.read((char*)vec.data(), length * sizeof(T));
