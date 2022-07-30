@@ -60,8 +60,9 @@ namespace swm::save
     RawChannel setupChannel(U8* data, U64 count, U8 elemetSize, U8 componentCount, types::compressFlags::CompressedChannelAttribute attrib)
     {
         RawChannel ch {};
-        ch.mData = new U8[count * elemetSize];
-        memcpy(ch.mData, data, count * elemetSize);
+        ch.mDataSize = count * elemetSize;
+        ch.mData = new U8[ch.mDataSize];
+        memcpy(ch.mData, data, ch.mDataSize);
         ch.mElementCount = count;
         ch.mElementSize = elemetSize;
         ch.mComponentCount = componentCount;
@@ -497,7 +498,8 @@ namespace swm::save
                 cc.mChannelAttribute = ts->mAttribute;
 
                 std::vector<const RawChannel*> rChans;
-                U64 attributeCount = 0u;
+                U64 attributeCount = 0ull;
+                U64 unCompressedSize = 0ull;
                 auto attribs = types::GetAttributes(ts->mAttribute);
                 for (const auto& rch : rawChannels)
                 {
@@ -505,6 +507,7 @@ namespace swm::save
                     {
                         if (rch.mAttrib == attr)
                         {
+                            unCompressedSize += rch.mDataSize;
                             rChans.push_back(&rch);
                             attributeCount += rch.mComponentCount;
                             cc.mChannelDataFlags = (U8)getElemSize(rch.mElementSize);
@@ -512,34 +515,63 @@ namespace swm::save
                         }
                     }
                 }
-                U64 size = ((cc.mVertexCount * attributeCount * U64(cc.mBitsPerIndex)) * 7ull) / 8ull;
+                U64 size = ((cc.mVertexCount * attributeCount * U64(cc.mBitsPerIndex)) + 7ull) / 8ull;
+                U64 calculatedCompressedSize = v.size() + size;
 
-                U8* bitData = new U8[size];
-                utils::BitStreamWriter bsw(bitData, size);
+                SwBool optimalToCompress = (calculatedCompressedSize < unCompressedSize);
 
-                if (!rChans.empty())
+                // uncompressed channels must be of size 1
+                if (rChans.size() > 1ull)
                 {
-                    for (size_t i = 0u; i < cc.mVertexCount; i++)
+                    optimalToCompress = true;
+                }
+
+                if (optimalToCompress)
+                {
+                    U8* bitData = new U8[size];
+                    utils::BitStreamWriter bsw(bitData, size);
+
+                    if (!rChans.empty())
                     {
-                        for (const auto rch : rChans)
+                        for (size_t i = 0u; i < cc.mVertexCount; i++)
                         {
-                            size_t off = i * rch->mComponentCount;
-                            for (size_t j = 0u; j < rch->mComponentCount; j++)
+                            for (const auto rch : rChans)
                             {
-                                F32* fltData = (F32*)rch->mData;
-                                auto it = std::lower_bound(v.begin(), v.end(), fltData[off + j]);
-                                U32 idx = (U32)(it - v.begin());
-                                bsw.writeBits(idx, cc.mBitsPerIndex);
+                                size_t off = i * rch->mComponentCount;
+                                for (size_t j = 0u; j < rch->mComponentCount; j++)
+                                {
+                                    F32* fltData = (F32*)rch->mData;
+                                    auto it = std::lower_bound(v.begin(), v.end(), fltData[off + j]);
+                                    U32 idx = (U32)(it - v.begin());
+                                    bsw.writeBits(idx, cc.mBitsPerIndex);
+                                }
                             }
                         }
                     }
-                }
 
-                bsw.flush();
-                cc.mBitData.resize(bsw.getWrittenSize());
-                memcpy(cc.mBitData.data(), bitData, bsw.getWrittenSize());
-                utils::SetBit(cc.mChannelAttribute, static_cast<U8>(Attrib::Compressed));
-                delete[] bitData;
+                    bsw.flush();
+                    cc.mBitData.resize(bsw.getWrittenSize());
+                    memcpy(cc.mBitData.data(), bitData, bsw.getWrittenSize());
+                    utils::SetBit(cc.mChannelAttribute, static_cast<U8>(Attrib::Compressed));
+                    delete[] bitData;
+                }
+                else
+                {
+                    cc.mBitsPerIndex = 0u;
+                    cc.mChannelDataFlags = 0u;
+                    cc.mElementCount = 0u;
+                    cc.mBitData.clear();
+
+                    U64 uncSize = cc.mVertexCount * attributeCount;
+                    cc.mData.resize(uncSize);
+                    if (!rChans.empty())
+                    {
+                        for (const auto rch : rChans)
+                        {
+                            memcpy(cc.mData.data(), rch->mData, uncSize);
+                        }
+                    }
+                }
 
                 break;
             }
@@ -555,7 +587,8 @@ namespace swm::save
                 cc.mChannelAttribute = ts->mAttribute;
 
                 std::vector<const RawChannel*> rChans;
-                U64 attributeCount = 0u;
+                U64 attributeCount = 0ull;
+                U64 unCompressedSize = 0ull;
                 auto attribs = types::GetAttributes(ts->mAttribute);
                 for (const auto& rch : rawChannels)
                 {
@@ -563,6 +596,7 @@ namespace swm::save
                     {
                         if (rch.mAttrib == attr)
                         {
+                            unCompressedSize += rch.mDataSize;
                             rChans.push_back(&rch);
                             attributeCount += rch.mComponentCount;
                             cc.mChannelDataFlags = (U8)getElemSize(rch.mElementSize);
@@ -570,34 +604,63 @@ namespace swm::save
                         }
                     }
                 }
-                U64 size = ((cc.mVertexCount * attributeCount * U64(cc.mBitsPerIndex)) * 7ull) / 8ull;
+                U64 size = ((cc.mVertexCount * attributeCount * U64(cc.mBitsPerIndex)) + 7ull) / 8ull;
+                U64 calculatedCompressedSize = v.size() + size;
 
-                U8* bitData = new U8[size];
-                utils::BitStreamWriter bsw(bitData, size);
+                SwBool optimalToCompress = (calculatedCompressedSize < unCompressedSize);
 
-                if (!rChans.empty())
+                // uncompressed channels must be of size 1
+                if (rChans.size() > 1ull)
                 {
-                    for (size_t i = 0u; i < cc.mVertexCount; i++)
+                    optimalToCompress = true;
+                }
+
+                if (optimalToCompress)
+                {
+                    U8* bitData = new U8[size];
+                    utils::BitStreamWriter bsw(bitData, size);
+
+                    if (!rChans.empty())
                     {
-                        for (const auto rch : rChans)
+                        for (size_t i = 0u; i < cc.mVertexCount; i++)
                         {
-                            size_t off = i * rch->mComponentCount;
-                            for (size_t j = 0u; j < rch->mComponentCount; j++)
+                            for (const auto rch : rChans)
                             {
-                                U16* fltData = (U16*)rch->mData;
-                                auto it = std::lower_bound(v.begin(), v.end(), fltData[off + j]);
-                                U32 idx = (U32)(it - v.begin());
-                                bsw.writeBits(idx, cc.mBitsPerIndex);
+                                size_t off = i * rch->mComponentCount;
+                                for (size_t j = 0u; j < rch->mComponentCount; j++)
+                                {
+                                    U16* fltData = (U16*)rch->mData;
+                                    auto it = std::lower_bound(v.begin(), v.end(), fltData[off + j]);
+                                    U32 idx = (U32)(it - v.begin());
+                                    bsw.writeBits(idx, cc.mBitsPerIndex);
+                                }
                             }
                         }
                     }
-                }
 
-                bsw.flush();
-                cc.mBitData.resize(bsw.getWrittenSize());
-                memcpy(cc.mBitData.data(), bitData, bsw.getWrittenSize());
-                utils::SetBit(cc.mChannelAttribute, static_cast<U8>(Attrib::Compressed));
-                delete[] bitData;
+                    bsw.flush();
+                    cc.mBitData.resize(bsw.getWrittenSize());
+                    memcpy(cc.mBitData.data(), bitData, bsw.getWrittenSize());
+                    utils::SetBit(cc.mChannelAttribute, static_cast<U8>(Attrib::Compressed));
+                    delete[] bitData;
+                }
+                else
+                {
+                    cc.mBitsPerIndex = 0u;
+                    cc.mChannelDataFlags = 0u;
+                    cc.mElementCount = 0u;
+                    cc.mBitData.clear();
+
+                    U64 uncSize = cc.mVertexCount * attributeCount;
+                    cc.mData.resize(uncSize);
+                    if (!rChans.empty())
+                    {
+                        for (const auto rch : rChans)
+                        {
+                            memcpy(cc.mData.data(), rch->mData, uncSize);
+                        }
+                    }
+                }
 
                 break;
             }
@@ -613,7 +676,8 @@ namespace swm::save
                 cc.mChannelAttribute = ts->mAttribute;
 
                 std::vector<const RawChannel*> rChans;
-                U64 attributeCount = 0u;
+                U64 attributeCount = 0ull;
+                U64 unCompressedSize = 0ull;
                 auto attribs = types::GetAttributes(ts->mAttribute);
                 for (const auto& rch : rawChannels)
                 {
@@ -621,6 +685,7 @@ namespace swm::save
                     {
                         if (rch.mAttrib == attr)
                         {
+                            unCompressedSize += rch.mDataSize;
                             rChans.push_back(&rch);
                             attributeCount += rch.mComponentCount;
                             cc.mChannelDataFlags = (U8)getElemSize(rch.mElementSize);
@@ -628,34 +693,63 @@ namespace swm::save
                         }
                     }
                 }
-                U64 size = ((cc.mVertexCount * attributeCount * U64(cc.mBitsPerIndex)) * 7ull) / 8ull;
+                U64 size = ((cc.mVertexCount * attributeCount * U64(cc.mBitsPerIndex)) + 7ull) / 8ull;
+                U64 calculatedCompressedSize = v.size() + size;
 
-                U8* bitData = new U8[size];
-                utils::BitStreamWriter bsw(bitData, size);
+                SwBool optimalToCompress = (calculatedCompressedSize < unCompressedSize);
 
-                if (!rChans.empty())
+                // uncompressed channels must be of size 1
+                if (rChans.size() > 1ull)
                 {
-                    for (size_t i = 0u; i < cc.mVertexCount; i++)
+                    optimalToCompress = true;
+                }
+
+                if (optimalToCompress)
+                {
+                    U8* bitData = new U8[size];
+                    utils::BitStreamWriter bsw(bitData, size);
+
+                    if (!rChans.empty())
                     {
-                        for (const auto rch : rChans)
+                        for (size_t i = 0u; i < cc.mVertexCount; i++)
                         {
-                            size_t off = i * rch->mComponentCount;
-                            for (size_t j = 0u; j < rch->mComponentCount; j++)
+                            for (const auto rch : rChans)
                             {
-                                U32* fltData = (U32*)rch->mData;
-                                auto it = std::lower_bound(v.begin(), v.end(), fltData[off + j]);
-                                U32 idx = (U32)(it - v.begin());
-                                bsw.writeBits(idx, cc.mBitsPerIndex);
+                                size_t off = i * rch->mComponentCount;
+                                for (size_t j = 0u; j < rch->mComponentCount; j++)
+                                {
+                                    U32* fltData = (U32*)rch->mData;
+                                    auto it = std::lower_bound(v.begin(), v.end(), fltData[off + j]);
+                                    U32 idx = (U32)(it - v.begin());
+                                    bsw.writeBits(idx, cc.mBitsPerIndex);
+                                }
                             }
                         }
                     }
-                }
 
-                bsw.flush();
-                cc.mBitData.resize(bsw.getWrittenSize());
-                memcpy(cc.mBitData.data(), bitData, bsw.getWrittenSize());
-                utils::SetBit(cc.mChannelAttribute, static_cast<U8>(Attrib::Compressed));
-                delete[] bitData;
+                    bsw.flush();
+                    cc.mBitData.resize(bsw.getWrittenSize());
+                    memcpy(cc.mBitData.data(), bitData, bsw.getWrittenSize());
+                    utils::SetBit(cc.mChannelAttribute, static_cast<U8>(Attrib::Compressed));
+                    delete[] bitData;
+                }
+                else
+                {
+                    cc.mBitsPerIndex = 0u;
+                    cc.mChannelDataFlags = 0u;
+                    cc.mElementCount = 0u;
+                    cc.mBitData.clear();
+
+                    U64 uncSize = cc.mVertexCount * attributeCount;
+                    cc.mData.resize(uncSize);
+                    if (!rChans.empty())
+                    {
+                        for (const auto rch : rChans)
+                        {
+                            memcpy(cc.mData.data(), rch->mData, uncSize);
+                        }
+                    }
+                }
 
                 break;
             }
@@ -671,7 +765,8 @@ namespace swm::save
                 cc.mChannelAttribute = ts->mAttribute;
 
                 std::vector<const RawChannel*> rChans;
-                U64 attributeCount = 0u;
+                U64 attributeCount = 0ull;
+                U64 unCompressedSize = 0ull;
                 auto attribs = types::GetAttributes(ts->mAttribute);
                 for (const auto& rch : rawChannels)
                 {
@@ -679,6 +774,7 @@ namespace swm::save
                     {
                         if (rch.mAttrib == attr)
                         {
+                            unCompressedSize += rch.mDataSize;
                             rChans.push_back(&rch);
                             attributeCount += rch.mComponentCount;
                             cc.mChannelDataFlags = (U8)getElemSize(rch.mElementSize);
@@ -686,34 +782,63 @@ namespace swm::save
                         }
                     }
                 }
-                U64 size = ((cc.mVertexCount * attributeCount * U64(cc.mBitsPerIndex)) * 7ull) / 8ull;
+                U64 size = ((cc.mVertexCount * attributeCount * U64(cc.mBitsPerIndex)) + 7ull) / 8ull;
+                U64 calculatedCompressedSize = v.size() + size;
 
-                U8* bitData = new U8[size];
-                utils::BitStreamWriter bsw(bitData, size);
+                SwBool optimalToCompress = (calculatedCompressedSize < unCompressedSize);
 
-                if (!rChans.empty())
+                // uncompressed channels must be of size 1
+                if (rChans.size() > 1ull)
                 {
-                    for (size_t i = 0u; i < cc.mVertexCount; i++)
+                    optimalToCompress = true;
+                }
+
+                if (optimalToCompress)
+                {
+                    U8* bitData = new U8[size];
+                    utils::BitStreamWriter bsw(bitData, size);
+
+                    if (!rChans.empty())
                     {
-                        for (const auto rch : rChans)
+                        for (size_t i = 0u; i < cc.mVertexCount; i++)
                         {
-                            size_t off = i * rch->mComponentCount;
-                            for (size_t j = 0u; j < rch->mComponentCount; j++)
+                            for (const auto rch : rChans)
                             {
-                                U8* fltData = (U8*)rch->mData;
-                                auto it = std::lower_bound(v.begin(), v.end(), fltData[off + j]);
-                                U32 idx = (U32)(it - v.begin());
-                                bsw.writeBits(idx, cc.mBitsPerIndex);
+                                size_t off = i * rch->mComponentCount;
+                                for (size_t j = 0u; j < rch->mComponentCount; j++)
+                                {
+                                    U8* fltData = (U8*)rch->mData;
+                                    auto it = std::lower_bound(v.begin(), v.end(), fltData[off + j]);
+                                    U32 idx = (U32)(it - v.begin());
+                                    bsw.writeBits(idx, cc.mBitsPerIndex);
+                                }
                             }
                         }
                     }
-                }
 
-                bsw.flush();
-                cc.mBitData.resize(bsw.getWrittenSize());
-                memcpy(cc.mBitData.data(), bitData, bsw.getWrittenSize());
-                utils::SetBit(cc.mChannelAttribute, static_cast<U8>(Attrib::Compressed));
-                delete[] bitData;
+                    bsw.flush();
+                    cc.mBitData.resize(bsw.getWrittenSize());
+                    memcpy(cc.mBitData.data(), bitData, bsw.getWrittenSize());
+                    utils::SetBit(cc.mChannelAttribute, static_cast<U8>(Attrib::Compressed));
+                    delete[] bitData;
+                }
+                else
+                {
+                    cc.mBitsPerIndex = 0u;
+                    cc.mChannelDataFlags = 0u;
+                    cc.mElementCount = 0u;
+                    cc.mBitData.clear();
+
+                    U64 uncSize = cc.mVertexCount * attributeCount;
+                    cc.mData.resize(uncSize);
+                    if (!rChans.empty())
+                    {
+                        for (const auto rch : rChans)
+                        {
+                            memcpy(cc.mData.data(), rch->mData, uncSize);
+                        }
+                    }
+                }
 
                 break;
             }

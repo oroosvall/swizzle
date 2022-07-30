@@ -19,6 +19,7 @@ namespace swm::save
     {
         U64 mElementCount;
         U8* mData;
+        U64 mDataSize;
         U8 mElementSize;
         U8 mComponentCount;
         types::compressFlags::CompressedChannelAttribute mAttrib;
