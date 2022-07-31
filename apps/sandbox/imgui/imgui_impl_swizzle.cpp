@@ -202,7 +202,6 @@ void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
         if (e.mFromKeyboard)
         {
             io.AddKeyEvent(fromScanCode(e.mKey), e.mPressed);
-            puts(swizzle::core::GetKeyText(e.mKey));
         }
         else
         {
