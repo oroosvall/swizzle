@@ -44,14 +44,14 @@ namespace swm::save
     class MeshSaverV1_x : public MeshSaverIfc
     {
     public:
-        MeshSaverV1_x(SaverCommonIfc& commonLdr, VTSaverIfc& vtSaver, const types::Header& header);
+        MeshSaverV1_x(SaverCommonIfc& commonSaver, VTSaverIfc& vtSaver, const types::Header& header);
         virtual ~MeshSaverV1_x() = default;
 
         virtual Result saveMeshHeader(const U32& num) override;
         virtual Result saveMeshData(const types::Mesh& mesh, const options::SaveOptions& options) override;
 
     private:
-        SaverCommonIfc& mCommonLdr;
+        SaverCommonIfc& mCommonSaver;
         VTSaverIfc& mVtSaver;
         const types::Header mHeader;
     };
@@ -59,7 +59,7 @@ namespace swm::save
     class VTSaverV1_x : public VTSaverIfc
     {
     public:
-        VTSaverV1_x(SaverCommonIfc& commonLdr, const types::Header& header);
+        VTSaverV1_x(SaverCommonIfc& commonSaver, const types::Header& header);
         virtual ~VTSaverV1_x() = default;
 
         virtual Result saveVertexData(const types::Mesh& mesh, const U16 flags) override;
@@ -77,7 +77,7 @@ namespace swm::save
         Result buildChannels(const std::vector<RawChannel>& rawChannels, std::vector<CompressedChannel>& compressedChannels);
         Result saveChannels(const std::vector<CompressedChannel>& channels);
 
-        SaverCommonIfc& mCommonLdr;
+        SaverCommonIfc& mCommonSaver;
         const types::Header mHeader;
     };
 

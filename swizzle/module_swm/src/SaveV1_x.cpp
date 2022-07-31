@@ -77,8 +77,8 @@ namespace swm::save
 
 namespace swm::save
 {
-    MeshSaverV1_x::MeshSaverV1_x(SaverCommonIfc& commonLdr, VTSaverIfc& vtSaver, const types::Header& header)
-        : mCommonLdr(commonLdr)
+    MeshSaverV1_x::MeshSaverV1_x(SaverCommonIfc& commonSaver, VTSaverIfc& vtSaver, const types::Header& header)
+        : mCommonSaver(commonSaver)
         , mVtSaver(vtSaver)
         , mHeader(header)
     {
@@ -87,7 +87,7 @@ namespace swm::save
     Result MeshSaverV1_x::saveMeshHeader(const U32& num)
     {
         U8 count = static_cast<U8>(num);
-        return mCommonLdr.saveNumber(count);
+        return mCommonSaver.saveNumber(count);
     }
 
     Result MeshSaverV1_x::saveMeshData(const types::Mesh& mesh, const options::SaveOptions& options)
@@ -105,8 +105,8 @@ namespace swm::save
         };
 
         U16 flags = getFlags();
-        Result res = mCommonLdr.saveShortString(mesh.mName);
-        res = Ok(res) ? mCommonLdr.saveNumber(flags) : res;
+        Result res = mCommonSaver.saveShortString(mesh.mName);
+        res = Ok(res) ? mCommonSaver.saveNumber(flags) : res;
         if (options.mCompressVertex)
             res = Ok(res) ? mVtSaver.saveVertexDataCompressed(mesh, flags) : res;
         else
@@ -132,8 +132,8 @@ namespace swm::save
     * VTSaverV1_x
     */
 
-    VTSaverV1_x::VTSaverV1_x(SaverCommonIfc& commonLdr, const types::Header& header)
-        : mCommonLdr(commonLdr)
+    VTSaverV1_x::VTSaverV1_x(SaverCommonIfc& commonSaver, const types::Header& header)
+        : mCommonSaver(commonSaver)
         , mHeader(header)
     {
     }
@@ -167,15 +167,15 @@ namespace swm::save
             };
         }
 
-        res = Ok(res) ? mCommonLdr.saveNumber(static_cast<U32>(vertexCount)) : res;
+        res = Ok(res) ? mCommonSaver.saveNumber(static_cast<U32>(vertexCount)) : res;
 
         auto store = [&]() -> Result {
-            Result r = mCommonLdr.saveArray(mesh.mPositions);
-            r = utils::IsBitSet(flags, types::meshFlags::UV_BIT) ? mCommonLdr.saveArray(mesh.mUvs) : r;
-            r = utils::IsBitSet(flags, types::meshFlags::NORMAL_BIT) ? mCommonLdr.saveArray(mesh.mNormals) : r;
-            r = utils::IsBitSet(flags, types::meshFlags::COLOR_BIT) ? mCommonLdr.saveArray(mesh.mVertColors) : r;
-            r = utils::IsBitSet(flags, types::meshFlags::ANIMATION_BIT) ? mCommonLdr.saveArray(boneIndex) : r;
-            r = utils::IsBitSet(flags, types::meshFlags::ANIMATION_BIT) ? mCommonLdr.saveArray(boneWeights) : r;
+            Result r = mCommonSaver.saveArray(mesh.mPositions);
+            r = utils::IsBitSet(flags, types::meshFlags::UV_BIT) ? mCommonSaver.saveArray(mesh.mUvs) : r;
+            r = utils::IsBitSet(flags, types::meshFlags::NORMAL_BIT) ? mCommonSaver.saveArray(mesh.mNormals) : r;
+            r = utils::IsBitSet(flags, types::meshFlags::COLOR_BIT) ? mCommonSaver.saveArray(mesh.mVertColors) : r;
+            r = utils::IsBitSet(flags, types::meshFlags::ANIMATION_BIT) ? mCommonSaver.saveArray(boneIndex) : r;
+            r = utils::IsBitSet(flags, types::meshFlags::ANIMATION_BIT) ? mCommonSaver.saveArray(boneWeights) : r;
             return r;
         };
 
@@ -189,8 +189,8 @@ namespace swm::save
         UNUSED_ARG(flags);
 
         U32 triangleCount = static_cast<U32>(mesh.mTriangles.size());
-        Result res = mCommonLdr.saveNumber(triangleCount);
-        res = Ok(res) ? mCommonLdr.saveArray(mesh.mTriangles) : res;
+        Result res = mCommonSaver.saveNumber(triangleCount);
+        res = Ok(res) ? mCommonSaver.saveArray(mesh.mTriangles) : res;
         return res;
     }
 
@@ -198,24 +198,24 @@ namespace swm::save
     {
         const types::AnimationInfo& ai = mesh.mAnimationData;
 
-        Result res = mCommonLdr.saveNumber(ai.mFramerate);
-        res = Ok(res) ? mCommonLdr.saveNumber(ai.mNumBones) : res;
-        res = Ok(res) ? mCommonLdr.saveArray(ai.mParentList) : res;
-        res = Ok(res) ? mCommonLdr.saveArray(ai.mBindPose) : res;
+        Result res = mCommonSaver.saveNumber(ai.mFramerate);
+        res = Ok(res) ? mCommonSaver.saveNumber(ai.mNumBones) : res;
+        res = Ok(res) ? mCommonSaver.saveArray(ai.mParentList) : res;
+        res = Ok(res) ? mCommonSaver.saveArray(ai.mBindPose) : res;
 
         U16 animCount = static_cast<U16>(ai.mAnimations.size());
-        res = Ok(res) ? mCommonLdr.saveNumber(animCount) : res;
+        res = Ok(res) ? mCommonSaver.saveNumber(animCount) : res;
 
         for (U16 i = 0u; (i < animCount) && Ok(res); ++i)
         {
             const types::Animation& anim = ai.mAnimations[i];
-            res = Ok(res) ? mCommonLdr.saveShortString(anim.mName) : res;
+            res = Ok(res) ? mCommonSaver.saveShortString(anim.mName) : res;
             U16 keyframeCount = static_cast<U16>(anim.mKeyFrames.size());
-            res = Ok(res) ? mCommonLdr.saveNumber(keyframeCount) : res;
+            res = Ok(res) ? mCommonSaver.saveNumber(keyframeCount) : res;
 
             for (auto& frame : anim.mKeyFrames)
             {
-                res = Ok(res) ? mCommonLdr.saveArray(frame.mFrameData) : res;
+                res = Ok(res) ? mCommonSaver.saveArray(frame.mFrameData) : res;
                 if (res != Result::Success) break;
             }
         }
@@ -263,10 +263,10 @@ namespace swm::save
         bsw.flush();
 
         // All data is computed write it to file now
-        Result res = mCommonLdr.saveNumber(compressFlags);
-        res = Ok(res) ? mCommonLdr.saveNumber(bitsPerVertex) : res;
-        res = Ok(res) ? mCommonLdr.saveNumber(numTriangles) : res;
-        res = Ok(res) ? mCommonLdr.saveArray(data, bsw.getWrittenSize()) : res;
+        Result res = mCommonSaver.saveNumber(compressFlags);
+        res = Ok(res) ? mCommonSaver.saveNumber(bitsPerVertex) : res;
+        res = Ok(res) ? mCommonSaver.saveNumber(numTriangles) : res;
+        res = Ok(res) ? mCommonSaver.saveArray(data, bsw.getWrittenSize()) : res;
 
         return res;
     }
@@ -275,13 +275,13 @@ namespace swm::save
     {
         const types::AnimationInfo& ai = mesh.mAnimationData;
 
-        Result res = mCommonLdr.saveNumber(ai.mFramerate);
-        res = Ok(res) ? mCommonLdr.saveNumber(ai.mNumBones) : res;
-        res = Ok(res) ? mCommonLdr.saveArray(ai.mParentList) : res;
-        res = Ok(res) ? mCommonLdr.saveArray(ai.mBindPose) : res;
+        Result res = mCommonSaver.saveNumber(ai.mFramerate);
+        res = Ok(res) ? mCommonSaver.saveNumber(ai.mNumBones) : res;
+        res = Ok(res) ? mCommonSaver.saveArray(ai.mParentList) : res;
+        res = Ok(res) ? mCommonSaver.saveArray(ai.mBindPose) : res;
 
         U16 animCount = static_cast<U16>(ai.mAnimations.size());
-        res = Ok(res) ? mCommonLdr.saveNumber(animCount) : res;
+        res = Ok(res) ? mCommonSaver.saveNumber(animCount) : res;
 
         std::set<F32> dataSet;
 
@@ -302,16 +302,16 @@ namespace swm::save
         }
         std::vector<F32> v(dataSet.begin(), dataSet.end());
         U32 elementCount = (U32)v.size();
-        mCommonLdr.saveNumber(elementCount);
-        mCommonLdr.saveArray((U8*)v.data(), v.size() * sizeof(F32));
+        mCommonSaver.saveNumber(elementCount);
+        mCommonSaver.saveArray((U8*)v.data(), v.size() * sizeof(F32));
         U8 bitCount = utils::bits_needed(elementCount - 1u);
 
         for (U16 i = 0u; (i < animCount) && Ok(res); ++i)
         {
             const types::Animation& anim = ai.mAnimations[i];
-            res = Ok(res) ? mCommonLdr.saveShortString(anim.mName) : res;
+            res = Ok(res) ? mCommonSaver.saveShortString(anim.mName) : res;
             U16 keyframeCount = static_cast<U16>(anim.mKeyFrames.size());
-            res = Ok(res) ? mCommonLdr.saveNumber(keyframeCount) : res;
+            res = Ok(res) ? mCommonSaver.saveNumber(keyframeCount) : res;
 
             for (auto& frame : anim.mKeyFrames)
             {
@@ -328,7 +328,7 @@ namespace swm::save
                     }
                 }
                 bsw.flush();
-                mCommonLdr.saveArray(data, bsw.getWrittenSize());
+                mCommonSaver.saveArray(data, bsw.getWrittenSize());
                 delete[] data;
             }
         }
@@ -856,26 +856,26 @@ namespace swm::save
     Result VTSaverV1_x::saveChannels(const std::vector<CompressedChannel>& channels)
     {
         U8 channelCount = static_cast<U8>(channels.size());
-        mCommonLdr.saveNumber((U8)0u);
-        Result res = mCommonLdr.saveNumber(channelCount);
+        mCommonSaver.saveNumber((U8)0u);
+        Result res = mCommonSaver.saveNumber(channelCount);
         for (const auto& ch : channels)
         {
-            Result r = Ok(res) ? mCommonLdr.saveNumber(ch.mChannelAttribute) : res;
+            Result r = Ok(res) ? mCommonSaver.saveNumber(ch.mChannelAttribute) : res;
             const SwBool compressedChannel = utils::IsBitSet(ch.mChannelAttribute, (U8)types::compressFlags::CompressedChannelAttribute::Compressed);
 
             if (compressedChannel)
             {
-                r = Ok(r) ? mCommonLdr.saveNumber(ch.mChannelDataFlags) : r;
-                r = Ok(r) ? mCommonLdr.saveNumber(ch.mElementCount) : r;
-                r = Ok(r) ? mCommonLdr.saveArray(ch.mData) : r;
-                r = Ok(r) ? mCommonLdr.saveNumber(ch.mBitsPerIndex) : r;
-                r = Ok(r) ? mCommonLdr.saveNumber(ch.mVertexCount) : r;
-                r = Ok(r) ? mCommonLdr.saveArray(ch.mBitData) : r;
+                r = Ok(r) ? mCommonSaver.saveNumber(ch.mChannelDataFlags) : r;
+                r = Ok(r) ? mCommonSaver.saveNumber(ch.mElementCount) : r;
+                r = Ok(r) ? mCommonSaver.saveArray(ch.mData) : r;
+                r = Ok(r) ? mCommonSaver.saveNumber(ch.mBitsPerIndex) : r;
+                r = Ok(r) ? mCommonSaver.saveNumber(ch.mVertexCount) : r;
+                r = Ok(r) ? mCommonSaver.saveArray(ch.mBitData) : r;
             }
             else
             {
-                r = Ok(r) ? mCommonLdr.saveNumber(ch.mVertexCount) : r;
-                r = Ok(r) ? mCommonLdr.saveArray(ch.mData) : r;
+                r = Ok(r) ? mCommonSaver.saveNumber(ch.mVertexCount) : r;
+                r = Ok(r) ? mCommonSaver.saveArray(ch.mData) : r;
             }
             res = r;
         }
