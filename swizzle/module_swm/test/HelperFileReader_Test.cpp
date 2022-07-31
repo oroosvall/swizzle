@@ -50,7 +50,7 @@ TEST(SWM_Helpers_FileReader, readOutOfSpace)
 
     std::vector<char> v;
     EXPECT_FALSE(fr.readArray(v, 20));
-    EXPECT_EQ(fr.getReadCount(), (size_t)3);
+    EXPECT_EQ(fr.getReadCount(), (size_t)0);
 }
 
 /* Class Public Function Definition */

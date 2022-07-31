@@ -49,7 +49,7 @@ namespace loadArray
         std::vector<U8> data;
 
         EXPECT_EQ(ldr.loadArray(data, num), swm::Result::ErrFileIo);
-        EXPECT_EQ(data.size(), num);
+        EXPECT_EQ(data.size(), 0u);
     }
 }
 
