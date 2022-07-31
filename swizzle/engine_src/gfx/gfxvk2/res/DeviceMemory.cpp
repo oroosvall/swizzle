@@ -48,15 +48,15 @@ namespace vk
             mResources.push_back(resource);
         }
 
-        if(resource->getType() == ResourceType::BufferResource)
+        if (resource->getType() == ResourceType::BufferResource)
         {
             VkResource<VkBuffer>* res = (VkResource<VkBuffer>*)resource.get();
-            vkBindBufferMemory(device->getDeviceHandle(), res->getVkHandle(), mMemory, mOffset + mAlignOffset);
+            vkBindBufferMemory(device->getDeviceHandle(), res->getVkHandle(), mMemory, mAlignOffset);
         }
         else if (resource->getType() == ResourceType::ImageResource)
         {
             VkResource<VkImage>* res = (VkResource<VkImage>*)resource.get();
-            vkBindImageMemory(device->getDeviceHandle(), res->getVkHandle(), mMemory, mOffset + mAlignOffset);
+            vkBindImageMemory(device->getDeviceHandle(), res->getVkHandle(), mMemory, mAlignOffset);
         }
         else
         {
@@ -69,7 +69,7 @@ namespace vk
         U32 userCount = 0u;
         for (auto& r : mResources)
         {
-            if(!r.expired())
+            if (!r.expired())
             {
                 userCount++;
             }
@@ -129,6 +129,7 @@ namespace vk
     common::Resource<DeviceMemory> DeviceMemoryPool::allocateMemory(VkMemoryRequirements reqs, U32 memoryTypeIndex)
     {
         std::lock_guard lck(mLock);
+
         OPTICK_EVENT("DeviceMemoryPool::allocateMemory");
         // TODO: Needs thread locking for multiple threads
         // TODO: handle alignment from reqs
@@ -156,8 +157,7 @@ namespace vk
                 AlignmentInfo alignedSize = calcAlignedSize(frag.mSize, reqs);
                 if (frag.mSize >= alignedSize.mSize)
                 {
-                    mem = common::CreateRef<DeviceMemory>(shared_from_this(), ch->mMemory, frag.mOffset, alignedSize.mSize);
-                    mem->mAlignOffset = alignedSize.mAlignOffset;
+                    mem = common::CreateRef<DeviceMemory>(shared_from_this(), ch->mMemory, frag.mOffset + alignedSize.mAlignOffset, alignedSize.mSize);
 
                     frag.mSize -= mem->mSize;
                     frag.mOffset += mem->mSize;
@@ -177,36 +177,6 @@ namespace vk
                 ch->mFreeFragments.end());
         }
 
-        /*for (auto& ch : mMemoryChunks)
-        {
-            if (ch.memoryTypeIndex == memoryTypeIndex)
-            {
-                for (auto& frag : ch.mFreeFragments)
-                {
-                    if (frag.mSize > reqs.size)
-                    {
-                        mem = common::CreateRef<DeviceMemory>(shared_from_this(), ch.mMemory, frag.mOffset, reqs.size);
-                        frag.mSize -= reqs.size;
-                        frag.mOffset += reqs.size;
-                        break;
-                    }
-                }
-
-                ch.mFreeFragments.erase(
-                    std::remove_if(
-                        ch.mFreeFragments.begin(),
-                        ch.mFreeFragments.end(),
-                        [](const Fragment & f) { return f.mSize == 0; }
-                    ),
-                    ch.mFreeFragments.end());
-
-                if (mem)
-                {
-                    break;
-                }
-            }
-        }*/
-
         return mem;
     }
 
@@ -224,13 +194,13 @@ namespace vk
             // find the owner chunk and return the memory there
             if (ch.mMemory == memory->mMemory)
             {
-                VkDeviceSize checkOffset = memory->mOffset + memory->mSize;
+                VkDeviceSize checkOffset = memory->mAlignOffset + memory->mSize;
 
                 for (auto& f : ch.mFreeFragments)
                 {
                     if (checkOffset == f.mOffset)
                     {
-                        f.mOffset = memory->mOffset;
+                        f.mOffset = memory->mAlignOffset;
                         f.mSize += memory->mSize;
                         mUsedSize -= memory->mSize;
                         ch.mUsedSize -= memory->mSize;
@@ -239,7 +209,7 @@ namespace vk
                         memory->mFreed = true;
                         break;
                     }
-                    else if (f.mOffset + f.mSize == memory->mOffset)
+                    else if (f.mOffset + f.mSize == memory->mAlignOffset)
                     {
                         f.mSize += memory->mSize;
                         mUsedSize -= memory->mSize;
@@ -257,7 +227,7 @@ namespace vk
 
                 if (checkOffset != ~0ull)
                 {
-                    ch.mFreeFragments.emplace_back(Fragment{memory->mOffset, memory->mSize});
+                    ch.mFreeFragments.emplace_back(Fragment{memory->mAlignOffset, memory->mSize});
                     mUsedSize -= memory->mSize;
                     ch.mUsedSize -= memory->mSize;
                     mVAllocCount--;
@@ -304,8 +274,7 @@ namespace vk
         allocInfo.allocationSize = size;
         allocInfo.memoryTypeIndex = memoryTypeIndex;
 
-        VkResult res =
-            vkAllocateMemory(mDevice->getDeviceHandle(), &allocInfo, mDevice->getAllocCallbacks(), &ch.mMemory);
+        VkResult res = vkAllocateMemory(mDevice->getDeviceHandle(), &allocInfo, mDevice->getAllocCallbacks(), &ch.mMemory);
         if (res == VK_SUCCESS)
         {
             mTotalAllocated += size;
@@ -348,7 +317,7 @@ namespace vk
 
     AlignmentInfo DeviceMemoryPool::calcAlignedSize(VkDeviceSize offset, VkMemoryRequirements memreq)
     {
-        VkDeviceSize alval = memreq.alignment - 1;
+        VkDeviceSize alval = memreq.alignment - 1u;
         VkDeviceSize alignedValue = (offset + alval) & ~(alval);
 
         VkDeviceSize newOffset = alignedValue - offset;

@@ -31,16 +31,15 @@ namespace vk
                      VkDeviceSize size)
             : mOwnerPool(ownerPool)
             , mMemory(memory)
-            , mOffset(offset)
-            , mAlignOffset(0ull)
+            , mAlignOffset(offset)
             , mSize(size)
             , mResources()
             , mFreed(false)
-            {}
+        {
+        }
 
         common::Resource<DeviceMemoryPool> mOwnerPool;
         VkDeviceMemory mMemory;
-        VkDeviceSize mOffset;
         VkDeviceSize mAlignOffset;
         VkDeviceSize mSize;
 

@@ -85,8 +85,15 @@ namespace vk
         UNUSED_ARG(size);
         createOrResize(size);
         void* ptr = nullptr;
-        VkResult res = vkMapMemory(mDevice->getDeviceHandle(), mMemory->mMemory, mMemory->mOffset + mMemory->mAlignOffset, mMemory->mSize, 0, &ptr);
-        vk::LogVulkanError(res, "vkMapMemory, mapping error");
+        if (!mMemory->mFreed)
+        {
+            VkResult res = vkMapMemory(mDevice->getDeviceHandle(), mMemory->mMemory, mMemory->mAlignOffset, mMemory->mSize, 0, &ptr);
+            vk::LogVulkanError(res, "vkMapMemory, mapping error");
+        }
+        else
+        {
+            LOG_ERROR("Unable to map memory that has been freed!");
+        }
 
         //memset(ptr, 0xff, mMemory->mSize);
         //memset(ptr, 0xAA, size);

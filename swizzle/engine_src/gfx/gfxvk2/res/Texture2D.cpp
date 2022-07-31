@@ -95,7 +95,7 @@ namespace vk
         mStageMemory->bind(mDevice, mStageBuffer);
 
         void* dataPtr = nullptr;
-        vkMapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory, mStageMemory->mOffset, imageSize, 0, &dataPtr);
+        vkMapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory, mStageMemory->mAlignOffset, imageSize, 0, &dataPtr);
         memcpy(dataPtr, pixelData, static_cast<size_t>(imageSize));
         vkUnmapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory);
 
