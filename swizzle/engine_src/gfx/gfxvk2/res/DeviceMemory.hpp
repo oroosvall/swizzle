@@ -56,14 +56,14 @@ namespace vk
         VkDeviceSize mSize;
     };
 
-    struct Chunk
-    {
-        VkDeviceMemory mMemory;
-        VkDeviceSize mTotalSize;
-        VkDeviceSize mUsedSize;
-        U32 memoryTypeIndex;
-        std::vector<Fragment> mFreeFragments;
-    };
+    //struct Chunk
+    //{
+    //    VkDeviceMemory mMemory;
+    //    VkDeviceSize mTotalSize;
+    //    VkDeviceSize mUsedSize;
+    //    U32 memoryTypeIndex;
+    //    std::vector<Fragment> mFreeFragments;
+    //};
 
     struct AlignmentInfo
     {
@@ -77,6 +77,34 @@ namespace vk
 
 namespace vk
 {
+    class MemoryChunk
+    {
+    public:
+        MemoryChunk(common::Resource<Device> device, VkDeviceMemory memory, U32 memoryTypeIndex, VkDeviceSize size);
+        ~MemoryChunk();
+
+        U32 getMemoryTypeIndex() const;
+        U32 getAllocCount() const;
+        SwBool canAllocate(VkMemoryRequirements reqs, U32 memoryTypeIndex) const;
+        SwBool isOwner(common::Resource<DeviceMemory> memory) const;
+        common::Resource<DeviceMemory> allocate(VkMemoryRequirements reqs, common::Resource<DeviceMemoryPool> pool);
+        void free(common::Resource<DeviceMemory> memory);
+
+        VkDeviceSize getTotal() const;
+        VkDeviceSize getUsed() const;
+    private:
+
+        VkDeviceSize calculateAlignmentOffset(VkDeviceSize currentOffset, VkDeviceSize requireAlignment) const;
+
+        common::Resource<Device> mDevice;
+        VkDeviceMemory mMemory;
+        VkDeviceSize mTotalSize;
+        VkDeviceSize mUsedSize;
+        U32 mMemoryTypeIndex;
+        std::vector<Fragment> mFreeFragments;
+        U32 mVAllocCount;
+    };
+
     class DeviceMemoryPool : public std::enable_shared_from_this<DeviceMemoryPool>
     {
     public:
@@ -97,26 +125,21 @@ namespace vk
 
     private:
 
-        Chunk* allocateNewChunk(VkDeviceSize size, U32 memoryTypeIndex);
+        common::Resource<MemoryChunk> allocateNewChunk(VkDeviceSize size, U32 memoryTypeIndex);
+        common::Resource<MemoryChunk> getChunk(VkMemoryRequirements memreq, U32 memoryTypeIndex);
 
-        Chunk* getChunk(VkDeviceSize size, U32 memoryTypeIndex);
-
-        AlignmentInfo calcAlignedSize(VkDeviceSize offset, VkMemoryRequirements memReq);
+        U32 getVirtAllocs() const;
 
         common::Resource<Device> mDevice;
-        std::vector<Chunk> mMemoryChunks;
+        std::vector<common::Resource<MemoryChunk>> mMemoryChunks;
         VkDeviceSize mChunkSize;
         std::string mMemoryPoolName;
-
-        VkDeviceSize mTotalAllocated;
-        VkDeviceSize mUsedSize;
 
         VkDeviceSize mMaxHeapSize;
         VkDeviceSize mOtherUseSize;
 
         std::mutex mLock;
 
-        U32 mVAllocCount;
         swizzle::gfx::MemoryStatistics mStatistics;
 
     };
