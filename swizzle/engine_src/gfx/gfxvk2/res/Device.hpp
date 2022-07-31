@@ -118,6 +118,7 @@ namespace vk
         std::atomic_uint32_t mBufferCount;
         std::atomic_uint32_t mImageCount;
         std::atomic_uint32_t mPipelineCount;
+        std::atomic_uint32_t mDescriptorCount;
 
         swizzle::gfx::DeviceStatistics mDeviceStats;
 

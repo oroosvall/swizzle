@@ -50,6 +50,7 @@ namespace swizzle::gfx
         U32 mNumBuffers;
         U32 mNumTextures;
         U32 mNumStagedObjects;
+        U32 mNumDescriptors;
     };
 }
 

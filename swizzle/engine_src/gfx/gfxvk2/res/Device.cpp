@@ -230,6 +230,7 @@ namespace vk
 
         VkResult res = vkAllocateDescriptorSets(mLogicalDevice, &allocInfo, &desc);
         vk::LogVulkanError(res, "vkAllocateDescriptorSets");
+        mDescriptorCount++;
 
         return common::CreateRef<VkResource<VkDescriptorSet>>(desc, ResourceType::DescriptorResource);
     }
@@ -371,6 +372,7 @@ namespace vk
         mDeviceStats.mNumBuffers = mBufferCount;
         mDeviceStats.mNumTextures = mImageCount;
         mDeviceStats.mNumPipelines = mPipelineCount;
+        mDeviceStats.mNumDescriptors = mDescriptorCount;
         return &mDeviceStats;
     }
 
@@ -420,7 +422,7 @@ namespace vk
     {
         VkDescriptorSet set = resource->reset();
         vkFreeDescriptorSets(mLogicalDevice, getDescriptorPool_TEMP(), 1, &set);
-
+        mDescriptorCount--;
     }
 
 } // namespace vk
