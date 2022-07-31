@@ -24,7 +24,7 @@ namespace utils
     public:
         BufferReader(std::vector<uint8_t>& container)
             : mContainer(std::move(container))
-            , mWriteOffset(0u)
+            , mReadOffset(0u)
         {
         }
 
@@ -32,8 +32,8 @@ namespace utils
         T* read()
         {
             const size_t typeSize = sizeof(T);
-            const size_t offset = mWriteOffset;
-            mWriteOffset += typeSize;
+            const size_t offset = mReadOffset;
+            mReadOffset += typeSize;
             T* result = nullptr;
 
             if (offset + typeSize <= mContainer.size())
@@ -50,8 +50,8 @@ namespace utils
             bool ok = false;
 
             const size_t typeSize = sizeof(T);
-            const size_t offset = mWriteOffset;
-            mWriteOffset += typeSize;
+            const size_t offset = mReadOffset;
+            mReadOffset += typeSize;
 
             if (offset + typeSize <= mContainer.size())
             {
@@ -66,10 +66,9 @@ namespace utils
         T* readArrayU32(uint32_t length)
         {
             const size_t totalSize = sizeof(T) * length;
-            const size_t offset = mWriteOffset;
-            mWriteOffset += totalSize;;
+            const size_t offset = mReadOffset;
+            mReadOffset += totalSize;;
             T* result = nullptr;
-
 
             if (offset + totalSize <= mContainer.size())
             {
@@ -79,9 +78,40 @@ namespace utils
             return result;
         }
 
+        template<typename T>
+        T* readArrayU64(uint64_t length)
+        {
+            const size_t totalSize = sizeof(T) * length;
+            const size_t offset = mReadOffset;
+            mReadOffset += totalSize;;
+            T* result = nullptr;
+
+            if (offset + totalSize <= mContainer.size())
+            {
+                result = (T*)(mContainer.data() + offset);
+            }
+
+            return result;
+        }
+
+        size_t getRemainingSize() const
+        {
+            return mContainer.size() - mReadOffset;
+        }
+
+        size_t getTotalSize() const
+        {
+            return mContainer.size();
+        }
+
+        size_t getReadSize() const
+        {
+            return mReadOffset;
+        }
+
     private:
         std::vector<uint8_t> mContainer;
-        size_t mWriteOffset;
+        size_t mReadOffset;
     };
 }
 
