@@ -97,7 +97,7 @@ namespace vk
 
     private:
 
-        void allocateNewChunk(VkDeviceSize size, U32 memoryTypeIndex);
+        Chunk* allocateNewChunk(VkDeviceSize size, U32 memoryTypeIndex);
 
         Chunk* getChunk(VkDeviceSize size, U32 memoryTypeIndex);
 

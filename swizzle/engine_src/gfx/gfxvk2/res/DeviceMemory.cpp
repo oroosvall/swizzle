@@ -146,8 +146,7 @@ namespace vk
                 chSize = reqs.size;
                 chSize = calcAlignedSize(chSize, reqs).mSize;
             }
-            allocateNewChunk(chSize, memoryTypeIndex);
-            ch = getChunk(chSize, memoryTypeIndex);
+            ch = allocateNewChunk(chSize, memoryTypeIndex);
         }
 
         if (ch)
@@ -258,7 +257,7 @@ namespace vk
 
 namespace vk
 {
-    void DeviceMemoryPool::allocateNewChunk(VkDeviceSize size, U32 memoryTypeIndex)
+    Chunk* DeviceMemoryPool::allocateNewChunk(VkDeviceSize size, U32 memoryTypeIndex)
     {
         OPTICK_EVENT("DeviceMemoryPool::allocateNewChunk");
         Chunk ch{};
@@ -274,18 +273,21 @@ namespace vk
         allocInfo.allocationSize = size;
         allocInfo.memoryTypeIndex = memoryTypeIndex;
 
+        Chunk* chunk = nullptr;
+
         VkResult res = vkAllocateMemory(mDevice->getDeviceHandle(), &allocInfo, mDevice->getAllocCallbacks(), &ch.mMemory);
         if (res == VK_SUCCESS)
         {
             mTotalAllocated += size;
             mMemoryChunks.emplace_back(ch);
+            chunk = &mMemoryChunks.back();
             LOG_INFO("Allocated new memory chunk, %llu", size);
         }
         else
         {
             vk::LogVulkanError(res, "vkAllocateMemory");
         }
-
+        return chunk;
     }
 
     Chunk* DeviceMemoryPool::getChunk(VkDeviceSize size, U32 memoryTypeIndex)
@@ -319,9 +321,10 @@ namespace vk
     {
         VkDeviceSize alval = memreq.alignment - 1u;
         VkDeviceSize alignedValue = (offset + alval) & ~(alval);
-
         VkDeviceSize newOffset = alignedValue - offset;
-        VkDeviceSize newSize = memreq.size + newOffset;
+
+        VkDeviceSize alignedSize = (memreq.size + alval) & ~(alval);
+        VkDeviceSize newSize = alignedSize;
 
         return { newSize, newOffset };
 
