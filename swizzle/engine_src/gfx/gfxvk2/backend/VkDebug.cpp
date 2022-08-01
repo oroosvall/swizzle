@@ -63,6 +63,7 @@ namespace vk
         }
         else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT)
         {
+            stream << msgStr << std::endl;
             LOG_ERROR("%s", stream.str().c_str());
         }
 

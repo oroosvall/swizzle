@@ -125,6 +125,13 @@ namespace vk
                 // calculate the offset for making the memory aligned
                 VkDeviceSize alignmentOffset = calculateAlignmentOffset(frag.mOffset, reqs.alignment);
 
+                // check that the frag.mSize is not underflowing
+                // that would cause allocation to happen when not supposed to
+                if (alignmentOffset > frag.mSize)
+                {
+                    continue;
+                }
+
                 // After allocation this is the actual size we have in the fragment
                 VkDeviceSize adjustedSize = frag.mSize - alignmentOffset;
 
@@ -155,6 +162,12 @@ namespace vk
             // calculate the offset for making the memory aligned
             VkDeviceSize alignmentOffset = calculateAlignmentOffset(frag.mOffset, reqs.alignment);
 
+            // check that the frag.mSize is not underflowing
+            // that would cause allocation to happen when not supposed to
+            if (alignmentOffset > frag.mSize)
+            {
+                continue;
+            }
             // After allocation this is the actual size we have in the fragment
             VkDeviceSize adjustedSize = frag.mSize - alignmentOffset;
 
@@ -179,7 +192,7 @@ namespace vk
 
                 // adjust the current fragment
                 // this will become the remaining fragment after claimed memory
-                frag.mSize -= mem->mSize;
+                frag.mSize -= (alignmentOffset + mem->mSize);
                 frag.mOffset += alignmentOffset + mem->mSize;
                 mUsedSize += mem->mSize;
                 assert(mUsedSize <= mTotalSize);
