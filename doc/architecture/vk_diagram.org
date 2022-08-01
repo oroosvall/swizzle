@@ -1,0 +1,128 @@
+
+#+BEGIN_SRC plantuml :file Vulkan-Renderer.png
+
+title Vulkan Renderer
+
+namespace gfx {
+	note as n1
+	  The gfx namespace is the public engine api
+	end note
+	enum VSyncTypes
+	VSyncTypes : + vSyncOn
+	VSyncTypes : + vSyncOff
+	VSyncTypes : + vSyncAdaptive
+	
+	interface Swapchain
+	Swapchain : + isVsyncModeSupported(VSyncTypes) : SwBool
+	Swapchain : + setVsync(VSyncTypes) : void
+	Swapchain : + setClearColor(ClearColor) : void
+	Swapchain : + clearFrameCounter() : void
+	Swapchain : + getFrameCounter() : U64
+	Swapchain : + createShader(const ShaderAttributeList&) : Resource<Shader>
+	Swapchain : + prepare() : void
+	Swapchain : + present() : void
+	Swapchain : + resize() : void
+	
+	interface Buffer
+	Buffer : + setBufferData(void* data, U64 size, U32 stride) : void
+	Buffer : + getRemainingSize() : U64
+	Buffer : + getSize() : U64
+	Buffer : + setStride(U32) : void
+	Buffer : + mapMemory(U64 size) : void*
+	Buffer : + unmapMemory() : void
+	
+	interface Texture
+	interface Shader
+	interface Material
+	interface FrameBuffer
+	interface GfxContext
+	interface CommandBuffer
+}
+
+namespace vk {
+	enum ResourceType
+	ResourceType : + BufferResource
+	ResourceType : + ImageResource
+	ResourceType : + DescriptorResource
+		
+	interface IVkResource
+	IVkResource : + getType() const : ResourceType
+	IVkResource : + activeUserCount() : U32
+	
+	class VkResource<T>
+	VkResource : + addUser(Resource<CmdBuffer>, U64) : void
+	VkResource : + getVkHandle() : T
+	VkResource : + reset() : T
+
+	class VSwapchain
+	VSwapchain : + getFrameBuffer() const : Resource<FrameBuffer>
+	VSwapchain : + getSemaphoreToSignal() : VkSemaphore
+	VSwapchain : + getWaitForSemaphore() : VkSemaphore
+	VSwapchain : + getWaitFence() : VkFence
+	VSwapchain : + getCurrentFrame() : U32
+	
+	class Instance
+	Instance : + getNumDevices() : U32
+	Instance : + getDeviceName(U32 index) : SwChar*
+	Instance : + listAvailableExtensions(U32 index) : std::vector<std::string>
+	Instance : + iniitalizeDevice(GfxContextInitializeInfo&, std::vector<const char*> extensions) : Resource<Device>
+	Instance : + getAllocationCallbacks() : VkAllocationCallbacks
+	Instance : + getInstanceHandle() : VkInstance
+				
+	class Device
+	Device : + initAfterConstruction() : void
+	Device : + waitDeviceIdle() : void
+	Device : + getDeviceHandle() : VkDevice
+	Device : + getPhysicalHandle() : VkPhysicalDevice
+	Device : + getDeviceName() : const SwChar*
+	Device : + getQueue() : VkQueue
+	Device : + getAllocationCallbacks() : VkAllocaionCallbacks
+	Device : + createFence(FenceCreateFlags flags) : VkFence
+	Device : + createFences(U32 fenceCount, FenceCreateFlags flags) : VkFence*
+	Device : + destroyFence(VkFence) : void
+	Device : + destroyfences(VkFence*, U32 count) : void
+	Device : + createBuffer(VkDeviceSize size, VkBufferUsageFlags) : Resource<VkResource<VkBuffer>>
+	Device : + createImage(VkImageType, VkFormat, VkImageUsageFlags, VkExtend3D, U32 layerCount) : Resource<VkResource<VkImage>>
+	Device : + allocateDescriptor(Resource<ShaderPipeline>) : Resource<VkResource<VkDescriptorSet>>
+	Device : + destroytResource(Resource<IVkResource>) : void
+	Device : + allocateMemory(VkMemoryPropertiesFlags, VkMemoryRequirements) : Resource<DeviceMemory>
+	Device : + freeMemory(Resource<DeviceMemory>) : void
+	Device : + scheduleResourceDestruction(Resource<IVkResource>) : void
+	Device : + scheduleFreeingMemory(Resource<DeviceMemory>) : void
+	Device : + updateHeapBudget() : void
+	Device : + getDescriptorPool_TEMP() : vkDescriptorPool
+	Device : + getBufferCount() : U32
+	Device : + getImageCount() : U32
+	Device : + getGPUMemoryUsage() : U64
+	Device : + getCPUMemoryUsage() : U64
+	Device : + performCleanup() : void
+	Device : + getMemoryHeapCount() : U32
+	Device : + getHeapStatistics(U32 index) : gfx.MemoryStatistics*
+	Device : + getDeviceStats() : gfx.DeviceStatistics*
+	
+	class DBuffer
+	DBuffer : + getBuffer() : Resource<VkResource<VkBuffer>>&
+	DBuffer : + getCount() : U32
+	
+	class DeviceMemory
+	DeviceMemory : + bind(Resource<Device>, Resource<IVkResource>) : void
+	DeviceMemory : activeUserCount() : U32
+	
+	class Fence
+	Fence : + isInUse() : SwBool
+	Fence : + reset() : void
+	Fence : + getHandle() : VkFence
+	Fence : + addUser(std::weak_ptr<CmdBuffer>) : void
+	Fence : + removeUser(std::weak_ptr<CmdBuffer>) : void
+	
+}
+			
+vk.IVkResource <|-- vk.VkResource
+gfx.Swapchain <|-- vk.VSwapchain
+gfx.Buffer <|-- vk.DBuffer
+			
+#+END_SRC
+
+#+RESULTS:
+[[file:Vulkan-Renderer.png]]
+

@@ -1,0 +1,235 @@
+* Todo
+
+- [-] Swizzle engine [1/7] [14%]
+  - [X] Project Design [2/2] [100%]
+    - [X] Hpp file template [[*Hpp File Section][Hpp File Section]]
+    - [X] Cpp file template [[*Cpp File section][Cpp File section]]
+  - [ ] Add File Header public (.hpp)
+    - [ ] engine
+      - [ ] core
+      - [ ] gfx
+  - [ ] Add File Header private (.hpp/.cpp)
+    - [ ] engine
+      - [ ] core
+      - [ ] gfx
+  - [ ] Engine components [0/4] [0%]
+    - [ ] Core
+      - [ ] Resource type
+      - [ ] String type
+      - [ ] Profiler macros
+	- [ ] Enable
+	- [ ] Select component
+    - [ ] gfx
+      - [ ] Transfer queue
+      - [ ] Shader parser
+      - [ ] Ray tracing
+      - [ ] Mesh Shader (Nvidia)
+    - [ ] input
+      - [ ] Key bindings
+      - [ ] Gamepad support
+    - [ ] asset
+      - [ ] Texture loader
+      - [ ] Model loader
+      - [ ] Rewrite .obj loader
+  - [ ] Engine modules [0/1] [0%]
+    - [ ] Swizzle model format (.swm)
+      - [ ] Expose bones as attachment points
+      - [ ] Skeletal animation in separate file
+  - [-] Bugs [1/4] [25%]
+    - [ ] [[*001: VkMaterial, crash on resize][001: VkMaterial, crash on resize]]
+    - [X] Linux: Rendering stops due to out of resources
+          It looks to be related to the number of times a buffer is being written, and leads to memory corruption.
+	  In order to better diagnose the issue, add tracking of descriptor sets, and image views.
+    - [ ] Linux: There exist some validation error, and race condition related to commands being in flight, and fence not being signaled
+    - [ ] Descriptor pool used in multiple threads, (render and cleanup)
+  - [ ] Todo [0/3] [0%]
+    - [ ] [[*Make test build src files being tested][Make test build src files being tested]]
+    - [ ] Make premake download third party libs
+      - [ ] update premake build scripts
+      - [ ] download google-test
+      - [ ] download glm
+      - [ ] download stb
+      - [ ] download optick
+    - [ ] Make engine modules profilable
+
+ 
+* hpp File Section
+
+#+BEGIN_SRC C++
+#ifndef TEMPLATE_HPP
+#define TEMPLATE_HPP
+
+/* Include files */
+
+/* Defines */
+
+/* Typedefs/enums */
+
+/* Forward Declared Structs/Classes */
+
+/* Struct Declaration */
+
+/* Class Declaration */
+
+/* Function Declaration */
+
+#endif
+#+END_SRC
+
+* Cpp File section
+#+BEGIN_SRC C++
+
+/* Include files */
+
+/* Defines */
+
+/* Typedefs */
+
+/* Structs/Classes */
+
+/* Static Function Declaration */
+
+/* Static Variables */
+
+/* Static Function Definition */
+
+/* Function Definition */
+
+/* Class Public Function Definition */
+
+/* Class Protected Function Definition */
+
+/* Class Private Function Definition */
+
+#+END_SRC
+
+* Public file headers todo
+** engine
+*** core
+*** gfx
+* Private File Headers todo
+** engine
+*** core
+*** gfx
+* Engine components
+** Core
+** Gfx
+** Input
+** Asset
+* Engine modules
+** Swizzle model format (.swm)
+
+#+BEGIN_SRC 
+Any "reserved" field value should be equals to 0 or file validation will fail.
+Values in unused fields are ignored.
+
+Header
+  magic : 4 bytes
+  verMaj : 2 bytes
+  verMin : 2 bytes
+Data : ver 1.0
+  MeshHeader : 
+    numMeshes : 1 byte
+  MeshData : (numMeshes)
+    name : shortString (1 byte size, 255 chars)
+    flags : 2 bytes
+      | - hasUv : bit 0
+      | - hasNormal : bit 1
+      | - hasColor : bit 2
+      | - hasInstance : bit 3
+      | - hasAnimations : bit 8
+      | - compressAnimations : bit 13
+      | - compressVertex : bit 14
+      | - compressIndex : bit 15
+    VertexData : (compressVertex == false)
+      numVertex : 4 bytes
+      vertexPositions : n x vec3 bytes
+      uvCoordinates : (hasUv == true) n x vec2 bytes
+      normalVectors : (hasNormal == true) n x vec3 bytes
+      colorData : (hasColor == true) n x 4 bytes
+    VertexData : (compressVertex == true)
+      CompressedData : CompressedVertexData 
+    IndexData : (compressIndex == false)
+      numTriangles : 4 bytes
+      triangleData : n x ivec3 bytes
+    IndexData : (compressIndex == true)
+      CompressedData : CompressedTriangleData
+    InstanceData: (hasInstance == true)
+      numInstance : 4 bytes
+      instances : n x mat4 bytes
+    AnimationData : (hasAnimations == true)
+      frameRate : 1 byte
+      boneCount : 2 bytes
+      boneParentList : n x 2 bytes
+      bindPose : n x mat4 bytes
+      animationCount : 2 bytes
+      Animation : (compressAnimations == false)
+        Animation : (animationCount)
+          name : shortString
+          keyframeCount : 2 bytes
+          keyframeData : (n)
+            matrixData : boneCount x mat4 bytes
+     Animation : (compressAnimations == true)
+       elementCount : 4 bytes
+       dataArray : n x 4 bytes
+       Animation : (animationCount)
+         name : shortString
+         keyframeCount : 2 bytes
+         keyframeData : (n)
+           bitData : (boneCount x (16 x bitIdx)) + 7 / 8 bytes
+
+
+CompressedVertexDataImproved
+  compressFlags : 1 byte
+    | - reserved : bit 0-7
+  numChannels : 1 byte
+  channels :  
+    channelAttributes: 1 byte
+      | - position : bit 0
+      | - uv & hasUv: bit 1
+      | - normal & hasNormal: bit 2
+      | - color & hasColor: bit 3
+      | - boneIndex & hasAnimations : bit 4
+      | - boneWeight & hasAnimations : bit 5
+      | - unused : bit 6
+      | - compressed : bit 7 # if this bit is 0 then the data for the channel is stored uncompressed, since compressing the data would make it bigger
+    channelData: # num channels depends on channelMode, channelModeByte == 0 -> one channel per vertex attribute
+      channelDataCompressed : (compressed)
+        channelDataFlags : 1
+          | - elementSize : bit 0 - 1
+          |   | - 1 byte  : 00
+          |   | - 2 bytes : 01
+          |   | - 4 bytes : 10
+          |   | - 8 bytes : 11
+          | - reserved : bit 2-5
+          | - mappingBits : 6-7
+          |   | - oneToOne : 00
+          |   | - oneToTwo : 01
+          |   | - oneToFour : 10
+        elementCount : 4 bytes
+        dataArray : n x X bytes, where X is either float or int for said channel
+      channelIndexMap:
+        bitsPerIndex : 1 byte
+        numVertices : 4 bytes
+        bitData : ((vertexSize * numVertices * bitsPerIndex) + 7) / 8 bytes # vertexSize depends on what attributes exist in channel, bits are stored in attribute order
+          | ----- # e.g if position and uv is set, then data comes as p.x, p.y, p.z, u.x, v.x
+    channelDataUncompressed : 
+      numVertices : 4 bytes
+      dataArray : n x channelType bytes
+
+CompressedTriangleData
+  compressFlags : 1 byte
+  bitsPerVertex : 1 byte
+  numTriangles : 4 bytes
+  bitData : ((numTriangles * 3 * bitsPerVertex) + 7 ) / 8 bytes
+
+#+END_SRC
+
+* Bugs
+** 001: VkMaterial, crash on resize
+When resizing the game window, the VK view is removed, and later attempted to be copied, the copy fails and crashes the application
+Solution is to resource track the VK view
+
+* Todo
+** Make test build src files being tested
+When building the tests the coverage infomration is missing from library under test. 
