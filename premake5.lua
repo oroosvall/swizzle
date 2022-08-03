@@ -40,7 +40,7 @@ projects["modelConverter"] = loadProjectConfig("apps/modelConverter.json")
 
 addDependencies(projects["utilsTest"], {"utils", "google-test"})
 addDependencies(projects["scriptTest"], {"script", "google-test"})
-addDependencies(projects["swmTest"], {"swm", "google-test", "utils"})
+addDependencies(projects["swmTest"], {"google-test", "utils"})
 addDependencies(projects["swm"], {"utils"})
 addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "optick", "imgui", "stb"})
 
