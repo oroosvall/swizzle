@@ -31,7 +31,7 @@ namespace swm::file
         {
             mStream.seekg(0, std::ios_base::end);
             mFileSize = mStream.tellg();
-            mStream.seekg(0);
+            mStream.seekg(0, std::ios_base::beg);
         }
 
         ~FileReader() = default;

@@ -173,5 +173,5 @@ function generateTestProject(projectTable, buildDir, prjName, reportLinks)
                 l = l .. "%{cfg.objdir}/../" .. j .. " "
             end
         end
-        postbuildcommands("gcovr -r . --html-details %{wks.location}/reports/%{prj.name}.html --object-directory %{cfg.objdir} %{cfg.objdir} " .. l .." -f '(.+)?[ch]pp$$'")
+        postbuildcommands("gcovr --exclude-unreachable-branches --exclude-throw-branches -r . --html-details %{wks.location}/reports/%{prj.name}.html --object-directory %{cfg.objdir} %{cfg.objdir} " .. l .." -f '(.+)?[ch]pp$$' --exclude '.*/test/'")
 end

@@ -78,7 +78,8 @@ namespace swm::types
 
 namespace swm::types
 {
-    Result GetAttributeSize(U8 channelAttributes, U64& outSize);
+    U64 GetSizeOfAttribute(compressFlags::CompressedChannelAttribute attribute);
+    Result GetChannelSize(U8 channelAttributes, U64& outSize);
     std::vector<compressFlags::CompressedChannelAttribute> GetAttributes(U8 channelAttributes);
 }
 

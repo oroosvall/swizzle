@@ -479,7 +479,7 @@ namespace swm::load
         {
             r = Ok(r) ? mCommonLdr.loadNumber(ch.mVertexCount) : r;
             U64 channelSize = 0ull;
-            r = Ok(r) ? types::GetAttributeSize(ch.mChannelAttribute, channelSize) : r;
+            r = Ok(r) ? types::GetChannelSize(ch.mChannelAttribute, channelSize) : r;
             U64 size = ch.mVertexCount * channelSize;
             r = Ok(r) ? mCommonLdr.loadArray(ch.mData, size) : r;
         }

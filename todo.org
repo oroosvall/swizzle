@@ -12,7 +12,7 @@
     - [ ] engine
       - [ ] core
       - [ ] gfx
-  - [ ] Engine components [0/4] [0%]
+  - [ ] Engine components [0/6] [0%]
     - [ ] Core
       - [ ] Resource type
       - [ ] String type
@@ -45,7 +45,7 @@
 	  In order to better diagnose the issue, add tracking of descriptor sets, and image views.
     - [ ] Linux: There exist some validation error, and race condition related to commands being in flight, and fence not being signaled
     - [ ] Descriptor pool used in multiple threads, (render and cleanup)
-  - [ ] Todo [0/4] [0%]
+  - [ ] Todo [0/5] [0%]
     - [ ] [[*Make test build src files being tested][Make test build src files being tested]]
     - [ ] Make premake download third party libs
       - [ ] update premake build scripts
@@ -56,6 +56,8 @@
     - [ ] Make engine modules profilable
     - [ ] Update build script with ability to only have library dependency in debug build
           An example would be to only have optick in debug builds, and optionaly a profile based release build.
+    - [ ] Fix debug defines on linux to build with validation layers
+    - [ ] Macro for aligned malloc in custom vulkan allocation callbacks
 
 <<todo.org#hpp-file-section>>
  

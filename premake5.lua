@@ -98,7 +98,7 @@ if not projectConfig.disableTests then
     generateProject(projects, projectConfig.buildDir, "google-test")
     generateTestProject(projects, projectConfig.buildDir, "utilsTest")
     generateProject(projects, projectConfig.buildDir, "scriptTest")
-    generateTestProject(projects, projectConfig.buildDir, "swmTest", "swm")
+    generateTestProject(projects, projectConfig.buildDir, "swmTest")
 end
 
 if not os.isfile("projectConfig.json") then

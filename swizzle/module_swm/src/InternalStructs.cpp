@@ -21,34 +21,42 @@
 
 namespace swm::types
 {
-    Result GetAttributeSize(U8 channelAttributes, U64& outSize)
+
+    U64 GetSizeOfAttribute(compressFlags::CompressedChannelAttribute attribute)
+    {
+        U64 size = 0ull;
+        typedef types::compressFlags::CompressedChannelAttribute attr;
+        switch (attribute)
+        {
+        case attr::Position:
+        case attr::Normal:
+            size = sizeof(types::Vector3F);
+            break;
+        case attr::Uv:
+            size = sizeof(types::Vector2F);
+            break;
+        case attr::Color:
+            size = sizeof(types::Color4U);
+            break;
+        case attr::BoneIndex:
+            size = sizeof(types::BoneIndex);
+            break;
+        case attr::BoneWeight:
+            size = sizeof(types::BoneWeights);
+            break;
+        default:
+            break;
+        }
+        return size;
+    }
+
+    Result GetChannelSize(U8 channelAttributes, U64& outSize)
     {
         auto attribs = GetAttributes(channelAttributes & 0x3F); // Filter the compress and unused flag
         Result res = Result::ErrToManyAttributes;
-        typedef types::compressFlags::CompressedChannelAttribute attr;
         if (attribs.size() == 1)
         {
-            switch (attribs[0])
-            {
-            case attr::Position:
-            case attr::Normal:
-                outSize = sizeof(types::Vector3F);
-                break;
-            case attr::Uv:
-                outSize = sizeof(types::Vector2F);
-                break;
-            case attr::Color:
-                outSize = sizeof(types::Color4U);
-                break;
-            case attr::BoneIndex:
-                outSize = sizeof(types::BoneIndex);
-                break;
-            case attr::BoneWeight:
-                outSize = sizeof(types::BoneWeights);
-                break;
-            default:
-                break;
-            }
+            outSize = GetSizeOfAttribute(attribs[0]);
             res = Result::Success;
         }
         return res;
