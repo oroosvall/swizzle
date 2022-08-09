@@ -12,7 +12,7 @@
     - [ ] engine
       - [ ] core
       - [ ] gfx
-  - [ ] Engine components [0/6] [0%]
+  - [ ] Engine components [0/4] [0%]
     - [ ] Core
       - [ ] Resource type
       - [ ] String type
@@ -34,10 +34,11 @@
       - [ ] Texture loader
       - [ ] Model loader
       - [ ] Rewrite .obj loader
-  - [ ] Engine modules [0/1] [0%]
+  - [ ] Engine modules [0/2] [0%]
     - [ ] Swizzle model format (.swm)
       - [ ] Expose bones as attachment points
       - [ ] Skeletal animation in separate file
+    - [ ] Finish unit tests for v1
   - [-] Bugs [1/4] [25%]
     - [ ] [[*001: VkMaterial, crash on resize][001: VkMaterial, crash on resize]]
     - [X] Linux: Rendering stops due to out of resources
