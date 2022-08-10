@@ -43,6 +43,7 @@ void Game::userSetup()
     mScene->loadScene("scenes/test.scene");
     mScene->loadSky();
     mScene->loadAnimMesh();
+    mScene->loadWormhole();
 
     mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOn);
     //mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
@@ -58,7 +59,7 @@ void Game::userSetup()
     attribFsq.mPushConstantSize = 0u;
     attribFsq.mEnableBlending = true;
 
-    mFsq = mSwapchain->createShader(attribFsq);
+    mFsq = mGfxContext->createShader(mSwapchain, attribFsq);
     mFsq->load("shaders/fsq.shader");
 
     mFsqMat = mGfxContext->createMaterial(mFsq);
@@ -158,6 +159,7 @@ void Game::updateMainWindow(F32 dt)
     mWindow->getSize(x, y);
 
     cam.changeAspect((F32)x, (F32)y);
+    mController.update(dt);
 
     mSwapchain->setClearColor({ 0,0,0,1 });
 

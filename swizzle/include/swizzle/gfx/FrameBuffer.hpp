@@ -66,9 +66,6 @@ namespace swizzle::gfx
         virtual common::Resource<Texture> getColorAttachment(U32 index) = 0;
 
         virtual void resize(U32 width, U32 height) = 0;
-
-        virtual common::Resource<Shader> createShader(const ShaderAttributeList& attributeList) = 0;
-
     };
 }
 

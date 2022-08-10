@@ -19,6 +19,14 @@
 
 /* Function Definition */
 
+namespace vk
+{
+    common::Resource<BaseFrameBuffer> GetFrameBufferAsBaseFrameBuffer(common::Resource<swizzle::gfx::FrameBuffer> buffer)
+    {
+        return std::dynamic_pointer_cast<BaseFrameBuffer>(buffer);
+    }
+}
+
 /* Class Public Function Definition */
 
 namespace vk
@@ -104,11 +112,6 @@ namespace vk
         createDepthImage();
         createRenderPass();
         createFramebuffer();
-    }
-
-    common::Resource<swizzle::gfx::Shader> VFrameBuffer::createShader(const swizzle::gfx::ShaderAttributeList& attributeList)
-    {
-        return common::CreateRef<ShaderPipeline>(mDevice, *this, attributeList);
     }
 
     VkRenderPass VFrameBuffer::getRenderPass() const

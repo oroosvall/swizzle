@@ -29,7 +29,7 @@ namespace vk
     class ShaderPipeline : public swizzle::gfx::Shader
     {
     public:
-        ShaderPipeline(common::Resource<Device> device, const BaseFrameBuffer& frameBuffer,
+        ShaderPipeline(common::Resource<Device> device, common::Resource<vk::BaseFrameBuffer> framebuffer,
                        const swizzle::gfx::ShaderAttributeList& attribList);
         virtual ~ShaderPipeline();
 
@@ -52,7 +52,7 @@ namespace vk
         void createAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptor);
 
         common::Resource<Device> mDevice;
-        const BaseFrameBuffer& mFrameBuffer;
+        common::Resource<vk::BaseFrameBuffer> mFrameBuffer;
         const swizzle::gfx::ShaderAttributeList mShaderAttributes;
 
         VkPipelineLayout mPipelineLayout;

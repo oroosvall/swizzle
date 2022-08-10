@@ -42,7 +42,7 @@ namespace vk
         if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
         {
             stream << msgStr << std::endl;
-            LOG_INFO("%s", stream.str().c_str());
+            //LOG_INFO("%s", stream.str().c_str());
         }
         else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_WARNING_BIT_EXT)
         {
@@ -59,7 +59,7 @@ namespace vk
         {
             stream << "DEBUG: ";
             stream << msgStr << std::endl;
-            LOG_INFO("%s", stream.str().c_str());
+            //LOG_INFO("%s", stream.str().c_str());
         }
         else if (flags & VkDebugReportFlagBitsEXT::VK_DEBUG_REPORT_ERROR_BIT_EXT)
         {

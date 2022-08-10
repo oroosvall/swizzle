@@ -36,11 +36,11 @@ common::Resource<swizzle::gfx::Shader> Compositor::createShader(U32 layerIndex, 
     auto& layer = mLayers[layerIndex];
     if (layer.mType == RenderLayerType::RenderLayer_Swapchain)
     {
-        shader = mLayers[layerIndex].mSwapchain->createShader(attribs);
+        shader = mCtx->createShader(mLayers[layerIndex].mSwapchain, attribs);
     }
     else if (layer.mType == RenderLayerType::RenderLayer_FrameBuffer)
     {
-        shader = mLayers[layerIndex].mFrameBuffer->createShader(attribs);
+        shader = mCtx->createShader(mLayers[layerIndex].mFrameBuffer, attribs);
     }
     else
     {

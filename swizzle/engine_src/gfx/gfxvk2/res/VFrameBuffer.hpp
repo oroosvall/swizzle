@@ -82,8 +82,6 @@ namespace vk
 
         virtual void resize(U32 width, U32 height) override;
 
-        virtual common::Resource<swizzle::gfx::Shader> createShader(const swizzle::gfx::ShaderAttributeList& attributeList) override;
-
         virtual VkRenderPass getRenderPass() const override;
         virtual VkSampleCountFlagBits getMultisampleCount() const override;
         virtual VkFramebuffer getFrameBuffer() const override;
@@ -122,5 +120,10 @@ namespace vk
 }
 
 /* Function Declaration */
+
+namespace vk
+{
+    common::Resource<BaseFrameBuffer> GetFrameBufferAsBaseFrameBuffer(common::Resource<swizzle::gfx::FrameBuffer> buffer);
+}
 
 #endif

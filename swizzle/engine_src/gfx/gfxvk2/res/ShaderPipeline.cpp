@@ -51,7 +51,7 @@ namespace vk
 
 namespace vk
 {
-    ShaderPipeline::ShaderPipeline(common::Resource<Device> device, const BaseFrameBuffer& frameBuffer,
+    ShaderPipeline::ShaderPipeline(common::Resource<Device> device, common::Resource<vk::BaseFrameBuffer> frameBuffer,
                                    const swizzle::gfx::ShaderAttributeList& attribList)
         : mDevice(device)
         , mFrameBuffer(frameBuffer)
@@ -368,7 +368,7 @@ namespace vk
         VkPipelineRasterizationStateCreateInfo rasterState = shader::CreateRasterizationState(mProperties[shader::PropertyType::CullMode].mCullMode);
 
         // Setup MultisampleState
-        VkPipelineMultisampleStateCreateInfo multiSampleState = shader::CreateMultisampleState(mFrameBuffer.getMultisampleCount());
+        VkPipelineMultisampleStateCreateInfo multiSampleState = shader::CreateMultisampleState(mFrameBuffer->getMultisampleCount());
 
         // Setup DepthStencilState
         auto depthCompare = mShaderAttributes.mEnableDepthTest ? VkCompareOp::VK_COMPARE_OP_LESS : VkCompareOp::VK_COMPARE_OP_ALWAYS;
@@ -380,7 +380,7 @@ namespace vk
         colorState.flags = 0;
         colorState.logicOpEnable = VK_FALSE;
         colorState.logicOp = VkLogicOp::VK_LOGIC_OP_COPY;
-        colorState.attachmentCount = mFrameBuffer.getNumColorAttachments(); // TODO: mBaseFbo->getNumAttachments();
+        colorState.attachmentCount = mFrameBuffer->getNumColorAttachments(); // TODO: mBaseFbo->getNumAttachments();
         std::vector<VkPipelineColorBlendAttachmentState> attachs;
         for (size_t i = 0; i < colorState.attachmentCount; i++)
         {
@@ -430,7 +430,7 @@ namespace vk
         createInfo.pColorBlendState = &colorState;
         createInfo.pDynamicState = &dynState;
         createInfo.layout = mPipelineLayout;
-        createInfo.renderPass = mFrameBuffer.getRenderPass();
+        createInfo.renderPass = mFrameBuffer->getRenderPass();
         createInfo.subpass = 0U;
         createInfo.basePipelineHandle = VK_NULL_HANDLE;
         createInfo.basePipelineIndex = -1;

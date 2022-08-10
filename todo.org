@@ -24,6 +24,8 @@
       - [ ] Shader parser
       - [ ] Ray tracing
       - [ ] Mesh Shader (Nvidia)
+      - [ ] Shader reloading
+	- [ ] Ensure resource tracking, and cleanup when loading a new shader
     - [ ] input
       - [ ] Key bindings
       - [ ] Gamepad support

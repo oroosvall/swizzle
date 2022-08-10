@@ -50,9 +50,6 @@ namespace vk
         virtual void clearFrameCounter() override;
         virtual U64 getFrameCounter() override;
 
-        virtual common::Resource<swizzle::gfx::Shader>
-        createShader(const swizzle::gfx::ShaderAttributeList& attribs) override;
-
         virtual void prepare() override;
         virtual void present() override;
 

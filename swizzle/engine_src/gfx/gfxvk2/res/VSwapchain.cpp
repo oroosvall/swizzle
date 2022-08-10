@@ -129,11 +129,6 @@ namespace vk
         return mFrameCounter;
     }
 
-    common::Resource<swizzle::gfx::Shader> VSwapchain::createShader(const swizzle::gfx::ShaderAttributeList& attribs)
-    {
-        return mFrameBuffers[0]->createShader(attribs);
-    }
-
     void VSwapchain::prepare()
     {
         OPTICK_EVENT("VSwapchain::prepare");

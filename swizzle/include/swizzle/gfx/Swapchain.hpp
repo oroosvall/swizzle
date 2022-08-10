@@ -29,8 +29,6 @@ namespace swizzle::gfx
         virtual void clearFrameCounter() = 0;
         virtual U64 getFrameCounter() = 0;
 
-        virtual common::Resource<Shader> createShader(const ShaderAttributeList& attribs) = 0;
-
         virtual void prepare() = 0;
         virtual void present() = 0;
 

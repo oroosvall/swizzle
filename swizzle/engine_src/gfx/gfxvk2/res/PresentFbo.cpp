@@ -108,12 +108,6 @@ namespace vk
         createFramebuffer();*/
     }
 
-    common::Resource<swizzle::gfx::Shader>
-    PresentFBO::createShader(const swizzle::gfx::ShaderAttributeList& attributeList)
-    {
-        return common::CreateRef<ShaderPipeline>(mDevice, *this, attributeList);
-    }
-
     VkRenderPass PresentFBO::getRenderPass() const
     {
         return mRenderPass;

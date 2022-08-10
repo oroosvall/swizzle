@@ -12,6 +12,7 @@
 #include "res/TextureCube.hpp"
 #include "res/VFrameBuffer.hpp"
 #include "res/VMaterial.hpp"
+#include "res/ShaderPipeline.hpp"
 
 #include <optick/optick.h>
 
@@ -165,6 +166,18 @@ namespace swizzle::gfx
     common::Resource<FrameBuffer> VkGfxContext::createFramebuffer(const FrameBufferCreateInfo& fboInfo)
     {
         return common::CreateRef<vk::VFrameBuffer>(mVkDevice, fboInfo);
+    }
+
+    common::Resource<Shader> VkGfxContext::createShader(common::Resource<FrameBuffer> framebuffer, const ShaderAttributeList& attribs)
+    {
+        common::Resource<vk::BaseFrameBuffer> fbo = vk::GetFrameBufferAsBaseFrameBuffer(framebuffer);
+        return common::CreateRef<vk::ShaderPipeline>(mVkDevice, fbo, attribs);
+    }
+    common::Resource<Shader> VkGfxContext::createShader(common::Resource<Swapchain> swapchain, const ShaderAttributeList& attribs)
+    {
+        vk::VSwapchain* swp = (vk::VSwapchain*)swapchain.get();
+        common::Resource<vk::BaseFrameBuffer> fbo = vk::GetFrameBufferAsBaseFrameBuffer(swp->getFrameBuffer());
+        return common::CreateRef<vk::ShaderPipeline>(mVkDevice, fbo, attribs);
     }
 
     common::Resource<Material> VkGfxContext::createMaterial(common::Resource<Shader> shader)
