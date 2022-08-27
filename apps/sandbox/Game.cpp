@@ -43,7 +43,6 @@ void Game::userSetup()
     mScene->loadScene("scenes/test.scene");
     mScene->loadSky();
     mScene->loadAnimMesh();
-    mScene->loadWormhole();
 
     mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOn);
     //mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
