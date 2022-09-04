@@ -86,6 +86,15 @@ namespace swizzle::asset2
                     src = (U8*)mesh.mBoneInfo.data();
                     stride = sizeof(swm::types::BoneInfo);
                     break;
+                case swizzle::asset2::AttributeTypes::VertexColor:
+                    if (mesh.mVertColors.size() == 0u)
+                    {
+                        LOG_ERROR("Attempted to load vertex color data from file without color data\n  Continuing, No data will be copied");
+                        continue;
+                    }
+                    src = (U8*)mesh.mVertColors.data();
+                    stride = sizeof(swm::types::Color4U);
+                    break;
                 default:
                     LOG_ERROR("Reached default state\n  Nothing to do");
                     continue;
@@ -104,6 +113,11 @@ namespace swizzle::asset2
                             U32 i1, i2, i3, i4;
                         } iddx = {};
 
+                        struct NewCol
+                        {
+                            F32 c1, c2, c3, c4;
+                        } coll = {};
+
                         if (info.mAttributeType == swizzle::asset2::AttributeTypes::BoneWeights)
                         {
                             src2 = &src2[sizeof(swm::types::BoneIndex)];
@@ -116,6 +130,15 @@ namespace swizzle::asset2
                             iddx.i3 = bi->b3;
                             iddx.i4 = bi->b4;
                             src2 = (U8*)&iddx;
+                        }
+                        else if (info.mAttributeType == swizzle::asset2::AttributeTypes::VertexColor)
+                        {
+                            swm::types::Color4U* bi = (swm::types::Color4U*)src2;
+                            coll.c1 = (bi->r / 255.0f);
+                            coll.c2 = (bi->g / 255.0f);
+                            coll.c3 = (bi->b / 255.0f);
+                            coll.c4 = (bi->a / 255.0f);
+                            src2 = (U8*)&coll;
                         }
 
                         memcpy(&dst[info.mByteOffset], src2, size);

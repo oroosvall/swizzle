@@ -33,6 +33,7 @@ namespace swizzle::asset2
             break;
         case swizzle::asset2::AttributeTypes::BoneIndices:
         case swizzle::asset2::AttributeTypes::BoneWeights:
+        case swizzle::asset2::AttributeTypes::VertexColor:
             size = 4u;
             break;
         default:
@@ -55,6 +56,8 @@ namespace swizzle::asset2
             return "BoneIndices";
         case swizzle::asset2::AttributeTypes::BoneWeights:
             return "BoneWeights";
+        case swizzle::asset2::AttributeTypes::VertexColor:
+            return "VertexColor";
         default:
             return "Undefined";
         }

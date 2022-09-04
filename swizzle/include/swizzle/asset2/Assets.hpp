@@ -19,7 +19,8 @@ namespace swizzle::asset2
         UvCoordinates,
         NormalVector,
         BoneIndices,
-        BoneWeights
+        BoneWeights,
+        VertexColor
     };
 }
 
