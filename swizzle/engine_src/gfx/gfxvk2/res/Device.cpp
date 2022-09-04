@@ -395,6 +395,17 @@ namespace vk
                 chunkSize = 1024llu * 1024llu * 16llu;
                 poolName = "System Memory (CPU)";
             }
+
+            for (U32 j = 0u; j < mMemoryProperties.memoryTypeCount; ++j)
+            {
+                if ((mMemoryProperties.memoryTypes[j].heapIndex == i) &&
+                    (mMemoryProperties.memoryTypes[j].propertyFlags & VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT))
+                {
+                    poolName += " [Host Visible]";
+                    break;
+                }
+            }
+
             mMemoryPools.push_back(common::CreateRef<DeviceMemoryPool>(shared_from_this(), chunkSize, poolName));
         }
     }
