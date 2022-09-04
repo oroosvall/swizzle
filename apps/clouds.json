@@ -1,0 +1,21 @@
+{
+    "kind": "ConsoleApp",
+    "language": "c++",
+    "files": [
+        "clouds/**.hpp",
+        "clouds/**.cpp"
+    ],
+    "includedirs":[
+        "clouds/"
+    ],
+    "vpaths": [
+        {
+            "name": "clouds/*",
+            "value": "clouds/**.hpp"
+        },
+        {
+            "name": "clouds/*",
+            "value": "clouds/**.cpp"
+        }
+    ]
+}

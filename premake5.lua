@@ -37,6 +37,7 @@ projects["swmTest"] = loadProjectConfig("swizzle/module_swm/swmTests.json")
 -- apps
 projects["sandbox"] = loadProjectConfig("apps/sandbox.json")
 projects["modelConverter"] = loadProjectConfig("apps/modelConverter.json")
+projects["clouds"] = loadProjectConfig("apps/clouds.json")
 
 addDependencies(projects["utilsTest"], {"utils", "google-test"})
 addDependencies(projects["scriptTest"], {"script", "google-test"})
@@ -46,10 +47,10 @@ addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "opti
 
 addDependencies(projects["sandbox"], {"swizzle", "imgui", "utils", "optick"})
 addDependencies(projects["modelConverter"], {"swizzle", "utils", "optick"})
+addDependencies(projects["clouds"], {"swizzle", "imgui", "utils", "optick"})
 
-addExternalHeadersProjectList(projects, {"swm", "swmTest", "swizzle", "sandbox", "modelConverter"}, glmIncludeDirs)
-
-addExternalHeadersProjectList(projects, {"swm", "swizzle", "sandbox", "modelConverter", "scriptTest", "swmTest"}, commonIncludeDirs)
+addExternalHeadersProjectList(projects, {"swm", "swmTest", "swizzle", "sandbox", "modelConverter", "clouds"}, glmIncludeDirs)
+addExternalHeadersProjectList(projects, {"swm", "swizzle", "sandbox", "modelConverter", "scriptTest", "swmTest", "clouds"}, commonIncludeDirs)
 
 addExternalHeaders(projects["swizzle"], vulkanIncludeDirs)
 addExternalLibDir(projects["swizzle"], vulkanLibDirs)
@@ -91,6 +92,7 @@ if not projectConfig.disableApps then
     group("apps")
     generateProject(projects, projectConfig.buildDir, "sandbox")
     generateProject(projects, projectConfig.buildDir, "modelConverter")
+    generateProject(projects, projectConfig.buildDir, "clouds")
 end
 
 if not projectConfig.disableTests then

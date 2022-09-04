@@ -266,7 +266,7 @@ namespace vk
 
         VkApplicationInfo vkAppInfo = {};
         vkAppInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        vkAppInfo.apiVersion = VK_API_VERSION_1_3;
+        vkAppInfo.apiVersion = VK_API_VERSION_1_1;
         vkAppInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         vkAppInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         vkAppInfo.pApplicationName = "App";
