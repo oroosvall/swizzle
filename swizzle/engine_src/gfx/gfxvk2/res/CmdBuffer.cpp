@@ -412,11 +412,15 @@ namespace vk
 
     void CmdBuffer::drawNoBind(U32 vertexCount, U32 first)
     {
+        OPTICK_EVENT("CmdBuffer::drawNoBind");
+        mDrawCount++;
         vkCmdDraw(getCmdBuffer(mActiveIndex), vertexCount, 1u, first, 0u);
     }
 
     void CmdBuffer::drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset)
     {
+        OPTICK_EVENT("CmdBuffer::drawIndexedNoBind");
+        mDrawCount++;
         vkCmdDrawIndexed(getCmdBuffer(mActiveIndex), vertexCount, 1u, first, vertOffset, 0u);
     }
 
