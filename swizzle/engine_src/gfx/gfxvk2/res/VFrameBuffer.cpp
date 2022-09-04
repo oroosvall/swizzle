@@ -48,6 +48,11 @@ namespace vk
             mHasDepthBuffer = true;
         }
 
+        if (createInfo.mAttachmentType == swizzle::gfx::FrameBufferAttachmentType::F32)
+        {
+            mImageFormat = VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
+        }
+
         createColorImages();
         createDepthImage();
         createRenderPass();
@@ -348,7 +353,8 @@ namespace vk
             desc.stencilLoadOp = VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
             desc.stencilStoreOp = VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_DONT_CARE;
             desc.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
-            desc.finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            desc.finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            //desc.finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL;
 
             attachDescr.emplace_back(desc);
         }

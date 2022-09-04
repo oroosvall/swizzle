@@ -20,6 +20,12 @@ namespace swizzle::gfx
         DepthOnly,
         DepthStencil,
     };
+
+    enum class FrameBufferAttachmentType
+    {
+        Default,
+        F32
+    };
 }
 
 /* Forward Declared Structs/Classes */
@@ -44,6 +50,7 @@ namespace swizzle::gfx
         U32 mSwapCount;
         U32 mNumColAttach;
         FrameBufferDepthType mDepthType;
+        FrameBufferAttachmentType mAttachmentType;
     };
 }
 
