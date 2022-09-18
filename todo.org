@@ -2,8 +2,8 @@
 
 - [-] Swizzle engine [1/7] [14%]
   - [X] Project Design [2/2] [100%]
-    - [X] Hpp file template [[*Hpp File Section][Hpp File Section]]
-    - [X] Cpp file template [[*Cpp File section][Cpp File section]]
+    - [X] Hpp file template [[todo.org#hpp-file-section][Hpp File Section]]
+    - [X] Cpp file template [[todo.org#cpp-file-section][Cpp File section]]
   - [ ] Add File Header public (.hpp)
     - [ ] engine
       - [ ] core
@@ -57,7 +57,7 @@
     - [ ] Update build script with ability to only have library dependency in debug build
           An example would be to only have optick in debug builds, and optionaly a profile based release build.
 
- 
+<<todo.org#hpp-file-section>>
 * Hpp File Section
 
 #+BEGIN_SRC C++
@@ -81,6 +81,7 @@
 #endif
 #+END_SRC
 
+<<todo.org#cpp-file-section>>
 * Cpp File section
 #+BEGIN_SRC C++
 
