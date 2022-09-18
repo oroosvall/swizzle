@@ -401,9 +401,9 @@ namespace vk
 namespace vk
 {
 
-    VkDeviceSize MemoryChunk::calculateAlignmentOffset(VkDeviceSize currentOffset, VkDeviceSize requireAlignment) const
+    VkDeviceSize MemoryChunk::calculateAlignmentOffset(VkDeviceSize currentOffset, VkDeviceSize requiredAlignment) const
     {
-        VkDeviceSize alval = requireAlignment - 1u;
+        VkDeviceSize alval = requiredAlignment - 1u;
         VkDeviceSize alignedValue = (currentOffset + alval) & ~(alval);
         VkDeviceSize newOffset = alignedValue - currentOffset;
 

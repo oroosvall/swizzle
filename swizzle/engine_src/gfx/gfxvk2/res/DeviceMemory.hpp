@@ -56,15 +56,6 @@ namespace vk
         VkDeviceSize mSize;
     };
 
-    //struct Chunk
-    //{
-    //    VkDeviceMemory mMemory;
-    //    VkDeviceSize mTotalSize;
-    //    VkDeviceSize mUsedSize;
-    //    U32 memoryTypeIndex;
-    //    std::vector<Fragment> mFreeFragments;
-    //};
-
     struct AlignmentInfo
     {
         VkDeviceSize mSize;
@@ -94,7 +85,7 @@ namespace vk
         VkDeviceSize getUsed() const;
     private:
 
-        VkDeviceSize calculateAlignmentOffset(VkDeviceSize currentOffset, VkDeviceSize requireAlignment) const;
+        VkDeviceSize calculateAlignmentOffset(VkDeviceSize currentOffset, VkDeviceSize requiredAlignment) const;
 
         common::Resource<Device> mDevice;
         VkDeviceMemory mMemory;
