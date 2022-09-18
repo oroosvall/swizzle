@@ -26,6 +26,7 @@
       - [ ] Mesh Shader (Nvidia)
       - [ ] Shader reloading
 	- [ ] Ensure resource tracking, and cleanup when loading a new shader
+      - [ ] Multi-threading safe stuff
     - [ ] input
       - [ ] Key bindings
       - [ ] Gamepad support
@@ -44,7 +45,7 @@
 	  In order to better diagnose the issue, add tracking of descriptor sets, and image views.
     - [ ] Linux: There exist some validation error, and race condition related to commands being in flight, and fence not being signaled
     - [ ] Descriptor pool used in multiple threads, (render and cleanup)
-  - [ ] Todo [0/3] [0%]
+  - [ ] Todo [0/4] [0%]
     - [ ] [[*Make test build src files being tested][Make test build src files being tested]]
     - [ ] Make premake download third party libs
       - [ ] update premake build scripts
@@ -53,9 +54,11 @@
       - [ ] download stb
       - [ ] download optick
     - [ ] Make engine modules profilable
+    - [ ] Update build script with ability to only have library dependency in debug build
+          An example would be to only have optick in debug builds, and optionaly a profile based release build.
 
  
-* hpp File Section
+* Hpp File Section
 
 #+BEGIN_SRC C++
 #ifndef TEMPLATE_HPP
