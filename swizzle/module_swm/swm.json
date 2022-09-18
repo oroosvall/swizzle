@@ -28,5 +28,8 @@
             "name": "include/*",
             "value": "../include/**.hpp"
         }
-    ]
+    ],
+    "buildflags": {
+        "rtti": "Off"
+    }
 }

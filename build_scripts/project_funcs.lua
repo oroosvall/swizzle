@@ -14,6 +14,7 @@ function generateDefaultProjectConfig()
     defaultConfig['defines'] = {}
     defaultConfig['vpaths'] = {}
     defaultConfig['postbuildcommands'] = {}
+    defaultConfig['buildflags'] = {}
 
     return defaultConfig
 end
@@ -140,6 +141,13 @@ function generateProject(projectTable, buildDir, prjName)
             if(j ~= "") then
                 defines(j)
             end
+        end
+    end
+    for i,j in pairs(prj.buildflags) do
+        if _G[i] ~= nil then
+            _G[i](j)
+        else
+            print("undefined function " .. i)
         end
     end
     for i,j in pairs(prj.postbuildcommands) do
