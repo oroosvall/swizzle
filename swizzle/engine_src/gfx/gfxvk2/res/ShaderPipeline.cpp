@@ -51,11 +51,13 @@ namespace vk
 
 namespace vk
 {
-    ShaderPipeline::ShaderPipeline(common::Resource<Device> device, common::Resource<vk::BaseFrameBuffer> frameBuffer,
+    ShaderPipeline::ShaderPipeline(common::Resource<Device> device, swizzle::gfx::ShaderType shaderType,
+                                   common::Resource<vk::BaseFrameBuffer> frameBuffer,
                                    const swizzle::gfx::ShaderAttributeList& attribList)
         : mDevice(device)
         , mFrameBuffer(frameBuffer)
         , mShaderAttributes(attribList)
+        , mShaderType(shaderType)
         , mPipelineLayout(VK_NULL_HANDLE)
         , mPipeline(VK_NULL_HANDLE)
         , mShaders()
@@ -284,6 +286,11 @@ namespace vk
         return mShaderAttributes;
     }
 
+    swizzle::gfx::ShaderType ShaderPipeline::getShaderType() const
+    {
+        return mShaderType;
+    }
+
 }
 
 /* Class Protected Function Definition */
@@ -414,30 +421,51 @@ namespace vk
         dynState.dynamicStateCount = COUNT_OF(dynamicStates);
         dynState.pDynamicStates = dynamicStates;
 
-        VkGraphicsPipelineCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        createInfo.pNext = VK_NULL_HANDLE;
-        createInfo.flags = 0;
-        createInfo.stageCount = static_cast<uint32_t>(shaderInfos.size());
-        createInfo.pStages = shaderInfos.data();
-        createInfo.pVertexInputState = &vertexInput;
-        createInfo.pInputAssemblyState = &assemblyState;
-        createInfo.pTessellationState = &tessState;
-        createInfo.pViewportState = &viewState;
-        createInfo.pRasterizationState = &rasterState;
-        createInfo.pMultisampleState = &multiSampleState;
-        createInfo.pDepthStencilState = &depthState;
-        createInfo.pColorBlendState = &colorState;
-        createInfo.pDynamicState = &dynState;
-        createInfo.layout = mPipelineLayout;
-        createInfo.renderPass = mFrameBuffer->getRenderPass();
-        createInfo.subpass = 0U;
-        createInfo.basePipelineHandle = VK_NULL_HANDLE;
-        createInfo.basePipelineIndex = -1;
-
         // TODO: Add Shader cache
-        VkResult res = vkCreateGraphicsPipelines(mDevice->getDeviceHandle(), VK_NULL_HANDLE, 1u, &createInfo,
-                                                 mDevice->getAllocCallbacks(), &mPipeline);
+        VkResult res;
+
+        if (mShaderType == swizzle::gfx::ShaderType::ShaderType_Graphics)
+        {
+            VkGraphicsPipelineCreateInfo createInfo = {};
+            createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+            createInfo.pNext = VK_NULL_HANDLE;
+            createInfo.flags = 0;
+            createInfo.stageCount = static_cast<uint32_t>(shaderInfos.size());
+            createInfo.pStages = shaderInfos.data();
+            createInfo.pVertexInputState = &vertexInput;
+            createInfo.pInputAssemblyState = &assemblyState;
+            createInfo.pTessellationState = &tessState;
+            createInfo.pViewportState = &viewState;
+            createInfo.pRasterizationState = &rasterState;
+            createInfo.pMultisampleState = &multiSampleState;
+            createInfo.pDepthStencilState = &depthState;
+            createInfo.pColorBlendState = &colorState;
+            createInfo.pDynamicState = &dynState;
+            createInfo.layout = mPipelineLayout;
+            createInfo.renderPass = mFrameBuffer->getRenderPass();
+            createInfo.subpass = 0U;
+            createInfo.basePipelineHandle = VK_NULL_HANDLE;
+            createInfo.basePipelineIndex = -1;
+
+            res = vkCreateGraphicsPipelines(mDevice->getDeviceHandle(), VK_NULL_HANDLE, 1u, &createInfo,
+                                            mDevice->getAllocCallbacks(), &mPipeline);
+        }
+        else
+        {
+
+            VkComputePipelineCreateInfo createInfo = {};
+
+            createInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+            createInfo.pNext = VK_NULL_HANDLE;
+            createInfo.flags = 0u;
+            createInfo.stage = shaderInfos[0];
+            createInfo.layout = mPipelineLayout;
+            createInfo.basePipelineHandle = VK_NULL_HANDLE;
+            createInfo.basePipelineIndex = -1;
+
+            res = vkCreateComputePipelines(mDevice->getDeviceHandle(), VK_NULL_HANDLE, 1u, &createInfo, mDevice->getAllocCallbacks(), &mPipeline);
+        }
+
         if (res != VK_SUCCESS)
         {
             LOG_ERROR("Graphics pipeline creation failed %s", vk::VkResultToString(res));
@@ -457,6 +485,8 @@ namespace vk
                 stage = VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
             else if (it.first == shader::ShaderModuleType::ShaderModuleType_Fragment)
                 stage = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
+            else if (it.first == shader::ShaderModuleType::ShaderModuleType_Compute)
+                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
 
             VkPipelineShaderStageCreateInfo shInfo = {};
             shInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

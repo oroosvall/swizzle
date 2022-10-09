@@ -116,6 +116,7 @@ namespace vk
         VkPhysicalDeviceFeatures features{};
 
         features.geometryShader = true;
+        features.pipelineStatisticsQuery = true;
 
         info.flags = 0u;
         info.pEnabledFeatures = &features;

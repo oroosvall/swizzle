@@ -24,7 +24,8 @@ namespace vk::shader
     {
         ShaderModuleType_Vertex,
         ShaderModuleType_Geometry,
-        ShaderModuleType_Fragment
+        ShaderModuleType_Fragment,
+        ShaderModuleType_Compute
     };
 }
 

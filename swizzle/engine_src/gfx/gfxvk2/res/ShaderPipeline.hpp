@@ -29,7 +29,8 @@ namespace vk
     class ShaderPipeline : public swizzle::gfx::Shader
     {
     public:
-        ShaderPipeline(common::Resource<Device> device, common::Resource<vk::BaseFrameBuffer> framebuffer,
+        ShaderPipeline(common::Resource<Device> device, swizzle::gfx::ShaderType shaderType,
+                       common::Resource<vk::BaseFrameBuffer> framebuffer,
                        const swizzle::gfx::ShaderAttributeList& attribList);
         virtual ~ShaderPipeline();
 
@@ -41,6 +42,8 @@ namespace vk
         VkDescriptorSetLayout getDescriptorLayout() const;
 
         const swizzle::gfx::ShaderAttributeList getAttributes() const;
+
+        swizzle::gfx::ShaderType getShaderType() const;
 
     private:
 
@@ -54,6 +57,7 @@ namespace vk
         common::Resource<Device> mDevice;
         common::Resource<vk::BaseFrameBuffer> mFrameBuffer;
         const swizzle::gfx::ShaderAttributeList mShaderAttributes;
+        swizzle::gfx::ShaderType mShaderType;
 
         VkPipelineLayout mPipelineLayout;
         VkPipeline mPipeline;

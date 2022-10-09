@@ -273,7 +273,7 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx, comm
     attributeList.mEnableBlending = true;
     attributeList.mPoints = false;
 
-    bd->mShader = ctx->createShader(bd->mImGuiFbo, attributeList);
+    bd->mShader = ctx->createShader(bd->mImGuiFbo, swizzle::gfx::ShaderType::ShaderType_Graphics, attributeList);
     bd->mShader->loadVertFragMemory(__glsl_shader_vert_spv, sizeof(__glsl_shader_vert_spv), __glsl_shader_frag_spv, sizeof(__glsl_shader_frag_spv), properties);
 
     unsigned char* pixels;

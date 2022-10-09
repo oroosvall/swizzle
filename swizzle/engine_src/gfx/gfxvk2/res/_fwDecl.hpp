@@ -28,6 +28,7 @@ namespace vk
     class Fence;
     class VFrameBuffer;
     class BaseFrameBuffer;
+    class QueryPool;
 }
 
 /* Struct Declaration */

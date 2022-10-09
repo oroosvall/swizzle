@@ -17,7 +17,8 @@ namespace swizzle::gfx
         InvalidStats,
         MemoryStats,
         DeviceStats,
-        InstanceStats
+        InstanceStats,
+        GfxPipelineStats
     };
 }
 
@@ -51,6 +52,24 @@ namespace swizzle::gfx
         U32 mNumTextures;
         U32 mNumStagedObjects;
         U32 mNumDescriptors;
+    };
+
+    struct GfxPipelineStatistics : public swizzle::core::StatsBase
+    {
+        U64 mEnabledBits; // bit field mapping enabled fields fron the statistics
+        U64 mInputAssemblyVertices; // bit 0
+        U64 mInputAssemblyPrimitives; // bit 1
+        U64 mVertexShaderInvocations; // bit 2
+        U64 mGeometryShaderInvokations; // bit 3
+        U64 mGeometryShaderPrimitives; // bit 4
+        U64 mClippingInvocations; // bit 5
+        U64 mClippingPrimitives; // bit 6
+        U64 mFragmentShaderInvocations; // bit 7
+        U64 mTesselationControlShaderPatches; // bit 8
+        U64 mTesselationEvaluationShaderInvocations; // bit 9
+        U64 mComputeShaderInvocations; // bit 10
+        U64 mTaskShaderInvocations; // bit 11
+        U64 mMeshShaderInvocations; // bit 12
     };
 }
 

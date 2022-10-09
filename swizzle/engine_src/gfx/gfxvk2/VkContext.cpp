@@ -13,6 +13,7 @@
 #include "res/VFrameBuffer.hpp"
 #include "res/VMaterial.hpp"
 #include "res/ShaderPipeline.hpp"
+#include "res/QueryPool.hpp"
 
 #include <optick/optick.h>
 
@@ -134,6 +135,7 @@ namespace swizzle::gfx
         stats->addMemoryStats();
         stats->addDeviceStats();
         stats->addInstanceStats();
+        stats->addPipelineStats();
         return stats;
     }
 
@@ -168,21 +170,26 @@ namespace swizzle::gfx
         return common::CreateRef<vk::VFrameBuffer>(mVkDevice, fboInfo);
     }
 
-    common::Resource<Shader> VkGfxContext::createShader(common::Resource<FrameBuffer> framebuffer, const ShaderAttributeList& attribs)
+    common::Resource<Shader> VkGfxContext::createShader(common::Resource<FrameBuffer> framebuffer, const swizzle::gfx::ShaderType type, const ShaderAttributeList& attribs)
     {
         common::Resource<vk::BaseFrameBuffer> fbo = vk::GetFrameBufferAsBaseFrameBuffer(framebuffer);
-        return common::CreateRef<vk::ShaderPipeline>(mVkDevice, fbo, attribs);
+        return common::CreateRef<vk::ShaderPipeline>(mVkDevice, type, fbo, attribs);
     }
-    common::Resource<Shader> VkGfxContext::createShader(common::Resource<Swapchain> swapchain, const ShaderAttributeList& attribs)
+    common::Resource<Shader> VkGfxContext::createShader(common::Resource<Swapchain> swapchain, const swizzle::gfx::ShaderType type, const ShaderAttributeList& attribs)
     {
         vk::VSwapchain* swp = (vk::VSwapchain*)swapchain.get();
         common::Resource<vk::BaseFrameBuffer> fbo = vk::GetFrameBufferAsBaseFrameBuffer(swp->getFrameBuffer());
-        return common::CreateRef<vk::ShaderPipeline>(mVkDevice, fbo, attribs);
+        return common::CreateRef<vk::ShaderPipeline>(mVkDevice, type, fbo, attribs);
     }
 
     common::Resource<Material> VkGfxContext::createMaterial(common::Resource<Shader> shader)
     {
         return common::CreateRef<vk::VMaterial>(mVkDevice, shader);
+    }
+
+    void VkGfxContext::enablePipelineStatistics(SwBool enable)
+    {
+        mVkDevice->getQueryPool()->enableStatistics(enable);
     }
 
     void VkGfxContext::submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount, common::Resource<Swapchain> swapchain)

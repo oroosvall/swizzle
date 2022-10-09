@@ -72,6 +72,8 @@ namespace vk
         virtual void drawNoBind(U32 vertexCount, U32 first) override;
         virtual void drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset) override;
 
+        virtual void dispatchCompute(U32 groupX, U32 groupY, U32 groupZ) override;
+
         virtual const swizzle::gfx::ScissorInfo pushScissorRegion(S32 x, S32 y, S32 w, S32 h) override;
         virtual void popScisorInfo(const swizzle::gfx::ScissorInfo& sci) override;
 
@@ -105,6 +107,8 @@ namespace vk
         U32 mDrawCount;
 
         swizzle::gfx::ScissorInfo mScissorInfo;
+        SwBool mInsideRenderpass;
+        SwBool mCachedGatherPipelineStatistics;
     };
 }
 

@@ -37,6 +37,7 @@ namespace swizzle::gfx
         void addMemoryStats();
         void addDeviceStats();
         void addInstanceStats();
+        void addPipelineStats();
 
     private:
 

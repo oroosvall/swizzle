@@ -5,6 +5,7 @@
 #include "Device.hpp"
 #include "Instance.hpp"
 #include "ShaderPipeline.hpp"
+#include "QueryPool.hpp"
 
 #include <optick/optick.h>
 
@@ -33,7 +34,7 @@ namespace vk
         , mLogicalDevice(logDev)
         , mMemoryProperties()
         , mPhysicalDeviceProperties()
-        , mPhysicalDeviuceFeatures()
+        , mPhysicalDeviceFeatures()
         , mMemoryPools()
         , mCleanup(nullptr)
         , mDescriptorPool_TEMP(VK_NULL_HANDLE)
@@ -54,7 +55,7 @@ namespace vk
         //mMemoryProperties = props.memoryProperties;
 
         vkGetPhysicalDeviceProperties(mPhysDevice, &mPhysicalDeviceProperties);
-        vkGetPhysicalDeviceFeatures(mPhysDevice, &mPhysicalDeviuceFeatures);
+        vkGetPhysicalDeviceFeatures(mPhysDevice, &mPhysicalDeviceFeatures);
 
         VkDescriptorPoolSize poolSize{};
         poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -69,11 +70,11 @@ namespace vk
         descCreateInfo.pPoolSizes = &poolSize;
 
         vkCreateDescriptorPool(mLogicalDevice, &descCreateInfo, mInstance->getAllocCallbacks(), &mDescriptorPool_TEMP);
-
     }
 
     Device::~Device()
     {
+        mQueryPool.reset();
         vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool_TEMP, mInstance->getAllocCallbacks());
         mCleanup->stop();
         deinitMemoryPools();
@@ -84,6 +85,8 @@ namespace vk
     {
         initMemoryPools();
         mCleanup = new CleanupRunnable(shared_from_this());
+        U32 queryCount = 1u;
+        mQueryPool = std::make_shared<QueryPool>(shared_from_this(), queryCount);
     }
 
     void Device::waitDeviceIdle()
@@ -105,6 +108,11 @@ namespace vk
     const SwChar* Device::getDeviceName() const
     {
         return mPhysicalDeviceProperties.deviceName;
+    }
+
+    VkPhysicalDeviceFeatures Device::getDeviceFeatures() const
+    {
+        return mPhysicalDeviceFeatures;
     }
 
     VkQueue Device::getQueue()
@@ -162,6 +170,21 @@ namespace vk
             vkDestroyFence(mLogicalDevice, fences[i], mInstance->getAllocCallbacks());
         }
         delete[] fences;
+    }
+
+    VkQueryPool Device::createQueryPool(VkQueryPoolCreateInfo& info)
+    {
+        VkQueryPool pool = VK_NULL_HANDLE;
+
+        VkResult res = vkCreateQueryPool(mLogicalDevice, &info, mInstance->getAllocCallbacks(), &pool);
+        vk::LogVulkanError(res, "vkCreateQueryPool");
+
+        return pool;
+    }
+
+    void Device::destroyQueryPool(VkQueryPool pool)
+    {
+        vkDestroyQueryPool(mLogicalDevice, pool, mInstance->getAllocCallbacks());
     }
 
     common::Resource<VkResource<VkBuffer>> Device::createBuffer(VkDeviceSize size, VkBufferUsageFlags flags)
@@ -374,6 +397,11 @@ namespace vk
         mDeviceStats.mNumPipelines = mPipelineCount;
         mDeviceStats.mNumDescriptors = mDescriptorCount;
         return &mDeviceStats;
+    }
+
+    common::Resource<QueryPool> Device::getQueryPool() const
+    {
+        return mQueryPool;
     }
 
 }

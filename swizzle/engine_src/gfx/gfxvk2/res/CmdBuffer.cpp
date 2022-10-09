@@ -11,6 +11,7 @@
 #include "TextureBase.hpp"
 #include "VMaterial.hpp"
 #include "Fence.hpp"
+#include "QueryPool.hpp"
 
 #include <optick/optick.h>
 
@@ -42,6 +43,8 @@ namespace vk
         , mFences(nullptr)
         , mDrawCount(0u)
         , mScissorInfo()
+        , mInsideRenderpass(false)
+        , mCachedGatherPipelineStatistics(false)
     {
         mCommandBuffers = mCmdPool->allocateCmdBuffer(mBufferCount, VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
         mFences = new common::Resource<vk::Fence>[mBufferCount];
@@ -155,12 +158,26 @@ namespace vk
         VkResult res = vkBeginCommandBuffer(getCmdBuffer(mActiveIndex), &beginInfo);
         vk::LogVulkanError(res, "vkBeginCommandBuffer");
 
+        mCachedGatherPipelineStatistics = mDevice->getQueryPool()->isStatisticsEnabled();
+
+        if (mCachedGatherPipelineStatistics)
+        {
+            vkCmdResetQueryPool(getCmdBuffer(mActiveIndex), mDevice->getQueryPool()->getHandle(), 0u, 1u);
+            vkCmdBeginQuery(getCmdBuffer(mActiveIndex), mDevice->getQueryPool()->getHandle(), 0u, 0u);
+        }
+
         mScissorInfo.enableCtr = 0u;
     }
 
     void CmdBuffer::end()
     {
         OPTICK_EVENT("CmdBuffer::end");
+
+        if (mCachedGatherPipelineStatistics)
+        {
+            vkCmdEndQuery(getCmdBuffer(mActiveIndex), mDevice->getQueryPool()->getHandle(), 0u);
+        }
+
         VkResult res = vkEndCommandBuffer(getCmdBuffer(mActiveIndex));
         vk::LogVulkanError(res, "vkBeginCommandBuffer");
     }
@@ -213,19 +230,29 @@ namespace vk
 
         vkCmdBeginRenderPass(getCmdBuffer(mActiveIndex), &beginInfo,
                              VkSubpassContents::VK_SUBPASS_CONTENTS_INLINE);
+        mInsideRenderpass = true;
     }
 
     void CmdBuffer::endRenderPass()
     {
         vkCmdEndRenderPass(getCmdBuffer(mActiveIndex));
+        mInsideRenderpass = false;
     }
 
     void CmdBuffer::bindShader(common::Resource<swizzle::gfx::Shader> shader)
     {
         ShaderPipeline* shad = (ShaderPipeline*)(shader.get());
 
-        vkCmdBindPipeline(getCmdBuffer(mActiveIndex), VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          shad->getPipeline());
+        if (shad->getShaderType() == swizzle::gfx::ShaderType::ShaderType_Graphics)
+        {
+            vkCmdBindPipeline(getCmdBuffer(mActiveIndex), VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS,
+                              shad->getPipeline());
+        }
+        else
+        {
+            vkCmdBindPipeline(getCmdBuffer(mActiveIndex), VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_COMPUTE,
+                              shad->getPipeline());
+        }
     }
 
     void CmdBuffer::bindMaterial(common::Resource<swizzle::gfx::Shader> shader,
@@ -422,6 +449,18 @@ namespace vk
         OPTICK_EVENT("CmdBuffer::drawIndexedNoBind");
         mDrawCount++;
         vkCmdDrawIndexed(getCmdBuffer(mActiveIndex), vertexCount, 1u, first, vertOffset, 0u);
+    }
+
+    void CmdBuffer::dispatchCompute(U32 groupX, U32 groupY, U32 groupZ)
+    {
+        if (mInsideRenderpass)
+        {
+            LOG_ERROR("Cannot dispatch compute while inside a renderpass");
+        }
+        else
+        {
+            vkCmdDispatch(getCmdBuffer(mActiveIndex), groupX, groupY, groupZ);
+        }
     }
 
     const swizzle::gfx::ScissorInfo CmdBuffer::pushScissorRegion(S32 x, S32 y, S32 w, S32 h)

@@ -52,6 +52,7 @@ namespace vk
         VkDevice getDeviceHandle() const;
         VkPhysicalDevice getPhysicalHandle() const;
         const SwChar* getDeviceName() const;
+        VkPhysicalDeviceFeatures getDeviceFeatures() const;
 
         VkQueue getQueue();
 
@@ -61,6 +62,9 @@ namespace vk
         VkFence* createFences(U32 fenceCount, FenceCreateFlags flags);
         void destroyFence(VkFence fence);
         void destroyFences(VkFence* fences, U32 fenceCount);
+
+        VkQueryPool createQueryPool(VkQueryPoolCreateInfo& info);
+        void destroyQueryPool(VkQueryPool pool);
 
         common::Resource<VkResource<VkBuffer>> createBuffer(VkDeviceSize size, VkBufferUsageFlags flags);
         common::Resource<VkResource<VkImage>> createImage(VkImageType type, VkFormat format,
@@ -91,6 +95,8 @@ namespace vk
         swizzle::gfx::MemoryStatistics* getHeapStatsistics(U32 index) const;
         swizzle::gfx::DeviceStatistics* getDeviceStats();
 
+        common::Resource<QueryPool> getQueryPool() const;
+
     private:
 
         void initMemoryPools();
@@ -107,7 +113,7 @@ namespace vk
 
         VkPhysicalDeviceMemoryProperties mMemoryProperties;
         VkPhysicalDeviceProperties mPhysicalDeviceProperties;
-        VkPhysicalDeviceFeatures mPhysicalDeviuceFeatures;
+        VkPhysicalDeviceFeatures mPhysicalDeviceFeatures;
 
         std::vector<common::Resource<DeviceMemoryPool>> mMemoryPools;
 
@@ -122,6 +128,7 @@ namespace vk
 
         swizzle::gfx::DeviceStatistics mDeviceStats;
 
+        common::Resource<QueryPool> mQueryPool;
     };
 }
 /* Function Declaration */

@@ -55,6 +55,8 @@ namespace swizzle::gfx
         virtual void drawNoBind(U32 vertexCount, U32 first) = 0;
         virtual void drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset) = 0;
 
+        virtual void dispatchCompute(U32 groupX, U32 groupY, U32 groupZ) = 0;
+
         virtual const ScissorInfo pushScissorRegion(S32 x, S32 y, S32 w, S32 h) = 0;
         virtual void popScisorInfo(const ScissorInfo& sci) = 0;
 

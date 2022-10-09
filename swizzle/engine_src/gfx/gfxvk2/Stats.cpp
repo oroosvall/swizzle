@@ -4,7 +4,7 @@
 #include "Stats.hpp"
 
 #include "backend/VkDebug.hpp"
-
+#include "res/QueryPool.hpp"
 #include <optick/optick.h>
 
 /* Defines */
@@ -88,7 +88,12 @@ namespace swizzle::gfx
         stats.mAllocCount = vk::getAllocCount();
         stats.mInternalAllocCount = vk::getAllocInternalCount();
         mStats.push_back(std::make_pair(gfx::GfxStatsType::InstanceStats, &stats));
+    }
 
+    void StatsIterator::addPipelineStats()
+    {
+        auto stats = mDevice->getQueryPool()->getGfxPipelineStatistics(true);
+        mStats.push_back(std::make_pair(gfx::GfxStatsType::GfxPipelineStats, stats));
     }
 }
 

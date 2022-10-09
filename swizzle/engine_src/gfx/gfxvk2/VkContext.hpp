@@ -56,10 +56,12 @@ namespace swizzle::gfx
         virtual void submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount,
                     common::Resource<Swapchain> swapchain) override;
 
-        virtual common::Resource<Shader> createShader(common::Resource<FrameBuffer> framebuffer, const ShaderAttributeList& attribs) override;
-        virtual common::Resource<Shader> createShader(common::Resource<Swapchain> swapchain, const ShaderAttributeList& attribs) override;
+        virtual common::Resource<Shader> createShader(common::Resource<FrameBuffer> framebuffer, const swizzle::gfx::ShaderType type, const ShaderAttributeList& attribs) override;
+        virtual common::Resource<Shader> createShader(common::Resource<Swapchain> swapchain, const swizzle::gfx::ShaderType type, const ShaderAttributeList& attribs) override;
 
         virtual common::Resource<Material> createMaterial(common::Resource<Shader> shader) override;
+
+        virtual void enablePipelineStatistics(SwBool enable) override;
 
         void resetCommandPool();
 

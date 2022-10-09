@@ -239,6 +239,10 @@ namespace vk::shader
         {
             type = shader::ShaderModuleType::ShaderModuleType_Fragment;
         }
+        else if (strcmp(shaderType, "compute") == 0)
+        {
+            type = shader::ShaderModuleType::ShaderModuleType_Compute;
+        }
         else
         {
             ok = false;

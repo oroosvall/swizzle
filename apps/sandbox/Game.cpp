@@ -48,6 +48,7 @@ void Game::userSetup()
     //mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
 
     mCmdBuffer = mGfxContext->createCommandBuffer(2);
+    mGfxContext->enablePipelineStatistics(true);
 
     cam.setPosition({ 0.0F, 0.0F, 5.5F });
 
@@ -58,11 +59,16 @@ void Game::userSetup()
     attribFsq.mPushConstantSize = 0u;
     attribFsq.mEnableBlending = true;
 
-    mFsq = mGfxContext->createShader(mSwapchain, attribFsq);
+    mFsq = mGfxContext->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Graphics, attribFsq);
     mFsq->load("shaders/fsq.shader");
 
     mFsqMat = mGfxContext->createMaterial(mFsq);
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
+
+    sw::gfx::ShaderAttributeList attribCompute = {};
+
+    mComputeShader = mGfxContext->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Compute, attribCompute);
+    mComputeShader->load("shaders/compute.shader");
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -108,6 +114,20 @@ SwBool Game::userUpdate(F32 dt)
             title += "Instance\n";
             title += "  Alloc Count " + std::to_string(instStats->mAllocCount) + "\n";
             title += "  Internal Alloc Count " + std::to_string(instStats->mInternalAllocCount) + "\n";
+        }
+        else if (iter->getType() == sw::gfx::GfxStatsType::GfxPipelineStats)
+        {
+            sw::gfx::GfxPipelineStatistics* gfxStats = (sw::gfx::GfxPipelineStatistics*)iter->getStatisticsData();
+            title += "Graphics Pipeline statistics\n";
+            title += "  Input Assemby Vertices " + std::to_string(gfxStats->mInputAssemblyVertices) + "\n";
+            title += "  Input Assemby Primitives " + std::to_string(gfxStats->mInputAssemblyPrimitives) + "\n";
+            title += "  Vertex Shader Invocations " + std::to_string(gfxStats->mVertexShaderInvocations) + "\n";
+            title += "  Clipping Invocations " + std::to_string(gfxStats->mClippingInvocations) + "\n";
+            title += "  Clipping Primitives " + std::to_string(gfxStats->mClippingInvocations) + "\n";
+            title += "  Fragment Shader Invocations " + std::to_string(gfxStats->mFragmentShaderInvocations) + "\n";
+            title += "  Tesselation Control Shader Patches " + std::to_string(gfxStats->mTesselationControlShaderPatches) + "\n";
+            title += "  Tesselation Evaluation Shader Invocations " + std::to_string(gfxStats->mTesselationEvaluationShaderInvocations) + "\n";
+            title += "  Compute Shader Invocations " + std::to_string(gfxStats->mComputeShaderInvocations) + "\n";
         }
 
     } while (iter->next());
@@ -168,6 +188,9 @@ void Game::updateMainWindow(F32 dt)
     mScene->update(dt, mCmdBuffer);
 
     imGuiRender();
+
+    mCmdBuffer->bindShader(mComputeShader);
+    mCmdBuffer->dispatchCompute(10, 10, 10);
 
     mCmdBuffer->beginRenderPass(mSwapchain);
 
