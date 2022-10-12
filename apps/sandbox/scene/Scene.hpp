@@ -6,12 +6,12 @@
 #include <common/Common.hpp>
 #include <swizzle/gfx/Context.hpp>
 
-#include <string>
 #include <fstream>
+#include <string>
 
-#include <assetManager/AssetManager.hpp>
-#include "Renderable.hpp"
 #include "Compositor.hpp"
+#include "Renderable.hpp"
+#include <assetManager/AssetManager.hpp>
 
 #include "../Camera.hpp"
 
@@ -36,7 +36,8 @@ enum class SceneState
 class Scene
 {
 public:
-    Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<AssetManager> assetManager, common::Resource<Compositor> compositor);
+    Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<AssetManager> assetManager,
+          common::Resource<Compositor> compositor);
     ~Scene();
 
     void clear();
@@ -46,11 +47,10 @@ public:
     void loadSky();
     void loadAnimMesh();
 
-    SceneState update(DeltaTime dt, common::Resource<swizzle::gfx::CommandBuffer> cmdBuf);
-    void render(common::Resource<swizzle::gfx::CommandBuffer> cmdBuf, PerspectiveCamera& cam);
+    SceneState update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans);
+    void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam);
 
 private:
-
     SwBool loadAscii(std::ifstream& stream);
     SwBool loadBinary(std::ifstream& stream);
 
@@ -60,7 +60,6 @@ private:
     SceneState mSceneState;
 
     std::vector<common::Resource<Renderable>> mRenderables;
-
 };
 
 /* Function Declaration */

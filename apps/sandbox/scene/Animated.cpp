@@ -24,10 +24,8 @@
 
 /* Class Public Function Definition */
 
-Animated::Animated(common::Resource<swizzle::gfx::GfxContext> ctx,
-                   common::Resource<swizzle::asset2::IMeshAsset> asset,
-                   common::Resource<swizzle::gfx::Buffer> inst,
-                   common::Resource<swizzle::gfx::Texture> texture,
+Animated::Animated(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::asset2::IMeshAsset> asset,
+                   common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
                    common::Resource<swizzle::gfx::Shader> shader)
     : mAsset(asset)
     , mMesh(nullptr)
@@ -45,24 +43,26 @@ Animated::Animated(common::Resource<swizzle::gfx::GfxContext> ctx,
     mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
     mBone = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
 
-    mMesh->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(), sizeof(float) * (3u + 3u + 2u + 4u + 4u));
+    mMesh->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(),
+                         sizeof(float) * (3u + 3u + 2u + 4u + 4u));
     mIndex->setBufferData((U8*)mAsset->getIndexDataPtr(), mAsset->getIndexDataSize(), sizeof(U32) * 3u);
 
-    mBone->setBufferData((U8*)mAsset->getAnimationDataPtr(0, 0), mAsset->getNumberOfBones() * sizeof(glm::mat4), sizeof(glm::mat4));
+    mBone->setBufferData((U8*)mAsset->getAnimationDataPtr(0, 0), mAsset->getNumberOfBones() * sizeof(glm::mat4),
+                         sizeof(glm::mat4));
 
     mMaterial = ctx->createMaterial(mShader);
     mMaterial->setDescriptorTextureResource(0u, mTexture);
     mMaterial->setDescriptorBufferResource(1u, mBone, ~0ull);
 }
 
-void Animated::update(DeltaTime dt, common::Resource<swizzle::gfx::CommandBuffer> cmd)
+void Animated::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     const DeltaTime animFps = 1.0f / 24.0f;
 
     SwBool wasChanged = false;
 
     UNUSED_ARG(dt);
-    cmd->uploadTexture(mTexture);
+    trans->uploadTexture(mTexture);
 
     if (mAsset && mAsset->hasAnimations())
     {
@@ -90,7 +90,8 @@ void Animated::update(DeltaTime dt, common::Resource<swizzle::gfx::CommandBuffer
             mFrameIndex++;
             mFrameIndex = mFrameIndex % mAsset->getNumberOfKeyFrames(mCurAnim);
 
-            mBone->setBufferData((U8*)mAsset->getAnimationDataPtr(mCurAnim, mFrameIndex), mAsset->getNumberOfBones() * sizeof(glm::mat4), sizeof(glm::mat4));
+            mBone->setBufferData((U8*)mAsset->getAnimationDataPtr(mCurAnim, mFrameIndex),
+                                 mAsset->getNumberOfBones() * sizeof(glm::mat4), sizeof(glm::mat4));
             mMaterial->setDescriptorBufferResource(1u, mBone, ~0ull);
         }
         else
@@ -101,10 +102,9 @@ void Animated::update(DeltaTime dt, common::Resource<swizzle::gfx::CommandBuffer
             }
         }
     }
-
 }
 
-void Animated::render(common::Resource<swizzle::gfx::CommandBuffer> cmd, PerspectiveCamera& cam)
+void Animated::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
 {
     struct tmp
     {
@@ -120,15 +120,15 @@ void Animated::render(common::Resource<swizzle::gfx::CommandBuffer> cmd, Perspec
     t.viewProj = cam.getProjection() * cam.getView();
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
 
-    cmd->bindShader(mShader);
+    trans->bindShader(mShader);
 
-    cmd->bindMaterial(mShader, mMaterial);
-    cmd->setViewport(U32(x), U32(y));
+    trans->bindMaterial(mShader, mMaterial);
+    trans->setViewport(U32(x), U32(y));
 
-    cmd->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+    trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
 
-    //cmd->drawIndexed(mMesh, mIndex);
-    cmd->drawIndexedInstanced(mMesh, mIndex, mInst);
+    // cmd->drawIndexed(mMesh, mIndex);
+    trans->drawIndexedInstanced(mMesh, mIndex, mInst);
 }
 
 /* Class Protected Function Definition */

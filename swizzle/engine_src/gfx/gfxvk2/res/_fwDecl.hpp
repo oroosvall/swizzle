@@ -29,7 +29,8 @@ namespace vk
     class VFrameBuffer;
     class BaseFrameBuffer;
     class QueryPool;
-}
+    class LifetimeToken;
+} // namespace vk
 
 /* Struct Declaration */
 

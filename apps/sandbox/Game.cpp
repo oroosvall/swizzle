@@ -21,13 +21,11 @@ Game::Game()
 {
 }
 
-Game::~Game()
-{
-}
+Game::~Game() {}
 
 void Game::userSetup()
 {
-    //mWindow->setCursorVisible(false);
+    // mWindow->setCursorVisible(false);
 
     std::string cfgFile = sw::core::GetAppCacheDirectory();
     cfgFile += "engine.cfg";
@@ -45,12 +43,12 @@ void Game::userSetup()
     mScene->loadAnimMesh();
 
     mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOn);
-    //mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
+    // mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
 
     mCmdBuffer = mGfxContext->createCommandBuffer(2);
     mGfxContext->enablePipelineStatistics(true);
 
-    cam.setPosition({ 0.0F, 0.0F, 5.5F });
+    cam.setPosition({0.0F, 0.0F, 5.5F});
 
     sw::gfx::ShaderAttributeList attribFsq = {};
     attribFsq.mDescriptors = {
@@ -97,7 +95,8 @@ SwBool Game::userUpdate(F32 dt)
 
             title += "Memory Heap: " + std::string(memStat->mName) + "\n";
             title += "  Mem: " + utils::toMemoryString(memStat->mUsed) + "/" + utils::toMemoryString(memStat->mSize);
-            title += "; Allocs: " + std::to_string(memStat->mNumAllocations) + "p, " + std::to_string(memStat->mNumVirtualAllocations) + "v\n";
+            title += "; Allocs: " + std::to_string(memStat->mNumAllocations) + "p, " +
+                     std::to_string(memStat->mNumVirtualAllocations) + "v\n";
         }
         else if (iter->getType() == sw::gfx::GfxStatsType::DeviceStats)
         {
@@ -125,13 +124,14 @@ SwBool Game::userUpdate(F32 dt)
             title += "  Clipping Invocations " + std::to_string(gfxStats->mClippingInvocations) + "\n";
             title += "  Clipping Primitives " + std::to_string(gfxStats->mClippingInvocations) + "\n";
             title += "  Fragment Shader Invocations " + std::to_string(gfxStats->mFragmentShaderInvocations) + "\n";
-            title += "  Tesselation Control Shader Patches " + std::to_string(gfxStats->mTesselationControlShaderPatches) + "\n";
-            title += "  Tesselation Evaluation Shader Invocations " + std::to_string(gfxStats->mTesselationEvaluationShaderInvocations) + "\n";
+            title += "  Tesselation Control Shader Patches " +
+                     std::to_string(gfxStats->mTesselationControlShaderPatches) + "\n";
+            title += "  Tesselation Evaluation Shader Invocations " +
+                     std::to_string(gfxStats->mTesselationEvaluationShaderInvocations) + "\n";
             title += "  Compute Shader Invocations " + std::to_string(gfxStats->mComputeShaderInvocations) + "\n";
         }
 
     } while (iter->next());
-
 
     title += "Draw call count: " + std::to_string(mCmdBuffer->getDrawCount()) + "\n";
     title += "Vertex count: " + std::to_string(mCmdBuffer->getVertCount()) + "\n";
@@ -167,7 +167,6 @@ void Game::userCleanup()
     mCmdBuffer.reset();
 
     mFrameBuffer.reset();
-
 }
 
 void Game::updateMainWindow(F32 dt)
@@ -180,40 +179,41 @@ void Game::updateMainWindow(F32 dt)
     cam.changeAspect((F32)x, (F32)y);
     mController.update(dt);
 
-    mSwapchain->setClearColor({ 0,0,0,1 });
+    mSwapchain->setClearColor({0, 0, 0, 1});
 
     mSwapchain->prepare();
-    mCmdBuffer->begin();
 
-    mScene->update(dt, mCmdBuffer);
+    auto trans = mCmdBuffer->begin();
 
-    imGuiRender();
+    mScene->update(dt, trans);
 
-    mCmdBuffer->bindShader(mComputeShader);
-    mCmdBuffer->dispatchCompute(10, 10, 10);
+    imGuiRender(trans);
 
-    mCmdBuffer->beginRenderPass(mSwapchain);
+    trans->bindComputeShader(mComputeShader);
+    trans->dispatchCompute(10, 10, 10);
 
-    mScene->render(mCmdBuffer, cam);
+    auto dTrans = mCmdBuffer->beginRenderPass(mSwapchain, std::move(trans));
 
-    mCmdBuffer->bindShader(mFsq);
-    mCmdBuffer->bindMaterial(mFsq, mFsqMat);
-    mCmdBuffer->drawNoBind(3u, 0u);
+    mScene->render(dTrans, cam);
 
-    mCmdBuffer->endRenderPass();
-    mCmdBuffer->end();
+    dTrans->bindShader(mFsq);
+    dTrans->bindMaterial(mFsq, mFsqMat);
+    dTrans->drawNoBind(3u, 0u);
+
+    trans = mCmdBuffer->endRenderPass(std::move(dTrans));
+
+    mCmdBuffer->end(std::move(trans));
 
     mGfxContext->submit(&mCmdBuffer, 1u, mSwapchain);
     mSwapchain->present();
 }
 
-void Game::imGuiRender()
+void Game::imGuiRender(common::Unique<sw::gfx::CommandTransaction>& trans)
 {
-    ImGui_ImplSwizzle_UploadFontTexture(mCmdBuffer);
+    ImGui_ImplSwizzle_UploadFontTexture(trans);
 
-    ImGui_ImplSwizzle_BeginDraw(mCmdBuffer);
-
+    auto dTrans = mCmdBuffer->beginRenderPass(ImGui_ImplSwizzle_GetFramebuffer(), std::move(trans));
     ImGui::Render();
-    ImGui_ImplSwizzle_RenderDrawData(ImGui::GetDrawData(), mCmdBuffer);
-    ImGui_ImplSwizzle_EndDraw(mCmdBuffer);
+    ImGui_ImplSwizzle_RenderDrawData(ImGui::GetDrawData(), dTrans);
+    trans = mCmdBuffer->endRenderPass(std::move(dTrans));
 }

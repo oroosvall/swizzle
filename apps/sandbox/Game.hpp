@@ -1,9 +1,9 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-#include <swizzle/Swizzle.hpp>
 #include "Camera.hpp"
 #include "CameraController.hpp"
+#include <swizzle/Swizzle.hpp>
 
 #include <vector>
 
@@ -18,7 +18,6 @@
 class Game : public sw::Application
 {
 public:
-
     Game();
     ~Game();
 
@@ -28,10 +27,9 @@ public:
     virtual void userCleanup() override;
 
 private:
-
     void updateMainWindow(F32 dt);
 
-    void imGuiRender();
+    void imGuiRender(common::Unique<sw::gfx::CommandTransaction>& trans);
 
     common::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
 
@@ -51,7 +49,6 @@ private:
     common::Resource<Scene> mScene;
 
     common::Resource<sw::gfx::Shader> mComputeShader;
-
 };
 
 #endif

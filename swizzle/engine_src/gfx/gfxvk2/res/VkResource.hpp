@@ -3,9 +3,9 @@
 
 /* Include files */
 
-#include <common/Common.hpp>
-#include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
+#include "_fwDecl.hpp"
+#include <common/Common.hpp>
 
 #include "CmdBuffer.hpp"
 
@@ -33,6 +33,10 @@ namespace vk
     typedef std::pair<WeakCmdBuffer, U64> FrameUser;
     typedef std::vector<FrameUser> FrameResourceUser;
 
+    typedef std::weak_ptr<LifetimeToken> WeakLifetimeToken;
+    typedef std::pair<WeakLifetimeToken, U64> LifetimeUser;
+    typedef std::vector<LifetimeUser> LifetimeResourceUser;
+
 } // namespace vk
 
 /* Struct Declaration */
@@ -41,6 +45,47 @@ namespace vk
 
 namespace vk
 {
+
+    class LifetimeToken
+    {
+    public:
+        LifetimeToken(U64 checkpoint, U64 count)
+            : mCheckpoint(checkpoint)
+            , mCount(count)
+        {
+        }
+
+        ~LifetimeToken() {}
+
+        void incrementCheckpoint()
+        {
+            mCheckpoint++;
+        }
+
+        SwBool isActive(U64 checkpoint) const
+        {
+            SwBool active = true;
+            if ((checkpoint + mCount + 1u) < mCheckpoint)
+            {
+                active = false;
+            }
+            else
+            {
+                // TODO: Check agains synchronization object
+            }
+            return active;
+        }
+
+        U64 getCheckpoint() const
+        {
+            return mCheckpoint;
+        }
+
+    private:
+        U64 mCheckpoint;
+        U64 mCount;
+    };
+
     class IVkResource
     {
     public:
@@ -49,14 +94,14 @@ namespace vk
         virtual U32 activeUserCount() = 0;
     };
 
-    template<typename T>
-    class VkResource : public IVkResource
+    template <typename T> class VkResource : public IVkResource
     {
     public:
         VkResource(T resource, ResourceType resourceType)
             : mResource(resource)
             , mResourceType(resourceType)
-        {}
+        {
+        }
 
         virtual ~VkResource() noexcept
         {
@@ -70,6 +115,12 @@ namespace vk
         {
             FrameUser& found = findOrCreateUser(buffer);
             found.second = frameCount;
+        }
+
+        void addUser(common::Resource<LifetimeToken> token, U64 checkpoint)
+        {
+            LifetimeUser& found = findOrCreateUser(token);
+            found.second = checkpoint;
         }
 
         void addResourceDependency(common::Resource<IVkResource> resource)
@@ -105,6 +156,19 @@ namespace vk
                 if (cmd)
                 {
                     if (cmd->isFrameInProgress(frameCount))
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            for (const auto& p : mLifetimeTokenUsers)
+            {
+                U64 checkpoint = p.second;
+                auto cmd = p.first.lock();
+                if (cmd)
+                {
+                    if (cmd->isActive(checkpoint))
                     {
                         count++;
                     }
@@ -150,6 +214,31 @@ namespace vk
             return mCommandBufferUsers[index];
         }
 
+        LifetimeUser& findOrCreateUser(common::Resource<LifetimeToken> token)
+        {
+            // @TODO: needs loock when accross threads
+            size_t index = ~0ull;
+            size_t ctr = 0ull;
+
+            for (const auto& p : mLifetimeTokenUsers)
+            {
+                if (p.first.lock().get() == token.get())
+                {
+                    index = ctr;
+                    break;
+                }
+                ctr++;
+            }
+
+            if (index == ~0ull)
+            {
+                mLifetimeTokenUsers.emplace_back(LifetimeUser(token, 0ull));
+                index = mLifetimeTokenUsers.size() - 1ull;
+            }
+
+            return mLifetimeTokenUsers[index];
+        }
+
         void addNewResourceDependencyIfNotFound(common::Resource<IVkResource> resource)
         {
             size_t index = ~0ull;
@@ -174,11 +263,11 @@ namespace vk
         T mResource;
         ResourceType mResourceType;
         FrameResourceUser mCommandBufferUsers;
+        LifetimeResourceUser mLifetimeTokenUsers;
         std::vector<common::Resource<IVkResource>> mResourceDependencies;
     };
 } // namespace vk
 
 /* Function Declaration */
-
 
 #endif

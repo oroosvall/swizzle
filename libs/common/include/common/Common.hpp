@@ -41,6 +41,7 @@ typedef float DeltaTime;
 namespace common
 {
     template<typename T> using Resource = std::shared_ptr<T>;
+    template<typename T> using Unique = std::unique_ptr<T>;
 }
 
 /* Struct Declaration */
@@ -63,6 +64,12 @@ namespace common
     [[nodiscard]] Resource<_Ty> CreateRef(_Types&&... _Args)
     {
         return std::make_shared<_Ty>(std::forward<_Types>(_Args)...);
+    }
+
+    template<class _Ty, class... _Types>
+    [[nodiscard]] Unique<_Ty> CreateUnique(_Types&&... _Args)
+    {
+        return std::make_unique<_Ty>(std::forward<_Types>(_Args)...);
     }
 
     class IResource
