@@ -3,13 +3,13 @@
 
 /* Include files */
 
-#include <swizzle/gfx/Swapchain.hpp>
 #include <swizzle/core/Window.hpp>
+#include <swizzle/gfx/Swapchain.hpp>
 
 #include "_fwDecl.hpp"
 
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include "../backend/Vk.hpp"
 
@@ -30,7 +30,7 @@ namespace vk
         VkImage mImage;
         VkImageView mImageView;
     };
-}
+} // namespace vk
 
 /* Class Declaration */
 
@@ -39,7 +39,8 @@ namespace vk
     class VSwapchain : public swizzle::gfx::Swapchain
     {
     public:
-        VSwapchain(common::Resource<Instance> instance, common::Resource<Device> device, common::Resource<swizzle::core::SwWindow> window);
+        VSwapchain(common::Resource<Instance> instance, common::Resource<Device> device,
+                   common::Resource<swizzle::core::SwWindow> window);
         virtual ~VSwapchain();
 
         virtual SwBool isVsyncModeSupported(swizzle::gfx::VSyncTypes sync) const override;
@@ -62,7 +63,6 @@ namespace vk
         U32 getCurrentFrame() const;
 
     private:
-
         std::vector<VkPresentModeKHR> getAvailablePresentModes();
 
         void recreateSwapchain();
@@ -103,11 +103,9 @@ namespace vk
         std::vector<VkFence> mInFlightFences;
         std::vector<VkFence> mImagesInFlight;
 
-
         U64 mFrameCounter;
-
     };
-}
+} // namespace vk
 
 /* Function Declaration */
 

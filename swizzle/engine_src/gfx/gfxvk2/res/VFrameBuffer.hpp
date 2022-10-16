@@ -5,11 +5,11 @@
 
 #include "BaseFrameBuffer.hpp"
 
-#include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
+#include "_fwDecl.hpp"
 
-#include "VkResource.hpp"
 #include "TextureBase.hpp"
+#include "VkResource.hpp"
 
 /* Defines */
 
@@ -29,7 +29,7 @@ namespace vk
         common::Resource<DeviceMemory> mImageMemory;
         VkClearValue mClearValue;
     };
-}
+} // namespace vk
 
 /* Class Declaration */
 
@@ -41,7 +41,8 @@ namespace vk
         DummyTexture(common::Resource<VkResource<VkImage>> image, VkImageView view)
             : mImage(image)
             , mImageView(view)
-        { }
+        {
+        }
         common::Resource<VkResource<VkImage>> mImage;
         VkImageView mImageView;
 
@@ -58,16 +59,15 @@ namespace vk
         {
             return mImageView;
         }
-        virtual void setData(U32, U32, U32, const U8*) { }
-        virtual void getTextureSize(U32&, U32&) { }
+        virtual void setData(U32, U32, U32, const U8*) {}
+        virtual void getTextureSize(U32&, U32&) {}
 
-        virtual void upload() { }
+        virtual void upload() {}
     };
 
     class VFrameBuffer : public BaseFrameBuffer
     {
     public:
-
         VFrameBuffer(common::Resource<Device> device, const swizzle::gfx::FrameBufferCreateInfo& createInfo);
 
         virtual ~VFrameBuffer();
@@ -91,7 +91,6 @@ namespace vk
         virtual VkClearValue getDepthClearValue() const override;
 
     private:
-
         void destroyResources();
 
         void createColorImages();
@@ -117,13 +116,14 @@ namespace vk
 
         common::Resource<swizzle::gfx::Material> mMaterial;
     };
-}
+} // namespace vk
 
 /* Function Declaration */
 
 namespace vk
 {
-    common::Resource<BaseFrameBuffer> GetFrameBufferAsBaseFrameBuffer(common::Resource<swizzle::gfx::FrameBuffer> buffer);
+    common::Resource<BaseFrameBuffer>
+        GetFrameBufferAsBaseFrameBuffer(common::Resource<swizzle::gfx::FrameBuffer> buffer);
 }
 
 #endif

@@ -5,8 +5,8 @@
 
 #include "BaseFrameBuffer.hpp"
 
-#include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
+#include "_fwDecl.hpp"
 
 #include "VkResource.hpp"
 
@@ -47,20 +47,8 @@ namespace vk
         virtual VkClearValue getColorClearValue(U32 index) const override;
         virtual VkClearValue getDepthClearValue() const override;
 
-        // BaseFrameBuffer
-        // virtual VkRenderPass getRenderPass() const override;
-        // virtual VkFramebuffer getFramebuffer() const override;
-
-        // virtual VkRect2D getRenderArea() const override;
-        // virtual uint32_t getImageCount() const override;
-        // VkImage getImage(uint32_t index) const override;
-
-        // virtual VkSampleCountFlagBits getMultisampleCount() const override;
-
-        // virtual VkClearValue* getImageClearValues() const override;
-
         // private:
-        //void allocDepthMemory();
+        // void allocDepthMemory();
         void createDepthImage();
 
         void createRenderPass();
@@ -79,7 +67,6 @@ namespace vk
         U32 mWidth;
         U32 mHeight;
 
-        //VkImage mDepthImage;
         common::Resource<VkResource<VkImage>> mDepthImage;
         VkImageView mDepthImageView;
 

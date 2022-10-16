@@ -40,8 +40,17 @@ namespace vk
         , mDepthMemory()
         , mDepthClearValue()
     {
+        if (mWidth == 0u)
+        {
+            mWidth = 1u;
+        }
+        if (mHeight == 0u)
+        {
+            mHeight = 1u;
+        }
+
         createDepthImage();
-        mDepthClearValue.depthStencil.depth = 1.0F;
+        mDepthClearValue.depthStencil.depth = 1.0f;
         mDepthClearValue.depthStencil.stencil = 0x0;
 
         createRenderPass();
@@ -53,10 +62,10 @@ namespace vk
         vkDestroyFramebuffer(mDevice->getDeviceHandle(), mFrameBuffer, mDevice->getAllocCallbacks());
         vkDestroyRenderPass(mDevice->getDeviceHandle(), mRenderPass, mDevice->getAllocCallbacks());
         mDevice->freeMemory(mDepthMemory);
-        //vkFreeMemory(mDevice->getDeviceHandle(), mDepthMemory, mDevice->getAllocCallbacks());
+
 
         vkDestroyImageView(mDevice->getDeviceHandle(), mDepthImageView, mDevice->getAllocCallbacks());
-        //vkDestroyImage(mDevice->getDeviceHandle(), mDepthImage, mDevice->getAllocCallbacks());
+
         common::Resource<IVkResource> res = mDepthImage;
         mDevice->destroyResource(res);
     }
@@ -64,7 +73,7 @@ namespace vk
     // Inherited via FrameBuffer
     U32 PresentFBO::getNumColorAttachments() const
     {
-        return 1U;
+        return 1u;
     }
 
     SwBool PresentFBO::hasDepthAttachment() const
@@ -98,14 +107,6 @@ namespace vk
         UNUSED_ARG(width);
         UNUSED_ARG(height);
         throw "This should not be called";
-        /*mWidth = width;
-        mHeight = height;
-
-        vkDestroyFramebuffer(mDevice->getDeviceHandle(), mFrameBuffer, mDevice->getAllocCallbacks());
-        vkDestroyRenderPass(mDevice->getDeviceHandle(), mRenderPass, mDevice->getAllocCallbacks());
-
-        createRenderPass();
-        createFramebuffer();*/
     }
 
     VkRenderPass PresentFBO::getRenderPass() const
@@ -140,50 +141,8 @@ namespace vk
         return mDepthClearValue;
     }
 
-    //void PresentFBO::allocDepthMemory()
-    //{
-    //    VkMemoryRequirements memreq;
-    //    vkGetImageMemoryRequirements(mDevice->getDeviceHandle(), mDepthImage, &memreq);
-
-    //    VkMemoryAllocateInfo allocInfo {};
-
-    //    allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    //    allocInfo.pNext = VK_NULL_HANDLE;
-    //    allocInfo.allocationSize = memreq.size;
-    //    allocInfo.memoryTypeIndex = vk::VulkanMemory::FindMemoryType(
-    //        mVkObjects.mPhysicalDevice->getMemoryProperties(),
-    //        VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq.memoryTypeBits);
-
-    //    vkAllocateMemory(mDevice->getDeviceHandle(), &allocInfo, mVkObjects.mDebugAllocCallbacks,
-    //                     &mDepthMemory);
-
-    //    vkBindImageMemory(mVkObjects.mLogicalDevice->getLogical(), mDepthImage, mDepthMemory, 0U);
-    //}
-
     void PresentFBO::createDepthImage()
     {
-        //VkImageCreateInfo imageInfo{};
-
-        //imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        //imageInfo.pNext = VK_NULL_HANDLE;
-        //imageInfo.flags = 0U;
-        //imageInfo.imageType = VkImageType::VK_IMAGE_TYPE_2D;
-        //imageInfo.format = VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
-        //imageInfo.extent = {mWidth, mHeight, 1U};
-        //imageInfo.mipLevels = 1U;
-        //imageInfo.arrayLayers = 1U;
-        //imageInfo.samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
-        //imageInfo.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
-        //imageInfo.usage = VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        //imageInfo.sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
-        //imageInfo.queueFamilyIndexCount = 1u;
-        //// imageInfo.pQueueFamilyIndices = &mVkObjects.mQueueFamilyIndex;
-        //U32 index = 0u; // TODO: fixme
-        //imageInfo.pQueueFamilyIndices = &index;
-        //imageInfo.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_PREINITIALIZED;
-
-        //VkImage depthImg = VK_NULL_HANDLE;
-        //vkCreateImage(mDevice->getDeviceHandle(), &imageInfo, mDevice->getAllocCallbacks(), &depthImg);
 
         mDepthImage = mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT,
                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -194,11 +153,9 @@ namespace vk
 
         mDepthMemory = mDevice->allocateMemory(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memreq);
 
-        //mDepthImage = common::CreateRef<VkResource<VkImage>>(depthImg, ResourceType::ImageResource);
-
         mDepthMemory->bind(mDevice, mDepthImage);
 
-        VkImageViewCreateInfo imageViewInfo {};
+        VkImageViewCreateInfo imageViewInfo{};
 
         imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewInfo.pNext = VK_NULL_HANDLE;
@@ -212,42 +169,41 @@ namespace vk
         imageViewInfo.components.b = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
 
         imageViewInfo.subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT;
-        imageViewInfo.subresourceRange.baseArrayLayer = 0U;
-        imageViewInfo.subresourceRange.baseMipLevel = 0U;
-        imageViewInfo.subresourceRange.layerCount = 1U;
-        imageViewInfo.subresourceRange.levelCount = 1U;
+        imageViewInfo.subresourceRange.baseArrayLayer = 0u;
+        imageViewInfo.subresourceRange.baseMipLevel = 0u;
+        imageViewInfo.subresourceRange.layerCount = 1u;
+        imageViewInfo.subresourceRange.levelCount = 1u;
 
-        vkCreateImageView(mDevice->getDeviceHandle(), &imageViewInfo, mDevice->getAllocCallbacks(),
-                          &mDepthImageView);
+        vkCreateImageView(mDevice->getDeviceHandle(), &imageViewInfo, mDevice->getAllocCallbacks(), &mDepthImageView);
     }
 
     void PresentFBO::createRenderPass()
     {
         VkAttachmentReference attach{};
-        attach.attachment = 0U;
+        attach.attachment = 0u;
         attach.layout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
 
         VkAttachmentReference depthAttach{};
-        depthAttach.attachment = 1U;
+        depthAttach.attachment = 1u;
         depthAttach.layout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription subPass{};
         subPass.flags = VkSubpassDescriptionFlagBits::VK_SUBPASS_DESCRIPTION_PER_VIEW_ATTRIBUTES_BIT_NVX;
         subPass.pipelineBindPoint = VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subPass.inputAttachmentCount = 0;
+        subPass.inputAttachmentCount = 0u;
         subPass.pInputAttachments = VK_NULL_HANDLE;
-        subPass.colorAttachmentCount = 1;
+        subPass.colorAttachmentCount = 1u;
         subPass.pColorAttachments = &attach;
         subPass.pResolveAttachments = VK_NULL_HANDLE;
         subPass.pDepthStencilAttachment = &depthAttach;
-        subPass.preserveAttachmentCount = 0;
+        subPass.preserveAttachmentCount = 0u;
         subPass.pPreserveAttachments = VK_NULL_HANDLE;
 
         subPass.pipelineBindPoint = VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS;
 
         VkAttachmentDescription descr[2]{};
 
-        descr[0].flags = 0;
+        descr[0].flags = 0u;
         descr[0].format = mImageFormat;
         descr[0].samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
         descr[0].loadOp = VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -257,7 +213,7 @@ namespace vk
         descr[0].initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
         descr[0].finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-        descr[1].flags = 0;
+        descr[1].flags = 0u;
         descr[1].format = VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
         descr[1].samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
         descr[1].loadOp = VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -271,16 +227,16 @@ namespace vk
 
         createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         createInfo.pNext = VK_NULL_HANDLE;
-        createInfo.flags = 0;
-        createInfo.attachmentCount = 2;
+        createInfo.flags = 0u;
+        createInfo.attachmentCount = 2u;
         createInfo.pAttachments = descr;
-        createInfo.subpassCount = 1;
+        createInfo.subpassCount = 1u;
         createInfo.pSubpasses = &subPass;
-        createInfo.dependencyCount = 0;
+        createInfo.dependencyCount = 0u;
         createInfo.pDependencies = VK_NULL_HANDLE;
 
-        VkResult result = vkCreateRenderPass(mDevice->getDeviceHandle(), &createInfo,
-                                             mDevice->getAllocCallbacks(), &mRenderPass);
+        VkResult result =
+            vkCreateRenderPass(mDevice->getDeviceHandle(), &createInfo, mDevice->getAllocCallbacks(), &mRenderPass);
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Renderpass creation failed %s", vk::VkResultToString(result));
@@ -289,10 +245,10 @@ namespace vk
 
     void PresentFBO::createFramebuffer()
     {
-        mClearValue.color.float32[0] = 0.8F;
-        mClearValue.color.float32[1] = 0.6F;
-        mClearValue.color.float32[2] = 0.2F;
-        mClearValue.color.float32[3] = 1.0F;
+        mClearValue.color.float32[0] = 0.8f;
+        mClearValue.color.float32[1] = 0.6f;
+        mClearValue.color.float32[2] = 0.2f;
+        mClearValue.color.float32[3] = 1.0f;
 
         VkFramebufferCreateInfo createInfo{};
 
@@ -300,22 +256,22 @@ namespace vk
 
         createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         createInfo.pNext = VK_NULL_HANDLE;
-        createInfo.flags = 0;
+        createInfo.flags = 0u;
         createInfo.renderPass = mRenderPass;
-        createInfo.attachmentCount = 2;
+        createInfo.attachmentCount = 2u;
         createInfo.pAttachments = views;
         createInfo.width = mWidth;
         createInfo.height = mHeight;
-        createInfo.layers = 1;
+        createInfo.layers = 1u;
 
-        VkResult result = vkCreateFramebuffer(mDevice->getDeviceHandle(), &createInfo,
-                                              mDevice->getAllocCallbacks(), &mFrameBuffer);
+        VkResult result =
+            vkCreateFramebuffer(mDevice->getDeviceHandle(), &createInfo, mDevice->getAllocCallbacks(), &mFrameBuffer);
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Framebuffer creation failed %s", vk::VkResultToString(result));
         }
     }
-}
+} // namespace vk
 
 /* Class Protected Function Definition */
 

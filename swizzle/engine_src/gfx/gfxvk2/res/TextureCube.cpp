@@ -65,7 +65,7 @@ namespace vk
         mChannels = channels;
         // check to recreate the texture
         if (((width != mWidth) || (height != mHeight)) &&
-            ((width != 0U) && (height != 0U)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
+            ((width != 0u) && (height != 0u)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
         {
             destroyResources();
             mWidth = width;
@@ -96,7 +96,8 @@ namespace vk
         mStageMemory->bind(mDevice, mStageBuffer);
 
         void* dataPtr = nullptr;
-        vkMapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory, mStageMemory->mAlignOffset, imageSize, 0, &dataPtr);
+        vkMapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory, mStageMemory->mAlignOffset, imageSize, 0,
+                    &dataPtr);
         memcpy(dataPtr, pixelData, static_cast<size_t>(imageSize));
         vkUnmapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory);
 
@@ -121,22 +122,22 @@ namespace vk
         VkImageMemoryBarrier imgBarrier = {};
         imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         imgBarrier.pNext = VK_NULL_HANDLE;
-        imgBarrier.srcAccessMask = 0;
-        imgBarrier.dstAccessMask = 0;
+        imgBarrier.srcAccessMask = 0u;
+        imgBarrier.dstAccessMask = 0u;
         imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
         imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         imgBarrier.image = mImage->getVkHandle();
         imgBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imgBarrier.subresourceRange.baseMipLevel = 0U;
-        imgBarrier.subresourceRange.levelCount = 1U;
-        imgBarrier.subresourceRange.baseArrayLayer = 0U;
+        imgBarrier.subresourceRange.baseMipLevel = 0u;
+        imgBarrier.subresourceRange.levelCount = 1u;
+        imgBarrier.subresourceRange.baseArrayLayer = 0u;
         imgBarrier.subresourceRange.layerCount = mLayers;
 
         vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0U, VK_NULL_HANDLE, 0U,
-                             VK_NULL_HANDLE, 1U, &imgBarrier);
+                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
+                             VK_NULL_HANDLE, 1u, &imgBarrier);
 
         VkBufferImageCopy region = {};
         region.bufferOffset = 0u;
@@ -144,22 +145,22 @@ namespace vk
         region.bufferImageHeight = mHeight;
 
         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.imageSubresource.mipLevel = 0U;
-        region.imageSubresource.baseArrayLayer = 0U;
+        region.imageSubresource.mipLevel = 0u;
+        region.imageSubresource.baseArrayLayer = 0u;
         region.imageSubresource.layerCount = mLayers;
 
         region.imageOffset = {0, 0, 0};
-        region.imageExtent = {mWidth, mHeight, 1};
+        region.imageExtent = {mWidth, mHeight, 1u};
 
         vkCmdCopyBufferToImage(cmdBuffer, mStageBuffer->getVkHandle(), mImage->getVkHandle(),
-                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1U, &region);
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1u, &region);
 
         imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0U, VK_NULL_HANDLE, 0U,
-                             VK_NULL_HANDLE, 1U, &imgBarrier);
+                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
+                             VK_NULL_HANDLE, 1u, &imgBarrier);
 
         mUploaded = true;
     }
@@ -205,7 +206,7 @@ namespace vk
 
         imageViewCreateInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.pNext = VK_NULL_HANDLE;
-        imageViewCreateInfo.flags = 0;
+        imageViewCreateInfo.flags = 0u;
         imageViewCreateInfo.image = mImage->getVkHandle();
         imageViewCreateInfo.viewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_CUBE;
         imageViewCreateInfo.format = format;
@@ -229,12 +230,8 @@ namespace vk
         vkDestroyImageView(mDevice->getDeviceHandle(), mImageView, mDevice->getAllocCallbacks());
         mDevice->scheduleResourceDestruction(mImage);
         mDevice->scheduleFreeingMemory(mImageMemory);
-        /*vkFreeMemory(mVkObjects.mLogicalDevice->getLogical(), mMemory, mVkObjects.mDebugAllocCallbacks);
-        vkDestroyImage(mVkObjects.mLogicalDevice->getLogical(), mImage, mVkObjects.mDebugAllocCallbacks);*/
 
         mImageView = VK_NULL_HANDLE;
-        // mImage = VK_NULL_HANDLE;
-        // mMemory = VK_NULL_HANDLE;
     }
 
     void TextureCube::createResources()

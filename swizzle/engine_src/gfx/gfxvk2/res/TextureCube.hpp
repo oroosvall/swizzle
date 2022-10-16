@@ -5,8 +5,8 @@
 
 #include "TextureBase.hpp"
 
-#include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
+#include "_fwDecl.hpp"
 
 #include "VkResource.hpp"
 

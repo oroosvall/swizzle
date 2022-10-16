@@ -95,7 +95,8 @@ namespace vk
         mStageMemory->bind(mDevice, mStageBuffer);
 
         void* dataPtr = nullptr;
-        vkMapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory, mStageMemory->mAlignOffset, imageSize, 0, &dataPtr);
+        vkMapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory, mStageMemory->mAlignOffset, imageSize, 0,
+                    &dataPtr);
         memcpy(dataPtr, pixelData, static_cast<size_t>(imageSize));
         vkUnmapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory);
 
@@ -151,8 +152,7 @@ namespace vk
         region.imageExtent = {mWidth, mHeight, 1};
 
         vkCmdCopyBufferToImage(cmdBuffer, mStageBuffer->getVkHandle(), mImage->getVkHandle(),
-                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1U,
-                               &region);
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1U, &region);
 
         imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -173,7 +173,7 @@ namespace vk
     {
         return mImageView;
     }
-}
+} // namespace vk
 
 /* Class Protected Function Definition */
 
@@ -183,8 +183,8 @@ namespace vk
 {
     void Texture2D::createImage(VkFormat format)
     {
-        VkImageUsageFlags usage = VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT |
-            VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        VkImageUsageFlags usage =
+            VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
         if (mImage)
         {
@@ -193,7 +193,6 @@ namespace vk
         }
 
         mImage = mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, format, usage, {mWidth, mHeight, 1u}, 1u);
-
     }
 
     void Texture2D::allocMemory()
@@ -246,8 +245,8 @@ namespace vk
         vkDestroyImage(mVkObjects.mLogicalDevice->getLogical(), mImage, mVkObjects.mDebugAllocCallbacks);*/
 
         mImageView = VK_NULL_HANDLE;
-        //mImage = VK_NULL_HANDLE;
-        //mMemory = VK_NULL_HANDLE;
+        // mImage = VK_NULL_HANDLE;
+        // mMemory = VK_NULL_HANDLE;
     }
 
     void Texture2D::createResources()
@@ -277,4 +276,4 @@ namespace vk
         allocMemory();
         createView(selectedFormat);
     }
-}
+} // namespace vk

@@ -5,9 +5,9 @@
 
 #include "../backend/Vk.hpp"
 
+#include "../surface/Surface.hpp"
 #include "Device.hpp"
 #include "Instance.hpp"
-#include "../surface/Surface.hpp"
 
 #include <optick/optick.h>
 
@@ -29,7 +29,8 @@
 
 namespace vk
 {
-    VSwapchain::VSwapchain(common::Resource<Instance> instance, common::Resource<Device> device, common::Resource<swizzle::core::SwWindow> window)
+    VSwapchain::VSwapchain(common::Resource<Instance> instance, common::Resource<Device> device,
+                           common::Resource<swizzle::core::SwWindow> window)
         : mInstance(instance)
         , mDevice(device)
         , mWindow(window)
@@ -75,8 +76,7 @@ namespace vk
 
         for (SwapchainImage img : mSwapchainImages)
         {
-            vkDestroyImageView(mDevice->getDeviceHandle(), img.mImageView,
-                               mDevice->getAllocCallbacks());
+            vkDestroyImageView(mDevice->getDeviceHandle(), img.mImageView, mDevice->getAllocCallbacks());
         }
 
         destroySynchronizationObjects();
@@ -86,7 +86,6 @@ namespace vk
 
         mSwapchain = VK_NULL_HANDLE;
         mSurface = VK_NULL_HANDLE;
-
     }
 
     SwBool VSwapchain::isVsyncModeSupported(swizzle::gfx::VSyncTypes sync) const
@@ -149,14 +148,14 @@ namespace vk
             LOG_INFO("Acquire image: %s", vk::VkResultToString(result));
         }
 
-        //OPTICK_GPU_EVENT("Prepare");
+        // OPTICK_GPU_EVENT("Prepare");
     }
 
     void VSwapchain::present()
     {
         OPTICK_EVENT("VSwapchain::Present");
 
-        VkSemaphore sems[] = { mRenderingFinishedSemaphore[mCurrentFrame] };
+        VkSemaphore sems[] = {mRenderingFinishedSemaphore[mCurrentFrame]};
 
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -170,8 +169,11 @@ namespace vk
         VkQueue queue = mDevice->getQueue();
 
         // VkResult res =
-        //OPTICK_GPU_FLIP(mSwapchain);
-        (void)vkQueuePresentKHR(queue, &presentInfo);
+        // OPTICK_GPU_FLIP(mSwapchain);
+        {
+            OPTICK_EVENT("vkQueuePresentKHR");
+            (void)vkQueuePresentKHR(queue, &presentInfo);
+        }
         // LOG_ERROR("Present result %d\n", res);
 
         mCurrentFrame++;
@@ -219,7 +221,7 @@ namespace vk
     {
         return mCurrentFrame;
     }
-}
+} // namespace vk
 
 /* Class Protected Function Definition */
 
@@ -230,8 +232,7 @@ namespace vk
     std::vector<VkPresentModeKHR> VSwapchain::getAvailablePresentModes()
     {
         uint32_t presentCount = 0U;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(mDevice->getPhysicalHandle(), mSurface, &presentCount,
-                                                  nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(mDevice->getPhysicalHandle(), mSurface, &presentCount, nullptr);
 
         std::vector<VkPresentModeKHR> presentModes;
         presentModes.resize(presentCount);
@@ -254,8 +255,7 @@ namespace vk
 
         for (SwapchainImage img : mSwapchainImages)
         {
-            vkDestroyImageView(mDevice->getDeviceHandle(), img.mImageView,
-                               mDevice->getAllocCallbacks());
+            vkDestroyImageView(mDevice->getDeviceHandle(), img.mImageView, mDevice->getAllocCallbacks());
         }
 
         destroySynchronizationObjects();
@@ -303,8 +303,7 @@ namespace vk
         VkColorSpaceKHR targetColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
         U32 surfaceFormatCount = 0u;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(mDevice->getPhysicalHandle(), mSurface, &surfaceFormatCount,
-                                             nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(mDevice->getPhysicalHandle(), mSurface, &surfaceFormatCount, nullptr);
         std::vector<VkSurfaceFormatKHR> surfaceFormats;
         surfaceFormats.resize(surfaceFormatCount);
         vkGetPhysicalDeviceSurfaceFormatsKHR(mDevice->getPhysicalHandle(), mSurface, &surfaceFormatCount,
@@ -324,8 +323,7 @@ namespace vk
         }
         VkBool32 supported = VK_FALSE;
         U32 queueIndex = 0u; // TODO: Fix me
-        vkGetPhysicalDeviceSurfaceSupportKHR(mDevice->getPhysicalHandle(), queueIndex, mSurface,
-                                             &supported);
+        vkGetPhysicalDeviceSurfaceSupportKHR(mDevice->getPhysicalHandle(), queueIndex, mSurface, &supported);
 
         if (!supported && !found)
         {
@@ -344,8 +342,7 @@ namespace vk
         VkSwapchainCreateInfoKHR createInfo = {};
 
         VkSurfaceCapabilitiesKHR surfaceCapabilities = {};
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mDevice->getPhysicalHandle(), mSurface,
-                                                  &surfaceCapabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mDevice->getPhysicalHandle(), mSurface, &surfaceCapabilities);
 
         if (surfaceCapabilities.currentExtent.width < UINT32_MAX)
         {
@@ -373,7 +370,8 @@ namespace vk
         createInfo.clipped = VK_TRUE;
         createInfo.oldSwapchain = oldSwapchain;
 
-        VkResult result = vkCreateSwapchainKHR(mDevice->getDeviceHandle(), &createInfo, mDevice->getAllocCallbacks(), &newSwapchain);
+        VkResult result =
+            vkCreateSwapchainKHR(mDevice->getDeviceHandle(), &createInfo, mDevice->getAllocCallbacks(), &newSwapchain);
 
         if (result != VK_SUCCESS)
         {
@@ -404,8 +402,8 @@ namespace vk
         for (U32 i = 0u; i < mSwapchainImages.size(); ++i)
         {
 
-            VkResult result = vkCreateFence(mDevice->getDeviceHandle(), &fenceInfo,
-                                            mDevice->getAllocCallbacks(), &mInFlightFences[i]);
+            VkResult result = vkCreateFence(mDevice->getDeviceHandle(), &fenceInfo, mDevice->getAllocCallbacks(),
+                                            &mInFlightFences[i]);
             if (result != VK_SUCCESS)
             {
                 LOG_ERROR("Error creating swapchain fence %s", vk::VkResultToString(result));
@@ -416,14 +414,14 @@ namespace vk
             semaphoreInfo.pNext = VK_NULL_HANDLE;
             semaphoreInfo.flags = 0U;
 
-            result = vkCreateSemaphore(mDevice->getDeviceHandle(), &semaphoreInfo,
-                                       mDevice->getAllocCallbacks(), &mRenderingFinishedSemaphore[i]);
+            result = vkCreateSemaphore(mDevice->getDeviceHandle(), &semaphoreInfo, mDevice->getAllocCallbacks(),
+                                       &mRenderingFinishedSemaphore[i]);
             if (result != VK_SUCCESS)
             {
                 LOG_ERROR("Error creating swapchain semaphore %s", vk::VkResultToString(result));
             }
-            result = vkCreateSemaphore(mDevice->getDeviceHandle(), &semaphoreInfo,
-                                       mDevice->getAllocCallbacks(), &mImageAvailableSemaphore[i]);
+            result = vkCreateSemaphore(mDevice->getDeviceHandle(), &semaphoreInfo, mDevice->getAllocCallbacks(),
+                                       &mImageAvailableSemaphore[i]);
             if (result != VK_SUCCESS)
             {
                 LOG_ERROR("Error creating swapchain semaphore %s", vk::VkResultToString(result));
@@ -440,8 +438,7 @@ namespace vk
             vkDestroyFence(mDevice->getDeviceHandle(), mInFlightFences[i], mDevice->getAllocCallbacks());
             vkDestroySemaphore(mDevice->getDeviceHandle(), mRenderingFinishedSemaphore[i],
                                mDevice->getAllocCallbacks());
-            vkDestroySemaphore(mDevice->getDeviceHandle(), mImageAvailableSemaphore[i],
-                               mDevice->getAllocCallbacks());
+            vkDestroySemaphore(mDevice->getDeviceHandle(), mImageAvailableSemaphore[i], mDevice->getAllocCallbacks());
         }
 
         mInFlightFences.clear();
@@ -488,7 +485,8 @@ namespace vk
             imViewInfo.components.b = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_B;
             imViewInfo.viewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
 
-            VkResult result = vkCreateImageView(mDevice->getDeviceHandle(), &imViewInfo, mDevice->getAllocCallbacks(), &img.mImageView);
+            VkResult result = vkCreateImageView(mDevice->getDeviceHandle(), &imViewInfo, mDevice->getAllocCallbacks(),
+                                                &img.mImageView);
             if (result != VK_SUCCESS)
             {
                 LOG_ERROR("Error creating swapchain image view %s", vk::VkResultToString(result));
@@ -506,4 +504,4 @@ namespace vk
         }
     }
 
-}
+} // namespace vk

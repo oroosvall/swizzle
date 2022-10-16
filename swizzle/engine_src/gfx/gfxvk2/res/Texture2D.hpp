@@ -5,8 +5,8 @@
 
 #include "TextureBase.hpp"
 
-#include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
+#include "_fwDecl.hpp"
 
 #include "VkResource.hpp"
 
@@ -25,7 +25,6 @@ namespace vk
     class Texture2D : public TextureBase
     {
     public:
-
         Texture2D(common::Resource<Device> device, U32 width, U32 height, U32 channels, const U8* pixelData);
         virtual ~Texture2D();
 
@@ -40,7 +39,6 @@ namespace vk
         virtual VkImageView getView() override;
 
     private:
-
         void createImage(VkFormat format);
         void allocMemory();
         void createView(VkFormat format);
@@ -64,7 +62,7 @@ namespace vk
         U32 mHeight;
         U32 mChannels;
     };
-}
+} // namespace vk
 
 /* Function Declaration */
 
