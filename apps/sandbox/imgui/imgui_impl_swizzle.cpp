@@ -207,7 +207,10 @@ void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
     case swizzle::core::WindowEventType::ResizeEvent: {
         swizzle::core::WindowResizeEvent& e = (swizzle::core::WindowResizeEvent&)evt;
         bd->mImGuiFbo->resize(e.mWidth, e.mHeight);
-        bd->mImGuiMat->setDescriptorTextureResource(0u, bd->mImGuiFbo->getColorAttachment(0u));
+        if (bd->mImGuiMat)
+        {
+            bd->mImGuiMat->setDescriptorTextureResource(0u, bd->mImGuiFbo->getColorAttachment(0u));
+        }
     }
     default:
         break;
