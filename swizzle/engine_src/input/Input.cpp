@@ -24,8 +24,8 @@ namespace swizzle::input
     {
         common::Resource<core::SwWindow> mActiveWindow = nullptr;
         InputCallback mCb = {};
-        F32 mDx = 0.0F;
-        F32 mDy = 0.0F;
+        F32 mDx = 0.0f;
+        F32 mDy = 0.0f;
         S32 mX = 0;
         S32 mY = 0;
         std::unordered_map<S32, SwBool> mPressedKeys = {};
@@ -39,12 +39,15 @@ namespace swizzle::input
         S32 mCharacterEventValue = 0;
         SwBool mCharacterHadEventThisFrame = false;
 
+        std::unordered_map<core::GamePadAxis, F32> mGamepadAxisValues = {};
+        std::unordered_map<core::GamePadButton, SwBool> mGamePadButtonValues = {};
+
     } inputCtx;
 }
 
-/* Static Variables */
-
 /* Static Function Declaration */
+
+/* Static Variables */
 
 /* Static Function Definition */
 
@@ -75,8 +78,8 @@ namespace swizzle::input
     void InputFrameReset()
     {
         OPTICK_EVENT("InputFrameReset");
-        inputCtx.mDx = 0.0F;
-        inputCtx.mDy = 0.0F;
+        inputCtx.mDx = 0.0f;
+        inputCtx.mDy = 0.0f;
         inputCtx.mPressedKeysThisFrame.clear();
         inputCtx.mCharacterHadEventThisFrame = false;
     }
@@ -241,6 +244,18 @@ namespace swizzle::input
             core::MouseMoveDelta& e = (core::MouseMoveDelta&)evt;
             inputCtx.mDx += (float)e.dX;
             inputCtx.mDy += (float)e.dY;
+            break;
+        }
+        case core::WindowEventType::GamepadAxisEvent:
+        {
+            core::GamepadAxisEvent& e = (core::GamepadAxisEvent&)evt;
+            inputCtx.mGamepadAxisValues[e.mAxis] = e.mAxisValue;
+            break;
+        }
+        case core::WindowEventType::GamepadButtonEvent:
+        {
+            core::GamepadButtonEvent& e = (core::GamepadButtonEvent&)evt;
+            inputCtx.mGamePadButtonValues[e.mButton] = e.mButtonPressed;
             break;
         }
         case core::WindowEventType::MouseScrollEvent:

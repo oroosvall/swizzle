@@ -223,6 +223,7 @@ namespace swizzle
 
         static const S32 scanCodeMapping[] =
         {
+            // clang-format off
             /* KeyEsc,                                                      */ 1,
             /*                                                              */
             /* Key0, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9,  */ 11, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -236,8 +237,8 @@ namespace swizzle
             /* KeyLBracket, KeyRBracket, KeyEnter,                          */ 26, 27, 28,
             /* KeySemiColon, KeyApostrophe, KeyBackslash, KeyForwardslash,  */ 39, 40, 43, 53,
             /*                                                              */
-            /* KeySpace, KeyGraveAccent, KeyPause, KeyScrollLock,                 */ 57, 41, 69, 70,
-            /* KeySysReq, KeyNumLock, KeyApplication,                        */ 311, 325, 349,
+            /* KeySpace, KeyGraveAccent, KeyPause, KeyScrollLock,           */ 57, 41, 69, 70,
+            /* KeySysReq, KeyNumLock, KeyApplication,                       */ 311, 325, 349,
             /*                                                              */
             /* KeyArrowUp, KeyArrowDown, KeyArrowLeft, KeyArrowRight,       */ 328, 336, 331, 333,
             /*                                                              */
@@ -262,11 +263,12 @@ namespace swizzle
             /*                                                              */
             /* KeyBackspace,                                                */ 14,
             /* KeyNumPadEnter,                                              */ 284,
-            /* KeyNumPadAdd,                                               */ 78,
-            /* KeyNumPadSubtract,                                             */ 74,
+            /* KeyNumPadAdd,                                                */ 78,
+            /* KeyNumPadSubtract,                                           */ 74,
             /* KeyNumPadMultiply,                                           */ 55,
-            /* KeyNumPadDivide,                                              */ 309,
+            /* KeyNumPadDivide,                                             */ 309,
             /* KeyNumPadDelete,                                             */ 83,
+            // clang-format on
         };
 
         S32 Key2ScanCode(input::Keys key)

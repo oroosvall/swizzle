@@ -1,17 +1,16 @@
 #ifdef SW_WINDOWS
 
-#include <swizzle/core/WindowEvents.hpp>
 #include <swizzle/core/Logging.hpp>
+#include <swizzle/core/WindowEvents.hpp>
 
+#include "RawInput.hpp"
 #include "Win32Window.hpp"
+#include "Win32Xinput.hpp"
 
-//#include "../../Logging/Logger.hpp"
 #include <string>
 
 #pragma warning(disable : 4995)
 #include <Xinput.h>
-
-#undef max
 
 #include <algorithm>
 
@@ -19,305 +18,8 @@
 
 namespace swizzle::core
 {
-
-    void setupRID(HWND window)
-    {
-        RAWINPUTDEVICE rid[3];
-
-        rid[0].usUsagePage = 0x01;
-        rid[0].usUsage = 0x02;
-        rid[0].dwFlags = RIDEV_INPUTSINK;
-        rid[0].hwndTarget = window;
-
-        rid[1].usUsagePage = 0x01;
-        rid[1].usUsage = 0x06;
-        rid[1].dwFlags = RIDEV_NOHOTKEYS;
-        rid[1].hwndTarget = window;
-
-        rid[2].usUsagePage = 0x01;
-        rid[2].usUsage = 0x05;
-        rid[2].dwFlags = 0;
-        rid[2].hwndTarget = window;
-
-        if (RegisterRawInputDevices(rid, 2, sizeof(rid[0])) == FALSE)
-        {
-
-            LOG_ERROR("Register RID failed!\n\t %d", GetLastError());
-        }
-    }
-
-    void processRawMouseEvents(Win32Window* window, EventHandlerList<WindowEvent>& evtHandler, RAWMOUSE& mouseEvents)
-    {
-
-        // Mouse move event
-        {
-            POINT pt;
-            GetCursorPos(&pt);
-            if (ScreenToClient((HWND)window->getNativeWindowHandle(), &pt))
-            {
-                MouseMoveEvent moveEvt;
-                moveEvt.mX = pt.x;
-                moveEvt.mY = pt.y;
-
-                moveEvt.mX = std::max(moveEvt.mX, 0);
-                moveEvt.mY = std::max(moveEvt.mY, 0);
-
-                evtHandler.publishEvent(moveEvt);
-            }
-        }
-
-        {
-            MouseMoveDelta moveEvt;
-            moveEvt.dX = mouseEvents.lLastX;
-            moveEvt.dY = mouseEvents.lLastY;
-
-            evtHandler.publishEvent(moveEvt);
-        }
-
-        // Mouse button event
-        {
-            switch (mouseEvents.usButtonFlags)
-            {
-            case RI_MOUSE_BUTTON_1_DOWN: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 1;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = true;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            case RI_MOUSE_BUTTON_1_UP: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 1;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = false;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            case RI_MOUSE_BUTTON_2_DOWN: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 2;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = true;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            case RI_MOUSE_BUTTON_2_UP: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 2;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = false;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            case RI_MOUSE_BUTTON_3_DOWN: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 3;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = true;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            case RI_MOUSE_BUTTON_3_UP: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 3;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = false;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            case RI_MOUSE_BUTTON_4_DOWN: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 4;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = true;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            case RI_MOUSE_BUTTON_4_UP: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 4;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = false;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            case RI_MOUSE_BUTTON_5_DOWN: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 5;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = true;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            case RI_MOUSE_BUTTON_5_UP: {
-                InputEvent evt;
-                evt.mFromKeyboard = false;
-                evt.mKey = 5;
-                evt.mModKeys = window->modKeys;
-                evt.mPressed = false;
-                evtHandler.publishEvent(evt);
-            }
-            break;
-            default:
-                break;
-            }
-        }
-
-        // Scroll event
-        {
-
-            short scrollX = 0;
-            short scrollY = 0;
-
-            if (RI_MOUSE_WHEEL == mouseEvents.usButtonFlags)
-            {
-                scrollY = (short)mouseEvents.usButtonData / WHEEL_DELTA;
-            }
-            if (RI_MOUSE_HWHEEL == mouseEvents.usButtonFlags)
-            {
-                scrollX = (short)mouseEvents.usButtonData / WHEEL_DELTA;
-            }
-
-            MouseScrollEvent evt;
-            evt.mScrollX = scrollX;
-            evt.mScrollY = scrollY;
-            evtHandler.publishEvent(evt);
-        }
-    }
-
-    U32 correctScanCode(U32 scanCode, U32 vkey, U32 flags)
-    {
-        if (vkey == 255U)
-        {
-            return 0U;
-        }
-        else if (vkey == VK_SHIFT)
-        {
-            // correct left-hand / right-hand SHIFT
-            vkey = MapVirtualKey(scanCode, MAPVK_VSC_TO_VK_EX);
-        }
-        else if (vkey == VK_NUMLOCK)
-        {
-            // correct PAUSE/BREAK and NUM LOCK silliness, and set the extended bit
-            scanCode = (MapVirtualKey(vkey, MAPVK_VK_TO_VSC) | 0x100U);
-        }
-
-        bool isE0 = ((flags & RI_KEY_E0) != 0);
-        bool isE1 = ((flags & RI_KEY_E1) != 0);
-
-        if (isE1)
-        {
-            // manually map VK_PAUSE, since it is bugged #feature
-            if (vkey == VK_PAUSE)
-            {
-                scanCode = 0x45U;
-            }
-            else
-            {
-                scanCode = MapVirtualKey(vkey, MAPVK_VK_TO_VSC);
-            }
-        }
-
-        scanCode = (scanCode | (isE0 << 8U));
-
-        return scanCode;
-    }
-
-    void processRawKeyboardEvents(Win32Window* window, EventHandlerList<WindowEvent>& evtHandler,
-                                  RAWKEYBOARD& keyboardEvents)
-    {
-
-        if (keyboardEvents.Flags == RI_KEY_MAKE)
-        {
-            if (keyboardEvents.VKey == VK_SHIFT)
-            {
-                window->modKeys |= MODKEY_SHIFT;
-            }
-            else if (keyboardEvents.VKey == VK_CONTROL)
-            {
-                window->modKeys |= MODKEY_CONTROL;
-            }
-            else if (keyboardEvents.VKey == VK_MENU)
-            {
-                window->modKeys |= MODKEY_ALT;
-            }
-            else if (keyboardEvents.VKey == VK_LWIN || keyboardEvents.VKey == VK_RWIN)
-            {
-                window->modKeys |= MODKEY_SUPER;
-            }
-        }
-        else
-        {
-            if (keyboardEvents.VKey == VK_SHIFT)
-            {
-                window->modKeys ^= MODKEY_SHIFT;
-            }
-            else if (keyboardEvents.VKey == VK_CONTROL)
-            {
-                window->modKeys ^= MODKEY_CONTROL;
-            }
-            else if (keyboardEvents.VKey == VK_MENU)
-            {
-                window->modKeys ^= MODKEY_ALT;
-            }
-            else if (keyboardEvents.VKey == VK_LWIN || keyboardEvents.VKey == VK_RWIN)
-            {
-                window->modKeys ^= MODKEY_SUPER;
-            }
-        }
-
-        bool pressed = keyboardEvents.Message == WM_KEYDOWN;
-
-        InputEvent in;
-        in.mFromKeyboard = true;
-        in.mKey = correctScanCode(keyboardEvents.MakeCode, keyboardEvents.VKey, keyboardEvents.Flags);
-        in.mPressed = pressed;
-        in.mModKeys = window->modKeys;
-
-        if (in.mKey != 0U)
-        {
-            /*UINT key = (in.mKey << 16U);
-            char buffer[512] = {};*/
-            /*GetKeyNameTextA((LONG)key, buffer, 512);
-            LOG_INFO("%d, %s", in.mKey, buffer);*/
-
-            /*HKL hLocale = LoadKeyboardLayoutA("00000409", KLF_NOTELLSHELL);
-            HKL hPrevious = ActivateKeyboardLayout(hLocale, KLF_SETFORPROCESS);*/
-
-            //UINT Vkey = MapVirtualKeyA(in.mKey, MAPVK_VSC_TO_VK);
-            //UINT mapping = MapVirtualKeyA(Vkey, MAPVK_VK_TO_CHAR);
-            //printf("0x%x, %c\n", mapping, mapping);
-            //LOG_INFO("0x%x, %c", mapping, mapping);
-            /*ActivateKeyboardLayout(hPrevious, KLF_SETFORPROCESS);
-            UnloadKeyboardLayout(hLocale);*/
-
-            //ToAscii()
-            /*HKL hLocale = LoadKeyboardLayoutA("00000409", KLF_NOTELLSHELL);
-            HKL hPrevious = ActivateKeyboardLayout(hLocale, KLF_SETFORPROCESS);*/
-
-            /*GetKeyNameTextA((LONG)key, buffer, 512);
-            LOG_INFO("%d, %s", in.mKey, buffer);*/
-
-            /*ActivateKeyboardLayout(hPrevious, KLF_SETFORPROCESS);
-            UnloadKeyboardLayout(hLocale);*/
-
-            evtHandler.publishEvent(in);
-        }
-    }
-
     void inputCallback(Win32Window* window, EventHandlerList<WindowEvent>& evtHandler, LPARAM lParam)
     {
-
         UINT dwSize = 0U;
 
         if (-1 == GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER)))
@@ -341,11 +43,11 @@ namespace swizzle::core
 
         if (raw->header.dwType == RIM_TYPEKEYBOARD)
         {
-            processRawKeyboardEvents(window, evtHandler, raw->data.keyboard);
+            win32::processRawKeyboardEvents(window, evtHandler, raw->data.keyboard);
         }
         else if (raw->header.dwType == RIM_TYPEMOUSE)
         {
-            processRawMouseEvents(window, evtHandler, raw->data.mouse);
+            win32::ProcessRawMouseEvents(window, evtHandler, raw->data.mouse);
         }
         else
         {
@@ -363,8 +65,7 @@ namespace swizzle::core
             auto& eventHandler = wnd->getEventHandler();
             switch (msg)
             {
-            case WM_ACTIVATE:
-            {
+            case WM_ACTIVATE: {
                 if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
                 {
                     WindowFocusEvent evt;
@@ -382,25 +83,22 @@ namespace swizzle::core
                 }
                 break;
             }
-            case WM_SETFOCUS:
-            {
+            case WM_SETFOCUS: {
                 WindowFocusEvent evt;
                 evt.mFocused = true;
                 eventHandler.publishEvent(evt);
                 XInputEnable(true);
-                setupRID(hWnd);
+                win32::SetupRID(hWnd);
                 break;
             }
-            case WM_KILLFOCUS:
-            {
+            case WM_KILLFOCUS: {
                 WindowFocusEvent evt;
                 evt.mFocused = false;
                 eventHandler.publishEvent(evt);
                 XInputEnable(false);
                 break;
             }
-            case WM_SYSCOMMAND:
-            {
+            case WM_SYSCOMMAND: {
                 switch (wParam)
                 {
                 case SC_KEYMENU:
@@ -408,8 +106,7 @@ namespace swizzle::core
                 }
                 break;
             }
-            case WM_SETCURSOR:
-            {
+            case WM_SETCURSOR: {
                 if (!wnd->isCursorVisible())
                 {
                     if (HTCLIENT == LOWORD(lParam))
@@ -419,8 +116,7 @@ namespace swizzle::core
                 }
                 break;
             }
-            case WM_SIZE:
-            {
+            case WM_SIZE: {
                 int width = LOWORD(lParam);
                 int height = HIWORD(lParam);
 
@@ -430,17 +126,15 @@ namespace swizzle::core
                 eventHandler.publishEvent(evt);
                 break;
             }
-            case WM_CLOSE:
-            {
+            case WM_CLOSE: {
                 WindowCloseEvent evt;
                 eventHandler.publishEvent(evt);
                 break;
             }
             case WM_CHAR:
             case WM_SYSCHAR:
-            case WM_UNICHAR:
-            {
-                //const bool plain = (msg != WM_SYSCHAR);
+            case WM_UNICHAR: {
+                // const bool plain = (msg != WM_SYSCHAR);
 
                 if (msg == WM_UNICHAR && wParam == UNICODE_NOCHAR)
                 {
@@ -483,15 +177,12 @@ namespace swizzle::core
         , mWindowPlacement({sizeof(mWindowPlacement)})
     {
 
-        mWnd = CreateWindowEx(WS_EX_APPWINDOW,
-            gWindowClass, L"Window",
-            WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT, CW_USEDEFAULT, width, height,
-            NULL, NULL, GetModuleHandle(NULL), NULL);
+        mWnd = CreateWindowEx(WS_EX_APPWINDOW, gWindowClass, L"Window", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
+                              CW_USEDEFAULT, width, height, NULL, NULL, GetModuleHandle(NULL), NULL);
 
         setTitle(title);
         SetWindowLongPtr(mWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-        setupRID(mWnd);
+        win32::SetupRID(mWnd);
 
         ShowWindow(mWnd, SW_HIDE);
     }
@@ -601,7 +292,7 @@ namespace swizzle::core
         OPTICK_EVENT();
         MSG msg;
 
-        // processXInput(this);
+        win32::ProcessXInput(mEventHandlers);
 
         while (PeekMessage(&msg, mWnd, NULL, NULL, PM_REMOVE))
         {
@@ -639,14 +330,12 @@ namespace swizzle::core
 
         if (mFullscreen)
         {
-            MONITORINFO mi = { sizeof(mi) };
+            MONITORINFO mi = {sizeof(mi)};
             if (GetWindowPlacement(mWnd, &mWindowPlacement) &&
                 GetMonitorInfo(MonitorFromWindow(mWnd, MONITOR_DEFAULTTOPRIMARY), &mi))
             {
-                SetWindowPos(mWnd, HWND_TOP,
-                             mi.rcMonitor.left, mi.rcMonitor.top,
-                             mi.rcMonitor.right - mi.rcMonitor.left,
-                             mi.rcMonitor.bottom - mi.rcMonitor.top,
+                SetWindowPos(mWnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top,
+                             mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top,
                              SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
                 mWindowPlacementSet = true;
             }
@@ -657,12 +346,11 @@ namespace swizzle::core
             {
                 SetWindowPlacement(mWnd, &mWindowPlacement);
                 SetWindowPos(mWnd, NULL, 0, 0, 0, 0,
-                             SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
-                             SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+                             SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
             }
         }
     }
 
-} // namespace swizzle
+} // namespace swizzle::core
 
 #endif

@@ -1,8 +1,19 @@
 #ifndef WINDOW_EVENTS_HPP
 #define WINDOW_EVENTS_HPP
 
+/* Include files */
+
 #include <common/Common.hpp>
 #include <swizzle/Api.hpp>
+
+/* Defines */
+
+#define MODKEY_SHIFT 0x01
+#define MODKEY_CONTROL 0x02
+#define MODKEY_ALT 0x04
+#define MODKEY_SUPER 0x08
+
+/* Typedefs/enums */
 
 namespace swizzle::core
 {
@@ -15,13 +26,48 @@ namespace swizzle::core
         CharacterTypeEvent,
         MouseMoveEvent,
         MouseMoveDeltaEvent,
-        MouseScrollEvent
+        MouseScrollEvent,
+        GamepadAxisEvent,
+        GamepadButtonEvent,
     };
 
-#define MODKEY_SHIFT 0x01
-#define MODKEY_CONTROL 0x02
-#define MODKEY_ALT 0x04
-#define MODKEY_SUPER 0x08
+    enum class GamePadAxis
+    {
+        Right_X,
+        Right_Y,
+        Right_Z,
+        Left_X,
+        Left_Y,
+        Left_Z
+    };
+
+    enum class GamePadButton
+    {
+        A,
+        B,
+        X,
+        Y,
+        RThumb,
+        LThumb,
+        RBump,
+        LBump,
+        Start,
+        Back,
+        Up,
+        Down,
+        Left,
+        Right
+    };
+} // namespace swizzle::core
+
+/* Forward Declared Structs/Classes */
+
+/* Struct Declaration */
+
+/* Class Declaration */
+
+namespace swizzle::core
+{
 
     class WindowEvent
     {
@@ -119,6 +165,32 @@ namespace swizzle::core
         S32 mScrollY;
     };
 
-} // namespace swizzle
+    class GamepadAxisEvent : public WindowEvent
+    {
+    public:
+        virtual WindowEventType getEventType() const override
+        {
+            return WindowEventType::GamepadAxisEvent;
+        }
+
+        GamePadAxis mAxis;
+        F32 mAxisValue;
+    };
+
+    class GamepadButtonEvent : public WindowEvent
+    {
+    public:
+        virtual WindowEventType getEventType() const override
+        {
+            return WindowEventType::GamepadButtonEvent;
+        }
+
+        GamePadButton mButton;
+        SwBool mButtonPressed;
+    };
+
+} // namespace swizzle::core
+
+/* Function Declaration */
 
 #endif

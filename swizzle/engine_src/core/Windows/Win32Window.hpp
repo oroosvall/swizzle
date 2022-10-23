@@ -4,11 +4,13 @@
 #ifdef SW_WINDOWS
 
 #include <common/Common.hpp>
-#include <swizzle/core/WindowEvents.hpp>
 #include <swizzle/core/Window.hpp>
+#include <swizzle/core/WindowEvents.hpp>
 
 #include "core/EventList.hpp"
 
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <Windows.h>
 
 namespace swizzle::core
@@ -53,7 +55,6 @@ namespace swizzle::core
         S32 modKeys;
 
     private:
-
         void changeScreenMode();
 
         HWND mWnd;
@@ -66,10 +67,9 @@ namespace swizzle::core
         EventHandlerList<WindowEvent> mEventHandlers;
 
         WINDOWPLACEMENT mWindowPlacement;
-
     };
 
-} // namespace swizzle
+} // namespace swizzle::core
 
 #endif
 

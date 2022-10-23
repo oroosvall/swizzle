@@ -16,6 +16,6 @@ namespace swizzle::core
 
     const SwChar* GetWinKeyText(S32 scanCode);
     const SwWChar* GetWinKeyTextW(S32 scanCode);
-}
+} // namespace swizzle::core
 
 #endif
