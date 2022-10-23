@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include "Model.hpp"
-
 #include <utils/Config.hpp>
 #include <utils/FpsCounter.hpp>
 
