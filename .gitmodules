@@ -2,3 +2,7 @@
 	path = vendor/google-test/googletest-master
 	url = https://github.com/google/googletest.git
 	branch = main
+[submodule "vendor/glm/include"]
+	path = vendor/glm/include
+	url = https://github.com/g-truc/glm.git
+	branch = master
