@@ -43,10 +43,10 @@ ImGuiKey fromScanCode(S32 scanCode)
         case 19: return ImGuiKey_::ImGuiKey_R;
         case 20: return ImGuiKey_::ImGuiKey_T;
         case 21: return ImGuiKey_::ImGuiKey_Y;
-        case 22: return ImGuiKey_::ImGuiKey_0;
-        case 23: return ImGuiKey_::ImGuiKey_0;
+        case 22: return ImGuiKey_::ImGuiKey_U;
+        case 23: return ImGuiKey_::ImGuiKey_I;
         case 24: return ImGuiKey_::ImGuiKey_O;
-        case 25: return ImGuiKey_::ImGuiKey_KeyPadEnter;
+        case 25: return ImGuiKey_::ImGuiKey_P;
         case 26: return ImGuiKey_::ImGuiKey_LeftBracket;
         case 27: return ImGuiKey_::ImGuiKey_RightBracket;
         case 28: return ImGuiKey_::ImGuiKey_Enter;
