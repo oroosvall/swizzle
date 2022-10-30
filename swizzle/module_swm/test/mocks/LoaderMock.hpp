@@ -62,6 +62,15 @@ namespace mocks
 
     };
 
+    class MeshLoaderIfcMock : public swm::load::MeshLoaderIfc
+    {
+    public:
+        virtual ~MeshLoaderIfcMock() = default;
+
+        MOCK_METHOD(swm::Result, loadMeshHeader, (U32& num), (override));
+        MOCK_METHOD(swm::Result, loadMeshData, (swm::types::Mesh& mesh), (override));
+
+    };
 }
 
 /* Function Declaration */

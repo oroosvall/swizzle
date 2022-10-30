@@ -54,9 +54,9 @@ namespace swm::types
     {
         auto attribs = GetAttributes(channelAttributes & 0x3F); // Filter the compress and unused flag
         Result res = Result::ErrToManyAttributes;
-        if (attribs.size() == 1)
+        if (attribs.size() == 1u)
         {
-            outSize = GetSizeOfAttribute(attribs[0]);
+            outSize = GetSizeOfAttribute(attribs[0u]);
             res = Result::Success;
         }
         return res;
