@@ -1,9 +1,9 @@
 
 /* Include files */
 
-#include <swm/Swm.hpp>
 #include "helpers/FileReader.hpp"
 #include "helpers/FileWriter.hpp"
+#include <swm/Swm.hpp>
 
 #include "Load.hpp"
 #include "Save.hpp"
@@ -53,7 +53,7 @@ namespace swm
 
         return res;
     }
-}
+} // namespace swm
 
 /* Class Public Function Definition */
 

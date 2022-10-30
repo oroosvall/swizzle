@@ -75,11 +75,10 @@ namespace swm::types
         }
         return attribs;
     }
-}
+} // namespace swm::types
 
 /* Class Public Function Definition */
 
 /* Class Protected Function Definition */
 
 /* Class Private Function Definition */
-

@@ -35,7 +35,7 @@ namespace swm::save
         U32 mVertexCount;
         std::vector<U8> mBitData;
     };
-}
+} // namespace swm::save
 
 /* Class Declaration */
 
@@ -72,16 +72,16 @@ namespace swm::save
         virtual Result saveAnimationDataCompressed(const types::Mesh& mesh) override;
 
     private:
-
         Result createChannels(std::vector<RawChannel>& channels, const types::Mesh& mesh, const U16 flags);
-        Result buildChannels(const std::vector<RawChannel>& rawChannels, std::vector<CompressedChannel>& compressedChannels);
+        Result buildChannels(const std::vector<RawChannel>& rawChannels,
+                             std::vector<CompressedChannel>& compressedChannels);
         Result saveChannels(const std::vector<CompressedChannel>& channels);
 
         SaverCommonIfc& mCommonSaver;
         const types::Header mHeader;
     };
 
-}
+} // namespace swm::save
 
 /* Function Declaration */
 

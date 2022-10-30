@@ -26,7 +26,7 @@ namespace swm::load
     {
         types::Header hdr{};
 
-        LoaderCommon ldr = { fr };
+        LoaderCommon ldr = {fr};
         // Don't like this pointer stuff
         VTLoaderIfc* vtLoader = nullptr;
         MeshLoaderIfc* meshLoader = nullptr;
@@ -50,10 +50,7 @@ namespace swm::load
 
     Result ValidateHeaderMagic(const types::Header& hdr)
     {
-        if (((hdr.mMagic[0] == 'S') &&
-             (hdr.mMagic[1] == 'W') &&
-             (hdr.mMagic[2] == 'M') &&
-             (hdr.mMagic[3] == ' ')))
+        if (((hdr.mMagic[0] == 'S') && (hdr.mMagic[1] == 'W') && (hdr.mMagic[2] == 'M') && (hdr.mMagic[3] == ' ')))
         {
             return Result::Success;
         }
@@ -90,7 +87,7 @@ namespace swm::load
 
         return res;
     }
-}
+} // namespace swm::load
 
 /* Class Public Function Definition */
 
@@ -179,7 +176,7 @@ namespace swm::load
         return tLoadArray(vec, count);
     }
 
-}
+} // namespace swm::load
 
 /* Class Protected Function Definition */
 

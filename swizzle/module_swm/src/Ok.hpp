@@ -23,6 +23,6 @@ namespace swm
     {
         return (result == Result::Success);
     }
-}
+} // namespace swm
 
 #endif

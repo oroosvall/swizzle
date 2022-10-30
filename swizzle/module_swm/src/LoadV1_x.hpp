@@ -25,7 +25,7 @@ namespace swm::load
         U32 mVertexCount;
         std::vector<U8> mBitData;
     };
-}
+} // namespace swm::load
 
 /* Class Declaration */
 
@@ -62,7 +62,6 @@ namespace swm::load
         virtual Result loadAnimationDataCompressed(types::Mesh& mesh) override;
 
     private:
-
         Result loadChannel(CompressedChannel& channel, SwBool hasAnimations);
         U64 getChannelElemetSize(U8 channelFlags);
         Result processChannel(const CompressedChannel& ch, types::Mesh& mesh);
@@ -72,7 +71,7 @@ namespace swm::load
         types::Header mHeader;
     };
 
-}
+} // namespace swm::load
 
 /* Function Declaration */
 

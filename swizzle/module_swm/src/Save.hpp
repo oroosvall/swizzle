@@ -3,9 +3,9 @@
 
 /* Include files */
 
-#include <swm/Swm.hpp>
-#include "helpers/FileWriter.hpp"
 #include "InternalStructs.hpp"
+#include "helpers/FileWriter.hpp"
+#include <swm/Swm.hpp>
 
 #include <string>
 
@@ -74,13 +74,13 @@ namespace swm::save
     private:
         file::FileWriter& mFileWriter;
 
-        template<typename T>
+        template <typename T>
         Result tSaveNum(T num)
         {
             return mFileWriter.write(num) ? Result::Success : Result::ErrFileIo;
         }
 
-        template<typename T>
+        template <typename T>
         Result tSaveArray(const std::vector<T>& vec)
         {
             return mFileWriter.writeArray(vec.data(), vec.size()) ? Result::Success : Result::ErrFileIo;
@@ -111,7 +111,7 @@ namespace swm::save
         virtual Result saveAnimationDataCompressed(const types::Mesh& mesh) = 0;
     };
 
-}
+} // namespace swm::save
 
 /* Function Declaration */
 
@@ -121,7 +121,7 @@ namespace swm::save
 
     Result SaveHeader(file::FileWriter& fw, const types::Header& header);
 
-    Result SaveData(MeshSaverIfc& meshSaver, const Model &mdl, const options::SaveOptions& options);
-}
+    Result SaveData(MeshSaverIfc& meshSaver, const Model& mdl, const options::SaveOptions& options);
+} // namespace swm::save
 
 #endif

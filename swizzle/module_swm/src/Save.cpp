@@ -43,7 +43,7 @@ namespace swm::save
         VTSaverIfc* vtSaver = nullptr;
         MeshSaverIfc* modelSaver = nullptr;
 
-        SaverCommon saverCommon = { fw };
+        SaverCommon saverCommon = {fw};
         vtSaver = new VTSaverV1_x(saverCommon, header);
         modelSaver = new MeshSaverV1_x(saverCommon, *vtSaver, header);
 
@@ -61,11 +61,10 @@ namespace swm::save
         return fw.write(header) ? Result::Success : Result::ErrFileIo;
     }
 
-
     Result SaveData(MeshSaverIfc& meshSaver, const Model& mdl, const options::SaveOptions& options)
     {
         Result res = meshSaver.saveMeshHeader(static_cast<U32>(mdl.mMeshes.size()));
-        for(const types::Mesh& m : mdl.mMeshes)
+        for (const types::Mesh& m : mdl.mMeshes)
         {
             res = Ok(res) ? meshSaver.saveMeshData(m, options) : res;
             if (res != Result::Success)
@@ -75,7 +74,7 @@ namespace swm::save
         }
         return res;
     }
-}
+} // namespace swm::save
 
 /* Class Public Function Definition */
 
@@ -165,7 +164,7 @@ namespace swm::save
     {
         return mFileWriter.writeArray(data, count) ? Result::Success : Result::ErrFileIo;
     }
-}
+} // namespace swm::save
 
 /* Class Protected Function Definition */
 

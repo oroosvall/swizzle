@@ -3,9 +3,9 @@
 
 /* Include files */
 
-#include <swm/Swm.hpp>
-#include "helpers/FileReader.hpp"
 #include "InternalStructs.hpp"
+#include "helpers/FileReader.hpp"
+#include <swm/Swm.hpp>
 
 #include <string>
 
@@ -72,18 +72,17 @@ namespace swm::load
     private:
         file::FileReader& mFileReader;
 
-        template<typename T>
+        template <typename T>
         Result tLoadNum(T& num)
         {
             return mFileReader.readNum(num) ? Result::Success : Result::ErrFileIo;
         }
 
-        template<typename T>
+        template <typename T>
         Result tLoadArray(std::vector<T>& vec, size_t count)
         {
             return mFileReader.readArray(vec, count) ? Result::Success : Result::ErrFileIo;
         }
-
     };
 
     class MeshLoaderIfc
@@ -108,10 +107,9 @@ namespace swm::load
         virtual Result loadVertexDataCompressed(types::Mesh& mesh) = 0;
         virtual Result loadTriangleDataCompressed(types::Mesh& mesh) = 0;
         virtual Result loadAnimationDataCompressed(types::Mesh& mesh) = 0;
-
     };
 
-}
+} // namespace swm::load
 
 /* Function Declaration */
 
@@ -125,6 +123,6 @@ namespace swm::load
     Result GetLoadFunctions(const types::Header& hdr, MeshLoaderIfc** meshLdr, VTLoaderIfc** vtLdr, LoaderCommon& ldr);
 
     Result LoadData(MeshLoaderIfc& ldr, Model& mdl);
-}
+} // namespace swm::load
 
 #endif

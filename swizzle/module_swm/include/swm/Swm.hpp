@@ -5,9 +5,9 @@
 
 #include <common/Common_new.hpp>
 
-#include <vector>
-#include <string>
 #include <filesystem>
+#include <string>
+#include <vector>
 
 /* Defines */
 
@@ -107,7 +107,7 @@ namespace swm::types
 
         AnimationInfo mAnimationData;
     };
-}
+} // namespace swm::types
 
 namespace swm::options
 {
@@ -117,7 +117,7 @@ namespace swm::options
         SwBool mCompressIndex;
         SwBool mCompressAnimations;
     };
-}
+} // namespace swm::options
 
 /* Class Declaration */
 
@@ -126,12 +126,9 @@ namespace swm
     class Model
     {
     public:
-
-
         std::vector<types::Mesh> mMeshes;
-
     };
-}
+} // namespace swm
 
 /* Function Declaration */
 
@@ -141,6 +138,6 @@ namespace swm
     Result SaveSwm(std::filesystem::path filePath, const Model& model, options::SaveOptions options);
 
     const SwChar* GetErrorDescription(Result result);
-}
+} // namespace swm
 
 #endif

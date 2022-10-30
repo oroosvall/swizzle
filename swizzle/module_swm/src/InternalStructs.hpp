@@ -3,8 +3,8 @@
 
 /* Include files */
 
-#include <swm/Swm.hpp>
 #include <common/Common_new.hpp>
+#include <swm/Swm.hpp>
 
 /* Defines */
 
@@ -70,7 +70,7 @@ namespace swm::types
     };
 
 #pragma pack(pop)
-}
+} // namespace swm::types
 
 /* Class Declaration */
 
@@ -81,6 +81,6 @@ namespace swm::types
     U64 GetSizeOfAttribute(compressFlags::CompressedChannelAttribute attribute);
     Result GetChannelSize(U8 channelAttributes, U64& outSize);
     std::vector<compressFlags::CompressedChannelAttribute> GetAttributes(U8 channelAttributes);
-}
+} // namespace swm::types
 
 #endif

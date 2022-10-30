@@ -43,7 +43,7 @@ namespace swm
 
         return resultString;
     }
-}
+} // namespace swm
 
 /* Class Public Function Definition */
 

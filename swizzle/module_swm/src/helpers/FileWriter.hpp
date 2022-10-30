@@ -25,7 +25,7 @@ namespace swm::file
         {
         }
 
-        template<typename T>
+        template <typename T>
         bool write(T value)
         {
             size_t s = sizeof(T);
@@ -33,7 +33,7 @@ namespace swm::file
             return mStream.good();
         }
 
-        template<typename T>
+        template <typename T>
         bool writeArray(T* value, size_t size)
         {
             size_t s = sizeof(T) * size;
@@ -44,7 +44,7 @@ namespace swm::file
     private:
         std::ostream& mStream;
     };
-}
+} // namespace swm::file
 
 /* Function Declaration */
 

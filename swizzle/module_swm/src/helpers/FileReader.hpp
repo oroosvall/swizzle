@@ -3,9 +3,9 @@
 
 /* Include files */
 
-#include <vector>
 #include <fstream>
 #include <istream>
+#include <vector>
 
 /* Defines */
 
@@ -36,7 +36,7 @@ namespace swm::file
 
         ~FileReader() = default;
 
-        template<typename T>
+        template <typename T>
         bool readNum(T& t)
         {
             mStream.read((char*)&t, sizeof(T));
@@ -45,7 +45,7 @@ namespace swm::file
             return readCount == sizeof(T);
         }
 
-        template<typename T>
+        template <typename T>
         bool readArray(std::vector<T>& vec, uint64_t length)
         {
             // check that we can actually read amount of bytes we want
@@ -83,8 +83,7 @@ namespace swm::file
 
         size_t mReadCount;
         size_t mFileSize;
-
     };
-}
+} // namespace swm::file
 
 #endif
