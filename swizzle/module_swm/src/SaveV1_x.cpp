@@ -31,24 +31,28 @@ namespace swm::save
         virtual Type getType() = 0;
     };
 
-    template<typename T>
+    template <typename T>
     struct TSet : public ISet
     {
         virtual ~TSet() = default;
-        virtual Type getType() override { return mType; }
+        virtual Type getType() override
+        {
+            return mType;
+        }
 
         std::set<T> mSet;
         Type mType;
         U8 mAttribute;
         U32 mVertexCount;
     };
-}
+} // namespace swm::save
 
 /* Static Function Declaration */
 
 namespace swm::save
 {
-    RawChannel setupChannel(U8* data, U64 count, U8 elemetSize, U8 componentCount, types::compressFlags::CompressedChannelAttribute attrib);
+    RawChannel setupChannel(U8* data, U64 count, U8 elemetSize, U8 componentCount,
+                            types::compressFlags::CompressedChannelAttribute attrib);
 }
 
 /* Static Variables */
@@ -57,9 +61,10 @@ namespace swm::save
 
 namespace swm::save
 {
-    RawChannel setupChannel(U8* data, U64 count, U8 elemetSize, U8 componentCount, types::compressFlags::CompressedChannelAttribute attrib)
+    RawChannel setupChannel(U8* data, U64 count, U8 elemetSize, U8 componentCount,
+                            types::compressFlags::CompressedChannelAttribute attrib)
     {
-        RawChannel ch {};
+        RawChannel ch{};
         ch.mDataSize = count * elemetSize;
         ch.mData = new U8[ch.mDataSize];
         memcpy(ch.mData, data, ch.mDataSize);
@@ -69,7 +74,7 @@ namespace swm::save
         ch.mAttrib = attrib;
         return ch;
     }
-}
+} // namespace swm::save
 
 /* Function Definition */
 
@@ -94,13 +99,34 @@ namespace swm::save
     {
         auto getFlags = [&]() -> U16 {
             U16 f = 0u;
-            if (!mesh.mUvs.empty()) { utils::SetBit(f, types::meshFlags::UV_BIT); }
-            if (!mesh.mNormals.empty()) { utils::SetBit(f, types::meshFlags::NORMAL_BIT); }
-            if (!mesh.mVertColors.empty()) { utils::SetBit(f, types::meshFlags::COLOR_BIT); }
-            if (!mesh.mBoneInfo.empty()) { utils::SetBit(f, types::meshFlags::ANIMATION_BIT); }
-            if (options.mCompressVertex) {utils::SetBit(f, types::meshFlags::VERTEX_COMPRESS_BIT); }
-            if (options.mCompressIndex) {utils::SetBit(f, types::meshFlags::INDEX_COMPRESS_BIT); }
-            if (options.mCompressAnimations) {utils::SetBit(f, types::meshFlags::ANIMATION_COMPRESS_BIT); }
+            if (!mesh.mUvs.empty())
+            {
+                utils::SetBit(f, types::meshFlags::UV_BIT);
+            }
+            if (!mesh.mNormals.empty())
+            {
+                utils::SetBit(f, types::meshFlags::NORMAL_BIT);
+            }
+            if (!mesh.mVertColors.empty())
+            {
+                utils::SetBit(f, types::meshFlags::COLOR_BIT);
+            }
+            if (!mesh.mBoneInfo.empty())
+            {
+                utils::SetBit(f, types::meshFlags::ANIMATION_BIT);
+            }
+            if (options.mCompressVertex)
+            {
+                utils::SetBit(f, types::meshFlags::VERTEX_COMPRESS_BIT);
+            }
+            if (options.mCompressIndex)
+            {
+                utils::SetBit(f, types::meshFlags::INDEX_COMPRESS_BIT);
+            }
+            if (options.mCompressAnimations)
+            {
+                utils::SetBit(f, types::meshFlags::ANIMATION_COMPRESS_BIT);
+            }
             return f;
         };
 
@@ -129,8 +155,8 @@ namespace swm::save
     }
 
     /*
-    * VTSaverV1_x
-    */
+     * VTSaverV1_x
+     */
 
     VTSaverV1_x::VTSaverV1_x(SaverCommonIfc& commonSaver, const types::Header& header)
         : mCommonSaver(commonSaver)
@@ -216,7 +242,8 @@ namespace swm::save
             for (auto& frame : anim.mKeyFrames)
             {
                 res = Ok(res) ? mCommonSaver.saveArray(frame.mFrameData) : res;
-                if (res != Result::Success) break;
+                if (res != Result::Success)
+                    break;
             }
         }
 
@@ -335,7 +362,7 @@ namespace swm::save
 
         return res;
     }
-}
+} // namespace swm::save
 
 /* Class Protected Function Definition */
 
@@ -375,17 +402,33 @@ namespace swm::save
 
         auto initChannels = [&]() {
             typedef types::compressFlags::CompressedChannelAttribute Attrib;
-            channels.push_back(setupChannel((U8*)mesh.mPositions.data(), mesh.mPositions.size() * 3u, sizeof(F32), 3u, Attrib::Position));
+            channels.push_back(setupChannel((U8*)mesh.mPositions.data(), mesh.mPositions.size() * 3u, sizeof(F32), 3u,
+                                            Attrib::Position));
             if (utils::IsBitSet(flags, types::meshFlags::UV_BIT))
-                { channels.push_back(setupChannel((U8*)mesh.mUvs.data(), mesh.mUvs.size() * 2u, sizeof(F32), 2u, Attrib::Uv)); }
+            {
+                channels.push_back(
+                    setupChannel((U8*)mesh.mUvs.data(), mesh.mUvs.size() * 2u, sizeof(F32), 2u, Attrib::Uv));
+            }
             if (utils::IsBitSet(flags, types::meshFlags::NORMAL_BIT))
-                { channels.push_back(setupChannel((U8*)mesh.mNormals.data(), mesh.mNormals.size() * 3u, sizeof(F32), 3u, Attrib::Normal)); }
+            {
+                channels.push_back(setupChannel((U8*)mesh.mNormals.data(), mesh.mNormals.size() * 3u, sizeof(F32), 3u,
+                                                Attrib::Normal));
+            }
             if (utils::IsBitSet(flags, types::meshFlags::COLOR_BIT))
-                { channels.push_back(setupChannel((U8*)mesh.mVertColors.data(), mesh.mVertColors.size() * 4u, sizeof(U8), 4u, Attrib::Color)); }
+            {
+                channels.push_back(setupChannel((U8*)mesh.mVertColors.data(), mesh.mVertColors.size() * 4u, sizeof(U8),
+                                                4u, Attrib::Color));
+            }
             if (utils::IsBitSet(flags, types::meshFlags::ANIMATION_BIT))
-                { channels.push_back(setupChannel((U8*)boneIndex.data(), boneIndex.size() * 4u, sizeof(U16), 4u, Attrib::BoneIndex)); }
+            {
+                channels.push_back(
+                    setupChannel((U8*)boneIndex.data(), boneIndex.size() * 4u, sizeof(U16), 4u, Attrib::BoneIndex));
+            }
             if (utils::IsBitSet(flags, types::meshFlags::ANIMATION_BIT))
-                { channels.push_back(setupChannel((U8*)boneWeights.data(), boneWeights.size() * 4u, sizeof(F32), 4u, Attrib::BoneWeight)); }
+            {
+                channels.push_back(setupChannel((U8*)boneWeights.data(), boneWeights.size() * 4u, sizeof(F32), 4u,
+                                                Attrib::BoneWeight));
+            }
         };
 
         initChannels();
@@ -393,7 +436,8 @@ namespace swm::save
         return res;
     }
 
-    Result VTSaverV1_x::buildChannels(const std::vector<RawChannel>& rawChannels, std::vector<CompressedChannel>& compressedChannels)
+    Result VTSaverV1_x::buildChannels(const std::vector<RawChannel>& rawChannels,
+                                      std::vector<CompressedChannel>& compressedChannels)
     {
         typedef types::compressFlags::CompressedChannelAttribute Attrib;
 
@@ -461,7 +505,6 @@ namespace swm::save
 
         // Attempt merging channels
         // Todo
-
 
         auto getElemSize = [&](U8 size) {
             switch (size)
@@ -861,7 +904,8 @@ namespace swm::save
         for (const auto& ch : channels)
         {
             Result r = Ok(res) ? mCommonSaver.saveNumber(ch.mChannelAttribute) : res;
-            const SwBool compressedChannel = utils::IsBitSet(ch.mChannelAttribute, (U8)types::compressFlags::CompressedChannelAttribute::Compressed);
+            const SwBool compressedChannel =
+                utils::IsBitSet(ch.mChannelAttribute, (U8)types::compressFlags::CompressedChannelAttribute::Compressed);
 
             if (compressedChannel)
             {
@@ -882,4 +926,4 @@ namespace swm::save
 
         return res;
     }
-}
+} // namespace swm::save

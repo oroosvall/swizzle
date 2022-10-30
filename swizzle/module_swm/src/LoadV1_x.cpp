@@ -18,7 +18,7 @@
 
 namespace swm::load
 {
-    template<typename T>
+    template <typename T>
     struct LoadFuncs
     {
         SwBool mCondition;
@@ -32,7 +32,7 @@ namespace swm::load
             }
         }
     };
-}
+} // namespace swm::load
 
 /* Static Function Declaration */
 
@@ -45,7 +45,7 @@ namespace swm::load
     types::Vector2F ReadVector2(const CompressedChannel& ch, utils::BitStreamReader& bsr);
     types::Vector3F ReadVector3(const CompressedChannel& ch, utils::BitStreamReader& bsr);
 
-    template<typename T>
+    template <typename T>
     T GetValue(const U8* data, U64 maxIndex, U64 index)
     {
         T* tPtr = (T*)data;
@@ -61,10 +61,8 @@ namespace swm::load
         bsr.readBits(idx1, ch.mBitsPerIndex);
         bsr.readBits(idx2, ch.mBitsPerIndex);
 
-        return types::Vector2F{
-            GetValue<F32>(ch.mData.data(), ch.mElementCount, idx1),
-            GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2)
-        };
+        return types::Vector2F{GetValue<F32>(ch.mData.data(), ch.mElementCount, idx1),
+                               GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2)};
     }
 
     types::Vector3F ReadVector3(const CompressedChannel& ch, utils::BitStreamReader& bsr)
@@ -74,14 +72,13 @@ namespace swm::load
         bsr.readBits(idx2, ch.mBitsPerIndex);
         bsr.readBits(idx3, ch.mBitsPerIndex);
 
-        return types::Vector3F{
-            GetValue<F32>(ch.mData.data(), ch.mElementCount, idx1),
-            GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2),
-            GetValue<F32>(ch.mData.data(), ch.mElementCount, idx3)
-        };
+        return types::Vector3F{GetValue<F32>(ch.mData.data(), ch.mElementCount, idx1),
+                               GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2),
+                               GetValue<F32>(ch.mData.data(), ch.mElementCount, idx3)};
     }
 
-    types::Color4U ReadColor4U(const CompressedChannel& ch, utils::BitStreamReader& bsr, types::mappingFlags::MappingBits mappingBits)
+    types::Color4U ReadColor4U(const CompressedChannel& ch, utils::BitStreamReader& bsr,
+                               types::mappingFlags::MappingBits mappingBits)
     {
 
         if (mappingBits == types::mappingFlags::OneToOne)
@@ -92,12 +89,10 @@ namespace swm::load
             bsr.readBits(idx3, ch.mBitsPerIndex);
             bsr.readBits(idx4, ch.mBitsPerIndex);
 
-            return types::Color4U{
-                GetValue<U8>(ch.mData.data(), ch.mElementCount, idx1),
-                GetValue<U8>(ch.mData.data(), ch.mElementCount, idx2),
-                GetValue<U8>(ch.mData.data(), ch.mElementCount, idx3),
-                GetValue<U8>(ch.mData.data(), ch.mElementCount, idx4)
-            };
+            return types::Color4U{GetValue<U8>(ch.mData.data(), ch.mElementCount, idx1),
+                                  GetValue<U8>(ch.mData.data(), ch.mElementCount, idx2),
+                                  GetValue<U8>(ch.mData.data(), ch.mElementCount, idx3),
+                                  GetValue<U8>(ch.mData.data(), ch.mElementCount, idx4)};
         }
         else if (mappingBits == types::mappingFlags::OneToTwo)
         {
@@ -108,12 +103,8 @@ namespace swm::load
             U16 value1 = GetValue<U16>(ch.mData.data(), ch.mElementCount, idx1);
             U16 value2 = GetValue<U16>(ch.mData.data(), ch.mElementCount, idx1);
 
-            return types::Color4U{
-                GetValue<U8>((U8*)&value1, 1u, 0u),
-                GetValue<U8>((U8*)&value1, 1u, 1u),
-                GetValue<U8>((U8*)&value2, 1u, 0u),
-                GetValue<U8>((U8*)&value2, 1u, 1u)
-            };
+            return types::Color4U{GetValue<U8>((U8*)&value1, 1u, 0u), GetValue<U8>((U8*)&value1, 1u, 1u),
+                                  GetValue<U8>((U8*)&value2, 1u, 0u), GetValue<U8>((U8*)&value2, 1u, 1u)};
         }
         else if (mappingBits == types::mappingFlags::OneToFour)
         {
@@ -122,16 +113,12 @@ namespace swm::load
 
             U32 value = GetValue<U32>(ch.mData.data(), ch.mElementCount, idx1);
 
-            return types::Color4U{
-                GetValue<U8>((U8*)&value, 3u, 0u),
-                GetValue<U8>((U8*)&value, 3u, 1u),
-                GetValue<U8>((U8*)&value, 3u, 2u),
-                GetValue<U8>((U8*)&value, 3u, 3u)
-            };
+            return types::Color4U{GetValue<U8>((U8*)&value, 3u, 0u), GetValue<U8>((U8*)&value, 3u, 1u),
+                                  GetValue<U8>((U8*)&value, 3u, 2u), GetValue<U8>((U8*)&value, 3u, 3u)};
         }
         else
         {
-            return types::Color4U{ };
+            return types::Color4U{};
         }
     }
 
@@ -143,12 +130,10 @@ namespace swm::load
         bsr.readBits(idx3, ch.mBitsPerIndex);
         bsr.readBits(idx4, ch.mBitsPerIndex);
 
-        return types::BoneIndex{
-            GetValue<U16>(ch.mData.data(), ch.mElementCount, idx1),
-            GetValue<U16>(ch.mData.data(), ch.mElementCount, idx2),
-            GetValue<U16>(ch.mData.data(), ch.mElementCount, idx3),
-            GetValue<U16>(ch.mData.data(), ch.mElementCount, idx4)
-        };
+        return types::BoneIndex{GetValue<U16>(ch.mData.data(), ch.mElementCount, idx1),
+                                GetValue<U16>(ch.mData.data(), ch.mElementCount, idx2),
+                                GetValue<U16>(ch.mData.data(), ch.mElementCount, idx3),
+                                GetValue<U16>(ch.mData.data(), ch.mElementCount, idx4)};
     }
 
     types::BoneWeights ReadBoneWeight(const CompressedChannel& ch, utils::BitStreamReader& bsr)
@@ -159,14 +144,12 @@ namespace swm::load
         bsr.readBits(idx3, ch.mBitsPerIndex);
         bsr.readBits(idx4, ch.mBitsPerIndex);
 
-        return types::BoneWeights{
-            GetValue<F32>(ch.mData.data(), ch.mElementCount, idx1),
-            GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2),
-            GetValue<F32>(ch.mData.data(), ch.mElementCount, idx3),
-            GetValue<F32>(ch.mData.data(), ch.mElementCount, idx4)
-        };
+        return types::BoneWeights{GetValue<F32>(ch.mData.data(), ch.mElementCount, idx1),
+                                  GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2),
+                                  GetValue<F32>(ch.mData.data(), ch.mElementCount, idx3),
+                                  GetValue<F32>(ch.mData.data(), ch.mElementCount, idx4)};
     }
-}
+} // namespace swm::load
 
 /* Function Definition */
 
@@ -239,9 +222,7 @@ namespace swm::load
         U32 numVertices = 0u;
         Result res = mCommonLdr.loadNumber(numVertices);
 
-        auto bc = [&](types::meshFlags::MeshFlags flags) {
-            return utils::IsBitSet(mesh.mFlags, flags);
-        };
+        auto bc = [&](types::meshFlags::MeshFlags flags) { return utils::IsBitSet(mesh.mFlags, flags); };
 
         std::vector<types::BoneIndex> boneIndex;
         std::vector<types::BoneWeights> boneWeights;
@@ -311,7 +292,8 @@ namespace swm::load
             for (auto& frame : anim.mKeyFrames)
             {
                 res = Ok(res) ? mCommonLdr.loadArray(frame.mFrameData, ai.mNumBones) : res;
-                if (res != Result::Success) break;
+                if (res != Result::Success)
+                    break;
             }
             ai.mAnimations.emplace_back(anim);
         }
@@ -368,7 +350,7 @@ namespace swm::load
                 bsr.readBits(v2, bitsPerVertex);
                 bsr.readBits(v3, bitsPerVertex);
 
-                mesh.mTriangles.push_back({ v1, v2, v3 });
+                mesh.mTriangles.push_back({v1, v2, v3});
             }
         }
 
@@ -429,7 +411,7 @@ namespace swm::load
 
         return res;
     }
-}
+} // namespace swm::load
 
 /* Class Protected Function Definition */
 
@@ -440,7 +422,8 @@ namespace swm::load
     Result VTLoaderV1_x::loadChannel(CompressedChannel& ch, SwBool hasAnimations)
     {
         Result r = mCommonLdr.loadNumber(ch.mChannelAttribute);
-        const SwBool compressedChannel = utils::IsBitSet(ch.mChannelAttribute, (U8)types::compressFlags::CompressedChannelAttribute::Compressed);
+        const SwBool compressedChannel =
+            utils::IsBitSet(ch.mChannelAttribute, (U8)types::compressFlags::CompressedChannelAttribute::Compressed);
 
         if (compressedChannel)
         {
@@ -494,7 +477,7 @@ namespace swm::load
 
     U64 VTLoaderV1_x::getChannelElemetSize(U8 channelFlags)
     {
-        const U64 lut[] = { 1ull, 2ull, 4ull, 8ull };
+        const U64 lut[] = {1ull, 2ull, 4ull, 8ull};
         U8 typeBits = channelFlags & 0x03;
 
         return lut[typeBits];
@@ -503,8 +486,10 @@ namespace swm::load
     Result VTLoaderV1_x::processChannel(const CompressedChannel& ch, types::Mesh& mesh)
     {
         // Only get channel attributes of interest
-        std::vector<types::compressFlags::CompressedChannelAttribute> attribs = types::GetAttributes(ch.mChannelAttribute & 0x3F);
-        const SwBool compressedChannel = utils::IsBitSet(ch.mChannelAttribute, (U8)types::compressFlags::CompressedChannelAttribute::Compressed);
+        std::vector<types::compressFlags::CompressedChannelAttribute> attribs =
+            types::GetAttributes(ch.mChannelAttribute & 0x3F);
+        const SwBool compressedChannel =
+            utils::IsBitSet(ch.mChannelAttribute, (U8)types::compressFlags::CompressedChannelAttribute::Compressed);
 
         if (compressedChannel)
         {
@@ -514,12 +499,14 @@ namespace swm::load
             std::vector<types::BoneWeights> boneWeights;
 
             std::function<void()> fn[] = {
-                [&] {mesh.mPositions.emplace_back(ReadVector3(ch, bsr)); },
-                [&] {mesh.mUvs.emplace_back(ReadVector2(ch, bsr)); },
-                [&] {mesh.mNormals.emplace_back(ReadVector3(ch, bsr)); },
-                [&] {mesh.mVertColors.emplace_back(ReadColor4U(ch, bsr, getChannelMappingBits(ch.mChannelDataFlags))); },
-                [&] {boneIndex.emplace_back(ReadBoneIndex(ch, bsr)); },
-                [&] {boneWeights.emplace_back(ReadBoneWeight(ch, bsr)); },
+                [&] { mesh.mPositions.emplace_back(ReadVector3(ch, bsr)); },
+                [&] { mesh.mUvs.emplace_back(ReadVector2(ch, bsr)); },
+                [&] { mesh.mNormals.emplace_back(ReadVector3(ch, bsr)); },
+                [&] {
+                    mesh.mVertColors.emplace_back(ReadColor4U(ch, bsr, getChannelMappingBits(ch.mChannelDataFlags)));
+                },
+                [&] { boneIndex.emplace_back(ReadBoneIndex(ch, bsr)); },
+                [&] { boneWeights.emplace_back(ReadBoneWeight(ch, bsr)); },
             };
 
             SwBool hasAnim = false;
@@ -555,13 +542,30 @@ namespace swm::load
             std::vector<types::BoneWeights> boneWeights;
 
             std::function<void()> fn[] = {
-                [&] {mesh.mPositions.resize(ch.mVertexCount); memcpy(mesh.mPositions.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::Vector3F)); },
-                [&] {mesh.mUvs.resize(ch.mVertexCount); memcpy(mesh.mUvs.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::Vector2F)); },
-                [&] {mesh.mNormals.resize(ch.mVertexCount); memcpy(mesh.mNormals.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::Vector3F)); },
-                [&] {mesh.mVertColors.resize(ch.mVertexCount); memcpy(mesh.mVertColors.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::Color4U)); },
-                [&] {boneIndex.resize(ch.mVertexCount); memcpy(boneIndex.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::BoneIndex)); },
-                [&] {boneWeights.resize(ch.mVertexCount); memcpy(boneWeights.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::BoneIndex)); }
-            };
+                [&] {
+                    mesh.mPositions.resize(ch.mVertexCount);
+                    memcpy(mesh.mPositions.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::Vector3F));
+                },
+                [&] {
+                    mesh.mUvs.resize(ch.mVertexCount);
+                    memcpy(mesh.mUvs.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::Vector2F));
+                },
+                [&] {
+                    mesh.mNormals.resize(ch.mVertexCount);
+                    memcpy(mesh.mNormals.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::Vector3F));
+                },
+                [&] {
+                    mesh.mVertColors.resize(ch.mVertexCount);
+                    memcpy(mesh.mVertColors.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::Color4U));
+                },
+                [&] {
+                    boneIndex.resize(ch.mVertexCount);
+                    memcpy(boneIndex.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::BoneIndex));
+                },
+                [&] {
+                    boneWeights.resize(ch.mVertexCount);
+                    memcpy(boneWeights.data(), ch.mData.data(), ch.mVertexCount * sizeof(types::BoneIndex));
+                }};
 
             for (const auto& a : attribs)
             {
@@ -597,4 +601,4 @@ namespace swm::load
         return types::mappingFlags::MappingBits((channelFlags & 0xC0) >> 6);
     }
 
-}
+} // namespace swm::load
