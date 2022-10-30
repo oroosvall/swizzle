@@ -50,6 +50,9 @@ namespace swm::save
         // Write all model data
         res = Ok(res) ? SaveData(*modelSaver, mdl, options) : res;
 
+        delete vtSaver;
+        delete modelSaver;
+
         return Result::Success;
     }
 
