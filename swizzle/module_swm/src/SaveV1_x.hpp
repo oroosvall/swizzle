@@ -4,6 +4,7 @@
 /* Include files */
 
 #include "Save.hpp"
+#include "ChannelCommon.hpp"
 
 /* Defines */
 
@@ -23,17 +24,6 @@ namespace swm::save
         U8 mElementSize;
         U8 mComponentCount;
         types::compressFlags::CompressedChannelAttribute mAttrib;
-    };
-
-    struct CompressedChannel
-    {
-        U8 mChannelAttribute;
-        U8 mChannelDataFlags;
-        U32 mElementCount;
-        std::vector<U8> mData;
-        U8 mBitsPerIndex;
-        U32 mVertexCount;
-        std::vector<U8> mBitData;
     };
 } // namespace swm::save
 
@@ -74,8 +64,8 @@ namespace swm::save
     private:
         Result createChannels(std::vector<RawChannel>& channels, const types::Mesh& mesh, const U16 flags);
         Result buildChannels(const std::vector<RawChannel>& rawChannels,
-                             std::vector<CompressedChannel>& compressedChannels);
-        Result saveChannels(const std::vector<CompressedChannel>& channels);
+                             std::vector<channel::CompressedChannel>& compressedChannels);
+        Result saveChannels(const std::vector<channel::CompressedChannel>& channels);
 
         SaverCommonIfc& mCommonSaver;
         const types::Header mHeader;

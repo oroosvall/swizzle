@@ -4,6 +4,7 @@
 /* Include files */
 
 #include "Load.hpp"
+#include "ChannelCommon.hpp"
 
 /* Defines */
 
@@ -12,20 +13,6 @@
 /* Forward Declared Structs/Classes */
 
 /* Struct Declaration */
-
-namespace swm::load
-{
-    struct CompressedChannel
-    {
-        U8 mChannelAttribute;
-        U8 mChannelDataFlags;
-        U32 mElementCount;
-        std::vector<U8> mData;
-        U8 mBitsPerIndex;
-        U32 mVertexCount;
-        std::vector<U8> mBitData;
-    };
-} // namespace swm::load
 
 /* Class Declaration */
 
@@ -62,9 +49,8 @@ namespace swm::load
         virtual Result loadAnimationDataCompressed(types::Mesh& mesh) override;
 
     private:
-        Result loadChannel(CompressedChannel& channel, SwBool hasAnimations);
-        U64 getChannelElemetSize(U8 channelFlags);
-        Result processChannel(const CompressedChannel& ch, types::Mesh& mesh);
+        Result loadChannel(channel::CompressedChannel& channel, SwBool hasAnimations);
+        Result processChannel(const channel::CompressedChannel& ch, types::Mesh& mesh);
         types::mappingFlags::MappingBits getChannelMappingBits(U8 channelFlags);
 
         LoaderCommonIfc& mCommonLdr;

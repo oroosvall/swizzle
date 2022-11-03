@@ -42,8 +42,8 @@ namespace swm::load
 
 namespace swm::load
 {
-    types::Vector2F ReadVector2(const CompressedChannel& ch, utils::BitStreamReader& bsr);
-    types::Vector3F ReadVector3(const CompressedChannel& ch, utils::BitStreamReader& bsr);
+    types::Vector2F ReadVector2(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr);
+    types::Vector3F ReadVector3(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr);
 
     template <typename T>
     T GetValue(const U8* data, U64 maxIndex, U64 index)
@@ -55,7 +55,7 @@ namespace swm::load
             return tPtr[index];
     }
 
-    types::Vector2F ReadVector2(const CompressedChannel& ch, utils::BitStreamReader& bsr)
+    types::Vector2F ReadVector2(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr)
     {
         U32 idx1, idx2;
         bsr.readBits(idx1, ch.mBitsPerIndex);
@@ -65,7 +65,7 @@ namespace swm::load
                                GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2)};
     }
 
-    types::Vector3F ReadVector3(const CompressedChannel& ch, utils::BitStreamReader& bsr)
+    types::Vector3F ReadVector3(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr)
     {
         U32 idx1, idx2, idx3;
         bsr.readBits(idx1, ch.mBitsPerIndex);
@@ -77,7 +77,7 @@ namespace swm::load
                                GetValue<F32>(ch.mData.data(), ch.mElementCount, idx3)};
     }
 
-    types::Color4U ReadColor4U(const CompressedChannel& ch, utils::BitStreamReader& bsr,
+    types::Color4U ReadColor4U(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr,
                                types::mappingFlags::MappingBits mappingBits)
     {
 
@@ -122,7 +122,7 @@ namespace swm::load
         }
     }
 
-    types::BoneIndex ReadBoneIndex(const CompressedChannel& ch, utils::BitStreamReader& bsr)
+    types::BoneIndex ReadBoneIndex(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr)
     {
         U32 idx1, idx2, idx3, idx4;
         bsr.readBits(idx1, ch.mBitsPerIndex);
@@ -136,7 +136,7 @@ namespace swm::load
                                 GetValue<U16>(ch.mData.data(), ch.mElementCount, idx4)};
     }
 
-    types::BoneWeights ReadBoneWeight(const CompressedChannel& ch, utils::BitStreamReader& bsr)
+    types::BoneWeights ReadBoneWeight(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr)
     {
         U32 idx1, idx2, idx3, idx4;
         bsr.readBits(idx1, ch.mBitsPerIndex);
@@ -187,6 +187,7 @@ namespace swm::load
         {
             res = Ok(res) ? mVtLoader.loadVertexData(mesh) : res;
         }
+
         if (utils::IsBitSet(mesh.mFlags, types::meshFlags::INDEX_COMPRESS_BIT))
         {
             res = Ok(res) ? mVtLoader.loadTriangleDataCompressed(mesh) : res;
@@ -309,10 +310,10 @@ namespace swm::load
         Result res = mCommonLdr.loadNumber(compressFlags);
         res = Ok(res) ? mCommonLdr.loadNumber(numberOfChannles) : res;
 
-        std::vector<CompressedChannel> channels;
+        std::vector<channel::CompressedChannel> channels;
         for (U32 i = 0u; i < numberOfChannles && Ok(res); ++i)
         {
-            CompressedChannel ch = {};
+            channel::CompressedChannel ch = {};
             res = loadChannel(ch, utils::IsBitSet(mesh.mFlags, types::meshFlags::ANIMATION_BIT));
             channels.emplace_back(ch);
         }
@@ -419,7 +420,7 @@ namespace swm::load
 
 namespace swm::load
 {
-    Result VTLoaderV1_x::loadChannel(CompressedChannel& ch, SwBool hasAnimations)
+    Result VTLoaderV1_x::loadChannel(channel::CompressedChannel& ch, SwBool hasAnimations)
     {
         Result r = mCommonLdr.loadNumber(ch.mChannelAttribute);
         const SwBool compressedChannel =
@@ -451,7 +452,7 @@ namespace swm::load
             }
             r = Ok(r) ? mCommonLdr.loadNumber(ch.mChannelDataFlags) : r;
             r = Ok(r) ? mCommonLdr.loadNumber(ch.mElementCount) : r;
-            U64 size = ch.mElementCount * getChannelElemetSize(ch.mChannelDataFlags);
+            U64 size = ch.mElementCount * channel::GetChannelElemetSize(ch.mChannelDataFlags);
             r = Ok(r) ? mCommonLdr.loadArray(ch.mData, size) : r;
             r = Ok(r) ? mCommonLdr.loadNumber(ch.mBitsPerIndex) : r;
             r = Ok(r) ? mCommonLdr.loadNumber(ch.mVertexCount) : r;
@@ -475,15 +476,7 @@ namespace swm::load
         return r;
     }
 
-    U64 VTLoaderV1_x::getChannelElemetSize(U8 channelFlags)
-    {
-        const U64 lut[] = {1ull, 2ull, 4ull, 8ull};
-        U8 typeBits = channelFlags & 0x03;
-
-        return lut[typeBits];
-    }
-
-    Result VTLoaderV1_x::processChannel(const CompressedChannel& ch, types::Mesh& mesh)
+    Result VTLoaderV1_x::processChannel(const channel::CompressedChannel& ch, types::Mesh& mesh)
     {
         // Only get channel attributes of interest
         std::vector<types::compressFlags::CompressedChannelAttribute> attribs =

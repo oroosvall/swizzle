@@ -253,7 +253,7 @@ namespace swm::save
     Result VTSaverV1_x::saveVertexDataCompressed(const types::Mesh& mesh, const U16 flags)
     {
         std::vector<RawChannel> rawChannels;
-        std::vector<CompressedChannel> compChannels;
+        std::vector<channel::CompressedChannel> compChannels;
 
         Result res = createChannels(rawChannels, mesh, flags);
         res = Ok(res) ? buildChannels(rawChannels, compChannels) : res;
@@ -437,7 +437,7 @@ namespace swm::save
     }
 
     Result VTSaverV1_x::buildChannels(const std::vector<RawChannel>& rawChannels,
-                                      std::vector<CompressedChannel>& compressedChannels)
+                                      std::vector<channel::CompressedChannel>& compressedChannels)
     {
         typedef types::compressFlags::CompressedChannelAttribute Attrib;
 
@@ -526,7 +526,7 @@ namespace swm::save
         // Build final channels
         for (const auto& s : sets)
         {
-            CompressedChannel cc{};
+            channel::CompressedChannel cc{};
             switch (s->getType())
             {
             case Type::tF32:
@@ -896,7 +896,7 @@ namespace swm::save
         return Result::Success;
     }
 
-    Result VTSaverV1_x::saveChannels(const std::vector<CompressedChannel>& channels)
+    Result VTSaverV1_x::saveChannels(const std::vector<channel::CompressedChannel>& channels)
     {
         U8 channelCount = static_cast<U8>(channels.size());
         mCommonSaver.saveNumber((U8)0u);

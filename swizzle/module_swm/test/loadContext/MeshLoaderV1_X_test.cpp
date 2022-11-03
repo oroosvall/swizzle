@@ -8,6 +8,8 @@
 
 #include "mocks/LoaderMock.hpp"
 
+#include <utils/BitUtil.hpp>
+
 namespace t = testing;
 
 /* Defines */
@@ -199,6 +201,45 @@ namespace meshLoaderV1_x
         );
 
         EXPECT_CALL(vtMock, loadTriangleData(t::Matcher<swm::types::Mesh&>(t::_))).Times(1).WillOnce(
+            t::Return(swm::Result::Success)
+        );
+
+        swm::types::Mesh mesh = {};
+        EXPECT_EQ(ldr.loadMeshData(mesh), swm::Result::Success);
+    }
+
+    TEST(SWM_MeshLoader, loadDataCompressed_Success)
+    {
+        t::DefaultValue<swm::Result>::Set(swm::Result(-1));
+
+        swm::types::Header hdr = {};
+        mocks::LoaderIfcMock loadMock;
+        mocks::VTLoaderIfcMock vtMock;
+        swm::load::MeshLoaderV1_x ldr = { loadMock, vtMock, hdr };
+
+        swm::types::Mesh m = {};
+
+        EXPECT_CALL(loadMock, loadShortString(t::Matcher<std::string&>(t::_))).Times(1).WillOnce(
+            t::Return(swm::Result::Success)
+        );
+
+        U16 flags = 0u;
+
+        utils::SetBit(flags, swm::types::meshFlags::VERTEX_COMPRESS_BIT);
+        utils::SetBit(flags, swm::types::meshFlags::INDEX_COMPRESS_BIT);
+
+        EXPECT_CALL(loadMock, loadNumber(t::Matcher<U16&>(t::_))).Times(1).WillOnce(
+            t::DoAll(
+                t::SetArgReferee<0>(U16(flags)),
+                t::Return(swm::Result::Success)
+            )
+        );
+
+        EXPECT_CALL(vtMock, loadVertexDataCompressed(t::Matcher<swm::types::Mesh&>(t::_))).Times(1).WillOnce(
+            t::Return(swm::Result::Success)
+        );
+
+        EXPECT_CALL(vtMock, loadTriangleDataCompressed(t::Matcher<swm::types::Mesh&>(t::_))).Times(1).WillOnce(
             t::Return(swm::Result::Success)
         );
 
