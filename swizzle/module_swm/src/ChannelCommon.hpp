@@ -4,6 +4,7 @@
 /* Include files */
 
 #include "InternalStructs.hpp"
+#include <utils/Bitstream.hpp>
 
 /* Defines */
 
@@ -34,6 +35,16 @@ namespace swm::channel
 namespace swm::channel
 {
     U64 GetChannelElemetSize(U8 channelFlags);
-}
+
+    types::Vector2F ReadVector2(const CompressedChannel& ch, utils::BitStreamReader& bsr);
+    types::Vector3F ReadVector3(const CompressedChannel& ch, utils::BitStreamReader& bsr);
+
+    types::Color4U ReadColor4U(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr,
+                               types::mappingFlags::MappingBits mappingBits);
+
+    types::BoneIndex ReadBoneIndex(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr);
+    types::BoneWeights ReadBoneWeight(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr);
+
+} // namespace swm::channel
 
 #endif

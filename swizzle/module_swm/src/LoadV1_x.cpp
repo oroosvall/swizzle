@@ -40,117 +40,6 @@ namespace swm::load
 
 /* Static Function Definition */
 
-namespace swm::load
-{
-    types::Vector2F ReadVector2(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr);
-    types::Vector3F ReadVector3(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr);
-
-    template <typename T>
-    T GetValue(const U8* data, U64 maxIndex, U64 index)
-    {
-        T* tPtr = (T*)data;
-        if (index > maxIndex)
-            return {}; // T default value
-        else
-            return tPtr[index];
-    }
-
-    types::Vector2F ReadVector2(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr)
-    {
-        U32 idx1, idx2;
-        bsr.readBits(idx1, ch.mBitsPerIndex);
-        bsr.readBits(idx2, ch.mBitsPerIndex);
-
-        return types::Vector2F{GetValue<F32>(ch.mData.data(), ch.mElementCount, idx1),
-                               GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2)};
-    }
-
-    types::Vector3F ReadVector3(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr)
-    {
-        U32 idx1, idx2, idx3;
-        bsr.readBits(idx1, ch.mBitsPerIndex);
-        bsr.readBits(idx2, ch.mBitsPerIndex);
-        bsr.readBits(idx3, ch.mBitsPerIndex);
-
-        return types::Vector3F{GetValue<F32>(ch.mData.data(), ch.mElementCount, idx1),
-                               GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2),
-                               GetValue<F32>(ch.mData.data(), ch.mElementCount, idx3)};
-    }
-
-    types::Color4U ReadColor4U(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr,
-                               types::mappingFlags::MappingBits mappingBits)
-    {
-
-        if (mappingBits == types::mappingFlags::OneToOne)
-        {
-            U32 idx1, idx2, idx3, idx4;
-            bsr.readBits(idx1, ch.mBitsPerIndex);
-            bsr.readBits(idx2, ch.mBitsPerIndex);
-            bsr.readBits(idx3, ch.mBitsPerIndex);
-            bsr.readBits(idx4, ch.mBitsPerIndex);
-
-            return types::Color4U{GetValue<U8>(ch.mData.data(), ch.mElementCount, idx1),
-                                  GetValue<U8>(ch.mData.data(), ch.mElementCount, idx2),
-                                  GetValue<U8>(ch.mData.data(), ch.mElementCount, idx3),
-                                  GetValue<U8>(ch.mData.data(), ch.mElementCount, idx4)};
-        }
-        else if (mappingBits == types::mappingFlags::OneToTwo)
-        {
-            U32 idx1, idx2;
-            bsr.readBits(idx1, ch.mBitsPerIndex);
-            bsr.readBits(idx2, ch.mBitsPerIndex);
-
-            U16 value1 = GetValue<U16>(ch.mData.data(), ch.mElementCount, idx1);
-            U16 value2 = GetValue<U16>(ch.mData.data(), ch.mElementCount, idx1);
-
-            return types::Color4U{GetValue<U8>((U8*)&value1, 1u, 0u), GetValue<U8>((U8*)&value1, 1u, 1u),
-                                  GetValue<U8>((U8*)&value2, 1u, 0u), GetValue<U8>((U8*)&value2, 1u, 1u)};
-        }
-        else if (mappingBits == types::mappingFlags::OneToFour)
-        {
-            U32 idx1;
-            bsr.readBits(idx1, ch.mBitsPerIndex);
-
-            U32 value = GetValue<U32>(ch.mData.data(), ch.mElementCount, idx1);
-
-            return types::Color4U{GetValue<U8>((U8*)&value, 3u, 0u), GetValue<U8>((U8*)&value, 3u, 1u),
-                                  GetValue<U8>((U8*)&value, 3u, 2u), GetValue<U8>((U8*)&value, 3u, 3u)};
-        }
-        else
-        {
-            return types::Color4U{};
-        }
-    }
-
-    types::BoneIndex ReadBoneIndex(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr)
-    {
-        U32 idx1, idx2, idx3, idx4;
-        bsr.readBits(idx1, ch.mBitsPerIndex);
-        bsr.readBits(idx2, ch.mBitsPerIndex);
-        bsr.readBits(idx3, ch.mBitsPerIndex);
-        bsr.readBits(idx4, ch.mBitsPerIndex);
-
-        return types::BoneIndex{GetValue<U16>(ch.mData.data(), ch.mElementCount, idx1),
-                                GetValue<U16>(ch.mData.data(), ch.mElementCount, idx2),
-                                GetValue<U16>(ch.mData.data(), ch.mElementCount, idx3),
-                                GetValue<U16>(ch.mData.data(), ch.mElementCount, idx4)};
-    }
-
-    types::BoneWeights ReadBoneWeight(const channel::CompressedChannel& ch, utils::BitStreamReader& bsr)
-    {
-        U32 idx1, idx2, idx3, idx4;
-        bsr.readBits(idx1, ch.mBitsPerIndex);
-        bsr.readBits(idx2, ch.mBitsPerIndex);
-        bsr.readBits(idx3, ch.mBitsPerIndex);
-        bsr.readBits(idx4, ch.mBitsPerIndex);
-
-        return types::BoneWeights{GetValue<F32>(ch.mData.data(), ch.mElementCount, idx1),
-                                  GetValue<F32>(ch.mData.data(), ch.mElementCount, idx2),
-                                  GetValue<F32>(ch.mData.data(), ch.mElementCount, idx3),
-                                  GetValue<F32>(ch.mData.data(), ch.mElementCount, idx4)};
-    }
-} // namespace swm::load
-
 /* Function Definition */
 
 /* Class Public Function Definition */
@@ -490,16 +379,15 @@ namespace swm::load
 
             std::vector<types::BoneIndex> boneIndex;
             std::vector<types::BoneWeights> boneWeights;
-
             std::function<void()> fn[] = {
-                [&] { mesh.mPositions.emplace_back(ReadVector3(ch, bsr)); },
-                [&] { mesh.mUvs.emplace_back(ReadVector2(ch, bsr)); },
-                [&] { mesh.mNormals.emplace_back(ReadVector3(ch, bsr)); },
+                [&] { mesh.mPositions.emplace_back(channel::ReadVector3(ch, bsr)); },
+                [&] { mesh.mUvs.emplace_back(channel::ReadVector2(ch, bsr)); },
+                [&] { mesh.mNormals.emplace_back(channel::ReadVector3(ch, bsr)); },
                 [&] {
-                    mesh.mVertColors.emplace_back(ReadColor4U(ch, bsr, getChannelMappingBits(ch.mChannelDataFlags)));
+                    mesh.mVertColors.emplace_back(channel::ReadColor4U(ch, bsr, getChannelMappingBits(ch.mChannelDataFlags)));
                 },
-                [&] { boneIndex.emplace_back(ReadBoneIndex(ch, bsr)); },
-                [&] { boneWeights.emplace_back(ReadBoneWeight(ch, bsr)); },
+                [&] { boneIndex.emplace_back(channel::ReadBoneIndex(ch, bsr)); },
+                [&] { boneWeights.emplace_back(channel::ReadBoneWeight(ch, bsr)); },
             };
 
             SwBool hasAnim = false;
