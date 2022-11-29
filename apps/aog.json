@@ -1,0 +1,21 @@
+{
+    "kind": "ConsoleApp",
+    "language": "c++",
+    "files": [
+        "aog/**.hpp",
+        "aog/**.cpp"
+    ],
+    "includedirs":[
+        "aog/"
+    ],
+    "vpaths": [
+        {
+            "name": "aog/*",
+            "value": "aog/**.hpp"
+        },
+        {
+            "name": "aog/*",
+            "value": "aog/**.cpp"
+        }
+    ]
+}

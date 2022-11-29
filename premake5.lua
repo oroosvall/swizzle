@@ -36,6 +36,7 @@ projects["scriptTest"] = loadProjectConfig("libs/script/scriptTests.json")
 projects["swmTest"] = loadProjectConfig("swizzle/module_swm/swmTests.json")
 -- apps
 projects["sandbox"] = loadProjectConfig("apps/sandbox.json")
+projects["aog"] = loadProjectConfig("apps/aog.json")
 projects["modelConverter"] = loadProjectConfig("apps/modelConverter.json")
 
 addDependencies(projects["utilsTest"], {"utils", "google-test"})
@@ -45,11 +46,12 @@ addDependencies(projects["swm"], {"utils"})
 addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "optick", "imgui", "stb"})
 
 addDependencies(projects["sandbox"], {"swizzle", "imgui", "utils", "optick"})
+addDependencies(projects["aog"], {"swizzle", "imgui", "utils", "optick"})
 addDependencies(projects["modelConverter"], {"swizzle", "utils", "optick"})
 
-addExternalHeadersProjectList(projects, {"swm", "swmTest", "swizzle", "sandbox", "modelConverter"}, glmIncludeDirs)
+addExternalHeadersProjectList(projects, {"swm", "swmTest", "swizzle", "sandbox", "aog", "modelConverter"}, glmIncludeDirs)
 
-addExternalHeadersProjectList(projects, {"swm", "swizzle", "sandbox", "modelConverter", "scriptTest", "swmTest"}, commonIncludeDirs)
+addExternalHeadersProjectList(projects, {"swm", "swizzle", "sandbox", "aog", "modelConverter", "scriptTest", "swmTest"}, commonIncludeDirs)
 
 addExternalHeaders(projects["swizzle"], vulkanIncludeDirs)
 addExternalLibDir(projects["swizzle"], vulkanLibDirs)
@@ -60,6 +62,7 @@ addExternalLibDir(projects["optick"], vulkanLibDirs)
 addDefine(projects["swizzle"], {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"})
 
 addDefine(projects["sandbox"], "SWIZZLE_DLL")
+addDefine(projects["aog"], "SWIZZLE_DLL")
 addDefine(projects["modelConverter"], "SWIZZLE_DLL")
 
 if os.target() == "windows" then
@@ -90,6 +93,7 @@ generateProject(projects, projectConfig.buildDir, "swizzle")
 if not projectConfig.disableApps then
     group("apps")
     generateProject(projects, projectConfig.buildDir, "sandbox")
+    generateProject(projects, projectConfig.buildDir, "aog")
     generateProject(projects, projectConfig.buildDir, "modelConverter")
 end
 

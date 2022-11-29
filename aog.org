@@ -1,0 +1,35 @@
+
+
+* List
+- [ ] Advent of graphics [0%] [0/22]
+  - [ ] Normal mapping
+  - [ ] Shadow mapping
+  - [ ] Particle system
+  - [ ] Displacement mapping (tesselation)
+  - [ ] Animated Textures
+  - [ ] Transparency (Look through window)
+  - [ ] Height maps
+  - [ ] Camera paths (cinematics)
+  - [ ] Water animation
+  - [ ] Mesh shaders
+  - [ ] Gpu execution time queries
+  - [ ] Bezier curves
+  - [ ] Dithering
+  - [ ] Texture filtering (mip maps)
+  - [ ] Godrays
+  - [ ] Shader editor
+  - [ ] Ambient occlusion
+  - [ ] Camera effect - Depth of field
+  - [ ] Asset streaming
+  - [ ] Camera effect - Glow
+  - [ ] Camera effect - Lens flare
+  - [ ] Mirror reflection
+  - [ ] Portal
+
+
+- Extra hard
+  - [ ] Ik
+  - [ ] Smoke sim
+  - [ ] Volumetric scatter
+  - [ ] Volumetric absorbtion
+  - [ ] Clouds
