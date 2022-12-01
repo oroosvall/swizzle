@@ -1,8 +1,8 @@
 
 
 * List
-- [ ] Advent of graphics [0%] [0/22]
-  - [ ] Normal mapping
+- [-] Advent of graphics [4%] [1/23]
+  - [X] Normal mapping
   - [ ] Shadow mapping
   - [ ] Particle system
   - [ ] Displacement mapping (tesselation)

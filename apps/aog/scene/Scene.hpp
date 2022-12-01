@@ -35,8 +35,7 @@ enum class SceneState
 class Scene
 {
 public:
-    Scene(common::Resource<swizzle::gfx::GfxContext> ctx,
-          common::Resource<Compositor> compositor);
+    Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<Compositor> compositor);
     ~Scene();
 
     void clear();
@@ -45,6 +44,7 @@ public:
 
     void loadSky();
     void loadAnimMesh();
+    void loadCube();
 
     SceneState update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans);
     void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam);

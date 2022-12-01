@@ -50,7 +50,7 @@ Animated::Animated(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resou
     mBone->setBufferData((U8*)mAsset->getAnimationDataPtr(0, 0), mAsset->getNumberOfBones() * sizeof(glm::mat4),
                          sizeof(glm::mat4));
 
-    mMaterial = ctx->createMaterial(mShader);
+    mMaterial = ctx->createMaterial(mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
     mMaterial->setDescriptorTextureResource(0u, mTexture);
     mMaterial->setDescriptorBufferResource(1u, mBone, ~0ull);
 }

@@ -49,18 +49,20 @@ void Game::userSetup()
     };
     attribFsq.mPushConstantSize = 0u;
     attribFsq.mEnableBlending = true;
+    attribFsq.mPrimitiveType = sw::gfx::PrimitiveType::triangle;
 
     mFsq = mGfxContext->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Graphics, attribFsq);
     mFsq->load("shaders/fsq.shader");
 
-    mFsqMat = mGfxContext->createMaterial(mFsq);
+    mFsqMat = mGfxContext->createMaterial(mFsq, swizzle::gfx::SamplerMode::SamplerModeClamp);
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
 
     mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain);
     mScene = common::CreateRef<Scene>(mGfxContext, mCompositor);
 
     mScene->loadSky();
-    mScene->loadAnimMesh();
+    // mScene->loadAnimMesh();
+    mScene->loadCube();
 }
 
 SwBool Game::userUpdate(F32 dt)
