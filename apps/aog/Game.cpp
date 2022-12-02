@@ -63,6 +63,7 @@ void Game::userSetup()
     mScene->loadSky();
     // mScene->loadAnimMesh();
     mScene->loadCube();
+    mScene->loadAnimTexture();
 }
 
 SwBool Game::userUpdate(F32 dt)

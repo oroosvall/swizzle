@@ -45,6 +45,7 @@ public:
     void loadSky();
     void loadAnimMesh();
     void loadCube();
+    void loadAnimTexture();
 
     SceneState update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans);
     void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam);

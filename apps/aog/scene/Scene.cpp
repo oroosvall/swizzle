@@ -9,6 +9,7 @@
 #include "Animated.hpp"
 #include "RegularMesh.hpp"
 #include "Sky.hpp"
+#include "AnimatedTextureMesh.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -213,15 +214,14 @@ void Scene::loadCube()
     std::vector<glm::mat4> positions;
 
     glm::mat4 m = glm::mat4(1.0f);
-    m = glm::translate(m, {0, 0, 0});
-    // m = glm::rotate(m, 90.0f, glm::vec3(0, 1.0, 0));
+    m = glm::translate(m, { 0, 0, 0 });
     positions.push_back(m);
 
     instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
 
     swizzle::gfx::ShaderAttributeList attribs = {};
-    attribs.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
-                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
+    attribs.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
     attribs.mAttributes = {
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
@@ -248,6 +248,60 @@ void Scene::loadCube()
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/cubeNormal.png");
 
     mRenderables.emplace_back(common::CreateRef<RegularMesh>(mContext, mesh2, instBuffer, texture, shader));
+}
+
+void Scene::loadAnimTexture()
+{
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, { -4, 0, 0 });
+
+    namespace sgfx = swizzle::gfx;
+
+    swizzle::asset2::MeshAssetLoaderDescription ldi = {};
+    ldi.mLoadPossitions = {
+        {swizzle::asset2::AttributeTypes::VertexPosition, 0u},
+        {swizzle::asset2::AttributeTypes::NormalVector, sizeof(float) * 3u},
+        {swizzle::asset2::AttributeTypes::UvCoordinates, sizeof(float) * 6u},
+    };
+
+    auto mesh2 = swizzle::asset2::LoadMesh("AoG/meshes/TextureAnimation.swm", ldi);
+
+    common::Resource<sgfx::Buffer> instBuffer = mContext->createBuffer(sgfx::BufferType::Vertex);
+
+    std::vector<glm::mat4> positions;
+    positions.push_back(transform);
+
+    instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
+
+    swizzle::gfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mAttributes = {
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
+    attribs.mDescriptors = {
+        {swizzle::gfx::DescriptorType::TextureSampler,
+         swizzle::gfx::Count(1u),
+         {swizzle::gfx::StageType::fragmentStage}},
+    };
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableBlending = false;
+    attribs.mEnableDepthWrite = true;
+    attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
+
+    auto shader = mCompositor->createShader(0u, attribs);
+    shader->load("AoG/shaders/animatedTexture.shader");
+
+    auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/Stream.png");
+
+    mRenderables.emplace_back(common::CreateRef<AnimatedTextureMesh>(mContext, mesh2, instBuffer, texture, shader));
 }
 
 SceneState Scene::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
