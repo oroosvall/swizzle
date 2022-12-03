@@ -33,9 +33,10 @@
 
 /* Class Public Function Definition */
 
-Scene::Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<Compositor> compositor)
+Scene::Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<Compositor> compositor, common::Resource<AssetManager> assetManager)
     : mContext(ctx)
     , mCompositor(compositor)
+    , mAssetManager(assetManager)
     , mSceneState(SceneState::NotLoaded)
 {
 }
@@ -96,7 +97,7 @@ void Scene::loadSky()
     attribsSky.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
     skyShader = mCompositor->createShader(0u, attribsSky);
-    skyShader->load("shaders/sky.shader");
+    mAssetManager->loadShader(skyShader, "shaders/sky.shader");
 
     skyMaterial = mContext->createMaterial(skyShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
 
@@ -191,7 +192,7 @@ void Scene::loadAnimMesh()
     texture = swizzle::asset::LoadTexture2D(mContext, "texture/lightGray.png");
 
     shader = mCompositor->createShader(0u, attribsAnim);
-    shader->load("shaders/animated_inst.shader");
+    mAssetManager->loadShader(shader, "shaders/animated_inst.shader");
 
     mRenderables.emplace_back(common::CreateRef<Animated>(mContext, mesh2, instBuffer, texture, shader));
 }
@@ -243,7 +244,7 @@ void Scene::loadCube()
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
     auto shader = mCompositor->createShader(0u, attribs);
-    shader->load("AoG/shaders/regular.shader");
+    mAssetManager->loadShader(shader, "AoG/shaders/regular.shader");
 
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/cubeNormal.png");
 
@@ -297,7 +298,7 @@ void Scene::loadAnimTexture()
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
     auto shader = mCompositor->createShader(0u, attribs);
-    shader->load("AoG/shaders/animatedTexture.shader");
+    mAssetManager->loadShader(shader, "AoG/shaders/animatedTexture.shader");
 
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/Stream.png");
 

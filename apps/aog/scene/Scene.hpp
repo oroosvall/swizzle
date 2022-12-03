@@ -11,6 +11,7 @@
 
 #include "Compositor.hpp"
 #include "Renderable.hpp"
+#include "../AssetManager.hpp"
 
 #include "../Camera.hpp"
 
@@ -35,7 +36,7 @@ enum class SceneState
 class Scene
 {
 public:
-    Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<Compositor> compositor);
+    Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<Compositor> compositor, common::Resource<AssetManager> assetManager);
     ~Scene();
 
     void clear();
@@ -55,6 +56,7 @@ private:
 
     common::Resource<swizzle::gfx::GfxContext> mContext;
     common::Resource<Compositor> mCompositor;
+    common::Resource<AssetManager> mAssetManager;
     SceneState mSceneState;
 
     std::vector<common::Resource<Renderable>> mRenderables;

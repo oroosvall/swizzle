@@ -1,9 +1,10 @@
 
 
 * List
-- [-] Advent of graphics [8%] [2/23]
+- [-] Advent of graphics [13%] [3/23]
   - [X] Normal mapping (Day 1)
   - [X] Animated Textures (Day 2)
+  - [X] Shader editor (Day 3)
   - [ ] Shadow mapping
   - [ ] Particle system
   - [ ] Displacement mapping (tesselation)
@@ -17,7 +18,6 @@
   - [ ] Dithering
   - [ ] Texture filtering (mip maps)
   - [ ] Godrays
-  - [ ] Shader editor
   - [ ] Ambient occlusion
   - [ ] Camera effect - Depth of field
   - [ ] Asset streaming

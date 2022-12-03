@@ -58,7 +58,10 @@ void Game::userSetup()
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
 
     mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain);
-    mScene = common::CreateRef<Scene>(mGfxContext, mCompositor);
+    mAssetManager = common::CreateRef<AssetManager>(mGfxContext);
+    mScene = common::CreateRef<Scene>(mGfxContext, mCompositor, mAssetManager);
+
+    mShaderEditor = common::CreateRef<ShaderEditor>(mAssetManager);
 
     mScene->loadSky();
     // mScene->loadAnimMesh();
@@ -73,6 +76,7 @@ SwBool Game::userUpdate(F32 dt)
     mFpsCounter.tick(dt);
 
     mInputLocked = ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
+    ImGui::GetIO().DeltaTime = dt;
 
     ImGui_ImplSwizzle_NewFrame(mWindow);
     ImGui::NewFrame();
@@ -115,6 +119,8 @@ SwBool Game::userUpdate(F32 dt)
     }
 
     ImGui::End();
+
+    mShaderEditor->render();
 
     ImGui::EndFrame();
 

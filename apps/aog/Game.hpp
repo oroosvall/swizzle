@@ -12,6 +12,8 @@
 
 #include <scene/Scene.hpp>
 
+#include "imgui/ShaderEditor.hpp"
+
 class Game : public sw::Application
 {
 public:
@@ -25,6 +27,8 @@ public:
 
 private:
     void updateMainWindow(F32 dt);
+
+    common::Resource<ShaderEditor> mShaderEditor;
 
     void imGuiRender(common::Unique<sw::gfx::CommandTransaction>& trans);
 
@@ -41,6 +45,7 @@ private:
     common::Resource<sw::gfx::Shader> mFsq;
     common::Resource<sw::gfx::Material> mFsqMat;
     common::Resource<Compositor> mCompositor;
+    common::Resource<AssetManager> mAssetManager;
     common::Resource<Scene> mScene;
 
     SwBool mInputLocked;

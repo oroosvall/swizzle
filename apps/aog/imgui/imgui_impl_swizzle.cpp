@@ -188,7 +188,16 @@ void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
         swizzle::core::InputEvent& e = (swizzle::core::InputEvent&)evt;
         if (e.mFromKeyboard)
         {
-            io.AddKeyEvent(fromScanCode(e.mKey), e.mPressed);
+            auto imKey = fromScanCode(e.mKey);
+            io.AddKeyEvent(imKey, e.mPressed);
+            if (imKey == ImGuiKey_::ImGuiKey_LeftAlt || imKey == ImGuiKey_::ImGuiKey_RightAlt)
+                io.KeyAlt = e.mPressed;
+            if (imKey == ImGuiKey_::ImGuiKey_LeftShift || imKey == ImGuiKey_::ImGuiKey_RightShift)
+                io.KeyShift = e.mPressed;
+            if (imKey == ImGuiKey_::ImGuiKey_LeftCtrl || imKey == ImGuiKey_::ImGuiKey_RightCtrl)
+                io.KeyCtrl = e.mPressed;
+            if (imKey == ImGuiKey_::ImGuiKey_LeftSuper || imKey == ImGuiKey_::ImGuiKey_RightSuper)
+                io.KeySuper = e.mPressed;
         }
         else
         {
