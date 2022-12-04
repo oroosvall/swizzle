@@ -17,6 +17,7 @@ Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
     , mInputLocked(false)
+    , mShowShaderEditor(false)
 {
 }
 
@@ -119,9 +120,25 @@ SwBool Game::userUpdate(F32 dt)
         mSwapchain->setVsync(mVSyncOptions[mSelectedOption]);
     }
 
+    ImGui::Text("(Day 1) Enable normalmaps:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day1", &mSceneSettings.mEnableNormalMaps);
+    ImGui::Text("(Day 2) Animated Textures:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day2", &mSceneSettings.mEnableAnimatedTextures);
+    ImGui::Text("(Day 3) Show Shader Editor:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day3", &mShowShaderEditor);
+    ImGui::Text("(Day 4) Heightmap (cpu):");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day4", &mSceneSettings.mHeightMap);
+
     ImGui::End();
 
-    mShaderEditor->render();
+    if (mShowShaderEditor)
+    {
+        mShaderEditor->render();
+    }
 
     ImGui::EndFrame();
 
@@ -157,7 +174,7 @@ void Game::updateMainWindow(F32 dt)
 
     auto trans = mCmdBuffer->begin();
 
-    mScene->update(dt, trans);
+    mScene->update(dt, mSceneSettings, trans);
 
     imGuiRender(trans);
 

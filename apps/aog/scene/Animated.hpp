@@ -25,7 +25,7 @@ public:
              common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
              common::Resource<swizzle::gfx::Shader> shader);
 
-    virtual void update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
+    virtual void update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam) override;
 
 private:

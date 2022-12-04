@@ -45,63 +45,26 @@ HeightMap::HeightMap(common::Resource<swizzle::gfx::GfxContext> ctx, common::Res
     , mMaterial(nullptr)
     , mShader(shader)
     , mInst(inst)
+    , mDisplaced(true)
 {
     mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
     mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
 
-    S32 ix = 0;
-    S32 iy = 0;
-    S32 ic = 0;
-
-    U8* image = stbi_load("AoG/textures/heightmap.png", &ix, &iy, &ic, 4);
-
-    std::vector<HeightMapVertex> verts;
-
-    for (F32 x = -25.0f; x < 25.0f; x += 1.0f)
-    {
-        for (F32 y = -25.0f; y < 25.0f; y += 1.0f)
-        {
-            F32 ux = (x + 25.0f) / 50.0f;
-            F32 uy = (y + 25.0f) / 50.0f;
-            HeightMapVertex vert{};
-            vert.x = x;
-            vert.y = getHeight(image, ix, iy, ic, ux, uy, 10.0f);
-            vert.z = y;
-            vert.ny = 1.0f;
-            vert.u = ux;
-            vert.v = uy;
-            verts.push_back(vert);
-        }
-    }
-
-    stbi_image_free(image);
-
-    std::vector<HeightMapTriangle> tris;
-
-    for (U32 y = 0; y < 49; ++y)
-    {
-        for (U32 x = 0; x < 49; ++x)
-        {
-            U32 currRow = (y * 50) + x;
-            U32 nextRow = ((y + 1) * 50) + x;
-
-            HeightMapTriangle t1{currRow, nextRow + 1, currRow + 1};
-            HeightMapTriangle t2{currRow, nextRow, nextRow + 1};
-            tris.push_back(t1);
-            tris.push_back(t2);
-        }
-    }
-
-    mMesh->setBufferData((U8*)verts.data(), verts.size() * sizeof(HeightMapVertex), sizeof(HeightMapVertex));
-    mIndex->setBufferData((U8*)tris.data(), tris.size() * sizeof(HeightMapTriangle), sizeof(HeightMapTriangle));
+    loadHeightMap(mDisplaced);
 
     mMaterial = ctx->createMaterial(mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
     mMaterial->setDescriptorTextureResource(0u, mTexture);
 }
 
-void HeightMap::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
+void HeightMap::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     UNUSED_ARG(dt);
+    if (mDisplaced != settings.mHeightMap)
+    {
+        mDisplaced = settings.mHeightMap;
+        loadHeightMap(mDisplaced);
+    }
+
     trans->uploadTexture(mTexture);
 }
 
@@ -134,6 +97,58 @@ void HeightMap::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tra
 /* Class Protected Function Definition */
 
 /* Class Private Function Definition */
+
+void HeightMap::loadHeightMap(SwBool cpuDisplace)
+{
+    S32 ix = 0;
+    S32 iy = 0;
+    S32 ic = 0;
+
+    U8* image = stbi_load("AoG/textures/heightmap.png", &ix, &iy, &ic, 4);
+
+    std::vector<HeightMapVertex> verts;
+
+    for (F32 x = -25.0f; x < 25.0f; x += 1.0f)
+    {
+        for (F32 y = -25.0f; y < 25.0f; y += 1.0f)
+        {
+            F32 ux = (x + 25.0f) / 50.0f;
+            F32 uy = (y + 25.0f) / 50.0f;
+            HeightMapVertex vert{};
+            vert.x = x;
+            if (cpuDisplace)
+            {
+                vert.y = getHeight(image, ix, iy, ic, ux, uy, 10.0f);
+            }
+            vert.z = y;
+            vert.ny = 1.0f;
+            vert.u = ux;
+            vert.v = uy;
+            verts.push_back(vert);
+        }
+    }
+
+    stbi_image_free(image);
+
+    std::vector<HeightMapTriangle> tris;
+
+    for (U32 y = 0; y < 49; ++y)
+    {
+        for (U32 x = 0; x < 49; ++x)
+        {
+            U32 currRow = (y * 50) + x;
+            U32 nextRow = ((y + 1) * 50) + x;
+
+            HeightMapTriangle t1{ currRow, nextRow + 1, currRow + 1 };
+            HeightMapTriangle t2{ currRow, nextRow, nextRow + 1 };
+            tris.push_back(t1);
+            tris.push_back(t2);
+        }
+    }
+
+    mMesh->setBufferData((U8*)verts.data(), verts.size() * sizeof(HeightMapVertex), sizeof(HeightMapVertex));
+    mIndex->setBufferData((U8*)tris.data(), tris.size() * sizeof(HeightMapTriangle), sizeof(HeightMapTriangle));
+}
 
 F32 HeightMap::getHeight(U8* image, S32 x, S32 y, S32 ch, F32 xp, F32 yp, F32 max)
 {

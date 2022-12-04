@@ -9,11 +9,12 @@
 #include <fstream>
 #include <string>
 
+#include "../AssetManager.hpp"
 #include "Compositor.hpp"
 #include "Renderable.hpp"
-#include "../AssetManager.hpp"
 
 #include "../Camera.hpp"
+#include "SceneSettings.hpp"
 
 /* Defines */
 
@@ -31,12 +32,14 @@ enum class SceneState
 
 /* Struct Declaration */
 
+
 /* Class Declaration */
 
 class Scene
 {
 public:
-    Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<Compositor> compositor, common::Resource<AssetManager> assetManager);
+    Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<Compositor> compositor,
+          common::Resource<AssetManager> assetManager);
     ~Scene();
 
     void clear();
@@ -49,7 +52,8 @@ public:
     void loadAnimTexture();
     void loadHeightMap();
 
-    SceneState update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans);
+    SceneState update(DeltaTime dt, SceneRenderSettings& settings,
+                      common::Unique<swizzle::gfx::CommandTransaction>& trans);
     void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam);
 
 private:

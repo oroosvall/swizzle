@@ -31,9 +31,10 @@ Sky::Sky(common::Resource<swizzle::gfx::Buffer> mesh, common::Resource<swizzle::
 {
 }
 
-void Sky::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
+void Sky::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     UNUSED_ARG(dt);
+    UNUSED_ARG(settings);
     trans->uploadTexture(mTexture);
 }
 

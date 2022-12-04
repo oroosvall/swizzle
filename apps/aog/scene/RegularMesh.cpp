@@ -27,10 +27,12 @@
 RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
                          common::Resource<swizzle::asset2::IMeshAsset> asset,
                          common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
+                         common::Resource<swizzle::gfx::Texture> optionalTexture,
                          common::Resource<swizzle::gfx::Shader> shader)
     : mAsset(asset)
     , mMesh(nullptr)
     , mTexture(texture)
+    , mOptionalTexture(optionalTexture)
     , mMaterial(nullptr)
     , mShader(shader)
     , mInst(inst)
@@ -45,10 +47,25 @@ RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
     mMaterial->setDescriptorTextureResource(0u, mTexture);
 }
 
-void RegularMesh::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
+void RegularMesh::update(DeltaTime dt, SceneRenderSettings& settings,
+                         common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     UNUSED_ARG(dt);
     trans->uploadTexture(mTexture);
+    trans->uploadTexture(mOptionalTexture);
+
+    if (normalEnabled != settings.mEnableNormalMaps)
+    {
+        normalEnabled = settings.mEnableNormalMaps;
+        if (normalEnabled)
+        {
+            mMaterial->setDescriptorTextureResource(0u, mTexture);
+        }
+        else
+        {
+            mMaterial->setDescriptorTextureResource(0u, mOptionalTexture);
+        }
+    }
 }
 
 void RegularMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)

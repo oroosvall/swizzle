@@ -7,10 +7,10 @@
 #include <iostream>
 
 #include "Animated.hpp"
-#include "RegularMesh.hpp"
-#include "Sky.hpp"
 #include "AnimatedTextureMesh.hpp"
 #include "HeightMap.hpp"
+#include "RegularMesh.hpp"
+#include "Sky.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -34,7 +34,8 @@
 
 /* Class Public Function Definition */
 
-Scene::Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<Compositor> compositor, common::Resource<AssetManager> assetManager)
+Scene::Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<Compositor> compositor,
+             common::Resource<AssetManager> assetManager)
     : mContext(ctx)
     , mCompositor(compositor)
     , mAssetManager(assetManager)
@@ -216,14 +217,14 @@ void Scene::loadCube()
     std::vector<glm::mat4> positions;
 
     glm::mat4 m = glm::mat4(1.0f);
-    m = glm::translate(m, { 0, 0, 0 });
+    m = glm::translate(m, {0, 0, 0});
     positions.push_back(m);
 
     instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
 
     swizzle::gfx::ShaderAttributeList attribs = {};
-    attribs.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
-                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
     attribs.mAttributes = {
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
@@ -248,14 +249,15 @@ void Scene::loadCube()
     mAssetManager->loadShader(shader, "AoG/shaders/regular.shader");
 
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/cubeNormal.png");
+    auto optTexture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/neutral.png");
 
-    mRenderables.emplace_back(common::CreateRef<RegularMesh>(mContext, mesh2, instBuffer, texture, shader));
+    mRenderables.emplace_back(common::CreateRef<RegularMesh>(mContext, mesh2, instBuffer, texture, optTexture, shader));
 }
 
 void Scene::loadAnimTexture()
 {
     glm::mat4 transform = glm::mat4(1.0f);
-    transform = glm::translate(transform, { -4, 0, 0 });
+    transform = glm::translate(transform, {-4, 0, 0});
 
     namespace sgfx = swizzle::gfx;
 
@@ -276,8 +278,8 @@ void Scene::loadAnimTexture()
     instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
 
     swizzle::gfx::ShaderAttributeList attribs = {};
-    attribs.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
-                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
     attribs.mAttributes = {
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
@@ -309,7 +311,7 @@ void Scene::loadAnimTexture()
 void Scene::loadHeightMap()
 {
     glm::mat4 transform = glm::mat4(1.0f);
-    transform = glm::translate(transform, { 0, 0, 0 });
+    transform = glm::translate(transform, {0, 0, 0});
 
     namespace sgfx = swizzle::gfx;
 
@@ -321,8 +323,8 @@ void Scene::loadHeightMap()
     instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
 
     swizzle::gfx::ShaderAttributeList attribs = {};
-    attribs.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
-                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
     attribs.mAttributes = {
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
@@ -351,11 +353,12 @@ void Scene::loadHeightMap()
     mRenderables.emplace_back(common::CreateRef<HeightMap>(mContext, instBuffer, texture, shader));
 }
 
-SceneState Scene::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
+SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings,
+                         common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     for (auto& it : mRenderables)
     {
-        it->update(dt, trans);
+        it->update(dt, settings, trans);
     }
 
     return mSceneState;

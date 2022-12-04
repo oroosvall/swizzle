@@ -47,9 +47,13 @@ AnimatedTextureMesh::AnimatedTextureMesh(common::Resource<swizzle::gfx::GfxConte
     mMaterial->setDescriptorTextureResource(0u, mTexture);
 }
 
-void AnimatedTextureMesh::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
+void AnimatedTextureMesh::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
-    UNUSED_ARG(dt);
+    if (!settings.mEnableAnimatedTextures)
+    {
+        dt = 0.0f;
+    }
+
     trans->uploadTexture(mTexture);
     mUvOffset.y += 0.4f * dt;
     if (mUvOffset.y > 1.0f)

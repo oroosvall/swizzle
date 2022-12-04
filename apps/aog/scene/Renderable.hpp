@@ -4,6 +4,7 @@
 /* Include files */
 
 #include <common/Common.hpp>
+#include "SceneSettings.hpp"
 
 #include <swizzle/gfx/Buffer.hpp>
 #include <swizzle/gfx/CommandBuffer.hpp>
@@ -28,7 +29,7 @@ class Renderable
 public:
     virtual ~Renderable() {}
 
-    virtual void update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans) = 0;
+    virtual void update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans) = 0;
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam) = 0;
 
 private:

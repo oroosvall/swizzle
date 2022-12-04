@@ -48,6 +48,9 @@ private:
     common::Resource<AssetManager> mAssetManager;
     common::Resource<Scene> mScene;
 
+    SceneRenderSettings mSceneSettings;
+    SwBool mShowShaderEditor;
+
     SwBool mInputLocked;
 
     S32 mSelectedOption = 0;

@@ -55,13 +55,14 @@ Animated::Animated(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resou
     mMaterial->setDescriptorBufferResource(1u, mBone, ~0ull);
 }
 
-void Animated::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
+void Animated::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     const DeltaTime animFps = 1.0f / 24.0f;
 
     SwBool wasChanged = false;
 
     UNUSED_ARG(dt);
+    UNUSED_ARG(settings);
     trans->uploadTexture(mTexture);
 
     if (mAsset && mAsset->hasAnimations())
