@@ -1,15 +1,15 @@
 
 
 * List
-- [-] Advent of graphics [13%] [3/23]
+- [-] Advent of graphics [17%] [4/23]
   - [X] Normal mapping (Day 1)
   - [X] Animated Textures (Day 2)
   - [X] Shader editor (Day 3)
+  - [X] Height maps (Day 4)
   - [ ] Shadow mapping
   - [ ] Particle system
   - [ ] Displacement mapping (tesselation)
   - [ ] Transparency (Look through window)
-  - [ ] Height maps
   - [ ] Camera paths (cinematics)
   - [ ] Water animation
   - [ ] Mesh shaders

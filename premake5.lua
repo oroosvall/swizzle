@@ -46,7 +46,7 @@ addDependencies(projects["swm"], {"utils"})
 addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "optick", "imgui", "stb"})
 
 addDependencies(projects["sandbox"], {"swizzle", "imgui", "utils", "optick"})
-addDependencies(projects["aog"], {"swizzle", "imgui", "utils", "optick"})
+addDependencies(projects["aog"], {"swizzle", "imgui", "utils", "optick", "stb"})
 addDependencies(projects["modelConverter"], {"swizzle", "utils", "optick"})
 
 addExternalHeadersProjectList(projects, {"swm", "swmTest", "swizzle", "sandbox", "aog", "modelConverter"}, glmIncludeDirs)

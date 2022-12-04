@@ -65,6 +65,7 @@ void Game::userSetup()
 
     mScene->loadSky();
     // mScene->loadAnimMesh();
+    mScene->loadHeightMap();
     mScene->loadCube();
     mScene->loadAnimTexture();
 }

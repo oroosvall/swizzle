@@ -10,6 +10,7 @@
 #include "RegularMesh.hpp"
 #include "Sky.hpp"
 #include "AnimatedTextureMesh.hpp"
+#include "HeightMap.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -303,6 +304,51 @@ void Scene::loadAnimTexture()
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/Stream.png");
 
     mRenderables.emplace_back(common::CreateRef<AnimatedTextureMesh>(mContext, mesh2, instBuffer, texture, shader));
+}
+
+void Scene::loadHeightMap()
+{
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, { 0, 0, 0 });
+
+    namespace sgfx = swizzle::gfx;
+
+    common::Resource<sgfx::Buffer> instBuffer = mContext->createBuffer(sgfx::BufferType::Vertex);
+
+    std::vector<glm::mat4> positions;
+    positions.push_back(transform);
+
+    instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
+
+    swizzle::gfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mAttributes = {
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
+    attribs.mDescriptors = {
+        {swizzle::gfx::DescriptorType::TextureSampler,
+         swizzle::gfx::Count(1u),
+         {swizzle::gfx::StageType::fragmentStage}},
+    };
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableBlending = false;
+    attribs.mEnableDepthWrite = true;
+    attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
+
+    auto shader = mCompositor->createShader(0u, attribs);
+    mAssetManager->loadShader(shader, "AoG/shaders/heightMap.shader");
+
+    auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/heightmap.png");
+
+    mRenderables.emplace_back(common::CreateRef<HeightMap>(mContext, instBuffer, texture, shader));
 }
 
 SceneState Scene::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
