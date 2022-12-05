@@ -28,13 +28,15 @@ RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
                          common::Resource<swizzle::asset2::IMeshAsset> asset,
                          common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
                          common::Resource<swizzle::gfx::Texture> optionalTexture,
-                         common::Resource<swizzle::gfx::Shader> shader)
+                         common::Resource<swizzle::gfx::Shader> shader,
+                         common::Resource<swizzle::gfx::Shader> optionalShader)
     : mAsset(asset)
     , mMesh(nullptr)
     , mTexture(texture)
     , mOptionalTexture(optionalTexture)
     , mMaterial(nullptr)
     , mShader(shader)
+    , mOptionalShader(optionalShader)
     , mInst(inst)
 {
     mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
@@ -54,10 +56,10 @@ void RegularMesh::update(DeltaTime dt, SceneRenderSettings& settings,
     trans->uploadTexture(mTexture);
     trans->uploadTexture(mOptionalTexture);
 
-    if (normalEnabled != settings.mEnableNormalMaps)
+    if (mNormalEnabled != settings.mEnableNormalMaps)
     {
-        normalEnabled = settings.mEnableNormalMaps;
-        if (normalEnabled)
+        mNormalEnabled = settings.mEnableNormalMaps;
+        if (mNormalEnabled)
         {
             mMaterial->setDescriptorTextureResource(0u, mTexture);
         }
@@ -65,6 +67,15 @@ void RegularMesh::update(DeltaTime dt, SceneRenderSettings& settings,
         {
             mMaterial->setDescriptorTextureResource(0u, mOptionalTexture);
         }
+    }
+
+    if (settings.mTesselation)
+    {
+        mSelectedShader = mShader;
+    }
+    else
+    {
+        mSelectedShader = mOptionalShader;
     }
 }
 
@@ -84,12 +95,12 @@ void RegularMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& t
     t.viewProj = cam.getProjection() * cam.getView();
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
 
-    trans->bindShader(mShader);
+    trans->bindShader(mSelectedShader);
 
-    trans->bindMaterial(mShader, mMaterial);
+    trans->bindMaterial(mSelectedShader, mMaterial);
     trans->setViewport(U32(x), U32(y));
 
-    trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+    trans->setShaderConstant(mSelectedShader, (U8*)&t, sizeof(t));
 
     trans->drawIndexedInstanced(mMesh, mIndex, mInst);
 }

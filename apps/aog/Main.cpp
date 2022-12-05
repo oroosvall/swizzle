@@ -35,7 +35,7 @@ int main(int argv, char* argc[])
 
     {
         Game game;
-        game.initialize("Swizzle-sandbox");
+        game.initialize("Advent of graphics");
         game.run();
     }
 

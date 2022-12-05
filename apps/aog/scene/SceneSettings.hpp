@@ -8,6 +8,7 @@ struct SceneRenderSettings
     SwBool mEnableNormalMaps;
     SwBool mEnableAnimatedTextures;
     SwBool mHeightMap;
+    SwBool mTesselation;
 };
 
 #endif

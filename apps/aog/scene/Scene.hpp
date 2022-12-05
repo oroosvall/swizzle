@@ -51,6 +51,7 @@ public:
     void loadCube();
     void loadAnimTexture();
     void loadHeightMap();
+    void loadTesselationMesh();
 
     SceneState update(DeltaTime dt, SceneRenderSettings& settings,
                       common::Unique<swizzle::gfx::CommandTransaction>& trans);

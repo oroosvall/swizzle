@@ -1,0 +1,10 @@
+[src]
+vertex=tesselationShader/simple.vert
+tessCtrl=tesselationShader/simple.tesc
+tessEval=tesselationShader/simple.tese
+fragment=tesselationShader/simple.frag
+[vulkan]
+vertex=tesselationShader/vert.spv
+tessCtrl=tesselationShader/tesc.spv
+tessEval=tesselationShader/tese.spv
+fragment=tesselationShader/frag.spv

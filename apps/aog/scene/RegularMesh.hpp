@@ -23,10 +23,11 @@ class RegularMesh : public Renderable
 public:
     RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::asset2::IMeshAsset> asset,
                 common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
-                common::Resource<swizzle::gfx::Texture> optionalTexture,
-                common::Resource<swizzle::gfx::Shader> shader);
+                common::Resource<swizzle::gfx::Texture> optionalTexture, common::Resource<swizzle::gfx::Shader> shader,
+                common::Resource<swizzle::gfx::Shader> optionalShader);
 
-    virtual void update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
+    virtual void update(DeltaTime dt, SceneRenderSettings& settings,
+                        common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam) override;
 
 private:
@@ -38,10 +39,13 @@ private:
     common::Resource<swizzle::gfx::Texture> mOptionalTexture;
     common::Resource<swizzle::gfx::Material> mMaterial;
     common::Resource<swizzle::gfx::Shader> mShader;
+    common::Resource<swizzle::gfx::Shader> mOptionalShader;
+
     common::Resource<swizzle::gfx::Buffer> mInst;
 
-    SwBool normalEnabled;
+    common::Resource<swizzle::gfx::Shader> mSelectedShader;
 
+    SwBool mNormalEnabled;
 };
 
 /* Function Declaration */

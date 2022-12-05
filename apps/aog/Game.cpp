@@ -69,6 +69,7 @@ void Game::userSetup()
     mScene->loadHeightMap();
     mScene->loadCube();
     mScene->loadAnimTexture();
+    mScene->loadTesselationMesh();
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -132,6 +133,9 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Text("(Day 4) Heightmap (cpu):");
     ImGui::SameLine();
     ImGui::Checkbox("##day4", &mSceneSettings.mHeightMap);
+    ImGui::Text("(Day 5) Tesselation:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day5", &mSceneSettings.mTesselation);
 
     ImGui::End();
 
