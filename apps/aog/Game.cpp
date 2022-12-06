@@ -44,19 +44,33 @@ void Game::userSetup()
 
     cam.setPosition({0.0F, 0.0F, 5.5F});
 
+    swizzle::gfx::FrameBufferCreateInfo info{};
+    info.mDepthType = swizzle::gfx::FrameBufferDepthType::DepthStencil;
+    info.mColorAttachFormats = { swizzle::gfx::FrameBufferAttachmentType::Srgb };
+    info.mSwapCount = 3u;
+    mWindow->getSize(info.mWidth, info.mHeight);
+
+    mGBuffer = mGfxContext->createFramebuffer(info);
+    mGBuffer->setColorAttachmentClearColor(0u, { 0.0f, 0.0f, 0.0f, 1.0f });
+    mGBuffer->setDepthAttachmentClearValue(1.0f, 0u);
+
     sw::gfx::ShaderAttributeList attribFsq = {};
     attribFsq.mDescriptors = {
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
     };
-    attribFsq.mPushConstantSize = 0u;
+    attribFsq.mPushConstantSize = sizeof(glm::vec4) + sizeof(float);
     attribFsq.mEnableBlending = true;
     attribFsq.mPrimitiveType = sw::gfx::PrimitiveType::triangle;
 
     mFsq = mGfxContext->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Graphics, attribFsq);
-    mFsq->load("shaders/fsq.shader");
+    mFsq->load("Aog/shaders/fsq.shader");
 
     mFsqMat = mGfxContext->createMaterial(mFsq, swizzle::gfx::SamplerMode::SamplerModeClamp);
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
+    mFsqMat->setDescriptorTextureResource(1u, mGBuffer->getColorAttachment(0u));
+    mFsqMat->setDescriptorTextureResource(2u, mGBuffer->getDepthAttachment());
 
     mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain);
     mAssetManager = common::CreateRef<AssetManager>(mGfxContext);
@@ -136,6 +150,11 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Text("(Day 5) Tesselation:");
     ImGui::SameLine();
     ImGui::Checkbox("##day5", &mSceneSettings.mTesselation);
+    ImGui::Text("(Day 6) Depth of field:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day6", &mEnableDof);
+    ImGui::SliderFloat("Focal Point", &mDoFFocalPoint, 0.01f, 100.0f);
+    ImGui::SliderFloat("Focal Scale", &mDoFFocalScale, 0.01f, 200.0f);
 
     ImGui::End();
 
@@ -156,7 +175,7 @@ void Game::userCleanup()
     mScene.reset();
     mCompositor.reset();
     mCmdBuffer.reset();
-    mFrameBuffer.reset();
+    mGBuffer.reset();
 }
 
 void Game::updateMainWindow(F32 dt)
@@ -164,6 +183,8 @@ void Game::updateMainWindow(F32 dt)
     OPTICK_EVENT("Game::updateMainWindow");
     U32 x, y;
     mWindow->getSize(x, y);
+
+    //mGBuffer->resize(x, y);
 
     cam.changeAspect((F32)x, (F32)y);
 
@@ -182,12 +203,28 @@ void Game::updateMainWindow(F32 dt)
 
     imGuiRender(trans);
 
-    auto dTrans = mCmdBuffer->beginRenderPass(mSwapchain, std::move(trans));
+    auto dTrans = mCmdBuffer->beginRenderPass(mGBuffer, std::move(trans));
 
     mScene->render(dTrans, cam);
 
+    trans = mCmdBuffer->endRenderPass(std::move(dTrans));
+
+    dTrans = mCmdBuffer->beginRenderPass(mSwapchain, std::move(trans));
+
+    struct dof
+    {
+        glm::vec4 dof;
+        float enabled;
+    } d{};
+    d.dof.x = mDoFFocalPoint;
+    d.dof.y = mDoFFocalScale;
+    d.dof.z = 1.0f / F32(x);
+    d.dof.w = 1.0f / F32(y);
+    d.enabled = mEnableDof ? 1.0f : 0.0f;
+
     dTrans->bindShader(mFsq);
     dTrans->bindMaterial(mFsq, mFsqMat);
+    dTrans->setShaderConstant(mFsq, (U8*)&d, sizeof(d));
     dTrans->drawNoBind(3u, 0u);
 
     trans = mCmdBuffer->endRenderPass(std::move(dTrans));

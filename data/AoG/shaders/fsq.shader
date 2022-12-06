@@ -1,0 +1,13 @@
+[properties]
+sourceBlend=[SRC_ALPHA,SRC_ALPHA]
+destinationBlend=[ONE_MINUS_SRC_ALPHA,ONE]
+blending=enabled
+depthTest=disabled
+colorBlend=ADD
+alphaBlend=ADD
+[src]
+vertex=fsq/simple.vert
+fragment=fsq/simple.frag
+[vulkan]
+vertex=fsq/vert.spv
+fragment=fsq/frag.spv

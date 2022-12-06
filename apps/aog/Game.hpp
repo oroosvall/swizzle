@@ -35,7 +35,8 @@ private:
     std::string getStatisticsText() const;
 
     common::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
-    common::Resource<sw::gfx::FrameBuffer> mFrameBuffer;
+
+    common::Resource<sw::gfx::FrameBuffer> mGBuffer;
 
     PerspectiveCamera cam;
     CameraController mController;
@@ -55,6 +56,11 @@ private:
 
     S32 mSelectedOption = 0;
     std::vector<sw::gfx::VSyncTypes> mVSyncOptions;
+
+    SwBool mEnableDof = false;
+    F32 mDoFFocalPoint = 40.0f;
+    F32 mDoFFocalScale = 200.0f;
+
 };
 
 #endif
