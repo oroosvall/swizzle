@@ -9,6 +9,7 @@
 #include "Animated.hpp"
 #include "AnimatedTextureMesh.hpp"
 #include "HeightMap.hpp"
+#include "ParticleSystem.hpp"
 #include "RegularMesh.hpp"
 #include "Sky.hpp"
 
@@ -251,7 +252,8 @@ void Scene::loadCube()
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/cubeNormal.png");
     auto optTexture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/neutral.png");
 
-    mRenderables.emplace_back(common::CreateRef<RegularMesh>(mContext, mesh2, instBuffer, texture, optTexture, shader, shader));
+    mRenderables.emplace_back(
+        common::CreateRef<RegularMesh>(mContext, mesh2, instBuffer, texture, optTexture, shader, shader));
 }
 
 void Scene::loadAnimTexture()
@@ -371,14 +373,14 @@ void Scene::loadTesselationMesh()
     std::vector<glm::mat4> positions;
 
     glm::mat4 m = glm::mat4(1.0f);
-    m = glm::translate(m, { 0, 0, 0 });
+    m = glm::translate(m, {0, 0, 0});
     positions.push_back(m);
 
     instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
 
     swizzle::gfx::ShaderAttributeList attribs = {};
-    attribs.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
-                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
     attribs.mAttributes = {
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
         {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
@@ -407,7 +409,33 @@ void Scene::loadTesselationMesh()
 
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/displaceTest.png");
 
-    mRenderables.emplace_back(common::CreateRef<RegularMesh>(mContext, mesh2, instBuffer, texture, texture, shader, otherShader));
+    mRenderables.emplace_back(
+        common::CreateRef<RegularMesh>(mContext, mesh2, instBuffer, texture, texture, shader, otherShader));
+}
+
+void Scene::loadParticleSystem()
+{
+    namespace sgfx = swizzle::gfx;
+
+    sgfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = {{sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * 3u}};
+    attribs.mAttributes = {{0u, sgfx::ShaderAttributeDataType::vec3f, 0u}};
+    attribs.mDescriptors = {
+        {sgfx::DescriptorType::TextureSampler, sgfx::Count(1u), {sgfx::StageType::fragmentStage}},
+    };
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableBlending = false;
+    attribs.mEnableDepthWrite = true;
+    attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
+
+    auto shader = mCompositor->createShader(0u, attribs);
+    mAssetManager->loadShader(shader, "AoG/shaders/particle.shader");
+
+    auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/particle.png");
+
+    mRenderables.emplace_back(
+        common::CreateRef<ParticleSystem>(mContext, 200u, glm::vec3{0, 5, 0}, glm::vec3{0, 1, 0}, texture, shader));
 }
 
 SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings,

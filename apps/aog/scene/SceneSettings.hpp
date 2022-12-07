@@ -9,6 +9,7 @@ struct SceneRenderSettings
     SwBool mEnableAnimatedTextures;
     SwBool mHeightMap;
     SwBool mTesselation;
+    SwBool mParticles;
 };
 
 #endif

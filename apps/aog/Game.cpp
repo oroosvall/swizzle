@@ -84,6 +84,7 @@ void Game::userSetup()
     mScene->loadCube();
     mScene->loadAnimTexture();
     mScene->loadTesselationMesh();
+    mScene->loadParticleSystem();
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -155,6 +156,10 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Checkbox("##day6", &mEnableDof);
     ImGui::SliderFloat("Focal Point", &mDoFFocalPoint, 0.01f, 100.0f);
     ImGui::SliderFloat("Focal Scale", &mDoFFocalScale, 0.01f, 200.0f);
+    ImGui::Text("(Day 7) Particle system:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day7", &mSceneSettings.mParticles);
+
 
     ImGui::End();
 

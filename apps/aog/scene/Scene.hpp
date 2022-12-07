@@ -52,6 +52,7 @@ public:
     void loadAnimTexture();
     void loadHeightMap();
     void loadTesselationMesh();
+    void loadParticleSystem();
 
     SceneState update(DeltaTime dt, SceneRenderSettings& settings,
                       common::Unique<swizzle::gfx::CommandTransaction>& trans);
