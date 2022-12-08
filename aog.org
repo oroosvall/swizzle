@@ -1,7 +1,7 @@
 
 
 * List
-- [-] Advent of graphics [30%] [7/23]
+- [-] Advent of graphics [34%] [8/23]
   - [X] Normal mapping (Day 1)
   - [X] Animated Textures (Day 2)
   - [X] Shader editor (Day 3)
@@ -9,6 +9,7 @@
   - [X] Displacement mapping (tesselation) (Day 5)
   - [X] Camera effect - Depth of field (Day 6)
   - [X] Particle system (Day 7)
+  - [X] Camera effect - Glow (Day 8)
   - [ ] Shadow mapping
   - [ ] Transparency (Look through window)
   - [ ] Camera paths (cinematics)
@@ -21,7 +22,6 @@
   - [ ] Godrays
   - [ ] Ambient occlusion
   - [ ] Asset streaming
-  - [ ] Camera effect - Glow
   - [ ] Camera effect - Lens flare
   - [ ] Mirror reflection
   - [ ] Portal

@@ -46,12 +46,13 @@ void Game::userSetup()
 
     swizzle::gfx::FrameBufferCreateInfo info{};
     info.mDepthType = swizzle::gfx::FrameBufferDepthType::DepthStencil;
-    info.mColorAttachFormats = { swizzle::gfx::FrameBufferAttachmentType::Srgb };
+    info.mColorAttachFormats = {swizzle::gfx::FrameBufferAttachmentType::Srgb,
+                                swizzle::gfx::FrameBufferAttachmentType::Srgb};
     info.mSwapCount = 3u;
     mWindow->getSize(info.mWidth, info.mHeight);
 
     mGBuffer = mGfxContext->createFramebuffer(info);
-    mGBuffer->setColorAttachmentClearColor(0u, { 0.0f, 0.0f, 0.0f, 1.0f });
+    mGBuffer->setColorAttachmentClearColor(0u, {0.0f, 0.0f, 0.0f, 1.0f});
     mGBuffer->setDepthAttachmentClearValue(1.0f, 0u);
 
     sw::gfx::ShaderAttributeList attribFsq = {};
@@ -59,8 +60,9 @@ void Game::userSetup()
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
     };
-    attribFsq.mPushConstantSize = sizeof(glm::vec4) + sizeof(float);
+    attribFsq.mPushConstantSize = sizeof(glm::vec4) + sizeof(float) * 2;
     attribFsq.mEnableBlending = true;
     attribFsq.mPrimitiveType = sw::gfx::PrimitiveType::triangle;
 
@@ -71,8 +73,9 @@ void Game::userSetup()
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
     mFsqMat->setDescriptorTextureResource(1u, mGBuffer->getColorAttachment(0u));
     mFsqMat->setDescriptorTextureResource(2u, mGBuffer->getDepthAttachment());
+    mFsqMat->setDescriptorTextureResource(3u, mGBuffer->getColorAttachment(1u));
 
-    mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain);
+    mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain, mGBuffer);
     mAssetManager = common::CreateRef<AssetManager>(mGfxContext);
     mScene = common::CreateRef<Scene>(mGfxContext, mCompositor, mAssetManager);
 
@@ -85,6 +88,7 @@ void Game::userSetup()
     mScene->loadAnimTexture();
     mScene->loadTesselationMesh();
     mScene->loadParticleSystem();
+    mScene->loadGlow();
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -159,7 +163,9 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Text("(Day 7) Particle system:");
     ImGui::SameLine();
     ImGui::Checkbox("##day7", &mSceneSettings.mParticles);
-
+    ImGui::Text("(Day 8) Glow:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day8", &mGlow);
 
     ImGui::End();
 
@@ -189,7 +195,7 @@ void Game::updateMainWindow(F32 dt)
     U32 x, y;
     mWindow->getSize(x, y);
 
-    //mGBuffer->resize(x, y);
+    // mGBuffer->resize(x, y);
 
     cam.changeAspect((F32)x, (F32)y);
 
@@ -219,13 +225,15 @@ void Game::updateMainWindow(F32 dt)
     struct dof
     {
         glm::vec4 dof;
-        float enabled;
+        float mDofEnabled;
+        float mGlowEnabled;
     } d{};
     d.dof.x = mDoFFocalPoint;
     d.dof.y = mDoFFocalScale;
     d.dof.z = 1.0f / F32(x);
     d.dof.w = 1.0f / F32(y);
-    d.enabled = mEnableDof ? 1.0f : 0.0f;
+    d.mDofEnabled = mEnableDof ? 1.0f : 0.0f;
+    d.mGlowEnabled = mGlow ? 1.0f : 0.0f;
 
     dTrans->bindShader(mFsq);
     dTrans->bindMaterial(mFsq, mFsqMat);

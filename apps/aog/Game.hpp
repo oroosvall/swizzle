@@ -61,6 +61,8 @@ private:
     F32 mDoFFocalPoint = 40.0f;
     F32 mDoFFocalScale = 200.0f;
 
+    SwBool mGlow = true;
+
 };
 
 #endif

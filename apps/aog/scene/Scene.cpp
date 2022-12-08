@@ -8,6 +8,7 @@
 
 #include "Animated.hpp"
 #include "AnimatedTextureMesh.hpp"
+#include "GlowMesh.hpp"
 #include "HeightMap.hpp"
 #include "ParticleSystem.hpp"
 #include "RegularMesh.hpp"
@@ -99,7 +100,7 @@ void Scene::loadSky()
     attribsSky.mEnableDepthWrite = false;
     attribsSky.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
-    skyShader = mCompositor->createShader(0u, attribsSky);
+    skyShader = mCompositor->createShader(1u, attribsSky);
     mAssetManager->loadShader(skyShader, "shaders/sky.shader");
 
     skyMaterial = mContext->createMaterial(skyShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
@@ -194,7 +195,7 @@ void Scene::loadAnimMesh()
 
     texture = swizzle::asset::LoadTexture2D(mContext, "texture/lightGray.png");
 
-    shader = mCompositor->createShader(0u, attribsAnim);
+    shader = mCompositor->createShader(1u, attribsAnim);
     mAssetManager->loadShader(shader, "shaders/animated_inst.shader");
 
     mRenderables.emplace_back(common::CreateRef<Animated>(mContext, mesh2, instBuffer, texture, shader));
@@ -246,7 +247,7 @@ void Scene::loadCube()
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
-    auto shader = mCompositor->createShader(0u, attribs);
+    auto shader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(shader, "AoG/shaders/regular.shader");
 
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/cubeNormal.png");
@@ -302,7 +303,7 @@ void Scene::loadAnimTexture()
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
-    auto shader = mCompositor->createShader(0u, attribs);
+    auto shader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(shader, "AoG/shaders/animatedTexture.shader");
 
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/Stream.png");
@@ -347,7 +348,7 @@ void Scene::loadHeightMap()
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
-    auto shader = mCompositor->createShader(0u, attribs);
+    auto shader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(shader, "AoG/shaders/heightMap.shader");
 
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/heightmap.png");
@@ -401,10 +402,10 @@ void Scene::loadTesselationMesh()
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
-    auto shader = mCompositor->createShader(0u, attribs);
+    auto shader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(shader, "AoG/shaders/tesselationShader.shader");
 
-    auto otherShader = mCompositor->createShader(0u, attribs);
+    auto otherShader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(otherShader, "AoG/shaders/heightMap.shader");
 
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/displaceTest.png");
@@ -429,13 +430,69 @@ void Scene::loadParticleSystem()
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
-    auto shader = mCompositor->createShader(0u, attribs);
+    auto shader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(shader, "AoG/shaders/particle.shader");
 
     auto texture = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/particle.png");
 
     mRenderables.emplace_back(
         common::CreateRef<ParticleSystem>(mContext, 200u, glm::vec3{0, 5, 0}, glm::vec3{0, 1, 0}, texture, shader));
+}
+
+void Scene::loadGlow()
+{
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, {4, 0, 0});
+
+    namespace sgfx = swizzle::gfx;
+
+    swizzle::asset2::MeshAssetLoaderDescription ldi = {};
+    ldi.mLoadPossitions = {
+        {swizzle::asset2::AttributeTypes::VertexPosition, 0u},
+        {swizzle::asset2::AttributeTypes::NormalVector, sizeof(float) * 3u},
+        {swizzle::asset2::AttributeTypes::UvCoordinates, sizeof(float) * 6u},
+    };
+
+    auto mesh2 = swizzle::asset2::LoadMesh("AoG/meshes/TextureAnimation.swm", ldi);
+
+    common::Resource<sgfx::Buffer> instBuffer = mContext->createBuffer(sgfx::BufferType::Vertex);
+
+    std::vector<glm::mat4> positions;
+    positions.push_back(transform);
+
+    instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
+
+    swizzle::gfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
+    attribs.mAttributes = {
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
+    attribs.mDescriptors = {{swizzle::gfx::DescriptorType::TextureSampler,
+                             swizzle::gfx::Count(1u),
+                             {swizzle::gfx::StageType::fragmentStage}},
+                            {swizzle::gfx::DescriptorType::TextureSampler,
+                             swizzle::gfx::Count(1u),
+                             {swizzle::gfx::StageType::fragmentStage}}};
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableBlending = false;
+    attribs.mEnableDepthWrite = true;
+    attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
+
+    auto shader = mCompositor->createShader(1u, attribs);
+    mAssetManager->loadShader(shader, "AoG/shaders/glow.shader");
+
+    auto grid = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/Grid.png");
+    auto glow = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/Glow.png");
+
+    mRenderables.emplace_back(common::CreateRef<GlowMesh>(mContext, mesh2, instBuffer, grid, glow, shader));
 }
 
 SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings,

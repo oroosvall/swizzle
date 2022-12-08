@@ -7,6 +7,7 @@ layout(location = 3) in vec4 v_eye;
 layout(location = 4) in vec3 v_center;
 
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec4 glowColor;
 
 layout(set=0, binding=0) uniform samplerCube tex;
 
@@ -25,4 +26,5 @@ void main()
 
     //fragColor = vec4(viewDir, 1.0);
     fragColor = vec4(texture(tex, viewDir.xyz).rgb, 1.0);
+    glowColor = vec4(0.0);
 }

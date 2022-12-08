@@ -25,11 +25,15 @@ enum class RenderLayerType
 
 struct RenderLayer
 {
-    RenderLayer() : mType(RenderLayerType::RenderLayer_Invalid), mSwapchain(nullptr)
+    RenderLayer()
+        : mType(RenderLayerType::RenderLayer_Invalid)
+        , mSwapchain(nullptr)
     {
     }
 
-    RenderLayer(RenderLayerType type) : mType(type), mSwapchain(nullptr)
+    RenderLayer(RenderLayerType type)
+        : mType(type)
+        , mSwapchain(nullptr)
     {
     }
 
@@ -39,7 +43,7 @@ struct RenderLayer
         {
             mSwapchain.reset();
         }
-        else if(mType == RenderLayerType::RenderLayer_FrameBuffer)
+        else if (mType == RenderLayerType::RenderLayer_FrameBuffer)
         {
             mFrameBuffer.reset();
         }
@@ -77,7 +81,6 @@ struct RenderLayer
         {
             mSwapchain.reset();
         }
-
     }
 
     RenderLayerType mType;
@@ -93,9 +96,11 @@ struct RenderLayer
 class Compositor
 {
 public:
-    Compositor(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::gfx::Swapchain> swap);
+    Compositor(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::gfx::Swapchain> swap,
+               common::Resource<swizzle::gfx::FrameBuffer> glowTexture);
 
-    common::Resource<swizzle::gfx::Shader> createShader(U32 layerIndex, const swizzle::gfx::ShaderAttributeList& attribs);
+    common::Resource<swizzle::gfx::Shader> createShader(U32 layerIndex,
+                                                        const swizzle::gfx::ShaderAttributeList& attribs);
 
 private:
     common::Resource<swizzle::gfx::GfxContext> mCtx;
