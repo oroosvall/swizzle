@@ -166,6 +166,14 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Text("(Day 8) Glow:");
     ImGui::SameLine();
     ImGui::Checkbox("##day8", &mGlow);
+    ImGui::Text("(Day 9) MipMaps:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day9", &mSceneSettings.mMipMaps);
+    ImGui::Text("Force lowest mip:");
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!mSceneSettings.mMipMaps);
+    ImGui::Checkbox("##day9mipflag", &mSceneSettings.mForceLowestMipLayer);
+    ImGui::EndDisabled();
 
     ImGui::End();
 

@@ -10,6 +10,8 @@ struct SceneRenderSettings
     SwBool mHeightMap;
     SwBool mTesselation;
     SwBool mParticles;
+    SwBool mMipMaps;
+    SwBool mForceLowestMipLayer;
 };
 
 #endif
