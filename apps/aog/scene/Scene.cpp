@@ -10,6 +10,7 @@
 #include "AnimatedTextureMesh.hpp"
 #include "GlowMesh.hpp"
 #include "HeightMap.hpp"
+#include "MeshShader.hpp"
 #include "ParticleSystem.hpp"
 #include "RegularMesh.hpp"
 #include "Sky.hpp"
@@ -219,7 +220,7 @@ void Scene::loadCube()
     std::vector<glm::mat4> positions;
 
     glm::mat4 m = glm::mat4(1.0f);
-    m = glm::translate(m, {0, 0, 0});
+    m = glm::translate(m, {0, 0, -5});
     positions.push_back(m);
 
     instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
@@ -493,6 +494,72 @@ void Scene::loadGlow()
     auto glow = swizzle::asset::LoadTexture2D(mContext, "AoG/textures/Glow.png");
 
     mRenderables.emplace_back(common::CreateRef<GlowMesh>(mContext, mesh2, instBuffer, grid, glow, shader));
+}
+
+void Scene::loadMeshShader()
+{
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, {0, 0, 0});
+
+    namespace sgfx = swizzle::gfx;
+
+    swizzle::asset2::MeshAssetLoaderDescription ldi = {};
+    ldi.mLoadPossitions = {
+        {swizzle::asset2::AttributeTypes::VertexPosition, 0u},
+        //{swizzle::asset2::AttributeTypes::NormalVector, sizeof(float) * 3u},
+    };
+
+    auto mesh2 = swizzle::asset2::LoadMesh("AoG/meshes/torus.swm", ldi);
+
+    common::Resource<sgfx::Buffer> instBuffer = mContext->createBuffer(sgfx::BufferType::Vertex);
+
+    std::vector<glm::mat4> positions;
+    positions.push_back(transform);
+
+    instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
+
+    swizzle::gfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = {};
+    attribs.mAttributes = {};
+    attribs.mDescriptors = {
+        {sgfx::DescriptorType::StorageBuffer, 1u, {sgfx::StageType::meshStage}},
+        {sgfx::DescriptorType::StorageBuffer, 1u, {sgfx::StageType::meshStage}},
+        {sgfx::DescriptorType::StorageBuffer, 1u, {sgfx::StageType::meshStage}},
+        {sgfx::DescriptorType::StorageBuffer, 1u, {sgfx::StageType::meshStage}},
+    };
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableBlending = false;
+    attribs.mEnableDepthWrite = true;
+    attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
+
+    auto shader = mCompositor->createMeshShader(1u, attribs);
+    if (mContext->hasMeshShaderSupport())
+    {
+        mAssetManager->loadShader(shader, "AoG/shaders/meshShader.shader");
+    }
+
+    swizzle::gfx::ShaderAttributeList attribs2 = {};
+    attribs2.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u)},
+                             {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
+    attribs2.mAttributes = {
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec3f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
+    attribs2.mDescriptors = {};
+    attribs2.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs2.mEnableDepthTest = true;
+    attribs2.mEnableBlending = false;
+    attribs2.mEnableDepthWrite = true;
+    attribs2.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
+
+    auto shaderNormal = mCompositor->createShader(1u, attribs2);
+    mAssetManager->loadShader(shaderNormal, "AoG/shaders/normal.shader");
+
+    mRenderables.emplace_back(common::CreateRef<MeshShader>(mContext, mesh2, instBuffer, shader, shaderNormal));
 }
 
 SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings,

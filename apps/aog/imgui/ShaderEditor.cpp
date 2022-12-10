@@ -244,7 +244,7 @@ void ShaderEditor::compileShader(ShaderTextCache& cache)
 
     auto path = std::filesystem::current_path();
     std::filesystem::current_path(outDir);
-    std::string cmd = "glslangvalidator -V ";
+    std::string cmd = "glslangvalidator -V --target-env spirv1.6 ";
     if (mDebugSymbols)
     {
         cmd += "-g ";

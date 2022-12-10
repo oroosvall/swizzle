@@ -81,6 +81,9 @@ void Game::userSetup()
 
     mShaderEditor = common::CreateRef<ShaderEditor>(mAssetManager);
 
+    mSceneSettings.mMeshShaders = mGfxContext->hasMeshShaderSupport();
+    mSceneSettings.mParticles = false;
+
     mScene->loadSky();
     // mScene->loadAnimMesh();
     mScene->loadHeightMap();
@@ -89,6 +92,7 @@ void Game::userSetup()
     mScene->loadTesselationMesh();
     mScene->loadParticleSystem();
     mScene->loadGlow();
+    mScene->loadMeshShader();
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -173,6 +177,11 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::SameLine();
     ImGui::BeginDisabled(!mSceneSettings.mMipMaps);
     ImGui::Checkbox("##day9mipflag", &mSceneSettings.mForceLowestMipLayer);
+    ImGui::EndDisabled();
+    ImGui::BeginDisabled(!mGfxContext->hasMeshShaderSupport());
+    ImGui::Text("(Day 10) MeshShaders:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day10", &mSceneSettings.mMeshShaders);
     ImGui::EndDisabled();
 
     ImGui::End();

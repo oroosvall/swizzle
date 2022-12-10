@@ -144,8 +144,8 @@ namespace vk
         features.pNext = &maint;
 
         VkPhysicalDeviceMeshShaderFeaturesEXT meshFeatures{};
-        meshFeatures.meshShader = false;
-        meshFeatures.taskShader = false;
+        meshFeatures.meshShader = true;
+        meshFeatures.taskShader = true;
         meshFeatures.pNext = VK_NULL_HANDLE;
         meshFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
 
@@ -296,7 +296,7 @@ namespace vk
         extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         //extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         addLayerIfExisting(instanceLayers, layers, "VK_LAYER_KHRONOS_validation");
-        addLayerIfExisting(instanceLayers, layers, "VK_LAYER_RENDERDOC_Capture");
+        //addLayerIfExisting(instanceLayers, layers, "VK_LAYER_RENDERDOC_Capture");
 #endif
 
         //instanceLayers.push_back("VK_LAYER_LUNARG_gfxreconstruct");

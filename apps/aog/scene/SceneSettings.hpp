@@ -12,6 +12,7 @@ struct SceneRenderSettings
     SwBool mParticles;
     SwBool mMipMaps;
     SwBool mForceLowestMipLayer;
+    SwBool mMeshShaders;
 };
 
 #endif

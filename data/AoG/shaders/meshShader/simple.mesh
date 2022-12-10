@@ -1,0 +1,88 @@
+#version 450
+#extension GL_EXT_mesh_shader : enable
+
+layout (local_size_x=1, local_size_y=1, local_size_z=1) in; // Typical limit: 128 invocations.
+
+layout (triangles) out; // May also be points or lines.
+layout (max_vertices=256, max_primitives=128) out; // Typical limit: 256 vert/prim.
+
+// layout (location=0) out vec4 out0[]; // Per-vertex.
+// layout (location=1) perprimitiveEXT out vec4 out1[]; // Per-primitive.
+
+struct Vertex {
+    float x;
+    float y;
+    float z;
+};
+
+struct Tri {
+    uint t1;
+    uint t2;
+    uint t3;
+};
+
+layout (std430, set = 0, binding = 0) buffer MeshletDescr
+{
+    /*
+    uint vertexCount;
+    uint primCount;
+    uint vertexBegin;
+    uint primBegin;
+    */
+    uvec4 meshlets[];
+};
+
+layout (std430, set = 0, binding = 1) buffer VertexBuffer
+{
+    Vertex verts[];
+};
+
+layout (std430, set = 0, binding = 2) buffer VertexIndex
+{
+    uint prim1[];
+};
+
+layout (std430, set = 0, binding = 3) buffer PrimitiveIndex
+{
+    uint prim2[];
+};
+
+uniform layout (push_constant) Camera
+{
+    mat4 viewProj;
+    vec4 eye;
+} cam;
+
+vec3 getVertex(uint index)
+{
+    return vec3(verts[index].x,verts[index].y,verts[index].z);
+}
+
+uvec3 getTriangle(uint index)
+{
+    return uvec3(prim2[index*3 + 0], prim2[index*3 + 1], prim2[index*3 + 2]);
+}
+
+void main()
+{
+    // Typical compute built-ins: gl_NumWorkGroups, gl_WorkGroupID, gl_LocalInvocationID, etc.
+    // Typical subgroup functionality: gl_NumSubgroups, gl_SubgroupID, subgroupElect(), etc.
+    // SetMeshOutputsEXT(ACTUAL_V, ACTUAL_P);
+    // gl_MeshVerticesEXT[FOO].gl_Position = vec4(…);
+    // gl_PrimitiveTriangleIndicesEXT[BAR] = uvec3(…);
+
+    uvec4 m = meshlets[gl_WorkGroupID.x];
+    SetMeshOutputsEXT(m.x, m.y);
+
+    for (int v = 0; v < m.x; v++)
+    {
+        uint vertexIndex = prim1[m.z + v];
+        vec3 vertex = getVertex(vertexIndex);
+        gl_MeshVerticesEXT[v].gl_Position = cam.viewProj * vec4(vertex, 1.0);
+    }
+
+    for (int p = 0; p < m.y; p++)
+    {
+        gl_PrimitiveTriangleIndicesEXT[p] = getTriangle(m.w + p);
+    }
+}
