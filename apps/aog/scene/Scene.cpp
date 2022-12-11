@@ -429,7 +429,7 @@ void Scene::loadParticleSystem()
     attribs.mEnableDepthTest = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
-    attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
+    attribs.mPrimitiveType = sgfx::PrimitiveType::point;
 
     auto shader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(shader, "AoG/shaders/particle.shader");

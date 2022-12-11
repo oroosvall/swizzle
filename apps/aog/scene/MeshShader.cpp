@@ -116,16 +116,7 @@ void MeshShader::generateMeshlets(common::Resource<swizzle::gfx::GfxContext> ctx
     mPrimitiveIndex = ctx->createBuffer(swizzle::gfx::BufferType::StorageBuffer);
     mMeshlets = ctx->createBuffer(swizzle::gfx::BufferType::StorageBuffer);
 
-    //glm::vec3 verts[] =
-    //{
-    //    glm::vec3(-1.0, -1.0, 1.0),
-    //    glm::vec3(1.0, -1.0, 1.0),
-    //    glm::vec3(1.0, 1.0, 1.0),
-    //    glm::vec3(-1.0, 1.0, 1.0),
-    //};
-
     mVertexData->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(), sizeof(float) * (3u));
-    //mVertexData->setBufferData(&verts, sizeof(verts), sizeof(float));
 
     struct Triangle
     {
@@ -156,7 +147,7 @@ void MeshShader::generateMeshlets(common::Resource<swizzle::gfx::GfxContext> ctx
         {
             meshlets.push_back(workingMeshlet);
             workingMeshlet = {};
-            workingMeshlet.mPrimitiveBegin = (U32)primitiveIndex.size();
+            workingMeshlet.mPrimitiveBegin = (U32)primitiveIndex.size() / 3;
             workingMeshlet.mVertexBegin = (U32)vertexIndex.size();
         }
     }

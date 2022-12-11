@@ -63,6 +63,17 @@ private:
 
     SwBool mGlow = true;
 
+    SwBool mBesierCurves = true;
+    SwBool mBesierCurvesEditor = false;
+    U32 mBezierItem = 0u;
+    std::vector<glm::vec3> mBezierPoints;
+    std::vector<glm::vec3> mLineSegment;
+
+    common::Resource<sw::gfx::Buffer> mBezierLines;
+    common::Resource<sw::gfx::Shader> mBezierShader;
+
+    void generateBezierLines();
+
 };
 
 #endif

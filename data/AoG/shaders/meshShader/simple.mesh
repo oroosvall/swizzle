@@ -8,6 +8,7 @@ layout (max_vertices=256, max_primitives=128) out; // Typical limit: 256 vert/pr
 
 // layout (location=0) out vec4 out0[]; // Per-vertex.
 // layout (location=1) perprimitiveEXT out vec4 out1[]; // Per-primitive.
+layout (location=0) perprimitiveEXT out flat uint workgroup[];
 
 struct Vertex {
     float x;
@@ -84,5 +85,6 @@ void main()
     for (int p = 0; p < m.y; p++)
     {
         gl_PrimitiveTriangleIndicesEXT[p] = getTriangle(m.w + p);
+        workgroup[p] = gl_WorkGroupID.x;
     }
 }

@@ -1,8 +1,13 @@
 
 #include "Game.hpp"
 
+#pragma warning(push)
+#pragma warning(disable : 4201)
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#pragma warning(pop)
 
 #include <swizzle/core/Input.hpp>
 
@@ -83,6 +88,24 @@ void Game::userSetup()
 
     mSceneSettings.mMeshShaders = mGfxContext->hasMeshShaderSupport();
     mSceneSettings.mParticles = false;
+
+    mBezierLines = mGfxContext->createBuffer(sw::gfx::BufferType::Vertex);
+
+    sw::gfx::ShaderAttributeList bezierAttribs = {};
+    bezierAttribs.mAttributes = {
+        {0u, sw::gfx::ShaderAttributeDataType::vec3f, 0u},
+    };
+    bezierAttribs.mBufferInput = {
+        {sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u)},
+    };
+    bezierAttribs.mDescriptors = {};
+    bezierAttribs.mPushConstantSize = sizeof(glm::mat4) + sizeof(glm::vec3);
+    bezierAttribs.mEnableBlending = false;
+    bezierAttribs.mEnableDepthTest = true;
+    bezierAttribs.mPrimitiveType = sw::gfx::PrimitiveType::line;
+
+    mBezierShader = mGfxContext->createShader(mGBuffer, sw::gfx::ShaderType::ShaderType_Graphics, bezierAttribs);
+    mBezierShader->load("AoG/shaders/lines.shader");
 
     mScene->loadSky();
     // mScene->loadAnimMesh();
@@ -183,12 +206,71 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::SameLine();
     ImGui::Checkbox("##day10", &mSceneSettings.mMeshShaders);
     ImGui::EndDisabled();
+    ImGui::Text("(Day 11) Bezier curves:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day11", &mBesierCurves);
+    ImGui::Text("Bezier curves editor:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day11edit", &mBesierCurvesEditor);
 
     ImGui::End();
 
     if (mShowShaderEditor)
     {
         mShaderEditor->render();
+    }
+    if (mBesierCurvesEditor)
+    {
+        SwBool generate = false;
+        if (ImGui::Begin("Besizer curves editor", &mBesierCurvesEditor))
+        {
+            ImGui::Text("Points");
+            if (ImGui::BeginListBox("###Points"))
+            {
+
+                U32 count = 0u;
+                for (auto& itm : mBezierPoints)
+                {
+                    auto str = glm::to_string(itm) + "##points#" + std::to_string(count);
+                    if (ImGui::Selectable(str.c_str(), mBezierItem == count))
+                    {
+                        mBezierItem = count;
+                    }
+                    count++;
+                }
+
+                ImGui::EndListBox();
+            }
+
+            if (mBezierPoints.size() > 0)
+            {
+                ImGui::Text("Selected Value:");
+                if (ImGui::InputFloat3("###Selected value", glm::value_ptr(mBezierPoints[mBezierItem])))
+                {
+                    generate = true;
+                }
+            }
+            if (ImGui::Button("Add point"))
+            {
+                mBezierPoints.push_back(glm::vec3());
+                generate = true;
+            }
+            if (ImGui::Button("Remove point"))
+            {
+                if (mBezierPoints.size() > 0)
+                {
+                    mBezierPoints.erase(mBezierPoints.begin() + mBezierItem);
+                    mBezierItem = 0u;
+                    generate = true;
+                }
+            }
+        }
+        ImGui::End();
+
+        if (generate)
+        {
+            generateBezierLines();
+        }
     }
 
     ImGui::EndFrame();
@@ -234,6 +316,21 @@ void Game::updateMainWindow(F32 dt)
     auto dTrans = mCmdBuffer->beginRenderPass(mGBuffer, std::move(trans));
 
     mScene->render(dTrans, cam);
+
+    if (mBesierCurves && mLineSegment.size() > 0)
+    {
+        struct bezier
+        {
+            glm::mat4 mCam;
+            glm::vec3 mCol;
+        } d{};
+        d.mCam = cam.getProjection() * cam.getView();
+        d.mCol = glm::vec3(0.0f, 1.0f, 0.0f);
+
+        dTrans->bindShader(mBezierShader);
+        dTrans->setShaderConstant(mBezierShader, (U8*)&d, sizeof(d));
+        dTrans->draw(mBezierLines);
+    }
 
     trans = mCmdBuffer->endRenderPass(std::move(dTrans));
 
@@ -344,4 +441,31 @@ std::string Game::getStatisticsText() const
     statisticsString += "Triangle count: " + std::to_string(mCmdBuffer->getTriCount()) + "\n";
 
     return statisticsString;
+}
+
+glm::vec3 getPoint(const std::vector<glm::vec3>& points, F32 t)
+{
+    std::vector<glm::vec3> tmp = points;
+    size_t i = points.size() - 1u;
+    while (i > 0u)
+    {
+        for (size_t k = 0u; k < i; k++)
+        {
+            tmp[k] = tmp[k] + t * (tmp[k + 1] - tmp[k]);
+        }
+        i--;
+    }
+    return tmp[0];
+}
+
+void Game::generateBezierLines()
+{
+    mLineSegment.clear();
+
+    for (F32 i = 0.0f; i < 1.0f; i+= 0.01f)
+    {
+        mLineSegment.push_back(getPoint(mBezierPoints, i));
+    }
+
+    mBezierLines->setBufferData(mLineSegment.data(), mLineSegment.size() * sizeof(glm::vec3), sizeof(glm::vec3));
 }
