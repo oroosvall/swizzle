@@ -14,6 +14,8 @@
 
 #include "imgui/ShaderEditor.hpp"
 
+#include <Bezier.hpp>
+
 class Game : public sw::Application
 {
 public:
@@ -65,14 +67,22 @@ private:
 
     SwBool mBesierCurves = true;
     SwBool mBesierCurvesEditor = false;
+    U32 mSelectedCurve = 0u;
     U32 mBezierItem = 0u;
-    std::vector<glm::vec3> mBezierPoints;
-    std::vector<glm::vec3> mLineSegment;
 
-    common::Resource<sw::gfx::Buffer> mBezierLines;
     common::Resource<sw::gfx::Shader> mBezierShader;
 
-    void generateBezierLines();
+    std::vector<BezierCurve> mCurves;
+    BezierCurve* getCurrentCurve(U32 index);
+
+
+    U32 mCameraPathIndex = 0u;
+    U32 mCameraLookIndex = 0u;
+    SwBool mCameraPath = false;
+    F32 mCameraTime = 0.0f;
+
+    U32 comboIdx = 0;
+    void imguiCurveComboSelect(U32* curveIndex);
 
 };
 

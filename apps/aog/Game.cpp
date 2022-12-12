@@ -89,8 +89,6 @@ void Game::userSetup()
     mSceneSettings.mMeshShaders = mGfxContext->hasMeshShaderSupport();
     mSceneSettings.mParticles = false;
 
-    mBezierLines = mGfxContext->createBuffer(sw::gfx::BufferType::Vertex);
-
     sw::gfx::ShaderAttributeList bezierAttribs = {};
     bezierAttribs.mAttributes = {
         {0u, sw::gfx::ShaderAttributeDataType::vec3f, 0u},
@@ -116,10 +114,20 @@ void Game::userSetup()
     mScene->loadParticleSystem();
     mScene->loadGlow();
     mScene->loadMeshShader();
+
+    mCurves.push_back(BezierCurve{ mGfxContext, "Camera path" });
+    mCurves.back().load("AoG/CameraPath.txt");
+    mCurves.push_back(BezierCurve{ mGfxContext, "Camera lookat" });
+    mCurves.back().load("AoG/CameraLook.txt");
+
+    mCameraPathIndex = 0u;
+    mCameraPathIndex = 1u;
+
 }
 
 SwBool Game::userUpdate(F32 dt)
 {
+    comboIdx = 0;
     OPTICK_EVENT("userUpdate");
 
     mFpsCounter.tick(dt);
@@ -212,6 +220,18 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Text("Bezier curves editor:");
     ImGui::SameLine();
     ImGui::Checkbox("##day11edit", &mBesierCurvesEditor);
+    ImGui::Text("Camera path:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day12", &mCameraPath);
+    ImGui::Text("Camera path curve:");
+    ImGui::SameLine();
+    imguiCurveComboSelect(&mCameraPathIndex);
+    ImGui::Text("Camera look curve:");
+    ImGui::SameLine();
+    imguiCurveComboSelect(&mCameraLookIndex);
+    ImGui::Text("Camera path time:");
+    ImGui::SameLine();
+    ImGui::DragFloat("##day12path", &mCameraTime, 0.01f, 0.0f, 1.0f);
 
     ImGui::End();
 
@@ -221,56 +241,80 @@ SwBool Game::userUpdate(F32 dt)
     }
     if (mBesierCurvesEditor)
     {
-        SwBool generate = false;
         if (ImGui::Begin("Besizer curves editor", &mBesierCurvesEditor))
         {
+            ImGui::Text("Curves:");
+            imguiCurveComboSelect(&mSelectedCurve);
+            ImGui::SameLine();
+            if (ImGui::Button("+"))
+            {
+                mCurves.push_back(BezierCurve{ mGfxContext, "Curve"});
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("-"))
+            {
+                if (mCurves.size() > 0)
+                {
+                    mCurves.erase(mCurves.begin() + mSelectedCurve);
+                    mSelectedCurve = 0u;
+                }
+            }
+
+            BezierCurve* curve = getCurrentCurve(mSelectedCurve);
+
             ImGui::Text("Points");
             if (ImGui::BeginListBox("###Points"))
             {
-
                 U32 count = 0u;
-                for (auto& itm : mBezierPoints)
+                if (curve)
                 {
-                    auto str = glm::to_string(itm) + "##points#" + std::to_string(count);
-                    if (ImGui::Selectable(str.c_str(), mBezierItem == count))
+                    auto& ctrlPoints = curve->getControlPoints();
+                    for (auto& itm : ctrlPoints)
                     {
-                        mBezierItem = count;
+                        auto str = glm::to_string(itm) + "##points#" + std::to_string(count);
+                        if (ImGui::Selectable(str.c_str(), mBezierItem == count))
+                        {
+                            mBezierItem = count;
+                        }
+                        count++;
                     }
-                    count++;
                 }
-
                 ImGui::EndListBox();
             }
 
-            if (mBezierPoints.size() > 0)
+            if (curve)
             {
-                ImGui::Text("Selected Value:");
-                if (ImGui::InputFloat3("###Selected value", glm::value_ptr(mBezierPoints[mBezierItem])))
+                SwBool generate = false;
+                auto& ctrlPoints = curve->getControlPoints();
+                if (ctrlPoints.size() > 0)
                 {
+                    ImGui::Text("Selected Value:");
+                    if (ImGui::InputFloat3("###Selected value", glm::value_ptr(ctrlPoints[mBezierItem])))
+                    {
+                        generate = true;
+                    }
+                }
+                if (ImGui::Button("Add point"))
+                {
+                    ctrlPoints.push_back(glm::vec3());
                     generate = true;
                 }
-            }
-            if (ImGui::Button("Add point"))
-            {
-                mBezierPoints.push_back(glm::vec3());
-                generate = true;
-            }
-            if (ImGui::Button("Remove point"))
-            {
-                if (mBezierPoints.size() > 0)
+                if (ImGui::Button("Remove point"))
                 {
-                    mBezierPoints.erase(mBezierPoints.begin() + mBezierItem);
-                    mBezierItem = 0u;
-                    generate = true;
+                    if (ctrlPoints.size() > 0)
+                    {
+                        ctrlPoints.erase(ctrlPoints.begin() + mBezierItem);
+                        mBezierItem = 0u;
+                        generate = true;
+                    }
+                }
+                if (generate)
+                {
+                    curve->generateCurve();
                 }
             }
         }
         ImGui::End();
-
-        if (generate)
-        {
-            generateBezierLines();
-        }
     }
 
     ImGui::EndFrame();
@@ -294,11 +338,21 @@ void Game::updateMainWindow(F32 dt)
     U32 x, y;
     mWindow->getSize(x, y);
 
-    // mGBuffer->resize(x, y);
-
     cam.changeAspect((F32)x, (F32)y);
 
-    if (!mInputLocked)
+    //mGBuffer->resize(x, y);
+    BezierCurve* camPathCurve = getCurrentCurve(mCameraPathIndex);
+    BezierCurve* camLookCurve = getCurrentCurve(mCameraLookIndex);
+    if (mCameraPath && camPathCurve && camLookCurve)
+    {
+        glm::vec3 pos = camPathCurve->getPoint(mCameraTime);
+        glm::vec3 dir = camLookCurve->getPoint(mCameraTime);
+        cam.setPosition(pos);
+        cam.lookAt(pos, dir);
+    }
+
+
+    if (!mInputLocked && !mCameraPath)
     {
         mController.update(dt);
     }
@@ -317,19 +371,26 @@ void Game::updateMainWindow(F32 dt)
 
     mScene->render(dTrans, cam);
 
-    if (mBesierCurves && mLineSegment.size() > 0)
-    {
-        struct bezier
-        {
-            glm::mat4 mCam;
-            glm::vec3 mCol;
-        } d{};
-        d.mCam = cam.getProjection() * cam.getView();
-        d.mCol = glm::vec3(0.0f, 1.0f, 0.0f);
 
-        dTrans->bindShader(mBezierShader);
-        dTrans->setShaderConstant(mBezierShader, (U8*)&d, sizeof(d));
-        dTrans->draw(mBezierLines);
+    if (mBesierCurves)
+    {
+        for (auto& c : mCurves)
+        {
+            if (c.isReady())
+            {
+                struct bezier
+                {
+                    glm::mat4 mCam;
+                    glm::vec3 mCol;
+                } d{};
+                d.mCam = cam.getProjection() * cam.getView();
+                d.mCol = glm::vec3(0.0f, 1.0f, 0.0f);
+
+                dTrans->bindShader(mBezierShader);
+                dTrans->setShaderConstant(mBezierShader, (U8*)&d, sizeof(d));
+                dTrans->draw(c.getBuffer());
+            }
+        }
     }
 
     trans = mCmdBuffer->endRenderPass(std::move(dTrans));
@@ -443,29 +504,41 @@ std::string Game::getStatisticsText() const
     return statisticsString;
 }
 
-glm::vec3 getPoint(const std::vector<glm::vec3>& points, F32 t)
+BezierCurve* Game::getCurrentCurve(U32 index)
 {
-    std::vector<glm::vec3> tmp = points;
-    size_t i = points.size() - 1u;
-    while (i > 0u)
+    BezierCurve* curve = nullptr;
+
+    if (mCurves.size() > index)
     {
-        for (size_t k = 0u; k < i; k++)
-        {
-            tmp[k] = tmp[k] + t * (tmp[k + 1] - tmp[k]);
-        }
-        i--;
+        curve = &mCurves[index];
     }
-    return tmp[0];
+
+    return curve;
 }
 
-void Game::generateBezierLines()
+void Game::imguiCurveComboSelect(U32* curveIndex)
 {
-    mLineSegment.clear();
-
-    for (F32 i = 0.0f; i < 1.0f; i+= 0.01f)
+    BezierCurve* curve = getCurrentCurve(*curveIndex);
+    ImGui::SameLine();
+    ImGui::BeginDisabled(curve == nullptr);
+    std::string text = "";
+    if (curve) text = curve->getName();
+    std::string comboLabel = "##curve" + std::to_string(comboIdx);
+    if (ImGui::BeginCombo(comboLabel.c_str(), text.c_str()))
     {
-        mLineSegment.push_back(getPoint(mBezierPoints, i));
-    }
+        for (size_t i = 0ull; i < mCurves.size(); ++i)
+        {
+            auto& c = mCurves[i];
+            std::string itmText = c.getName() + "##" + std::to_string(i);
+            if (ImGui::Selectable(itmText.c_str(), text == itmText))
+            {
+                *curveIndex = (U32)i;
+                mBezierItem = 0u;
+            }
+        }
 
-    mBezierLines->setBufferData(mLineSegment.data(), mLineSegment.size() * sizeof(glm::vec3), sizeof(glm::vec3));
+        ImGui::EndCombo();
+    }
+    ImGui::EndDisabled();
+    comboIdx++;
 }
