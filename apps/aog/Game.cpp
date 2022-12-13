@@ -51,9 +51,13 @@ void Game::userSetup()
 
     swizzle::gfx::FrameBufferCreateInfo info{};
     info.mDepthType = swizzle::gfx::FrameBufferDepthType::DepthStencil;
-    info.mColorAttachFormats = {swizzle::gfx::FrameBufferAttachmentType::Srgb,
-                                swizzle::gfx::FrameBufferAttachmentType::Srgb};
     info.mSwapCount = 3u;
+    info.mColorAttachFormats = {
+        swizzle::gfx::FrameBufferAttachmentType::Srgb,
+        swizzle::gfx::FrameBufferAttachmentType::Srgb,
+        swizzle::gfx::FrameBufferAttachmentType::F32,
+        swizzle::gfx::FrameBufferAttachmentType::F32,
+    };
     mWindow->getSize(info.mWidth, info.mHeight);
 
     mGBuffer = mGfxContext->createFramebuffer(info);
@@ -66,8 +70,10 @@ void Game::userSetup()
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
     };
-    attribFsq.mPushConstantSize = sizeof(glm::vec4) + sizeof(float) * 2;
+    attribFsq.mPushConstantSize = sizeof(glm::vec4) + sizeof(float)*3;
     attribFsq.mEnableBlending = true;
     attribFsq.mPrimitiveType = sw::gfx::PrimitiveType::triangle;
 
@@ -79,6 +85,8 @@ void Game::userSetup()
     mFsqMat->setDescriptorTextureResource(1u, mGBuffer->getColorAttachment(0u));
     mFsqMat->setDescriptorTextureResource(2u, mGBuffer->getDepthAttachment());
     mFsqMat->setDescriptorTextureResource(3u, mGBuffer->getColorAttachment(1u));
+    mFsqMat->setDescriptorTextureResource(4u, mGBuffer->getColorAttachment(1u));
+    mFsqMat->setDescriptorTextureResource(5u, mGBuffer->getColorAttachment(1u));
 
     mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain, mGBuffer);
     mAssetManager = common::CreateRef<AssetManager>(mGfxContext);
@@ -88,6 +96,16 @@ void Game::userSetup()
 
     mSceneSettings.mMeshShaders = mGfxContext->hasMeshShaderSupport();
     mSceneSettings.mParticles = false;
+
+    mSceneSettings.mSkyInfo.mDaySkyColor = glm::vec4(0.3f, 0.55f, 0.8f, 1.0f);
+    mSceneSettings.mSkyInfo.mNightSkyColor = glm::vec4(0.024422f, 0.088654f, 0.147314f, 1.0f);
+    mSceneSettings.mSkyInfo.mSun1Color = glm::vec4(1.0f, 0.7f, 0.4f, 1.0f);
+    mSceneSettings.mSkyInfo.mSun2Color = glm::vec4(1.0f, 0.8f, 0.5f, 1.0f);
+    mSceneSettings.mSkyInfo.mMoon1Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    mSceneSettings.mSkyInfo.mMoon2Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    mSceneSettings.mSkyInfo.mSunMoonDir = glm::vec4(1.0, 0.0, 0.0, 0.0f);
+
+
 
     sw::gfx::ShaderAttributeList bezierAttribs = {};
     bezierAttribs.mAttributes = {
@@ -123,6 +141,8 @@ void Game::userSetup()
     mCameraPathIndex = 0u;
     mCameraPathIndex = 1u;
 
+    mSkyCycleTime = 120.0f;
+    mTime = 0.0f;
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -220,7 +240,7 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Text("Bezier curves editor:");
     ImGui::SameLine();
     ImGui::Checkbox("##day11edit", &mBesierCurvesEditor);
-    ImGui::Text("Camera path:");
+    ImGui::Text("(Day 12) Camera path:");
     ImGui::SameLine();
     ImGui::Checkbox("##day12", &mCameraPath);
     ImGui::Text("Camera path curve:");
@@ -232,6 +252,38 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Text("Camera path time:");
     ImGui::SameLine();
     ImGui::DragFloat("##day12path", &mCameraTime, 0.01f, 0.0f, 1.0f);
+    ImGui::Text("(Day 13) Day night + light dithering:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day13dithering", &mDithering);
+    ImGui::BeginDisabled(true);
+    ImGui::Text("Sun moon dir:");
+    ImGui::SameLine();
+    ImGui::InputFloat3("##day13sunmoondir", glm::value_ptr(mSceneSettings.mSkyInfo.mSunMoonDir));
+    ImGui::Text("Time:");
+    ImGui::SameLine();
+    ImGui::InputFloat("##day13time", &mSkyTime);
+    ImGui::EndDisabled();
+    ImGui::Text("Enable time:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day13timeEnable", &mCountSkyTime);
+    ImGui::Text("Day sky color:");
+    ImGui::SameLine();
+    ImGui::ColorEdit3("##day13dayskycolor", glm::value_ptr(mSceneSettings.mSkyInfo.mDaySkyColor));
+    ImGui::Text("Night sky color:");
+    ImGui::SameLine();
+    ImGui::ColorEdit3("##day13nightskycolor", glm::value_ptr(mSceneSettings.mSkyInfo.mNightSkyColor));
+    ImGui::Text("Sun 1 color:");
+    ImGui::SameLine();
+    ImGui::ColorEdit3("##day13sun1color", glm::value_ptr(mSceneSettings.mSkyInfo.mSun1Color));
+    ImGui::Text("Sun 2 color:");
+    ImGui::SameLine();
+    ImGui::ColorEdit3("##day13sun2color", glm::value_ptr(mSceneSettings.mSkyInfo.mSun2Color));
+    ImGui::Text("Moon 1 color:");
+    ImGui::SameLine();
+    ImGui::ColorEdit3("##day13moon1color", glm::value_ptr(mSceneSettings.mSkyInfo.mMoon1Color));
+    ImGui::Text("Moon 2 color:");
+    ImGui::SameLine();
+    ImGui::ColorEdit3("##day13moon2color", glm::value_ptr(mSceneSettings.mSkyInfo.mMoon2Color));
 
     ImGui::End();
 
@@ -357,6 +409,13 @@ void Game::updateMainWindow(F32 dt)
         mController.update(dt);
     }
 
+    if (mCountSkyTime)
+        mTime += dt;
+    updateSkyTime();
+
+    mSceneSettings.mSkyInfo.mCameraMatrix = cam.getProjection() * cam.getView();
+    mSceneSettings.mSkyInfo.mCameraEye = glm::vec4(cam.getPosition(), mSkyTime);
+
     mSwapchain->setClearColor({0, 0, 0, 1});
 
     mSwapchain->prepare();
@@ -402,6 +461,7 @@ void Game::updateMainWindow(F32 dt)
         glm::vec4 dof;
         float mDofEnabled;
         float mGlowEnabled;
+        float mDitherEnabled;
     } d{};
     d.dof.x = mDoFFocalPoint;
     d.dof.y = mDoFFocalScale;
@@ -409,6 +469,7 @@ void Game::updateMainWindow(F32 dt)
     d.dof.w = 1.0f / F32(y);
     d.mDofEnabled = mEnableDof ? 1.0f : 0.0f;
     d.mGlowEnabled = mGlow ? 1.0f : 0.0f;
+    d.mDitherEnabled = mDithering ? 1.0f : 0.0f;
 
     dTrans->bindShader(mFsq);
     dTrans->bindMaterial(mFsq, mFsqMat);
@@ -541,4 +602,41 @@ void Game::imguiCurveComboSelect(U32* curveIndex)
     }
     ImGui::EndDisabled();
     comboIdx++;
+}
+
+void Game::updateSkyTime()
+{
+    F32 skyTime = glm::mod(mTime, mSkyCycleTime);
+    if (skyTime > mSkyCycleTime)
+    {
+        skyTime -= mSkyCycleTime;
+    }
+
+    mSkyTime = skyTime / mSkyCycleTime;
+
+    const float r = 100.0F;
+    const float PI = glm::pi<float>();
+
+    float s = (glm::abs(glm::sin(PI * mSkyTime * 2.0F + (PI * 0.5F))) * 1.6F) - 0.6F;
+    float c = glm::cos(PI * mSkyTime * 2.0F + (PI * 0.5F));
+
+    if (mSkyTime >= 0.25F && mSkyTime <= 0.75F)
+    {
+        c = -c;
+    }
+    if (s > 0.0F)
+    {
+        s *= 0.2F;
+    }
+    glm::vec3 sunMoonDir = glm::vec3(-r * 0.4F, r * s, r * c);
+
+    //LampBuffer lampBuf{};
+    //lampBuf.mLightPos = glm::vec4(mSunMoonDir., 1000.0f); // w is radius
+    //lampBuf.mLightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // w is intensity
+    //lampBuf.mSpecColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // w is unused
+
+    //mLampBuffer->setBufferData(&lampBuf, sizeof(LampBuffer), sizeof(LampBuffer));
+
+    sunMoonDir = glm:: normalize(glm::vec3(0) - sunMoonDir);
+    mSceneSettings.mSkyInfo.mSunMoonDir = glm::vec4(sunMoonDir, 1.0f);
 }

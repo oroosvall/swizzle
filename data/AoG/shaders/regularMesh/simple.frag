@@ -6,9 +6,12 @@ layout(location = 2) in vec3 norm;
 layout(location = 3) in mat3 TBN;
 
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec4 glowColor;
+layout(location = 2) out vec4 normalColor;
+layout(location = 3) out vec4 worldColor;
 
 layout(set=0, binding=0) uniform sampler2D normalTexture;
-layout(location = 1) out vec4 glowColor;
+
 
 vec4 CalcBumpedNormal()
 {
@@ -25,4 +28,6 @@ void main()
     vec4 normalMap = CalcBumpedNormal();
     fragColor = vec4(normalMap.xyz, 1.0);
     glowColor = vec4(0.0);
+    normalColor = vec4(norm, 1.0);
+    worldColor = vec4(worldPos, 1.0);
 }

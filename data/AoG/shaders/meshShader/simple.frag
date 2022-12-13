@@ -3,6 +3,8 @@
 
 layout (location = 0) out vec4 fragColor;
 layout (location = 1) out vec4 glowColor;
+layout(location = 2) out vec4 normalColor;
+layout(location = 3) out vec4 worldColor;
 
 layout (location=0) perprimitiveEXT in flat uint workgroup;
 
@@ -12,4 +14,7 @@ void main()
     float v = (float(wg) / 255.0) + 0.5;
     fragColor = vec4(v);
     glowColor = vec4(0.0);
+    
+    normalColor = vec4(0.0);
+    worldColor = vec4(0.0);
 }

@@ -84,6 +84,13 @@ private:
     U32 comboIdx = 0;
     void imguiCurveComboSelect(U32* curveIndex);
 
+    void updateSkyTime();
+    F32 mTime;
+    F32 mSkyCycleTime;
+    F32 mSkyTime;
+    SwBool mCountSkyTime = true;
+    SwBool mDithering = true;
+
 };
 
 #endif

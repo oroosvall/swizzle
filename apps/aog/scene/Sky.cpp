@@ -22,12 +22,14 @@
 
 /* Class Public Function Definition */
 
-Sky::Sky(common::Resource<swizzle::gfx::Buffer> mesh, common::Resource<swizzle::gfx::Texture> texture,
-         common::Resource<swizzle::gfx::Material> material, common::Resource<swizzle::gfx::Shader> shader)
+Sky::Sky(common::Resource<swizzle::gfx::Buffer> mesh, common::Resource<swizzle::gfx::Material> material,
+         common::Resource<swizzle::gfx::Shader> shader, common::Resource<swizzle::gfx::Buffer> uniform,
+         common::Resource<swizzle::gfx::Buffer> inst)
     : mMesh(mesh)
-    , mTexture(texture)
     , mMaterial(material)
     , mShader(shader)
+    , mUniformBuffer(uniform)
+    , mInst(inst)
 {
 }
 
@@ -35,7 +37,13 @@ void Sky::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swi
 {
     UNUSED_ARG(dt);
     UNUSED_ARG(settings);
-    trans->uploadTexture(mTexture);
+    UNUSED_ARG(trans);
+    //trans->uploadTexture(mTexture);
+    mUniformBuffer->setBufferData(&settings.mSkyInfo, sizeof(SkyInfo), sizeof(SkyInfo));
+    glm::mat4 pos = glm::translate(glm::mat4(1.0F), {settings.mSkyInfo.mCameraEye});
+    mInst->setBufferData(&pos, sizeof(glm::mat4), sizeof(glm::mat4));
+
+    mMaterial->setDescriptorBufferResource(0u, mUniformBuffer, sizeof(SkyInfo));
 }
 
 void Sky::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
@@ -65,7 +73,7 @@ void Sky::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, Pe
 
     trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
 
-    trans->draw(mMesh);
+    trans->drawInstanced(mMesh, mInst);
 }
 
 /* Class Protected Function Definition */

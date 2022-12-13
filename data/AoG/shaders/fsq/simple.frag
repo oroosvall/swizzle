@@ -15,7 +15,28 @@ uniform layout( push_constant) Dof
     vec4 settings;
     float dofEnabled;
     float glowEnabled;
+    float ditherEnabled;
 } dof;
+
+// Noise function 
+// https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+
+float rand(vec2 n) { 
+    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+
+float noise(vec2 p){
+    vec2 ip = floor(p);
+    vec2 u = fract(p);
+    u = u*u*(3.0-2.0*u);
+    
+    float res = mix(
+        mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x),
+        mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y);
+    return res*res;
+}
+
+// end noise
 
 vec4 SRGBToLinear(vec4 c)
 {
@@ -110,20 +131,25 @@ void main()
 	float factor = ( depth1 - dof.settings.x ) / dof.settings.y;
 	 
 	vec2 dofblur = vec2(factor); //vec2 (clamp( factor / dof.settings.y, -blurclamp, blurclamp ));
+    float dither = noise(gl_FragCoord.xy * 2.0) * 2.5;
 
     vec4 color = vec4(0.0);
-    if (dof.dofEnabled == 1.0)
+    if (dof.dofEnabled > 1.0)
         color = SampleTexture(dofblur);
     else
         color = texture(scene, uv);
 
     color *= 0.8;
-    if (dof.glowEnabled == 1.0)
+    if (dof.glowEnabled > 0.5)
     {
         vec4 glow = sampleGlow();
         color += (glow * 2.0);
     }
+    if (dof.ditherEnabled < 0.5)
+    {
+        dither = 0.0;
+    }
 
     vec4 col2 = SRGBToLinear(texture(gui, uv));
-    fragColor = mix(color, col2, col2.a);
+    fragColor = vec4(mix(color, col2, col2.a).rgb + (dither/255.0), 1.0);
 }

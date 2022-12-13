@@ -82,18 +82,25 @@ SwBool Scene::loadScene(std::string file)
 void Scene::loadSky()
 {
     common::Resource<swizzle::gfx::Shader> skyShader;
-    common::Resource<swizzle::gfx::Texture> skyTexture;
+    // common::Resource<swizzle::gfx::Texture> skyTexture;
     common::Resource<swizzle::gfx::Material> skyMaterial;
 
     swizzle::gfx::ShaderAttributeList attribsSky = {};
-    attribsSky.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U)}};
-    attribsSky.mAttributes = {{0U, swizzle::gfx::ShaderAttributeDataType::vec3f, 0U},
-                              {0U, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U},
-                              {0U, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U}};
+    attribsSky.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3U + 3U + 2U)},
+                               {swizzle::gfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
+    attribsSky.mAttributes = {
+        {0U, swizzle::gfx::ShaderAttributeDataType::vec3f, 0U},
+        {0U, swizzle::gfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3U},
+        {0U, swizzle::gfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6U},
+        {1u, swizzle::gfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, swizzle::gfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
     attribsSky.mDescriptors = {
-        {swizzle::gfx::DescriptorType::TextureSampler,
+        {swizzle::gfx::DescriptorType::UniformBuffer,
          swizzle::gfx::Count(1u),
-         {swizzle::gfx::StageType::fragmentStage}},
+         {swizzle::gfx::StageType::vertexStage, swizzle::gfx::StageType::fragmentStage}},
     };
     attribsSky.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribsSky.mEnableDepthTest = false;
@@ -102,15 +109,15 @@ void Scene::loadSky()
     attribsSky.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
     skyShader = mCompositor->createShader(1u, attribsSky);
-    mAssetManager->loadShader(skyShader, "shaders/sky.shader");
+    mAssetManager->loadShader(skyShader, "AoG/shaders/sky.shader");
 
     skyMaterial = mContext->createMaterial(skyShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
 
-    skyTexture =
-        swizzle::asset::LoadTextureCubeMap(mContext, "texture/right.png", "texture/left.png", "texture/top.png",
-                                           "texture/bottom.png", "texture/front.png", "texture/back.png");
+    // skyTexture =
+    //     swizzle::asset::LoadTextureCubeMap(mContext, "texture/right.png", "texture/left.png", "texture/top.png",
+    //                                        "texture/bottom.png", "texture/front.png", "texture/back.png");
 
-    skyMaterial->setDescriptorTextureResource(0, skyTexture);
+    // skyMaterial->setDescriptorTextureResource(0, skyTexture);
 
     swizzle::asset2::MeshAssetLoaderDescription ldi = {};
     ldi.mLoadPossitions = {
@@ -125,7 +132,10 @@ void Scene::loadSky()
     vertexBuffer->setBufferData((U8*)mesh2->getVertexDataPtr(), mesh2->getVertexDataSize(),
                                 sizeof(float) * (3 + 3 + 2));
 
-    mRenderables.emplace_back(common::CreateRef<Sky>(vertexBuffer, skyTexture, skyMaterial, skyShader));
+    auto uniformBuffer = mContext->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
+    auto inst = mContext->createBuffer(swizzle::gfx::BufferType::Vertex);
+
+    mRenderables.emplace_back(common::CreateRef<Sky>(vertexBuffer, skyMaterial, skyShader, uniformBuffer, inst));
 }
 
 void Scene::loadAnimMesh()
