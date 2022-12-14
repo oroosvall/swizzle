@@ -91,6 +91,9 @@ private:
     SwBool mCountSkyTime = true;
     SwBool mDithering = true;
 
+    SwBool mLensFlare = true;
+    glm::vec2 mFlarePos = {0.0, 0.0}; 
+
 };
 
 #endif

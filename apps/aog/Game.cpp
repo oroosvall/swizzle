@@ -73,12 +73,12 @@ void Game::userSetup()
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
     };
-    attribFsq.mPushConstantSize = sizeof(glm::vec4) + sizeof(float)*3;
+    attribFsq.mPushConstantSize = sizeof(glm::vec4) * 3 + sizeof(float)*3;
     attribFsq.mEnableBlending = true;
     attribFsq.mPrimitiveType = sw::gfx::PrimitiveType::triangle;
 
     mFsq = mGfxContext->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Graphics, attribFsq);
-    mFsq->load("Aog/shaders/fsq.shader");
+    mFsq->load("AoG/shaders/fsq.shader");
 
     mFsqMat = mGfxContext->createMaterial(mFsq, swizzle::gfx::SamplerMode::SamplerModeClamp);
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
@@ -105,6 +105,7 @@ void Game::userSetup()
     mSceneSettings.mSkyInfo.mMoon2Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     mSceneSettings.mSkyInfo.mSunMoonDir = glm::vec4(1.0, 0.0, 0.0, 0.0f);
 
+    mGlow = false;
 
 
     sw::gfx::ShaderAttributeList bezierAttribs = {};
@@ -151,6 +152,10 @@ SwBool Game::userUpdate(F32 dt)
     OPTICK_EVENT("userUpdate");
 
     mFpsCounter.tick(dt);
+
+    if (swizzle::input::IsKeyPressed(swizzle::input::Keys::KeyW)){
+        printf("W pressed\n");
+    }
 
     mInputLocked = ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
     ImGui::GetIO().DeltaTime = dt;
@@ -284,6 +289,12 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Text("Moon 2 color:");
     ImGui::SameLine();
     ImGui::ColorEdit3("##day13moon2color", glm::value_ptr(mSceneSettings.mSkyInfo.mMoon2Color));
+    ImGui::Text("(Day 14) Lens flare:");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day14lensflare", &mLensFlare);
+    ImGui::Text("Flare position");
+    ImGui::SameLine();
+    ImGui::SliderFloat2("##day14", glm::value_ptr(mFlarePos), 0.0f, 1.0f);
 
     ImGui::End();
 
@@ -462,6 +473,8 @@ void Game::updateMainWindow(F32 dt)
         float mDofEnabled;
         float mGlowEnabled;
         float mDitherEnabled;
+        float mLenseFlareEnabled;
+        glm::vec2 mFlarePos;
     } d{};
     d.dof.x = mDoFFocalPoint;
     d.dof.y = mDoFFocalScale;
@@ -470,6 +483,8 @@ void Game::updateMainWindow(F32 dt)
     d.mDofEnabled = mEnableDof ? 1.0f : 0.0f;
     d.mGlowEnabled = mGlow ? 1.0f : 0.0f;
     d.mDitherEnabled = mDithering ? 1.0f : 0.0f;
+    d.mLenseFlareEnabled = mLensFlare ? 1.0f : 0.0f;
+    d.mFlarePos = mFlarePos;
 
     dTrans->bindShader(mFsq);
     dTrans->bindMaterial(mFsq, mFsqMat);

@@ -144,8 +144,8 @@ namespace vk
         features.pNext = &maint;
 
         VkPhysicalDeviceMeshShaderFeaturesEXT meshFeatures{};
-        meshFeatures.meshShader = true;
-        meshFeatures.taskShader = true;
+        meshFeatures.meshShader = false;
+        meshFeatures.taskShader = false;
         meshFeatures.pNext = VK_NULL_HANDLE;
         meshFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
 
