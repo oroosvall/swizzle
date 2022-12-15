@@ -295,6 +295,12 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
     return true;
 }
 
+common::Resource<swizzle::gfx::Material> ImGui_ImplSwizzle_CreateMaterial(common::Resource<swizzle::gfx::GfxContext> ctx)
+{
+    ImGui_ImplSwizzle_Data* bd = ImGui_ImplSwizzle_GetBackendData();
+    return ctx->createMaterial(bd->mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
+}
+
 void ImGui_ImplSwizzle_Shutdown()
 {
     ImGui_ImplSwizzle_Data* bd = ImGui_ImplSwizzle_GetBackendData();

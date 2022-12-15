@@ -1,7 +1,7 @@
 
 
 * List
-- [-] Advent of graphics [60%] [14/23]
+- [-] Advent of graphics [62%] [15/24]
   - [X] Normal mapping (Day 1)
   - [X] Animated Textures (Day 2)
   - [X] Shader editor (Day 3)
@@ -16,6 +16,7 @@
   - [X] Camera paths (cinematics) (Day 12)
   - [X] Dithering (Day 13)
   - [X] Camera effect - Lens flare (Day 14)
+  - [X] Texture viewer (Day 15)
   - [ ] Shadow mapping
   - [ ] Transparency (Look through window)
   - [ ] Water animation

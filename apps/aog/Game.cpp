@@ -144,6 +144,9 @@ void Game::userSetup()
 
     mSkyCycleTime = 120.0f;
     mTime = 0.0f;
+
+    mTextureViewerMat = ImGui_ImplSwizzle_CreateMaterial(mGfxContext);
+    mTextureViewerMat->setDescriptorTextureResource(0u, mGBuffer->getColorAttachment(0u));
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -295,6 +298,9 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Text("Flare position");
     ImGui::SameLine();
     ImGui::SliderFloat2("##day14", glm::value_ptr(mFlarePos), 0.0f, 1.0f);
+    ImGui::Text("(Day 15) Texture viewer");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day15", &mTextureViewer);
 
     ImGui::End();
 
@@ -376,6 +382,32 @@ SwBool Game::userUpdate(F32 dt)
                     curve->generateCurve();
                 }
             }
+        }
+        ImGui::End();
+    }
+
+    if (mTextureViewer)
+    {
+        if(ImGui::Begin("Texture viewer", &mTextureViewer))
+        {
+            std::string comboLabel = "##textureViewer";
+            std::string textureText = "GBuffer Texture idx " + std::to_string(mSelectedTexture);
+            if (ImGui::BeginCombo(comboLabel.c_str(), textureText.c_str()))
+            {
+                for (size_t i = 0ull; i < mGBuffer->getNumColorAttachments() ; ++i)
+                {
+                    std::string itmText = "GBuffer Texture idx" + std::to_string(i);
+                    if (ImGui::Selectable(itmText.c_str(), i == mSelectedTexture))
+                    {
+                        mSelectedTexture = (U32)i;
+                        mTextureViewerMat->setDescriptorTextureResource(0u, mGBuffer->getColorAttachment(mSelectedTexture));
+                    }
+                }
+
+                ImGui::EndCombo();
+            }
+
+            ImGui::Image(&mTextureViewerMat, {800, 800});
         }
         ImGui::End();
     }

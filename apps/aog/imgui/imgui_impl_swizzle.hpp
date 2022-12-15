@@ -32,4 +32,6 @@ IMGUI_IMPL_API void ImGui_ImplSwizzle_RenderDrawData(ImDrawData* draw_data,
                                                      common::Unique<swizzle::gfx::DrawCommandTransaction>& dTrans);
 IMGUI_IMPL_API void ImGui_ImplSwizzle_UploadFontTexture(common::Unique<swizzle::gfx::CommandTransaction>& trans);
 
+IMGUI_IMPL_API common::Resource<swizzle::gfx::Material> ImGui_ImplSwizzle_CreateMaterial(common::Resource<swizzle::gfx::GfxContext> ctx);
+
 #endif

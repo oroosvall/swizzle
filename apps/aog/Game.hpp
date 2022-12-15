@@ -94,6 +94,9 @@ private:
     SwBool mLensFlare = true;
     glm::vec2 mFlarePos = {0.0, 0.0}; 
 
+    SwBool mTextureViewer = false;
+    common::Resource<sw::gfx::Material> mTextureViewerMat;
+    U32 mSelectedTexture = 0;
 };
 
 #endif
