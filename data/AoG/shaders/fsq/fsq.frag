@@ -288,7 +288,7 @@ void main()
     float dither = 0.0;
 
     vec4 color = vec4(0.0);
-    if (dof.dofEnabled > 1.0)
+    if (dof.dofEnabled > 0.5)
         color = SampleTexture(dofblur);
     else
         color = texture(scene, uv);

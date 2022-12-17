@@ -21,7 +21,7 @@
 class AnimatedTextureMesh : public Renderable
 {
 public:
-    AnimatedTextureMesh(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::asset2::IMeshAsset> asset,
+    AnimatedTextureMesh(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<MeshInfo> meshInfo,
                 common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
                 common::Resource<swizzle::gfx::Shader> shader);
 
@@ -29,10 +29,8 @@ public:
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam) override;
 
 private:
-    common::Resource<swizzle::asset2::IMeshAsset> mAsset;
+    common::Resource<MeshInfo> mMeshInfo;
 
-    common::Resource<swizzle::gfx::Buffer> mMesh;
-    common::Resource<swizzle::gfx::Buffer> mIndex;
     common::Resource<swizzle::gfx::Texture> mTexture;
     common::Resource<swizzle::gfx::Material> mMaterial;
     common::Resource<swizzle::gfx::Shader> mShader;

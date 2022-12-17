@@ -8,6 +8,8 @@
 
 #include <swizzle/core/Input.hpp>
 
+#include "../AssetManager.hpp"
+
 /* Defines */
 
 /* Typedefs */
@@ -25,24 +27,18 @@
 /* Class Public Function Definition */
 
 AnimatedTextureMesh::AnimatedTextureMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
-                                         common::Resource<swizzle::asset2::IMeshAsset> asset,
+                                         common::Resource<MeshInfo> meshInfo,
                                          common::Resource<swizzle::gfx::Buffer> inst,
                                          common::Resource<swizzle::gfx::Texture> texture,
                                          common::Resource<swizzle::gfx::Shader> shader)
-    : mAsset(asset)
-    , mMesh(nullptr)
+    : mMeshInfo(meshInfo)
     , mTexture(texture)
     , mMaterial(nullptr)
     , mShader(shader)
     , mInst(inst)
     , mUvOffset()
 {
-    mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
-    mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
     mUniform = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
-
-    mMesh->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(), sizeof(float) * (3u + 3u + 2u));
-    mIndex->setBufferData((U8*)mAsset->getIndexDataPtr(), mAsset->getIndexDataSize(), sizeof(U32) * 3u);
 
     mMaterial = ctx->createMaterial(mShader, swizzle::gfx::SamplerMode::SamplerModeRepeat);
     mMaterial->setDescriptorTextureResource(1u, mTexture);
@@ -95,7 +91,7 @@ void AnimatedTextureMesh::render(common::Unique<swizzle::gfx::DrawCommandTransac
 
     trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
 
-    trans->drawIndexedInstanced(mMesh, mIndex, mInst);
+    trans->drawIndexedInstanced(mMeshInfo->mVertex, mMeshInfo->mIndex, mInst);
 }
 
 /* Class Protected Function Definition */

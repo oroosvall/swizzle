@@ -1,0 +1,11 @@
+SC A
+# comment
+# each line contains an object to load
+# - sky: sky object only one can be present
+# - particle: a particle system (texture: pos: dir: count)
+# - mesh: a renderable mesh (file: texture: {{pos};{pos2; ...})
+# - animTex: animated texture (file: texture: [{pos};{pos2; ...}])
+#sky:meshes/inverted_sphere.obj:shaders/sky.shader:
+particles:AoG/textures/particle.png:{5,5,0}:{0,1,0}:200
+animTex:AoG/meshes/TextureAnimation.swm:AoG/textures/stream.png:[{-4,0,0};{-6,0,0}]
+mesh:AoG/meshes/cube.swm:AoG/textures/neutral.png:[{0,0,-5}]

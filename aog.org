@@ -1,7 +1,7 @@
 
 
 * List
-- [-] Advent of graphics [66%] [16/24]
+- [-] Advent of graphics [70%] [17/24]
   - [X] Normal mapping (Day 1)
   - [X] Animated Textures (Day 2)
   - [X] Shader editor (Day 3)
@@ -18,12 +18,12 @@
   - [X] Camera effect - Lens flare (Day 14)
   - [X] Texture viewer (Day 15)
   - [X] Ambient occlusion (Day 16, late and not working)
+  - [X] Asset streaming (Day 17)
   - [ ] Shadow mapping
   - [ ] Transparency (Look through window)
   - [ ] Water animation
   - [ ] Gpu execution time queries
   - [ ] Godrays
-  - [ ] Asset streaming
   - [ ] Mirror reflection
   - [ ] Portal
 

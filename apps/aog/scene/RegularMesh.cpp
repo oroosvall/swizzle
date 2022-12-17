@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <swizzle/core/Input.hpp>
+#include "../AssetManager.hpp"
 
 /* Defines */
 
@@ -25,13 +26,12 @@
 /* Class Public Function Definition */
 
 RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
-                         common::Resource<swizzle::asset2::IMeshAsset> asset,
+                         common::Resource<MeshInfo> meshInfo,
                          common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
                          common::Resource<swizzle::gfx::Texture> optionalTexture,
                          common::Resource<swizzle::gfx::Shader> shader,
                          common::Resource<swizzle::gfx::Shader> optionalShader)
-    : mAsset(asset)
-    , mMesh(nullptr)
+    : mMeshInfo(meshInfo)
     , mTexture(texture)
     , mOptionalTexture(optionalTexture)
     , mMaterial(nullptr)
@@ -39,12 +39,7 @@ RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
     , mOptionalShader(optionalShader)
     , mInst(inst)
 {
-    mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
-    mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
     mUniform = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
-
-    mMesh->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(), sizeof(float) * (3u + 3u + 2u));
-    mIndex->setBufferData((U8*)mAsset->getIndexDataPtr(), mAsset->getIndexDataSize(), sizeof(U32) * 3u);
 
     mMaterial = ctx->createMaterial(mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
     mMaterial->setDescriptorTextureResource(1u, mTexture);
@@ -110,7 +105,7 @@ void RegularMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& t
 
     trans->setShaderConstant(mSelectedShader, (U8*)&t, sizeof(t));
 
-    trans->drawIndexedInstanced(mMesh, mIndex, mInst);
+    trans->drawIndexedInstanced(mMeshInfo->mVertex, mMeshInfo->mIndex, mInst);
 }
 
 /* Class Protected Function Definition */

@@ -32,7 +32,6 @@ enum class SceneState
 
 /* Struct Declaration */
 
-
 /* Class Declaration */
 
 class Scene
@@ -48,11 +47,8 @@ public:
 
     void loadSky();
     void loadAnimMesh();
-    void loadCube();
-    void loadAnimTexture();
     void loadHeightMap();
     void loadTesselationMesh();
-    void loadParticleSystem();
     void loadGlow();
     void loadMeshShader();
 
@@ -62,6 +58,13 @@ public:
 
 private:
     SwBool loadAscii(std::ifstream& stream);
+    common::Resource<swizzle::gfx::Buffer> createInstanceBuffer(std::vector<glm::mat4>& matrices);
+
+    void loadThing(std::string);
+
+    void loadParticleSystemParams(const SwChar* texturePath, glm::vec3 pos, glm::vec3 dir, U32 count);
+    void loadAnimTextureParams(const SwChar* meshFile, const SwChar* texture, std::vector<glm::mat4>& inst);
+    void loadRegular(const SwChar* meshFile, const SwChar* textureFile, std::vector<glm::mat4>& inst);
 
     common::Resource<swizzle::gfx::GfxContext> mContext;
     common::Resource<Compositor> mCompositor;
@@ -69,6 +72,9 @@ private:
     SceneState mSceneState;
 
     std::vector<common::Resource<Renderable>> mRenderables;
+
+    std::vector<std::string> mItemsToLoad;
+    F32 mSlowTime = 0.0f;
 };
 
 /* Function Declaration */

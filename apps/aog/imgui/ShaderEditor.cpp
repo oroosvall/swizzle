@@ -118,7 +118,9 @@ void ShaderEditor::render()
         for (size_t i = 0ull; i < mAssetManager->getShaderCount(); ++i)
         {
             auto iterItem = mAssetManager->getShaderInfo(i);
-            if (ImGui::Selectable(iterItem.mFilePath, iterItem.mFilePath == info.mFilePath))
+            std::string text = { iterItem.mFilePath };
+            text += "##" + std::to_string(i);
+            if (ImGui::Selectable(iterItem.mFilePath, mIndex == i))
             {
                 mIndex = (U32)i;
             }

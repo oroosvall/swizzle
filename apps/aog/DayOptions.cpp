@@ -86,16 +86,16 @@ void DrawDayOptions(SceneRenderSettings& settings, DayOptions& opt)
     ImGui::ColorEdit3("##day13nightskycolor", glm::value_ptr(settings.mSkyInfo.mNightSkyColor));
     ImGui::Text("Sun 1 color:");
     ImGui::SameLine();
-    ImGui::ColorEdit3("##day13sun1color", glm::value_ptr(settings.mSkyInfo.mSun1Color));
-    ImGui::Text("Sun 2 color:");
+    ImGui::ColorEdit3("##day13sun1color", glm::value_ptr(settings.mSkyInfo.mSun1Color), ImGuiColorEditFlags_NoInputs);
+    //ImGui::Text("Sun 2 color:");
     ImGui::SameLine();
-    ImGui::ColorEdit3("##day13sun2color", glm::value_ptr(settings.mSkyInfo.mSun2Color));
+    ImGui::ColorEdit3("##day13sun2color", glm::value_ptr(settings.mSkyInfo.mSun2Color), ImGuiColorEditFlags_NoInputs);
     ImGui::Text("Moon 1 color:");
     ImGui::SameLine();
-    ImGui::ColorEdit3("##day13moon1color", glm::value_ptr(settings.mSkyInfo.mMoon1Color));
-    ImGui::Text("Moon 2 color:");
+    ImGui::ColorEdit3("##day13moon1color", glm::value_ptr(settings.mSkyInfo.mMoon1Color), ImGuiColorEditFlags_NoInputs);
+    //ImGui::Text("Moon 2 color:");
     ImGui::SameLine();
-    ImGui::ColorEdit3("##day13moon2color", glm::value_ptr(settings.mSkyInfo.mMoon2Color));
+    ImGui::ColorEdit3("##day13moon2color", glm::value_ptr(settings.mSkyInfo.mMoon2Color), ImGuiColorEditFlags_NoInputs);
     ImGui::Text("(Day 14) Lens flare:");
     ImGui::SameLine();
     ImGui::Checkbox("##day14lensflare", &opt.mLensFlare);
@@ -105,4 +105,7 @@ void DrawDayOptions(SceneRenderSettings& settings, DayOptions& opt)
     ImGui::Text("(Day 15) Texture viewer");
     ImGui::SameLine();
     ImGui::Checkbox("##day15", &opt.mTextureViewer);
+    ImGui::Text("(Day 17) Asset streaming showcase");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day17", &settings.mAssetSlowLoad);
 }

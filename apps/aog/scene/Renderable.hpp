@@ -20,6 +20,8 @@
 
 /* Forward Declared Structs/Classes */
 
+struct MeshInfo;
+
 /* Struct Declaration */
 
 /* Class Declaration */

@@ -274,10 +274,6 @@ namespace vk
         delete trans;
 
         vkCmdEndRenderPass(cmd);
-        //vkDeviceWaitIdle(mDevice->getDeviceHandle());
-        //vkCmdPipelineBarrier(cmd, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-        //                     VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        //                     VkDependencyFlagBits::VK_DEPENDENCY_BY_REGION_BIT, 0, 0, 0, 0, 0, 0);
 
         return common::CreateUnique<VCommandTransaction>(cmd, token);
     }

@@ -29,6 +29,7 @@ struct SceneRenderSettings
     SwBool mForceLowestMipLayer;
     SwBool mMeshShaders;
     SkyInfo mSkyInfo;
+    SwBool mAssetSlowLoad;
 };
 
 struct ViewProjection

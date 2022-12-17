@@ -23,6 +23,18 @@ struct ShaderInfo
     common::Resource<swizzle::gfx::Shader> mShader;
 };
 
+struct MeshInfo
+{
+    common::Resource<swizzle::asset2::IMeshAsset> mMesh;
+    common::Resource<swizzle::gfx::Buffer> mVertex;
+    common::Resource<swizzle::gfx::Buffer> mIndex;
+};
+
+struct TextureInfo
+{
+    common::Resource<swizzle::gfx::Texture> mTexture;
+};
+
 /* Class Declaration */
 
 class AssetManager
@@ -32,6 +44,8 @@ public:
     virtual ~AssetManager();
 
     bool loadShader(common::Resource<swizzle::gfx::Shader> shader, const SwChar* mFilePath);
+    common::Resource<swizzle::gfx::Texture> loadTexture(const SwChar* filePath);
+    common::Resource<MeshInfo> loadMesh(const SwChar* filePath, SwBool animated);
 
     size_t getShaderCount() const;
     ShaderInfo getShaderInfo(size_t index);
@@ -40,6 +54,13 @@ public:
 private:
     common::Resource<swizzle::gfx::GfxContext> mContext;
     std::vector<ShaderInfo> mShaders;
+
+    std::unordered_map<std::string, TextureInfo> mTextures;
+
+    std::unordered_map<std::string, common::Resource<MeshInfo>> mMeshes;
+    std::unordered_map<std::string, common::Resource<MeshInfo>> mAnimatedMeshes;
+
+
 };
 
 /* Function Declaration */

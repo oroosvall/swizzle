@@ -124,6 +124,7 @@ void Game::userSetup()
     mSceneSettings.mSkyInfo.mMoon2Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     mSceneSettings.mSkyInfo.mSunMoonDir = glm::vec4(1.0, 0.0, 0.0, 0.0f);
 
+    mSceneSettings.mAssetSlowLoad = true;
 
     mDayOptions.mShowShaderEditor = false;
     mDayOptions.mEnableDof = false;
@@ -157,16 +158,6 @@ void Game::userSetup()
 
     mBezierShader = mGfxContext->createShader(mGBuffer, sw::gfx::ShaderType::ShaderType_Graphics, bezierAttribs);
     mBezierShader->load("AoG/shaders/lines.shader");
-
-    mScene->loadSky();
-    // mScene->loadAnimMesh();
-    mScene->loadHeightMap();
-    mScene->loadCube();
-    mScene->loadAnimTexture();
-    mScene->loadTesselationMesh();
-    mScene->loadParticleSystem();
-    mScene->loadGlow();
-    mScene->loadMeshShader();
 
     mCurves.push_back(BezierCurve{ mGfxContext, "Camera path" });
     mCurves.back().load("AoG/CameraPath.txt");
@@ -213,6 +204,13 @@ void Game::userSetup()
 
     cam.setPosition({ 1.0f, 0.75f, 0.0f });
     cam.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
+
+    mScene->loadSky();
+    mScene->loadHeightMap();
+    mScene->loadTesselationMesh();
+    mScene->loadGlow();
+    mScene->loadMeshShader();
+    mScene->loadScene("AoG/scene.txt");
 }
 
 SwBool Game::userUpdate(F32 dt)
