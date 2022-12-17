@@ -248,6 +248,7 @@ void Scene::loadCube()
         {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
     };
     attribs.mDescriptors = {
+        {swizzle::gfx::DescriptorType::UniformBuffer, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::vertexStage}},
         {swizzle::gfx::DescriptorType::TextureSampler,
          swizzle::gfx::Count(1u),
          {swizzle::gfx::StageType::fragmentStage}},
@@ -304,6 +305,7 @@ void Scene::loadAnimTexture()
         {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
     };
     attribs.mDescriptors = {
+        {swizzle::gfx::DescriptorType::UniformBuffer, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::vertexStage}},
         {swizzle::gfx::DescriptorType::TextureSampler,
          swizzle::gfx::Count(1u),
          {swizzle::gfx::StageType::fragmentStage}},
@@ -349,6 +351,7 @@ void Scene::loadHeightMap()
         {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
     };
     attribs.mDescriptors = {
+        {swizzle::gfx::DescriptorType::UniformBuffer, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::vertexStage}},
         {swizzle::gfx::DescriptorType::TextureSampler,
          swizzle::gfx::Count(1u),
          {swizzle::gfx::StageType::fragmentStage}},
@@ -403,6 +406,7 @@ void Scene::loadTesselationMesh()
         {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
     };
     attribs.mDescriptors = {
+        {swizzle::gfx::DescriptorType::UniformBuffer, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::vertexStage}},
         {swizzle::gfx::DescriptorType::TextureSampler,
          swizzle::gfx::Count(1u),
          {swizzle::gfx::StageType::fragmentStage, swizzle::gfx::StageType::tessellationStage}},
@@ -559,7 +563,9 @@ void Scene::loadMeshShader()
         {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
         {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
     };
-    attribs2.mDescriptors = {};
+    attribs2.mDescriptors = {
+        {swizzle::gfx::DescriptorType::UniformBuffer, swizzle::gfx::Count(1u), {swizzle::gfx::StageType::vertexStage}},
+    };
     attribs2.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs2.mEnableDepthTest = true;
     attribs2.mEnableBlending = false;

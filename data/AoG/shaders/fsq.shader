@@ -6,8 +6,8 @@ depthTest=disabled
 colorBlend=ADD
 alphaBlend=ADD
 [src]
-vertex=fsq/simple.vert
-fragment=fsq/simple.frag
+vertex=fsq/fsq.vert
+fragment=fsq/fsq.frag
 [vulkan]
 vertex=fsq/vert.spv
 fragment=fsq/frag.spv

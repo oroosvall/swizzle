@@ -47,6 +47,7 @@ MeshShader::MeshShader(common::Resource<swizzle::gfx::GfxContext> ctx,
 
     mNormalVertex = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
     mNormalIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
+    mUniform = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
 
     mNormalVertex->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(), sizeof(float) * (3u + 3u + 2u));
     mNormalIndex->setBufferData((U8*)mAsset->getIndexDataPtr(), mAsset->getIndexDataSize(), sizeof(U32) * 3u);

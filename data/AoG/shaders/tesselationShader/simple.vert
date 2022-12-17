@@ -10,6 +10,12 @@ layout (location = 0) out vec3 worldPos;
 layout (location = 1) out vec2 outUV;
 layout (location = 2) out vec3 outNormals;
 
+uniform layout(binding=0) UBO
+{
+    mat4 view;
+    mat4 proj;
+};
+
 uniform layout( push_constant) Camera
 {
     mat4 viewProj;

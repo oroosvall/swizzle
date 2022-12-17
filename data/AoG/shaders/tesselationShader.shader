@@ -2,9 +2,11 @@
 vertex=tesselationShader/simple.vert
 tessCtrl=tesselationShader/simple.tesc
 tessEval=tesselationShader/simple.tese
+geometry=tesselationShader/tesselation.geom
 fragment=tesselationShader/simple.frag
 [vulkan]
 vertex=tesselationShader/vert.spv
 tessCtrl=tesselationShader/tesc.spv
 tessEval=tesselationShader/tese.spv
+geometry=tesselationShader/geom.spv
 fragment=tesselationShader/frag.spv

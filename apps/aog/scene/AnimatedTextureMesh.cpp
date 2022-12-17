@@ -39,12 +39,13 @@ AnimatedTextureMesh::AnimatedTextureMesh(common::Resource<swizzle::gfx::GfxConte
 {
     mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
     mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
+    mUniform = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
 
     mMesh->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(), sizeof(float) * (3u + 3u + 2u));
     mIndex->setBufferData((U8*)mAsset->getIndexDataPtr(), mAsset->getIndexDataSize(), sizeof(U32) * 3u);
 
     mMaterial = ctx->createMaterial(mShader, swizzle::gfx::SamplerMode::SamplerModeRepeat);
-    mMaterial->setDescriptorTextureResource(0u, mTexture);
+    mMaterial->setDescriptorTextureResource(1u, mTexture);
 }
 
 void AnimatedTextureMesh::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans)
@@ -79,6 +80,13 @@ void AnimatedTextureMesh::render(common::Unique<swizzle::gfx::DrawCommandTransac
     t.viewProj = cam.getProjection() * cam.getView();
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
     t.uvOffset = mUvOffset;
+
+    ViewProjection c{};
+    c.proj = cam.getProjection();
+    c.view = cam.getView();
+
+    mUniform->setBufferData(&c, sizeof(ViewProjection), sizeof(ViewProjection));
+    mMaterial->setDescriptorBufferResource(0u, mUniform, ~0ull);
 
     trans->bindShader(mShader);
 

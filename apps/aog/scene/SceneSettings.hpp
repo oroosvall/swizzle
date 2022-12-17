@@ -31,4 +31,10 @@ struct SceneRenderSettings
     SkyInfo mSkyInfo;
 };
 
+struct ViewProjection
+{
+    glm::mat4 view;
+    glm::mat4 proj;
+};
+
 #endif

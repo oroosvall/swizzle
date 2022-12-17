@@ -15,6 +15,7 @@
 #include "imgui/ShaderEditor.hpp"
 
 #include <Bezier.hpp>
+#include "DayOptions.hpp"
 
 class Game : public sw::Application
 {
@@ -52,21 +53,14 @@ private:
     common::Resource<Scene> mScene;
 
     SceneRenderSettings mSceneSettings;
-    SwBool mShowShaderEditor;
+    DayOptions mDayOptions;
 
     SwBool mInputLocked;
 
     S32 mSelectedOption = 0;
     std::vector<sw::gfx::VSyncTypes> mVSyncOptions;
 
-    SwBool mEnableDof = false;
-    F32 mDoFFocalPoint = 40.0f;
-    F32 mDoFFocalScale = 200.0f;
 
-    SwBool mGlow = true;
-
-    SwBool mBesierCurves = true;
-    SwBool mBesierCurvesEditor = false;
     U32 mSelectedCurve = 0u;
     U32 mBezierItem = 0u;
 
@@ -75,11 +69,8 @@ private:
     std::vector<BezierCurve> mCurves;
     BezierCurve* getCurrentCurve(U32 index);
 
-
     U32 mCameraPathIndex = 0u;
     U32 mCameraLookIndex = 0u;
-    SwBool mCameraPath = false;
-    F32 mCameraTime = 0.0f;
 
     U32 comboIdx = 0;
     void imguiCurveComboSelect(U32* curveIndex);
@@ -88,15 +79,13 @@ private:
     F32 mTime;
     F32 mSkyCycleTime;
     F32 mSkyTime;
-    SwBool mCountSkyTime = true;
-    SwBool mDithering = true;
 
-    SwBool mLensFlare = true;
-    glm::vec2 mFlarePos = {0.0, 0.0}; 
-
-    SwBool mTextureViewer = false;
     common::Resource<sw::gfx::Material> mTextureViewerMat;
     U32 mSelectedTexture = 0;
+
+    common::Resource<sw::gfx::Buffer> mSampleBuffer;
+    common::Resource<sw::gfx::Texture> mNoiseTexture;
+
 };
 
 #endif

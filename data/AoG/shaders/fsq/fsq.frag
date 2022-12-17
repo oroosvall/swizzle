@@ -4,20 +4,34 @@ layout(location = 0) in vec2 uv;
 
 layout(location = 0) out vec4 fragColor;
 
+layout (constant_id = 0) const int SSAO_KERNEL_SIZE = 64;
+layout (constant_id = 1) const float SSAO_RADIUS = 0.5;
+
 layout(set=0, binding=0) uniform sampler2D gui;
 layout(set=0, binding=1) uniform sampler2D scene;
 layout(set=0, binding=2) uniform sampler2D depth;
 layout(set=0, binding=3) uniform sampler2D glowTexture;
+layout(set=0, binding=4) uniform sampler2D normalTex;
+layout(set=0, binding=5) uniform sampler2D worldTex;
 
+layout (set=0, binding=6) uniform sampler_kernel{
+    vec4 krn_sample[64];
+};
+
+layout(set=0, binding=7) uniform sampler2D noiseTex;
+
+const uint kernelSize = 64;
 
 uniform layout( push_constant) Dof
 {
+    mat4 proj;
     vec4 settings;
     float dofEnabled;
     float glowEnabled;
     float ditherEnabled;
     float lensFlareEnabled;
     vec2 flarePos;
+    vec2 screenSize;
 } dof;
 
 // Noise function 
@@ -177,6 +191,93 @@ vec3 lensFlare(vec2 uv, vec2 pos)
 	return c;
 }
 
+vec4 ao()
+{
+
+    // Get G-Buffer values
+    vec3 fragPos = texture(worldTex, uv).rgb;
+    vec3 normal = normalize(texture(normalTex, uv).rgb * 2.0 - 1.0);
+
+    // Get a random vector using a noise lookup
+    ivec2 texDim = textureSize(worldTex, 0); 
+    ivec2 noiseDim = textureSize(noiseTex, 0);
+    const vec2 noiseUV = vec2(float(texDim.x)/float(noiseDim.x), float(texDim.y)/(noiseDim.y)) * uv;  
+    vec3 randomVec = texture(noiseTex, noiseUV).xyz * 2.0 - 1.0;
+
+    // Create TBN matrix
+    vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
+
+    // return vec4(tangent, 1.0);
+
+    vec3 bitangent = cross(tangent, normal);
+    mat3 TBN = mat3(tangent, bitangent, normal);
+
+    // Calculate occlusion value
+    float occlusion = 0.0;
+    // remove banding
+    const float bias = 0.025;
+    for(int i = 0; i < SSAO_KERNEL_SIZE; i++)
+    {		
+        vec3 samplePos = TBN * krn_sample[i].xyz; 
+        samplePos = fragPos + samplePos * SSAO_RADIUS; 
+        
+        // project
+        vec4 offset = vec4(samplePos, 1.0);
+        offset = dof.proj * offset; 
+        offset.xyz /= offset.w; 
+        offset.xyz = offset.xyz * 0.5 + 0.5; 
+        
+        float sampleDepth = -texture(worldTex, offset.xy).w;
+        // float sampleDepth = -texture(depth, offset.xy ).x;
+        // sampleDepth = toLinear(sampleDepth, 0.01, 100.0);
+
+        float rangeCheck = smoothstep(0.0, 1.0, SSAO_RADIUS / abs(fragPos.z - sampleDepth));
+        occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;           
+    }
+    occlusion = 1.0 - (occlusion / float(SSAO_KERNEL_SIZE));
+
+    return vec4(occlusion);
+
+    // mat3 pinv = inverse(dof.proj);
+
+    // vec3 fragPos   =  texture(worldTex, uv).xyz;
+    // vec3 normal    = normalize(texture(normalTex, uv).rgb);
+    // ivec2 texDim = textureSize(worldTex, 0); 
+    // ivec2 noiseDim = textureSize(noiseTex, 0);
+    // const vec2 noiseUV = vec2(float(texDim.x)/float(noiseDim.x), float(texDim.y)/(noiseDim.y)) * uv;  
+    // vec3 randomVec = (texture(noiseTex, noiseUV).xyz); 
+
+    // vec3 tangent   = normalize(randomVec - normal * dot(randomVec, normal));
+    // vec3 bitangent = cross(tangent, normal);
+    // mat3 TBN       = mat3(tangent, bitangent, normal);
+
+    // // return vec4(tangent, 1.0);
+    // float occlusion = 0.0;
+    // float radius = 0.5;
+    // float bias = 0.025;
+    // for(int i = 0; i < kernelSize; ++i)
+    // {
+    //     // get sample position
+    //     vec3 samplePos = TBN * krn_sample[i].xyz; // from tangent to view-space
+    //     samplePos = fragPos + samplePos * radius; 
+        
+    //     vec4 offset = vec4(samplePos, 1.0);
+    //     offset      = dof.proj * offset;    // from view to clip-space
+    //     offset.xyz /= offset.w;               // perspective divide
+    //     offset.xyz  = offset.xyz * 0.5 + 0.5; // transform to range 0.0 - 1.0 
+
+    //     float sampleDepth = ( texture(worldTex, offset.xy)).z;
+    //     occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0);
+
+    //     float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
+    //     occlusion       += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck; 
+    // }
+
+    // occlusion = 1.0 - (occlusion / kernelSize);
+
+    // return vec4(occlusion);
+}
+
 void main()
 {
 	float depth1 = texture(depth, uv ).x;
@@ -210,6 +311,10 @@ void main()
 
     vec4 finalColor = color + vec4(dither/255.0) + vec4(lensFlareColor, 0.0);
 
+    // finalColor = ao();
+    // finalColor = vec4(ao());
+    // finalColor = clamp(texture(normalTex, uv), 0.0, 1.0);
+    // finalColor.a = 1.0;
     vec4 col2 = SRGBToLinear(texture(gui, uv));
     fragColor = mix(finalColor, col2, col2.a);
 }

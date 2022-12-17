@@ -40,6 +40,8 @@ private:
     common::Resource<swizzle::gfx::Material> mMaterial;
     common::Resource<swizzle::gfx::Shader> mShader;
 
+    common::Resource<swizzle::gfx::Buffer> mUniform;
+
     common::Resource<swizzle::gfx::Buffer> mInst;
 
     SwBool mNormalEnabled;

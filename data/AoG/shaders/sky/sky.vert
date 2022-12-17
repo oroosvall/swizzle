@@ -7,6 +7,7 @@ layout(location = 3) in mat4 mdlMat;
 
 layout(location = 0) out vec4 worldPos;
 layout(location = 1) out vec4 worldPos2;
+layout(location = 2) out vec3 normal;
 
 uniform layout (binding = 0, set = 0) SETT
 {
@@ -26,4 +27,5 @@ void main()
     worldPos =  vec4(vertPos, 1.0);
     worldPos2 = mdlMat * worldPos;
     gl_Position = settings.mCameraMatrix * worldPos2;
+    normal = (mdlMat * vec4(vertNorm, 0.0)).xyz;
 }

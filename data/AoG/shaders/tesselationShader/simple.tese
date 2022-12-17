@@ -10,7 +10,7 @@ layout (location = 0) out vec3 worldPos;
 layout (location = 1) out vec2 outUv;
 layout (location = 2) out vec3 outNormals;
 
-layout(set=0, binding=0) uniform sampler2D tex;
+layout(set=0, binding=1) uniform sampler2D tex;
 
 uniform layout( push_constant) Camera
 {

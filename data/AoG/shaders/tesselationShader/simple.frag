@@ -9,7 +9,7 @@ layout(location = 1) out vec4 glowColor;
 layout(location = 2) out vec4 normalColor;
 layout(location = 3) out vec4 worldColor;
 
-layout(set=0, binding=0) uniform sampler2D tex;
+layout(set=0, binding=1) uniform sampler2D tex;
 
 void main()
 {

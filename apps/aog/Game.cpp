@@ -18,11 +18,21 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_swizzle.hpp>
 
+#include <random>
+
+#include "Stats.hpp"
+
+#include "DayOptions.hpp"
+
+float lerp(float a, float b, float f)
+{
+    return a + f * (b - a);
+}
+
 Game::Game()
     : cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
     , mInputLocked(false)
-    , mShowShaderEditor(false)
 {
 }
 
@@ -72,21 +82,23 @@ void Game::userSetup()
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::UniformBuffer, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
     };
-    attribFsq.mPushConstantSize = sizeof(glm::vec4) * 3 + sizeof(float)*3;
+    attribFsq.mPushConstantSize = sizeof(glm::mat4) * 2;
     attribFsq.mEnableBlending = true;
     attribFsq.mPrimitiveType = sw::gfx::PrimitiveType::triangle;
 
     mFsq = mGfxContext->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Graphics, attribFsq);
     mFsq->load("AoG/shaders/fsq.shader");
 
-    mFsqMat = mGfxContext->createMaterial(mFsq, swizzle::gfx::SamplerMode::SamplerModeClamp);
+    mFsqMat = mGfxContext->createMaterial(mFsq, swizzle::gfx::SamplerMode::SamplerModeClampEdge);
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
     mFsqMat->setDescriptorTextureResource(1u, mGBuffer->getColorAttachment(0u));
     mFsqMat->setDescriptorTextureResource(2u, mGBuffer->getDepthAttachment());
     mFsqMat->setDescriptorTextureResource(3u, mGBuffer->getColorAttachment(1u));
-    mFsqMat->setDescriptorTextureResource(4u, mGBuffer->getColorAttachment(1u));
-    mFsqMat->setDescriptorTextureResource(5u, mGBuffer->getColorAttachment(1u));
+    mFsqMat->setDescriptorTextureResource(4u, mGBuffer->getColorAttachment(2u));
+    mFsqMat->setDescriptorTextureResource(5u, mGBuffer->getColorAttachment(3u));
 
     mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain, mGBuffer);
     mAssetManager = common::CreateRef<AssetManager>(mGfxContext);
@@ -94,8 +106,15 @@ void Game::userSetup()
 
     mShaderEditor = common::CreateRef<ShaderEditor>(mAssetManager);
 
+
     mSceneSettings.mMeshShaders = mGfxContext->hasMeshShaderSupport();
     mSceneSettings.mParticles = false;
+    mSceneSettings.mEnableNormalMaps = false;
+    mSceneSettings.mEnableAnimatedTextures = false;
+    mSceneSettings.mForceLowestMipLayer = false;
+    mSceneSettings.mHeightMap = false;
+    mSceneSettings.mMipMaps = false;
+    mSceneSettings.mTesselation = false;
 
     mSceneSettings.mSkyInfo.mDaySkyColor = glm::vec4(0.3f, 0.55f, 0.8f, 1.0f);
     mSceneSettings.mSkyInfo.mNightSkyColor = glm::vec4(0.024422f, 0.088654f, 0.147314f, 1.0f);
@@ -105,8 +124,23 @@ void Game::userSetup()
     mSceneSettings.mSkyInfo.mMoon2Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     mSceneSettings.mSkyInfo.mSunMoonDir = glm::vec4(1.0, 0.0, 0.0, 0.0f);
 
-    mGlow = false;
 
+    mDayOptions.mShowShaderEditor = false;
+    mDayOptions.mEnableDof = false;
+    mDayOptions.mDoFFocalPoint = 40.0f;
+    mDayOptions.mDoFFocalScale = 200.0f;
+    mDayOptions.mGlow = false;
+    mDayOptions.mHasMeshShaderSupport = mGfxContext->hasMeshShaderSupport();
+    mDayOptions.mBesierCurves = false;
+    mDayOptions.mBesierCurvesEditor = false;
+    mDayOptions.mCameraPath = false;
+    mDayOptions.mCameraTime = 0.0f;
+    mDayOptions.mDithering = false;
+    mDayOptions.mSkyTime = 0.0f;
+    mDayOptions.mCountSkyTime = 0.0;
+    mDayOptions.mLensFlare = false;
+    mDayOptions.mFlarePos = glm::vec2(0.0f, 0.0f);
+    mDayOptions.mTextureViewer = 0;
 
     sw::gfx::ShaderAttributeList bezierAttribs = {};
     bezierAttribs.mAttributes = {
@@ -147,6 +181,38 @@ void Game::userSetup()
 
     mTextureViewerMat = ImGui_ImplSwizzle_CreateMaterial(mGfxContext);
     mTextureViewerMat->setDescriptorTextureResource(0u, mGBuffer->getColorAttachment(0u));
+
+
+    std::default_random_engine rndEngine((unsigned)time(nullptr));
+    std::uniform_real_distribution<float> rndDist(0.0f, 1.0f);
+
+    // Sample kernel
+    std::vector<glm::vec4> ssaoKernel(64);
+    for (uint32_t i = 0; i < 64; ++i)
+    {
+        glm::vec3 sample(rndDist(rndEngine) * 2.0 - 1.0, rndDist(rndEngine) * 2.0 - 1.0, rndDist(rndEngine));
+        sample = glm::normalize(sample);
+        sample *= rndDist(rndEngine);
+        float scale = float(i) / float(64);
+        scale = lerp(0.1f, 1.0f, scale * scale);
+        ssaoKernel[i] = glm::vec4(sample * scale, 0.0f);
+    }
+
+    mSampleBuffer = mGfxContext->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
+    mSampleBuffer->setBufferData(ssaoKernel.data(), ssaoKernel.size() * sizeof(glm::vec4), sizeof(glm::vec4));
+    mFsqMat->setDescriptorBufferResource(6u, mSampleBuffer, ssaoKernel.size() * sizeof(glm::vec4));
+
+    std::vector<glm::vec4> ssaoNoise(4 * 4);
+    for (uint32_t i = 0; i < static_cast<uint32_t>(ssaoNoise.size()); i++)
+    {
+        ssaoNoise[i] = glm::vec4(rndDist(rndEngine) * 2.0f - 1.0f, rndDist(rndEngine) * 2.0f - 1.0f, 0.0f, 0.0f);
+    }
+
+    mNoiseTexture = mGfxContext->createTexture(4, 4, 4, true, (U8*)ssaoNoise.data());
+    mFsqMat->setDescriptorTextureResource(7u, mNoiseTexture);
+
+    cam.setPosition({ 1.0f, 0.75f, 0.0f });
+    cam.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -155,10 +221,6 @@ SwBool Game::userUpdate(F32 dt)
     OPTICK_EVENT("userUpdate");
 
     mFpsCounter.tick(dt);
-
-    if (swizzle::input::IsKeyPressed(swizzle::input::Keys::KeyW)){
-        printf("W pressed\n");
-    }
 
     mInputLocked = ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
     ImGui::GetIO().DeltaTime = dt;
@@ -169,7 +231,7 @@ SwBool Game::userUpdate(F32 dt)
     ImGui::Begin("Statistics");
     {
         OPTICK_EVENT("ImGui::Text");
-        std::string text = getStatisticsText();
+        std::string text = GetStatisticsText(mGfxContext, mCmdBuffer, mSwapchain, mFpsCounter);
         ImGui::Text("%s", text.c_str());
     }
 
@@ -203,114 +265,24 @@ SwBool Game::userUpdate(F32 dt)
         mSwapchain->setVsync(mVSyncOptions[mSelectedOption]);
     }
 
-    ImGui::Text("(Day 1) Enable normalmaps:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day1", &mSceneSettings.mEnableNormalMaps);
-    ImGui::Text("(Day 2) Animated Textures:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day2", &mSceneSettings.mEnableAnimatedTextures);
-    ImGui::Text("(Day 3) Show Shader Editor:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day3", &mShowShaderEditor);
-    ImGui::Text("(Day 4) Heightmap (cpu):");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day4", &mSceneSettings.mHeightMap);
-    ImGui::Text("(Day 5) Tesselation:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day5", &mSceneSettings.mTesselation);
-    ImGui::Text("(Day 6) Depth of field:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day6", &mEnableDof);
-    ImGui::SliderFloat("Focal Point", &mDoFFocalPoint, 0.01f, 100.0f);
-    ImGui::SliderFloat("Focal Scale", &mDoFFocalScale, 0.01f, 200.0f);
-    ImGui::Text("(Day 7) Particle system:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day7", &mSceneSettings.mParticles);
-    ImGui::Text("(Day 8) Glow:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day8", &mGlow);
-    ImGui::Text("(Day 9) MipMaps:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day9", &mSceneSettings.mMipMaps);
-    ImGui::Text("Force lowest mip:");
-    ImGui::SameLine();
-    ImGui::BeginDisabled(!mSceneSettings.mMipMaps);
-    ImGui::Checkbox("##day9mipflag", &mSceneSettings.mForceLowestMipLayer);
-    ImGui::EndDisabled();
-    ImGui::BeginDisabled(!mGfxContext->hasMeshShaderSupport());
-    ImGui::Text("(Day 10) MeshShaders:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day10", &mSceneSettings.mMeshShaders);
-    ImGui::EndDisabled();
-    ImGui::Text("(Day 11) Bezier curves:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day11", &mBesierCurves);
-    ImGui::Text("Bezier curves editor:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day11edit", &mBesierCurvesEditor);
-    ImGui::Text("(Day 12) Camera path:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day12", &mCameraPath);
+    DrawDayOptions(mSceneSettings, mDayOptions);
+
     ImGui::Text("Camera path curve:");
     ImGui::SameLine();
     imguiCurveComboSelect(&mCameraPathIndex);
     ImGui::Text("Camera look curve:");
     ImGui::SameLine();
     imguiCurveComboSelect(&mCameraLookIndex);
-    ImGui::Text("Camera path time:");
-    ImGui::SameLine();
-    ImGui::DragFloat("##day12path", &mCameraTime, 0.01f, 0.0f, 1.0f);
-    ImGui::Text("(Day 13) Day night + light dithering:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day13dithering", &mDithering);
-    ImGui::BeginDisabled(true);
-    ImGui::Text("Sun moon dir:");
-    ImGui::SameLine();
-    ImGui::InputFloat3("##day13sunmoondir", glm::value_ptr(mSceneSettings.mSkyInfo.mSunMoonDir));
-    ImGui::Text("Time:");
-    ImGui::SameLine();
-    ImGui::InputFloat("##day13time", &mSkyTime);
-    ImGui::EndDisabled();
-    ImGui::Text("Enable time:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day13timeEnable", &mCountSkyTime);
-    ImGui::Text("Day sky color:");
-    ImGui::SameLine();
-    ImGui::ColorEdit3("##day13dayskycolor", glm::value_ptr(mSceneSettings.mSkyInfo.mDaySkyColor));
-    ImGui::Text("Night sky color:");
-    ImGui::SameLine();
-    ImGui::ColorEdit3("##day13nightskycolor", glm::value_ptr(mSceneSettings.mSkyInfo.mNightSkyColor));
-    ImGui::Text("Sun 1 color:");
-    ImGui::SameLine();
-    ImGui::ColorEdit3("##day13sun1color", glm::value_ptr(mSceneSettings.mSkyInfo.mSun1Color));
-    ImGui::Text("Sun 2 color:");
-    ImGui::SameLine();
-    ImGui::ColorEdit3("##day13sun2color", glm::value_ptr(mSceneSettings.mSkyInfo.mSun2Color));
-    ImGui::Text("Moon 1 color:");
-    ImGui::SameLine();
-    ImGui::ColorEdit3("##day13moon1color", glm::value_ptr(mSceneSettings.mSkyInfo.mMoon1Color));
-    ImGui::Text("Moon 2 color:");
-    ImGui::SameLine();
-    ImGui::ColorEdit3("##day13moon2color", glm::value_ptr(mSceneSettings.mSkyInfo.mMoon2Color));
-    ImGui::Text("(Day 14) Lens flare:");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day14lensflare", &mLensFlare);
-    ImGui::Text("Flare position");
-    ImGui::SameLine();
-    ImGui::SliderFloat2("##day14", glm::value_ptr(mFlarePos), 0.0f, 1.0f);
-    ImGui::Text("(Day 15) Texture viewer");
-    ImGui::SameLine();
-    ImGui::Checkbox("##day15", &mTextureViewer);
 
     ImGui::End();
 
-    if (mShowShaderEditor)
+    if (mDayOptions.mShowShaderEditor)
     {
         mShaderEditor->render();
     }
-    if (mBesierCurvesEditor)
+    if (mDayOptions.mBesierCurvesEditor)
     {
-        if (ImGui::Begin("Besizer curves editor", &mBesierCurvesEditor))
+        if (ImGui::Begin("Besizer curves editor", &mDayOptions.mBesierCurvesEditor))
         {
             ImGui::Text("Curves:");
             imguiCurveComboSelect(&mSelectedCurve);
@@ -386,9 +358,9 @@ SwBool Game::userUpdate(F32 dt)
         ImGui::End();
     }
 
-    if (mTextureViewer)
+    if (mDayOptions.mTextureViewer)
     {
-        if(ImGui::Begin("Texture viewer", &mTextureViewer))
+        if(ImGui::Begin("Texture viewer", &mDayOptions.mTextureViewer))
         {
             std::string comboLabel = "##textureViewer";
             std::string textureText = "GBuffer Texture idx " + std::to_string(mSelectedTexture);
@@ -438,21 +410,21 @@ void Game::updateMainWindow(F32 dt)
     //mGBuffer->resize(x, y);
     BezierCurve* camPathCurve = getCurrentCurve(mCameraPathIndex);
     BezierCurve* camLookCurve = getCurrentCurve(mCameraLookIndex);
-    if (mCameraPath && camPathCurve && camLookCurve)
+    if (mDayOptions.mCameraPath && camPathCurve && camLookCurve)
     {
-        glm::vec3 pos = camPathCurve->getPoint(mCameraTime);
-        glm::vec3 dir = camLookCurve->getPoint(mCameraTime);
+        glm::vec3 pos = camPathCurve->getPoint(mDayOptions.mCameraTime);
+        glm::vec3 dir = camLookCurve->getPoint(mDayOptions.mCameraTime);
         cam.setPosition(pos);
         cam.lookAt(pos, dir);
     }
 
 
-    if (!mInputLocked && !mCameraPath)
+    if (!mInputLocked && !mDayOptions.mCameraPath)
     {
         mController.update(dt);
     }
 
-    if (mCountSkyTime)
+    if (mDayOptions.mCountSkyTime)
         mTime += dt;
     updateSkyTime();
 
@@ -464,6 +436,7 @@ void Game::updateMainWindow(F32 dt)
     mSwapchain->prepare();
 
     auto trans = mCmdBuffer->begin();
+    trans->uploadTexture(mNoiseTexture);
 
     mScene->update(dt, mSceneSettings, trans);
 
@@ -474,7 +447,7 @@ void Game::updateMainWindow(F32 dt)
     mScene->render(dTrans, cam);
 
 
-    if (mBesierCurves)
+    if (mDayOptions.mBesierCurves)
     {
         for (auto& c : mCurves)
         {
@@ -501,22 +474,27 @@ void Game::updateMainWindow(F32 dt)
 
     struct dof
     {
+        glm::mat4 mproj;
         glm::vec4 dof;
         float mDofEnabled;
         float mGlowEnabled;
         float mDitherEnabled;
         float mLenseFlareEnabled;
         glm::vec2 mFlarePos;
+        glm::vec2 mScreenSize;
     } d{};
-    d.dof.x = mDoFFocalPoint;
-    d.dof.y = mDoFFocalScale;
+    d.mproj = cam.getProjection();
+    d.dof.x = mDayOptions.mDoFFocalPoint;
+    d.dof.y = mDayOptions.mDoFFocalScale;
     d.dof.z = 1.0f / F32(x);
     d.dof.w = 1.0f / F32(y);
-    d.mDofEnabled = mEnableDof ? 1.0f : 0.0f;
-    d.mGlowEnabled = mGlow ? 1.0f : 0.0f;
-    d.mDitherEnabled = mDithering ? 1.0f : 0.0f;
-    d.mLenseFlareEnabled = mLensFlare ? 1.0f : 0.0f;
-    d.mFlarePos = mFlarePos;
+    d.mDofEnabled = mDayOptions.mEnableDof ? 1.0f : 0.0f;
+    d.mGlowEnabled = mDayOptions.mGlow ? 1.0f : 0.0f;
+    d.mDitherEnabled = mDayOptions.mDithering ? 1.0f : 0.0f;
+    d.mLenseFlareEnabled = mDayOptions.mLensFlare ? 1.0f : 0.0f;
+    d.mFlarePos = mDayOptions.mFlarePos;
+    d.mScreenSize.x = F32(x);
+    d.mScreenSize.y = F32(y);
 
     dTrans->bindShader(mFsq);
     dTrans->bindMaterial(mFsq, mFsqMat);
@@ -539,77 +517,6 @@ void Game::imGuiRender(common::Unique<sw::gfx::CommandTransaction>& trans)
     ImGui::Render();
     ImGui_ImplSwizzle_RenderDrawData(ImGui::GetDrawData(), dTrans);
     trans = mCmdBuffer->endRenderPass(std::move(dTrans));
-}
-
-std::string Game::getStatisticsText() const
-{
-    std::string statisticsString;
-    statisticsString.reserve(1024);
-
-    statisticsString = "Frames: " + std::to_string(mSwapchain->getFrameCounter()) + "\n";
-    statisticsString += "FPS: " + std::to_string(mFpsCounter.getFps()) + "\n\n";
-
-    statisticsString += std::string(mGfxContext->getSelectedDeviceName()) + "\n";
-
-    auto iter = mGfxContext->getStatisticsIterator();
-
-    do
-    {
-        OPTICK_EVENT("Parse Stats");
-        if (iter->getType() == sw::gfx::GfxStatsType::MemoryStats)
-        {
-            sw::gfx::MemoryStatistics* memStat = (sw::gfx::MemoryStatistics*)iter->getStatisticsData();
-
-            statisticsString += "Memory Heap: " + std::string(memStat->mName) + "\n";
-            statisticsString +=
-                "  Mem: " + utils::toMemoryString(memStat->mUsed) + "/" + utils::toMemoryString(memStat->mSize);
-            statisticsString += "; Allocs: " + std::to_string(memStat->mNumAllocations) + "p, " +
-                                std::to_string(memStat->mNumVirtualAllocations) + "v\n";
-        }
-        else if (iter->getType() == sw::gfx::GfxStatsType::DeviceStats)
-        {
-            sw::gfx::DeviceStatistics* devStats = (sw::gfx::DeviceStatistics*)iter->getStatisticsData();
-            statisticsString += "Device\n";
-            statisticsString += "  Num Staged Objects: " + std::to_string(devStats->mNumStagedObjects) + "\n";
-            statisticsString += "  Num Textures: " + std::to_string(devStats->mNumTextures) + "\n";
-            statisticsString += "  Num Buffers: " + std::to_string(devStats->mNumBuffers) + "\n";
-            statisticsString += "  Pipelines: " + std::to_string(devStats->mNumPipelines) + "\n";
-        }
-        else if (iter->getType() == sw::gfx::GfxStatsType::InstanceStats)
-        {
-            sw::gfx::InstanceStatistics* instStats = (sw::gfx::InstanceStatistics*)iter->getStatisticsData();
-            statisticsString += "Instance\n";
-            statisticsString += "  Alloc Count " + std::to_string(instStats->mAllocCount) + "\n";
-            statisticsString += "  Internal Alloc Count " + std::to_string(instStats->mInternalAllocCount) + "\n";
-        }
-        else if (iter->getType() == sw::gfx::GfxStatsType::GfxPipelineStats)
-        {
-            sw::gfx::GfxPipelineStatistics* gfxStats = (sw::gfx::GfxPipelineStatistics*)iter->getStatisticsData();
-            statisticsString += "Graphics Pipeline statistics\n";
-            statisticsString += "  Input Assemby Vertices " + std::to_string(gfxStats->mInputAssemblyVertices) + "\n";
-            statisticsString +=
-                "  Input Assemby Primitives " + std::to_string(gfxStats->mInputAssemblyPrimitives) + "\n";
-            statisticsString +=
-                "  Vertex Shader Invocations " + std::to_string(gfxStats->mVertexShaderInvocations) + "\n";
-            statisticsString += "  Clipping Invocations " + std::to_string(gfxStats->mClippingInvocations) + "\n";
-            statisticsString += "  Clipping Primitives " + std::to_string(gfxStats->mClippingInvocations) + "\n";
-            statisticsString +=
-                "  Fragment Shader Invocations " + std::to_string(gfxStats->mFragmentShaderInvocations) + "\n";
-            statisticsString += "  Tesselation Control Shader Patches " +
-                                std::to_string(gfxStats->mTesselationControlShaderPatches) + "\n";
-            statisticsString += "  Tesselation Evaluation Shader Invocations " +
-                                std::to_string(gfxStats->mTesselationEvaluationShaderInvocations) + "\n";
-            statisticsString +=
-                "  Compute Shader Invocations " + std::to_string(gfxStats->mComputeShaderInvocations) + "\n";
-        }
-
-    } while (iter->next());
-
-    statisticsString += "Draw call count: " + std::to_string(mCmdBuffer->getDrawCount()) + "\n";
-    statisticsString += "Vertex count: " + std::to_string(mCmdBuffer->getVertCount()) + "\n";
-    statisticsString += "Triangle count: " + std::to_string(mCmdBuffer->getTriCount()) + "\n";
-
-    return statisticsString;
 }
 
 BezierCurve* Game::getCurrentCurve(U32 index)

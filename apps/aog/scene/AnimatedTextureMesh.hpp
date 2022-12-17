@@ -38,6 +38,8 @@ private:
     common::Resource<swizzle::gfx::Shader> mShader;
     common::Resource<swizzle::gfx::Buffer> mInst;
 
+    common::Resource<swizzle::gfx::Buffer> mUniform;
+
     glm::vec2 mUvOffset;
 };
 

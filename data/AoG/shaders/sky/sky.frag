@@ -2,6 +2,7 @@
 
 layout(location = 0) in vec4 worldPos;
 layout(location = 1) in vec4 worldPos2;
+layout(location = 2) in vec3 inNormal;
 
 layout(location = 0) out vec4 diffuse;
 layout(location = 1) out vec4 glow;
@@ -103,7 +104,7 @@ void main()
 
     diffuse = vec4(skyColor, 1.0);
     glow = vec4(0.0);
-    normal = -normalize(worldPos2);
+    normal = vec4(inNormal, 1.0);
     worldPosOut = worldPos;
     worldPosOut.rgb *= 100.0;
 }

@@ -45,6 +45,8 @@ private:
     common::Resource<swizzle::gfx::Material> mMaterial;
     common::Resource<swizzle::gfx::Shader> mShader;
 
+    common::Resource<swizzle::gfx::Buffer> mUniform;
+
     std::vector<glm::vec3> mParticlePositions; // this contains the result of updated particles;
     U32 mNumParticles;
     U32 mActiveParticles;

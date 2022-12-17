@@ -21,7 +21,7 @@ void main()
 {
     vec4 wpos = mdlMat * vec4(vertPos, 1.0);
     worldPos = wpos.xyz;
-    outNormals = (mdlMat * vec4(normals, 1.0)).xyz;
+    outNormals = (mdlMat * vec4(normals, 0.0)).xyz;
 
     gl_Position = cam.viewProj * wpos;
     outUV = uvs + cam.uvOffset;

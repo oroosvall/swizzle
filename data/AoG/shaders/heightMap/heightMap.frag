@@ -11,11 +11,20 @@ layout(location = 3) out vec4 worldColor;
 
 layout(set=0, binding=1) uniform sampler2D tex;
 
+float linearDepth(float depth, float near, float far)
+{
+    float z = depth * 2.0f - 1.0f; 
+    return (2.0f * near * far) / (far + near - z * (far - near));
+}
+
 void main()
 {
     vec4 color = texture(tex, vec2(uv.s, 1-uv.t));
     fragColor = color;
     glowColor = vec4(0.0);
-    normalColor = vec4(norm, 1.0);
-    worldColor = vec4(worldPos, 1.0);
+
+    normalColor = vec4(normalize(norm) * 0.5 + 0.5, 1.0);
+    //normalColor = vec4(normalize(norm), 1.0);
+    //normalColor.y = 0.0;
+    worldColor = vec4(worldPos, linearDepth(gl_FragCoord.z, 0.01, 100.0));
 }

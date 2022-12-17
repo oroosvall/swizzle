@@ -43,6 +43,8 @@ private:
 
     common::Resource<swizzle::gfx::Buffer> mInst;
 
+    common::Resource<swizzle::gfx::Buffer> mUniform;
+
     common::Resource<swizzle::gfx::Shader> mSelectedShader;
 
     SwBool mNormalEnabled;

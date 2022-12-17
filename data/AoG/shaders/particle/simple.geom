@@ -28,22 +28,26 @@ void main()
     outPos.y -= 0.5;
     uv = vec2(0.0, 0.0);
     gl_Position = cam.viewProj * vec4(outPos, 1.0);
+    norm = toCamera;
     EmitVertex();
 
     outPos.y += 1.0;
     uv = vec2(0.0, 1.0);
     gl_Position = cam.viewProj * vec4(outPos, 1.0);
+    norm = toCamera;
     EmitVertex();
 
     outPos.y -= 1.0;
     outPos += right;
     uv = vec2(1.0, 0.0);
     gl_Position = cam.viewProj * vec4(outPos, 1.0);
+    norm = toCamera;
     EmitVertex();
 
     outPos.y += 1.0;
     uv = vec2(1.0, 1.0);
     gl_Position = cam.viewProj * vec4(outPos, 1.0);
+    norm = toCamera;
     EmitVertex();
 
     EndPrimitive();

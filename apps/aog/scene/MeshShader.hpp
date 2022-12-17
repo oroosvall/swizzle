@@ -55,6 +55,8 @@ private:
     common::Resource<swizzle::gfx::Shader> mNormalShader;
     common::Resource<swizzle::gfx::Material> mNormalMaterial;
 
+    common::Resource<swizzle::gfx::Buffer> mUniform;
+
     common::Resource<swizzle::gfx::Buffer> mInst;
 
     U32 mNumMeshlets;

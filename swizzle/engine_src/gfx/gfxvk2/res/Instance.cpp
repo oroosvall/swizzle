@@ -296,7 +296,7 @@ namespace vk
         extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         //extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         addLayerIfExisting(instanceLayers, layers, "VK_LAYER_KHRONOS_validation");
-        addLayerIfExisting(instanceLayers, layers, "VK_LAYER_RENDERDOC_Capture");
+        //addLayerIfExisting(instanceLayers, layers, "VK_LAYER_RENDERDOC_Capture");
 #endif
 
         //instanceLayers.push_back("VK_LAYER_LUNARG_gfxreconstruct");

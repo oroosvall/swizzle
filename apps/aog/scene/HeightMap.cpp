@@ -49,11 +49,12 @@ HeightMap::HeightMap(common::Resource<swizzle::gfx::GfxContext> ctx, common::Res
 {
     mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
     mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
+    mUniform = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
 
     loadHeightMap(mDisplaced);
 
     mMaterial = ctx->createMaterial(mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
-    mMaterial->setDescriptorTextureResource(0u, mTexture);
+    mMaterial->setDescriptorTextureResource(1u, mTexture);
 }
 
 void HeightMap::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans)
@@ -83,6 +84,13 @@ void HeightMap::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tra
     tmp t = {};
     t.viewProj = cam.getProjection() * cam.getView();
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
+
+    ViewProjection c{};
+    c.proj = cam.getProjection();
+    c.view = cam.getView();
+
+    mUniform->setBufferData(&c, sizeof(ViewProjection), sizeof(ViewProjection));
+    mMaterial->setDescriptorBufferResource(0u, mUniform, ~0ull);
 
     trans->bindShader(mShader);
 
@@ -139,8 +147,8 @@ void HeightMap::loadHeightMap(SwBool cpuDisplace)
             U32 currRow = (y * 50) + x;
             U32 nextRow = ((y + 1) * 50) + x;
 
-            HeightMapTriangle t1{ currRow, nextRow + 1, currRow + 1 };
-            HeightMapTriangle t2{ currRow, nextRow, nextRow + 1 };
+            HeightMapTriangle t1{ currRow + 1, nextRow + 1, currRow };
+            HeightMapTriangle t2{ currRow, nextRow + 1, nextRow };
             tris.push_back(t1);
             tris.push_back(t2);
         }

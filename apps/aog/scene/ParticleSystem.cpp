@@ -41,6 +41,7 @@ ParticleSystem::ParticleSystem(common::Resource<swizzle::gfx::GfxContext> ctx, U
     , mEnabled(true)
 {
     mParticleBuffer = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
+    mUniform = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
 
     mParticlePositions.resize(mNumParticles);
     mParticles.resize(mNumParticles);

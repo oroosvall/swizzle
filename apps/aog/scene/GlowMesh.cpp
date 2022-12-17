@@ -39,6 +39,7 @@ GlowMesh::GlowMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
 {
     mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
     mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
+    mUniform = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
 
     mMesh->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(), sizeof(float) * (3u + 3u + 2u));
     mIndex->setBufferData((U8*)mAsset->getIndexDataPtr(), mAsset->getIndexDataSize(), sizeof(U32) * 3u);
