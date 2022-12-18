@@ -8,6 +8,7 @@
 
 std::string GetStatisticsText(common::Resource<swizzle::gfx::GfxContext> context,
                               common::Resource<swizzle::gfx::CommandBuffer> cmdBuff,
-                              common::Resource<swizzle::gfx::Swapchain> swapchain, utils::FpsCounter& fpsCounter);
+                              common::Resource<swizzle::gfx::Swapchain> swapchain, utils::FpsCounter& fpsCounter,
+                              std::vector<U64>& timeStamps);
 
 #endif

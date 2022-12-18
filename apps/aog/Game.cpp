@@ -5,8 +5,8 @@
 #pragma warning(disable : 4201)
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 #pragma warning(pop)
 
 #include <swizzle/core/Input.hpp>
@@ -56,6 +56,7 @@ void Game::userSetup()
 
     mCmdBuffer = mGfxContext->createCommandBuffer(2);
     mGfxContext->enablePipelineStatistics(true);
+    mGfxContext->enableGpuTiming(true);
 
     cam.setPosition({0.0F, 0.0F, 5.5F});
 
@@ -105,7 +106,6 @@ void Game::userSetup()
     mScene = common::CreateRef<Scene>(mGfxContext, mCompositor, mAssetManager);
 
     mShaderEditor = common::CreateRef<ShaderEditor>(mAssetManager);
-
 
     mSceneSettings.mMeshShaders = mGfxContext->hasMeshShaderSupport();
     mSceneSettings.mParticles = false;
@@ -159,9 +159,9 @@ void Game::userSetup()
     mBezierShader = mGfxContext->createShader(mGBuffer, sw::gfx::ShaderType::ShaderType_Graphics, bezierAttribs);
     mBezierShader->load("AoG/shaders/lines.shader");
 
-    mCurves.push_back(BezierCurve{ mGfxContext, "Camera path" });
+    mCurves.push_back(BezierCurve{mGfxContext, "Camera path"});
     mCurves.back().load("AoG/CameraPath.txt");
-    mCurves.push_back(BezierCurve{ mGfxContext, "Camera lookat" });
+    mCurves.push_back(BezierCurve{mGfxContext, "Camera lookat"});
     mCurves.back().load("AoG/CameraLook.txt");
 
     mCameraPathIndex = 0u;
@@ -172,7 +172,6 @@ void Game::userSetup()
 
     mTextureViewerMat = ImGui_ImplSwizzle_CreateMaterial(mGfxContext);
     mTextureViewerMat->setDescriptorTextureResource(0u, mGBuffer->getColorAttachment(0u));
-
 
     std::default_random_engine rndEngine((unsigned)time(nullptr));
     std::uniform_real_distribution<float> rndDist(0.0f, 1.0f);
@@ -202,7 +201,7 @@ void Game::userSetup()
     mNoiseTexture = mGfxContext->createTexture(4, 4, 4, true, (U8*)ssaoNoise.data());
     mFsqMat->setDescriptorTextureResource(7u, mNoiseTexture);
 
-    cam.setPosition({ 1.0f, 0.75f, 0.0f });
+    cam.setPosition({1.0f, 0.75f, 0.0f});
     cam.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
 
     mScene->loadSky();
@@ -226,13 +225,25 @@ SwBool Game::userUpdate(F32 dt)
     ImGui_ImplSwizzle_NewFrame(mWindow);
     ImGui::NewFrame();
 
+    std::vector<U64> gpuTimeStamps;
+
     ImGui::Begin("Statistics");
     {
         OPTICK_EVENT("ImGui::Text");
-        std::string text = GetStatisticsText(mGfxContext, mCmdBuffer, mSwapchain, mFpsCounter);
+        std::string text = GetStatisticsText(mGfxContext, mCmdBuffer, mSwapchain, mFpsCounter, gpuTimeStamps);
         ImGui::Text("%s", text.c_str());
     }
+    ImGui::End();
 
+    ImGui::Begin("Gfx Timing (Day 18)");
+    for (U64 i = 1u; i < gpuTimeStamps.size(); i++)
+    {
+        U64 zero = gpuTimeStamps[0];
+        U64 sample = gpuTimeStamps[i];
+        ImGui::Text("Renderpass time (%llu): dt %llu us, tot %llu us", i - 1, (sample - gpuTimeStamps[i - 1]) / 1000ull,
+                    (sample - zero) / 1000ull);
+    }
+    // ImGui::PlotHistogram("Test");
     ImGui::End();
 
     auto cmb = [](void* data, S32 idx, const char** outText) -> bool {
@@ -287,7 +298,7 @@ SwBool Game::userUpdate(F32 dt)
             ImGui::SameLine();
             if (ImGui::Button("+"))
             {
-                mCurves.push_back(BezierCurve{ mGfxContext, "Curve"});
+                mCurves.push_back(BezierCurve{mGfxContext, "Curve"});
             }
             ImGui::SameLine();
             if (ImGui::Button("-"))
@@ -358,19 +369,20 @@ SwBool Game::userUpdate(F32 dt)
 
     if (mDayOptions.mTextureViewer)
     {
-        if(ImGui::Begin("Texture viewer", &mDayOptions.mTextureViewer))
+        if (ImGui::Begin("Texture viewer", &mDayOptions.mTextureViewer))
         {
             std::string comboLabel = "##textureViewer";
             std::string textureText = "GBuffer Texture idx " + std::to_string(mSelectedTexture);
             if (ImGui::BeginCombo(comboLabel.c_str(), textureText.c_str()))
             {
-                for (size_t i = 0ull; i < mGBuffer->getNumColorAttachments() ; ++i)
+                for (size_t i = 0ull; i < mGBuffer->getNumColorAttachments(); ++i)
                 {
                     std::string itmText = "GBuffer Texture idx" + std::to_string(i);
                     if (ImGui::Selectable(itmText.c_str(), i == mSelectedTexture))
                     {
                         mSelectedTexture = (U32)i;
-                        mTextureViewerMat->setDescriptorTextureResource(0u, mGBuffer->getColorAttachment(mSelectedTexture));
+                        mTextureViewerMat->setDescriptorTextureResource(0u,
+                                                                        mGBuffer->getColorAttachment(mSelectedTexture));
                     }
                 }
 
@@ -405,7 +417,7 @@ void Game::updateMainWindow(F32 dt)
 
     cam.changeAspect((F32)x, (F32)y);
 
-    //mGBuffer->resize(x, y);
+    // mGBuffer->resize(x, y);
     BezierCurve* camPathCurve = getCurrentCurve(mCameraPathIndex);
     BezierCurve* camLookCurve = getCurrentCurve(mCameraLookIndex);
     if (mDayOptions.mCameraPath && camPathCurve && camLookCurve)
@@ -415,7 +427,6 @@ void Game::updateMainWindow(F32 dt)
         cam.setPosition(pos);
         cam.lookAt(pos, dir);
     }
-
 
     if (!mInputLocked && !mDayOptions.mCameraPath)
     {
@@ -443,7 +454,6 @@ void Game::updateMainWindow(F32 dt)
     auto dTrans = mCmdBuffer->beginRenderPass(mGBuffer, std::move(trans));
 
     mScene->render(dTrans, cam);
-
 
     if (mDayOptions.mBesierCurves)
     {
@@ -535,7 +545,8 @@ void Game::imguiCurveComboSelect(U32* curveIndex)
     ImGui::SameLine();
     ImGui::BeginDisabled(curve == nullptr);
     std::string text = "";
-    if (curve) text = curve->getName();
+    if (curve)
+        text = curve->getName();
     std::string comboLabel = "##curve" + std::to_string(comboIdx);
     if (ImGui::BeginCombo(comboLabel.c_str(), text.c_str()))
     {
@@ -582,13 +593,13 @@ void Game::updateSkyTime()
     }
     glm::vec3 sunMoonDir = glm::vec3(-r * 0.4F, r * s, r * c);
 
-    //LampBuffer lampBuf{};
-    //lampBuf.mLightPos = glm::vec4(mSunMoonDir., 1000.0f); // w is radius
-    //lampBuf.mLightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // w is intensity
-    //lampBuf.mSpecColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // w is unused
+    // LampBuffer lampBuf{};
+    // lampBuf.mLightPos = glm::vec4(mSunMoonDir., 1000.0f); // w is radius
+    // lampBuf.mLightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // w is intensity
+    // lampBuf.mSpecColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // w is unused
 
-    //mLampBuffer->setBufferData(&lampBuf, sizeof(LampBuffer), sizeof(LampBuffer));
+    // mLampBuffer->setBufferData(&lampBuf, sizeof(LampBuffer), sizeof(LampBuffer));
 
-    sunMoonDir = glm:: normalize(glm::vec3(0) - sunMoonDir);
+    sunMoonDir = glm::normalize(glm::vec3(0) - sunMoonDir);
     mSceneSettings.mSkyInfo.mSunMoonDir = glm::vec4(sunMoonDir, 1.0f);
 }

@@ -7,7 +7,8 @@
 
 std::string GetStatisticsText(common::Resource<swizzle::gfx::GfxContext> context,
                               common::Resource<swizzle::gfx::CommandBuffer> cmdBuff,
-                              common::Resource<swizzle::gfx::Swapchain> swapchain, utils::FpsCounter& fpsCounter)
+                              common::Resource<swizzle::gfx::Swapchain> swapchain, utils::FpsCounter& fpsCounter,
+                              std::vector<U64>& timeStamps)
 {
     std::string statisticsString;
     statisticsString.reserve(1024);
@@ -68,6 +69,14 @@ std::string GetStatisticsText(common::Resource<swizzle::gfx::GfxContext> context
                                 std::to_string(gfxStats->mTesselationEvaluationShaderInvocations) + "\n";
             statisticsString +=
                 "  Compute Shader Invocations " + std::to_string(gfxStats->mComputeShaderInvocations) + "\n";
+        }
+        else if (iter->getType() == swizzle::gfx::GfxStatsType::GfxTiming)
+        {
+            swizzle::gfx::GfxTimingStatistics* gfxStats = (swizzle::gfx::GfxTimingStatistics*)iter->getStatisticsData();
+            statisticsString += "Timing Samples: " + std::to_string(gfxStats->mSampleCount) + "\n";
+            statisticsString += "Sample resolution: " + std::to_string(gfxStats->mNsPerSample) + " ns\n";
+            timeStamps.resize(gfxStats->mSampleCount);
+            memcpy(timeStamps.data(), gfxStats->mSamples, sizeof(U64) * gfxStats->mSampleCount);
         }
 
     } while (iter->next());
