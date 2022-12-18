@@ -6,6 +6,10 @@ SC A
 # - mesh: a renderable mesh (file: texture: {{pos};{pos2; ...})
 # - animTex: animated texture (file: texture: [{pos};{pos2; ...}])
 #sky:meshes/inverted_sphere.obj:shaders/sky.shader:
-particles:AoG/textures/particle.png:{5,5,0}:{0,1,0}:200
-animTex:AoG/meshes/TextureAnimation.swm:AoG/textures/stream.png:[{-4,0,0};{-6,0,0}]
-mesh:AoG/meshes/cube.swm:AoG/textures/neutral.png:[{0,0,-5}]
+particles;AoG/textures/particle.png;{5,5,0};{0,1,0};200
+animTex;AoG/meshes/TextureAnimation.swm;AoG/textures/stream.png;[{-4,0,0}:{-6,0,0}]
+mesh;AoG/meshes/cube.swm;AoG/textures/neutral.png;AoG/textures/neutral.png;[{0,0,-5}]
+mesh;AoG/meshes/pillar.swm;AoG/textures/Texture1.png;AoG/textures/neutral.png;[{-6,0,10}:{6,0,10}:{-6,0,20}:{6,0,20}:{-6,0,30}:{6,0,30}]
+mesh;AoG/meshes/bridge.swm;AoG/textures/Texture1.png;AoG/textures/neutral.png;[{0,-0.15224,50}]
+mesh;AoG/meshes/tree.swm;AoG/textures/Texture1.png;AoG/textures/neutral.png;[{0,-0.338,92}]
+mesh;AoG/meshes/barrel.swm;AoG/textures/barrel.png;AoG/textures/neutral.png;[{3.93,-4.01,68.65}:{-34.72,0.12,25.71}:{-36.51,0.12,25.87}:{-38.29,0.12,26.01}]

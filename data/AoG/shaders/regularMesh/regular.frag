@@ -10,7 +10,8 @@ layout(location = 1) out vec4 glowColor;
 layout(location = 2) out vec4 normalColor;
 layout(location = 3) out vec4 worldColor;
 
-layout(set=0, binding=1) uniform sampler2D normalTexture;
+layout(set=0, binding=1) uniform sampler2D diffuseTexture;
+layout(set=0, binding=2) uniform sampler2D normalTexture;
 
 float linearDepth(float depth, float near, float far)
 {
@@ -31,9 +32,10 @@ vec4 CalcBumpedNormal()
 void main()
 {
     vec4 normalMap = CalcBumpedNormal();
-    fragColor = vec4(normalMap.xyz, 1.0);
+    vec3 color = texture(diffuseTexture, vec2(uv.s, 1-uv.t)).rgb;
+    fragColor = vec4(color, 1.0);
     glowColor = vec4(0.0);
 
-    normalColor = vec4(normalize(norm) * 0.5 + 0.5, 1.0);
+    normalColor = vec4(normalize(normalMap.xyz) * 0.5 + 0.5, 1.0);
     worldColor = vec4(worldPos, linearDepth(gl_FragCoord.z, 0.01, 100.0));
 }

@@ -28,11 +28,13 @@
 RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
                          common::Resource<MeshInfo> meshInfo,
                          common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
+                         common::Resource<swizzle::gfx::Texture> normalTex,
                          common::Resource<swizzle::gfx::Texture> optionalTexture,
                          common::Resource<swizzle::gfx::Shader> shader,
                          common::Resource<swizzle::gfx::Shader> optionalShader)
     : mMeshInfo(meshInfo)
     , mTexture(texture)
+    , mNormalTex(normalTex)
     , mOptionalTexture(optionalTexture)
     , mMaterial(nullptr)
     , mShader(shader)
@@ -43,6 +45,7 @@ RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
 
     mMaterial = ctx->createMaterial(mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
     mMaterial->setDescriptorTextureResource(1u, mTexture);
+    mMaterial->setDescriptorTextureResource(2u, mNormalTex);
 }
 
 void RegularMesh::update(DeltaTime dt, SceneRenderSettings& settings,
@@ -57,11 +60,11 @@ void RegularMesh::update(DeltaTime dt, SceneRenderSettings& settings,
         mNormalEnabled = settings.mEnableNormalMaps;
         if (mNormalEnabled)
         {
-            mMaterial->setDescriptorTextureResource(1u, mTexture);
+            mMaterial->setDescriptorTextureResource(2u, mNormalTex);
         }
         else
         {
-            mMaterial->setDescriptorTextureResource(1u, mOptionalTexture);
+            mMaterial->setDescriptorTextureResource(2u, mOptionalTexture);
         }
     }
 

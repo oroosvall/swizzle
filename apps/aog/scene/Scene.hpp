@@ -64,7 +64,7 @@ private:
 
     void loadParticleSystemParams(const SwChar* texturePath, glm::vec3 pos, glm::vec3 dir, U32 count);
     void loadAnimTextureParams(const SwChar* meshFile, const SwChar* texture, std::vector<glm::mat4>& inst);
-    void loadRegular(const SwChar* meshFile, const SwChar* textureFile, std::vector<glm::mat4>& inst);
+    void loadRegular(const SwChar* meshFile, const SwChar* diffuseTexture, const SwChar* normalTexture, std::vector<glm::mat4>& inst);
 
     common::Resource<swizzle::gfx::GfxContext> mContext;
     common::Resource<Compositor> mCompositor;

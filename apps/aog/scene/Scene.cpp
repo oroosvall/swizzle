@@ -75,7 +75,7 @@ std::vector<glm::mat4> instancesFromString(std::string& str)
     str.pop_back();
     str.erase(0, 1);
 
-    std::vector<std::string> values = split(str, ";");
+    std::vector<std::string> values = split(str, ":");
 
     std::vector<glm::mat4> mats;
 
@@ -331,6 +331,9 @@ void Scene::loadTesselationMesh()
         {sgfx::DescriptorType::TextureSampler,
          sgfx::Count(1u),
          {sgfx::StageType::fragmentStage, sgfx::StageType::tessellationStage}},
+        {sgfx::DescriptorType::TextureSampler,
+         sgfx::Count(1u),
+         {sgfx::StageType::fragmentStage, sgfx::StageType::tessellationStage}},
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
@@ -347,7 +350,7 @@ void Scene::loadTesselationMesh()
     auto texture = mAssetManager->loadTexture("AoG/textures/displaceTest.png");
 
     mRenderables.emplace_back(
-        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, texture, texture, shader, otherShader));
+        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, texture, texture, texture, shader, otherShader));
 }
 
 void Scene::loadGlow()
@@ -544,7 +547,7 @@ void Scene::loadThing(std::string line)
 {
     if (line._Starts_with("particle"))
     {
-        std::vector<std::string> itms = split(line, ":");
+        std::vector<std::string> itms = split(line, ";");
         std::string filePath = itms[1];
         std::string pos = itms[2];
         std::string dir = itms[3];
@@ -554,18 +557,19 @@ void Scene::loadThing(std::string line)
     }
     else if (line._Starts_with("mesh"))
     {
-        std::vector<std::string> itms = split(line, ":");
+        std::vector<std::string> itms = split(line, ";");
         std::string filePath = itms[1];
         std::string texturePath = itms[2];
-        std::string instances = itms[3];
+        std::string normalTexturePath = itms[3];
+        std::string instances = itms[4];
 
         std::vector<glm::mat4> mats = instancesFromString(instances);
 
-        loadRegular(filePath.c_str(), texturePath.c_str(), mats);
+        loadRegular(filePath.c_str(), texturePath.c_str(), normalTexturePath.c_str(), mats);
     }
     else if (line._Starts_with("animTex"))
     {
-        std::vector<std::string> itms = split(line, ":");
+        std::vector<std::string> itms = split(line, ";");
         std::string filePath = itms[1];
         std::string texturePath = itms[2];
         std::string instances = itms[3];
@@ -607,8 +611,8 @@ void Scene::loadAnimTextureParams(const SwChar* meshFile, const SwChar* textureP
     common::Resource<sgfx::Buffer> instBuffer = createInstanceBuffer(inst);
 
     sgfx::ShaderAttributeList attribs = {};
-    attribs.mBufferInput = { {sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
-                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mBufferInput = {{sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
     attribs.mAttributes = {
         {0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
         {0u, sgfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
@@ -636,15 +640,16 @@ void Scene::loadAnimTextureParams(const SwChar* meshFile, const SwChar* textureP
     mRenderables.emplace_back(common::CreateRef<AnimatedTextureMesh>(mContext, asset, instBuffer, texture, shader));
 }
 
-void Scene::loadRegular(const SwChar* meshFile, const SwChar* textureFile, std::vector<glm::mat4>& inst)
+void Scene::loadRegular(const SwChar* meshFile, const SwChar* diffuseTexture, const SwChar* normalTexture,
+                        std::vector<glm::mat4>& inst)
 {
     auto asset = mAssetManager->loadMesh(meshFile, false);
 
     common::Resource<sgfx::Buffer> instBuffer = createInstanceBuffer(inst);
 
     sgfx::ShaderAttributeList attribs = {};
-    attribs.mBufferInput = { {sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
-                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mBufferInput = {{sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
     attribs.mAttributes = {
         {0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
         {0u, sgfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
@@ -657,6 +662,7 @@ void Scene::loadRegular(const SwChar* meshFile, const SwChar* textureFile, std::
     attribs.mDescriptors = {
         {sgfx::DescriptorType::UniformBuffer, sgfx::Count(1u), {sgfx::StageType::vertexStage}},
         {sgfx::DescriptorType::TextureSampler, sgfx::Count(1u), {sgfx::StageType::fragmentStage}},
+        {sgfx::DescriptorType::TextureSampler, sgfx::Count(1u), {sgfx::StageType::fragmentStage}},
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
@@ -667,9 +673,10 @@ void Scene::loadRegular(const SwChar* meshFile, const SwChar* textureFile, std::
     auto shader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(shader, "AoG/shaders/regular.shader");
 
-    auto texture = mAssetManager->loadTexture(textureFile);
-    auto optTexture = mAssetManager->loadTexture("AoG/textures/neutral.png");
+    auto diffuse = mAssetManager->loadTexture(diffuseTexture);
+    auto normal = mAssetManager->loadTexture(normalTexture);
+    auto optNormal = mAssetManager->loadTexture("AoG/textures/neutral.png");
 
     mRenderables.emplace_back(
-        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, texture, optTexture, shader, shader));
+        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, diffuse, normal, optNormal, shader, shader));
 }

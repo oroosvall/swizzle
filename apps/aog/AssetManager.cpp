@@ -94,11 +94,10 @@ common::Resource<MeshInfo> AssetManager::loadMesh(const SwChar* filePath, SwBool
         {
             MeshInfo mi{};
             swizzle::asset2::MeshAssetLoaderDescription ldi = {};
-            ldi.mLoadPossitions = {
-                {swizzle::asset2::AttributeTypes::VertexPosition, 0u},
-                {swizzle::asset2::AttributeTypes::NormalVector, sizeof(float) * 3u},
-                {swizzle::asset2::AttributeTypes::UvCoordinates, sizeof(float) * 6u},
-            };
+            ldi.mLoadPossitions = {{swizzle::asset2::AttributeTypes::VertexPosition, 0u},
+                                   {swizzle::asset2::AttributeTypes::NormalVector, sizeof(float) * 3u},
+                                   {swizzle::asset2::AttributeTypes::UvCoordinates, sizeof(float) * 6u}};
+
             mi.mMesh = swizzle::asset2::LoadMesh(filePath, ldi);
             mi.mVertex = mContext->createBuffer(swizzle::gfx::BufferType::Vertex);
             mi.mIndex = mContext->createBuffer(swizzle::gfx::BufferType::Index);

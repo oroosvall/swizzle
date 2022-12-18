@@ -124,7 +124,7 @@ void Game::userSetup()
     mSceneSettings.mSkyInfo.mMoon2Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     mSceneSettings.mSkyInfo.mSunMoonDir = glm::vec4(1.0, 0.0, 0.0, 0.0f);
 
-    mSceneSettings.mAssetSlowLoad = true;
+    mSceneSettings.mAssetSlowLoad = false;
 
     mDayOptions.mShowShaderEditor = false;
     mDayOptions.mEnableDof = false;

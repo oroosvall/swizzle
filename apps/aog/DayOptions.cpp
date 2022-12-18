@@ -80,10 +80,10 @@ void DrawDayOptions(SceneRenderSettings& settings, DayOptions& opt)
     ImGui::Checkbox("##day13timeEnable", &opt.mCountSkyTime);
     ImGui::Text("Day sky color:");
     ImGui::SameLine();
-    ImGui::ColorEdit3("##day13dayskycolor", glm::value_ptr(settings.mSkyInfo.mDaySkyColor));
+    ImGui::ColorEdit3("##day13dayskycolor", glm::value_ptr(settings.mSkyInfo.mDaySkyColor), ImGuiColorEditFlags_NoInputs);
     ImGui::Text("Night sky color:");
     ImGui::SameLine();
-    ImGui::ColorEdit3("##day13nightskycolor", glm::value_ptr(settings.mSkyInfo.mNightSkyColor));
+    ImGui::ColorEdit3("##day13nightskycolor", glm::value_ptr(settings.mSkyInfo.mNightSkyColor), ImGuiColorEditFlags_NoInputs);
     ImGui::Text("Sun 1 color:");
     ImGui::SameLine();
     ImGui::ColorEdit3("##day13sun1color", glm::value_ptr(settings.mSkyInfo.mSun1Color), ImGuiColorEditFlags_NoInputs);
