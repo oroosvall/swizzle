@@ -14,6 +14,7 @@
 #include "ParticleSystem.hpp"
 #include "RegularMesh.hpp"
 #include "Sky.hpp"
+#include "Water.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -467,6 +468,61 @@ void Scene::loadMeshShader()
     mAssetManager->loadShader(shaderNormal, "AoG/shaders/normal.shader");
 
     mRenderables.emplace_back(common::CreateRef<MeshShader>(mContext, mesh2, instBuffer, shader, shaderNormal));
+}
+
+void Scene::loadWater()
+{
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, { 50, 0, 0 });
+
+    common::Resource<sgfx::Buffer> instBuffer = mContext->createBuffer(sgfx::BufferType::Vertex);
+
+    std::vector<glm::mat4> positions;
+    positions.push_back(transform);
+
+    instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
+
+    sgfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = { {sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 2u)},
+                             {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mAttributes = {
+        {0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
+        {0u, sgfx::ShaderAttributeDataType::vec2f, sizeof(float) * 3u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
+    attribs.mDescriptors = {
+        {sgfx::DescriptorType::UniformBuffer, sgfx::Count(1u), {sgfx::StageType::vertexStage}},
+        {sgfx::DescriptorType::TextureSampler, sgfx::Count(1u), {sgfx::StageType::vertexStage}},
+        {sgfx::DescriptorType::TextureSampler, sgfx::Count(1u), {sgfx::StageType::vertexStage}},
+    };
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableBlending = false;
+    attribs.mEnableDepthWrite = true;
+    attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
+
+    auto shader = mCompositor->createShader(1u, attribs);
+    mAssetManager->loadShader(shader, "AoG/shaders/water.shader");
+
+    sgfx::ShaderAttributeList attribsCompute = {};
+    attribsCompute.mBufferInput = {};
+    attribsCompute.mAttributes = {};
+    attribsCompute.mDescriptors = {
+        {sgfx::DescriptorType::StorageImage, sgfx::Count(1u), {sgfx::StageType::computeStage}},
+        {sgfx::DescriptorType::StorageImage, sgfx::Count(1u), {sgfx::StageType::computeStage}},
+    };
+    attribsCompute.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribsCompute.mEnableDepthTest = true;
+    attribsCompute.mEnableBlending = false;
+    attribsCompute.mPrimitiveType = sgfx::PrimitiveType::triangle;
+
+    auto compute = mCompositor->createComputeShader(1u, attribsCompute);
+    mAssetManager->loadShader(compute, "AoG/shaders/waterCompute.shader");
+
+    mRenderables.emplace_back(common::CreateRef<Water>(mContext, instBuffer, shader, compute));
 }
 
 SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<sgfx::CommandTransaction>& trans)

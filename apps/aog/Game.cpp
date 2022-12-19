@@ -210,6 +210,7 @@ void Game::userSetup()
     mScene->loadGlow();
     mScene->loadMeshShader();
     mScene->loadScene("AoG/scene.txt");
+    mScene->loadWater();
 }
 
 SwBool Game::userUpdate(F32 dt)

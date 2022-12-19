@@ -1,0 +1,57 @@
+#version 450
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding=0, r32f) uniform image2D height1;
+layout(binding=1, r32f) uniform image2D height2;
+
+uniform layout( push_constant) ORDER
+{
+    float order;
+    int x;
+    int y;
+    int r;
+};
+
+void main()
+{
+
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy) + ivec2(1);
+
+    if (order > 0.5)
+    {
+        float v = ((imageLoad(height2, pos + ivec2(-1,0)).r +
+                    imageLoad(height2, pos + ivec2(1,0)).r +
+                    imageLoad(height2, pos + ivec2(0,-1)).r +
+                    imageLoad(height2, pos + ivec2(0,1)).r) / 2.0) - imageLoad(height1, pos).r;
+
+        barrier();
+        if (r != 0)
+        {
+            int d = int(distance(pos, ivec2(x,y)));
+            if (d < r)
+            {
+                v += 1.0;
+            }
+        }
+        imageStore(height1, pos, vec4(v) * 0.99);
+    }
+    else
+    {
+        float v = ((imageLoad(height1, pos + ivec2(-1,0)).r +
+                    imageLoad(height1, pos + ivec2(1,0)).r +
+                    imageLoad(height1, pos + ivec2(0,-1)).r +
+                    imageLoad(height1, pos + ivec2(0,1)).r) / 2.0) - imageLoad(height2, pos).r;
+
+        barrier();
+        if (r != 0)
+        {
+            int d = int(distance(pos, ivec2(x,y)));
+            if (d < r)
+            {
+                v += 1.0;
+            }
+        }
+        imageStore(height2, pos, vec4(v) * 0.99);
+    }
+}

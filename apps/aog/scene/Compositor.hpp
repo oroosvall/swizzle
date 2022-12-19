@@ -101,6 +101,8 @@ public:
 
     common::Resource<swizzle::gfx::Shader> createShader(U32 layerIndex,
                                                         const swizzle::gfx::ShaderAttributeList& attribs);
+    common::Resource<swizzle::gfx::Shader> createComputeShader(U32 layerIndex,
+                                                               const swizzle::gfx::ShaderAttributeList& attribs);
     common::Resource<swizzle::gfx::Shader> createMeshShader(U32 layerIndex,
                                                             const swizzle::gfx::ShaderAttributeList& attribs);
 

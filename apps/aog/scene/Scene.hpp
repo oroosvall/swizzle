@@ -51,6 +51,7 @@ public:
     void loadTesselationMesh();
     void loadGlow();
     void loadMeshShader();
+    void loadWater();
 
     SceneState update(DeltaTime dt, SceneRenderSettings& settings,
                       common::Unique<swizzle::gfx::CommandTransaction>& trans);

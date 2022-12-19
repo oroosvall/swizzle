@@ -58,6 +58,29 @@ common::Resource<swizzle::gfx::Shader> Compositor::createShader(U32 layerIndex,
     return shader;
 }
 
+common::Resource<swizzle::gfx::Shader> Compositor::createComputeShader(U32 layerIndex,
+                                                                       const swizzle::gfx::ShaderAttributeList& attribs)
+{
+    common::Resource<swizzle::gfx::Shader> shader = nullptr;
+    auto& layer = mLayers[layerIndex];
+    if (layer.mType == RenderLayerType::RenderLayer_Swapchain)
+    {
+        shader =
+            mCtx->createShader(mLayers[layerIndex].mSwapchain, swizzle::gfx::ShaderType::ShaderType_Compute, attribs);
+    }
+    else if (layer.mType == RenderLayerType::RenderLayer_FrameBuffer)
+    {
+        shader = mCtx->createShader(mLayers[layerIndex].mFrameBuffer, swizzle::gfx::ShaderType::ShaderType_Compute,
+                                    attribs);
+    }
+    else
+    {
+        LOG_ERROR("Render layer was invalid");
+    }
+
+    return shader;
+}
+
 common::Resource<swizzle::gfx::Shader> Compositor::createMeshShader(U32 layerIndex,
                                                                     const swizzle::gfx::ShaderAttributeList& attribs)
 {
@@ -65,13 +88,12 @@ common::Resource<swizzle::gfx::Shader> Compositor::createMeshShader(U32 layerInd
     auto& layer = mLayers[layerIndex];
     if (layer.mType == RenderLayerType::RenderLayer_Swapchain)
     {
-        shader =
-            mCtx->createShader(mLayers[layerIndex].mSwapchain, swizzle::gfx::ShaderType::ShaderType_Mesh, attribs);
+        shader = mCtx->createShader(mLayers[layerIndex].mSwapchain, swizzle::gfx::ShaderType::ShaderType_Mesh, attribs);
     }
     else if (layer.mType == RenderLayerType::RenderLayer_FrameBuffer)
     {
-        shader = mCtx->createShader(mLayers[layerIndex].mFrameBuffer, swizzle::gfx::ShaderType::ShaderType_Mesh,
-                                    attribs);
+        shader =
+            mCtx->createShader(mLayers[layerIndex].mFrameBuffer, swizzle::gfx::ShaderType::ShaderType_Mesh, attribs);
     }
     else
     {
