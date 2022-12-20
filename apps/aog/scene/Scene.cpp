@@ -99,6 +99,27 @@ Scene::Scene(common::Resource<sgfx::GfxContext> ctx, common::Resource<Compositor
     , mAssetManager(assetManager)
     , mSceneState(SceneState::NotLoaded)
 {
+    sgfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = {{sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
+    attribs.mAttributes = {
+        {0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
+        {0u, sgfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
+        {0u, sgfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
+    attribs.mDescriptors = {};
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableBlending = false;
+    attribs.mEnableDepthWrite = true;
+    attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
+
+    mShadowShader = mCompositor->createShader(2u, attribs);
+    mAssetManager->loadShader(mShadowShader, "AoG/shaders/shadow.shader");
 }
 
 Scene::~Scene() {}
@@ -298,7 +319,7 @@ void Scene::loadHeightMap()
 
     auto texture = mAssetManager->loadTexture("AoG/textures/heightmap.png");
 
-    mRenderables.emplace_back(common::CreateRef<HeightMap>(mContext, instBuffer, texture, shader));
+    mRenderables.emplace_back(common::CreateRef<HeightMap>(mContext, instBuffer, texture, shader, mShadowShader));
 }
 
 void Scene::loadTesselationMesh()
@@ -351,7 +372,7 @@ void Scene::loadTesselationMesh()
     auto texture = mAssetManager->loadTexture("AoG/textures/displaceTest.png");
 
     mRenderables.emplace_back(
-        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, texture, texture, texture, shader, otherShader));
+        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, texture, texture, texture, shader, otherShader, mShadowShader));
 }
 
 void Scene::loadGlow()
@@ -401,7 +422,7 @@ void Scene::loadGlow()
     auto grid = mAssetManager->loadTexture("AoG/textures/Grid.png");
     auto glow = mAssetManager->loadTexture("AoG/textures/Glow.png");
 
-    mRenderables.emplace_back(common::CreateRef<GlowMesh>(mContext, mesh2, instBuffer, grid, glow, shader));
+    mRenderables.emplace_back(common::CreateRef<GlowMesh>(mContext, mesh2, instBuffer, grid, glow, shader, mShadowShader));
 }
 
 void Scene::loadMeshShader()
@@ -473,7 +494,7 @@ void Scene::loadMeshShader()
 void Scene::loadWater()
 {
     glm::mat4 transform = glm::mat4(1.0f);
-    transform = glm::translate(transform, { 50, 0, 0 });
+    transform = glm::translate(transform, {50, 0, 0});
 
     common::Resource<sgfx::Buffer> instBuffer = mContext->createBuffer(sgfx::BufferType::Vertex);
 
@@ -483,8 +504,8 @@ void Scene::loadWater()
     instBuffer->setBufferData(positions.data(), sizeof(glm::mat4) * positions.size(), sizeof(glm::mat4));
 
     sgfx::ShaderAttributeList attribs = {};
-    attribs.mBufferInput = { {sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 2u)},
-                             {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mBufferInput = {{sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
     attribs.mAttributes = {
         {0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
         {0u, sgfx::ShaderAttributeDataType::vec2f, sizeof(float) * 3u},
@@ -507,6 +528,9 @@ void Scene::loadWater()
     auto shader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(shader, "AoG/shaders/water.shader");
 
+    auto shadow = mCompositor->createShader(2u, attribs);
+    mAssetManager->loadShader(shadow, "AoG/shaders/shadowWater.shader");
+
     sgfx::ShaderAttributeList attribsCompute = {};
     attribsCompute.mBufferInput = {};
     attribsCompute.mAttributes = {};
@@ -522,7 +546,7 @@ void Scene::loadWater()
     auto compute = mCompositor->createComputeShader(1u, attribsCompute);
     mAssetManager->loadShader(compute, "AoG/shaders/waterCompute.shader");
 
-    mRenderables.emplace_back(common::CreateRef<Water>(mContext, instBuffer, shader, compute));
+    mRenderables.emplace_back(common::CreateRef<Water>(mContext, instBuffer, shader, compute, shadow));
 }
 
 SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<sgfx::CommandTransaction>& trans)
@@ -554,6 +578,14 @@ SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings, common::Un
     }
 
     return mSceneState;
+}
+
+void Scene::renderShadows(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    for (auto& it : mRenderables)
+    {
+        it->render(trans, cam);
+    }
 }
 
 void Scene::render(common::Unique<sgfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
@@ -657,7 +689,7 @@ void Scene::loadParticleSystemParams(const SwChar* texturePath, glm::vec3 pos, g
 
     auto texture = mAssetManager->loadTexture(texturePath);
 
-    mRenderables.emplace_back(common::CreateRef<ParticleSystem>(mContext, count, pos, dir, texture, shader));
+    mRenderables.emplace_back(common::CreateRef<ParticleSystem>(mContext, count, pos, dir, texture, shader, mShadowShader));
 }
 
 void Scene::loadAnimTextureParams(const SwChar* meshFile, const SwChar* texturePath, std::vector<glm::mat4>& inst)
@@ -691,9 +723,14 @@ void Scene::loadAnimTextureParams(const SwChar* meshFile, const SwChar* textureP
     auto shader = mCompositor->createShader(1u, attribs);
     mAssetManager->loadShader(shader, "AoG/shaders/animatedTexture.shader");
 
+    attribs.mDescriptors.clear();
+    auto shadow = mCompositor->createShader(2u, attribs);
+    mAssetManager->loadShader(shadow, "AoG/shaders/shadow.shader");
+
     auto texture = mAssetManager->loadTexture(texturePath);
 
-    mRenderables.emplace_back(common::CreateRef<AnimatedTextureMesh>(mContext, asset, instBuffer, texture, shader));
+    mRenderables.emplace_back(
+        common::CreateRef<AnimatedTextureMesh>(mContext, asset, instBuffer, texture, shader, mShadowShader));
 }
 
 void Scene::loadRegular(const SwChar* meshFile, const SwChar* diffuseTexture, const SwChar* normalTexture,
@@ -734,5 +771,5 @@ void Scene::loadRegular(const SwChar* meshFile, const SwChar* diffuseTexture, co
     auto optNormal = mAssetManager->loadTexture("AoG/textures/neutral.png");
 
     mRenderables.emplace_back(
-        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, diffuse, normal, optNormal, shader, shader));
+        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, diffuse, normal, optNormal, shader, shader, mShadowShader));
 }

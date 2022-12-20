@@ -22,13 +22,15 @@ class HeightMap : public Renderable
 {
 public:
     HeightMap(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::gfx::Buffer> inst,
-              common::Resource<swizzle::gfx::Texture> texture, common::Resource<swizzle::gfx::Shader> shader);
+              common::Resource<swizzle::gfx::Texture> texture, common::Resource<swizzle::gfx::Shader> shader,
+              common::Resource<swizzle::gfx::Shader> shadow);
 
-    virtual void update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
+    virtual void update(DeltaTime dt, SceneRenderSettings& settings,
+                        common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
+    virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam) override;
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam) override;
 
 private:
-
     void loadHeightMap(SwBool cpuDisplace);
     F32 getHeight(U8* image, S32 x, S32 y, S32 ch, F32 xp, F32 yp, F32 max);
 
@@ -40,6 +42,7 @@ private:
     common::Resource<swizzle::gfx::Buffer> mInst;
 
     common::Resource<swizzle::gfx::Buffer> mUniform;
+    common::Resource<swizzle::gfx::Shader> mShadowShader;
 
     SwBool mDisplaced;
 };

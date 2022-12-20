@@ -97,7 +97,7 @@ class Compositor
 {
 public:
     Compositor(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::gfx::Swapchain> swap,
-               common::Resource<swizzle::gfx::FrameBuffer> glowTexture);
+               common::Resource<swizzle::gfx::FrameBuffer> glowTexture, common::Resource<swizzle::gfx::FrameBuffer> shadow);
 
     common::Resource<swizzle::gfx::Shader> createShader(U32 layerIndex,
                                                         const swizzle::gfx::ShaderAttributeList& attribs);

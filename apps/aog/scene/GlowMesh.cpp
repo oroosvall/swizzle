@@ -28,7 +28,7 @@ GlowMesh::GlowMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
                          common::Resource<swizzle::asset2::IMeshAsset> asset,
                          common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
                          common::Resource<swizzle::gfx::Texture> glowTexture,
-                         common::Resource<swizzle::gfx::Shader> shader)
+                         common::Resource<swizzle::gfx::Shader> shader, common::Resource<swizzle::gfx::Shader> shadow)
     : mAsset(asset)
     , mMesh(nullptr)
     , mTexture(texture)
@@ -36,6 +36,7 @@ GlowMesh::GlowMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
     , mMaterial(nullptr)
     , mShader(shader)
     , mInst(inst)
+    , mShadowShader(shadow)
 {
     mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
     mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
@@ -56,7 +57,15 @@ void GlowMesh::update(DeltaTime dt, SceneRenderSettings& settings,
     UNUSED_ARG(settings);
     trans->uploadTexture(mTexture);
     trans->uploadTexture(mGlowTexture);
+}
 
+void GlowMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    glm::mat4 camMat = cam.getProjection() * cam.getView();
+    trans->bindShader(mShadowShader);
+    trans->setViewport(2048, 2048);
+    trans->setShaderConstant(mShadowShader, (U8*)&camMat, sizeof(glm::mat4));
+    trans->drawIndexedInstanced(mMesh, mIndex, mInst);
 }
 
 void GlowMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)

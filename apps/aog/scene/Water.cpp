@@ -45,7 +45,8 @@ struct ComputePushs
 /* Class Public Function Definition */
 
 Water::Water(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::gfx::Buffer> inst,
-             common::Resource<swizzle::gfx::Shader> shader, common::Resource<swizzle::gfx::Shader> compute)
+             common::Resource<swizzle::gfx::Shader> shader, common::Resource<swizzle::gfx::Shader> compute,
+             common::Resource<swizzle::gfx::Shader> shadow)
     : mVertexBuffer()
     , mIndexBuffer()
     , mShader(shader)
@@ -54,6 +55,7 @@ Water::Water(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<sw
     , mMatCompute()
     , mInst(inst)
     , mUniform()
+    , mShadow(shadow)
     , mActiveTexture(false)
 {
     mVertexBuffer = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
@@ -103,7 +105,7 @@ void Water::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<s
         pushs.r = 2;
     }
 
-    //if (mTime > 0.2f)
+    // if (mTime > 0.2f)
     {
         trans->changeImageLayoutCompute(mHeight1);
         trans->changeImageLayoutCompute(mHeight2);
@@ -113,8 +115,17 @@ void Water::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<s
         trans->changeImageLayoutRender(mHeight2);
 
         mActiveTexture = !mActiveTexture;
-        //mTime -= 0.2f;
+        // mTime -= 0.2f;
     }
+}
+
+void Water::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    glm::mat4 camMat = cam.getProjection() * cam.getView();
+    trans->bindShader(mShadow);
+    trans->setViewport(2048, 2048);
+    trans->setShaderConstant(mShadow, (U8*)&camMat, sizeof(glm::mat4));
+    trans->drawIndexedInstanced(mVertexBuffer, mIndexBuffer, mInst);
 }
 
 void Water::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
@@ -158,8 +169,6 @@ void Water::generatePlane()
 {
     std::vector<WaterVertex> verts;
 
-
-
     for (F32 x = -25.0f; x < 25.0f; x += 0.1f)
     {
         for (F32 y = -25.0f; y < 25.0f; y += 0.1f)
@@ -169,7 +178,8 @@ void Water::generatePlane()
             WaterVertex vert{};
             vert.x = x;
             vert.z = y;
-            //vert.ny = 1.0f;
+            vert.y = 0.0f;
+            // vert.ny = 1.0f;
             vert.u = ux;
             vert.v = uy;
             verts.push_back(vert);
@@ -185,8 +195,8 @@ void Water::generatePlane()
             U32 currRow = (y * 500) + x;
             U32 nextRow = ((y + 1) * 500) + x;
 
-            WaterIndex t1{ currRow + 1, nextRow + 1, currRow };
-            WaterIndex t2{ currRow, nextRow + 1, nextRow };
+            WaterIndex t1{currRow + 1, nextRow + 1, currRow};
+            WaterIndex t2{currRow, nextRow + 1, nextRow};
             tris.push_back(t1);
             tris.push_back(t2);
         }

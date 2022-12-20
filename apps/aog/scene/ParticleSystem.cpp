@@ -26,11 +26,12 @@
 
 ParticleSystem::ParticleSystem(common::Resource<swizzle::gfx::GfxContext> ctx, U32 particleCount, glm::vec3 startPos,
                                glm::vec3 dir, common::Resource<swizzle::gfx::Texture> texture,
-                               common::Resource<swizzle::gfx::Shader> shader)
+                               common::Resource<swizzle::gfx::Shader> shader, common::Resource<swizzle::gfx::Shader> shadow)
     : mParticleBuffer(nullptr)
     , mTexture(texture)
     , mMaterial(nullptr)
     , mShader(shader)
+    , mShadowShader(shadow)
     , mParticlePositions()
     , mNumParticles(particleCount)
     , mActiveParticles(0ull)
@@ -90,6 +91,17 @@ void ParticleSystem::update(DeltaTime dt, SceneRenderSettings& settings,
     mParticleBuffer->setBufferData(mParticlePositions.data(), sizeof(glm::vec3) * mParticlePositions.size(),
                                    sizeof(glm::vec3));
 
+}
+
+void ParticleSystem::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    UNUSED_ARG(trans);
+    UNUSED_ARG(cam);
+    //glm::mat4 camMat = cam.getProjection() * cam.getView();
+    //trans->bindShader(mShadowShader);
+    //trans->setShaderConstant(mShadowShader, (U8*)&camMat, sizeof(glm::mat4));
+    //trans->bindVertexBuffer(mParticleBuffer);
+    //trans->drawNoBind(mActiveParticles, 0u);
 }
 
 void ParticleSystem::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)

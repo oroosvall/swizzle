@@ -105,6 +105,12 @@ void Animated::update(DeltaTime dt, SceneRenderSettings& settings, common::Uniqu
     }
 }
 
+void Animated::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    UNUSED_ARG(trans);
+    UNUSED_ARG(cam);
+}
+
 void Animated::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
 {
     struct tmp

@@ -24,6 +24,7 @@ struct DayOptions
     glm::vec2 mFlarePos;
     SwBool mTextureViewer;
     SwBool mSSAO;
+    SwBool mViewFromLight;
 };
 
 void DrawDayOptions(SceneRenderSettings& settings, DayOptions& opt);

@@ -30,11 +30,13 @@ AnimatedTextureMesh::AnimatedTextureMesh(common::Resource<swizzle::gfx::GfxConte
                                          common::Resource<MeshInfo> meshInfo,
                                          common::Resource<swizzle::gfx::Buffer> inst,
                                          common::Resource<swizzle::gfx::Texture> texture,
-                                         common::Resource<swizzle::gfx::Shader> shader)
+                                         common::Resource<swizzle::gfx::Shader> shader,
+                                         common::Resource<swizzle::gfx::Shader> shadowShader)
     : mMeshInfo(meshInfo)
     , mTexture(texture)
     , mMaterial(nullptr)
     , mShader(shader)
+    , mShadowShader(shadowShader)
     , mInst(inst)
     , mUvOffset()
 {
@@ -44,7 +46,8 @@ AnimatedTextureMesh::AnimatedTextureMesh(common::Resource<swizzle::gfx::GfxConte
     mMaterial->setDescriptorTextureResource(1u, mTexture);
 }
 
-void AnimatedTextureMesh::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans)
+void AnimatedTextureMesh::update(DeltaTime dt, SceneRenderSettings& settings,
+                                 common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     if (!settings.mEnableAnimatedTextures)
     {
@@ -57,6 +60,15 @@ void AnimatedTextureMesh::update(DeltaTime dt, SceneRenderSettings& settings, co
     {
         mUvOffset.y -= 1.0f;
     }
+}
+
+void AnimatedTextureMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    glm::mat4 camMat = cam.getProjection() * cam.getView();
+    trans->bindShader(mShadowShader);
+    trans->setViewport(2048, 2048);
+    trans->setShaderConstant(mShadowShader, (U8*)&camMat, sizeof(glm::mat4));
+    trans->drawIndexedInstanced(mMeshInfo->mVertex, mMeshInfo->mIndex, mInst);
 }
 
 void AnimatedTextureMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)

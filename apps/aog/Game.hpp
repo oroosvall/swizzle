@@ -35,8 +35,6 @@ private:
 
     void imGuiRender(common::Unique<sw::gfx::CommandTransaction>& trans);
 
-    std::string getStatisticsText() const;
-
     common::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
 
     common::Resource<sw::gfx::FrameBuffer> mGBuffer;
@@ -85,6 +83,11 @@ private:
 
     common::Resource<sw::gfx::Buffer> mSampleBuffer;
     common::Resource<sw::gfx::Texture> mNoiseTexture;
+
+    common::Resource<sw::gfx::FrameBuffer> mShadowMap;
+    common::Resource<sw::gfx::Buffer> mShadowCamBuffer;
+    OrthoCamera mShadowCam;
+    SwBool mShadowTexturePreview;
 
 };
 

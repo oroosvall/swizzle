@@ -19,6 +19,7 @@ layout (set=0, binding=6) uniform sampler_kernel{
 };
 
 layout(set=0, binding=7) uniform sampler2D noiseTex;
+layout(set=0, binding=8) uniform sampler2D shadowTex;
 
 const uint kernelSize = 64;
 
@@ -33,6 +34,11 @@ uniform layout( push_constant) Dof
     vec2 flarePos;
     vec2 screenSize;
 } dof;
+
+uniform layout( binding = 9) Cam
+{
+    mat4 shadowViewProj;
+};
 
 // Noise function 
 // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
@@ -278,6 +284,29 @@ vec4 ao()
     // return vec4(occlusion);
 }
 
+float shadow()
+{
+    vec3 worldPos = texture(worldTex, uv).xyz;
+    vec4 shadowPos = shadowViewProj * vec4(worldPos, 1.0);
+    vec3 projCoords = shadowPos.xyz / shadowPos.w;
+
+    vec2 coord = projCoords.xy * 0.5 + 0.5;
+    // return vec4(shadowPos.xy, 0.0, 1.0);
+
+    // shadowPos = shadowPos* 0.5 + 0.5;
+    // return vec4(shadowPos.www, 1.0);
+
+    coord = vec2(coord.x, 1.0 - coord.y);
+
+    float closestDepth = texture(shadowTex, coord).r;
+    float currentDepth = projCoords.z;
+
+    float bias = 0.005;
+    float shadow = currentDepth - bias > closestDepth  ? 0.9 : 0.0;  
+    // return vec4(vec3(closestDepth, currentDepth, 0.0), 1.0);
+    return shadow;
+}
+
 void main()
 {
 	float depth1 = texture(depth, uv ).x;
@@ -309,8 +338,8 @@ void main()
         lensFlareColor = lensFlare(uv, dof.flarePos);
     }
 
-    vec4 finalColor = color + vec4(dither/255.0) + vec4(lensFlareColor, 0.0);
-
+    vec4 finalColor = (color * 1.0 - shadow()) + vec4(dither/255.0) + vec4(lensFlareColor, 0.0);
+    // finalColor = shadow();
     // finalColor = ao();
     // finalColor = vec4(ao());
     // finalColor = clamp(texture(normalTex, uv), 0.0, 1.0);

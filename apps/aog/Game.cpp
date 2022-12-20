@@ -85,6 +85,8 @@ void Game::userSetup()
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
         {sw::gfx::DescriptorType::UniformBuffer, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
         {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::TextureSampler, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
+        {sw::gfx::DescriptorType::UniformBuffer, sw::gfx::Count(1u), {sw::gfx::StageType::fragmentStage}},
     };
     attribFsq.mPushConstantSize = sizeof(glm::mat4) * 2;
     attribFsq.mEnableBlending = true;
@@ -100,12 +102,6 @@ void Game::userSetup()
     mFsqMat->setDescriptorTextureResource(3u, mGBuffer->getColorAttachment(1u));
     mFsqMat->setDescriptorTextureResource(4u, mGBuffer->getColorAttachment(2u));
     mFsqMat->setDescriptorTextureResource(5u, mGBuffer->getColorAttachment(3u));
-
-    mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain, mGBuffer);
-    mAssetManager = common::CreateRef<AssetManager>(mGfxContext);
-    mScene = common::CreateRef<Scene>(mGfxContext, mCompositor, mAssetManager);
-
-    mShaderEditor = common::CreateRef<ShaderEditor>(mAssetManager);
 
     mSceneSettings.mMeshShaders = mGfxContext->hasMeshShaderSupport();
     mSceneSettings.mParticles = false;
@@ -142,6 +138,7 @@ void Game::userSetup()
     mDayOptions.mLensFlare = false;
     mDayOptions.mFlarePos = glm::vec2(0.0f, 0.0f);
     mDayOptions.mTextureViewer = 0;
+    mDayOptions.mViewFromLight = false;
 
     sw::gfx::ShaderAttributeList bezierAttribs = {};
     bezierAttribs.mAttributes = {
@@ -203,6 +200,28 @@ void Game::userSetup()
 
     cam.setPosition({1.0f, 0.75f, 0.0f});
     cam.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
+
+    swizzle::gfx::FrameBufferCreateInfo shadowMapInfo{};
+    shadowMapInfo.mDepthType = swizzle::gfx::FrameBufferDepthType::DepthStencil;
+    shadowMapInfo.mSwapCount = 3u;
+    shadowMapInfo.mHeight = 2048u;
+    shadowMapInfo.mWidth = 2048u;
+    shadowMapInfo.mColorAttachFormats = {};
+
+    mShadowMap = mGfxContext->createFramebuffer(shadowMapInfo);
+    mShadowMap->setDepthAttachmentClearValue(1.0f, 0u);
+
+    mShadowCamBuffer = mGfxContext->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
+
+    mFsqMat->setDescriptorTextureResource(8u, mShadowMap->getDepthAttachment());
+
+    mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain, mGBuffer, mShadowMap);
+    mAssetManager = common::CreateRef<AssetManager>(mGfxContext);
+    mScene = common::CreateRef<Scene>(mGfxContext, mCompositor, mAssetManager);
+
+    mShaderEditor = common::CreateRef<ShaderEditor>(mAssetManager);
+
+    mShadowTexturePreview = false;
 
     mScene->loadSky();
     mScene->loadHeightMap();
@@ -372,6 +391,17 @@ SwBool Game::userUpdate(F32 dt)
     {
         if (ImGui::Begin("Texture viewer", &mDayOptions.mTextureViewer))
         {
+            if (ImGui::Checkbox("##textureShadow", &mShadowTexturePreview))
+            {
+                if (mShadowTexturePreview)
+                {
+                    mTextureViewerMat->setDescriptorTextureResource(0u, mShadowMap->getDepthAttachment());
+                }
+                else
+                {
+                    mTextureViewerMat->setDescriptorTextureResource(0u, mGBuffer->getColorAttachment(mSelectedTexture));
+                }
+            }
             std::string comboLabel = "##textureViewer";
             std::string textureText = "GBuffer Texture idx " + std::to_string(mSelectedTexture);
             if (ImGui::BeginCombo(comboLabel.c_str(), textureText.c_str()))
@@ -452,7 +482,11 @@ void Game::updateMainWindow(F32 dt)
 
     imGuiRender(trans);
 
-    auto dTrans = mCmdBuffer->beginRenderPass(mGBuffer, std::move(trans));
+    auto dTrans = mCmdBuffer->beginRenderPass(mShadowMap, std::move(trans));
+    mScene->renderShadows(dTrans, mShadowCam);
+    trans = mCmdBuffer->endRenderPass(std::move(dTrans));
+
+    dTrans = mCmdBuffer->beginRenderPass(mGBuffer, std::move(trans));
 
     mScene->render(dTrans, cam);
 
@@ -504,6 +538,10 @@ void Game::updateMainWindow(F32 dt)
     d.mFlarePos = mDayOptions.mFlarePos;
     d.mScreenSize.x = F32(x);
     d.mScreenSize.y = F32(y);
+
+    glm::mat4 shadowMat = mShadowCam.getProjection() * mShadowCam.getView();
+    mShadowCamBuffer->setBufferData(&shadowMat, sizeof(glm::mat4), sizeof(glm::mat4));
+    mFsqMat->setDescriptorBufferResource(9u, mShadowCamBuffer, ~0ull);
 
     dTrans->bindShader(mFsq);
     dTrans->bindMaterial(mFsq, mFsqMat);
@@ -594,6 +632,11 @@ void Game::updateSkyTime()
     }
     glm::vec3 sunMoonDir = glm::vec3(-r * 0.4F, r * s, r * c);
 
+    mShadowCam.lookAt(sunMoonDir, { 0.0f, 0.0f, 0.0f });
+    if (mDayOptions.mViewFromLight)
+    {
+        cam.lookAt(sunMoonDir, { 0.0f, 0.0f, 0.0f });
+    }
     // LampBuffer lampBuf{};
     // lampBuf.mLightPos = glm::vec4(mSunMoonDir., 1000.0f); // w is radius
     // lampBuf.mLightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // w is intensity

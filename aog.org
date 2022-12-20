@@ -1,7 +1,7 @@
 
 
 * List
-- [-] Advent of graphics [79%] [19/24]
+- [-] Advent of graphics [83%] [20/24]
   - [X] Normal mapping (Day 1)
   - [X] Animated Textures (Day 2)
   - [X] Shader editor (Day 3)
@@ -21,7 +21,7 @@
   - [X] Asset streaming (Day 17)
   - [X] Gpu execution time queries (Day 18)
   - [X] Water animation (Day 19)
-  - [ ] Shadow mapping
+  - [X] Shadow mapping (Day 20)
   - [ ] Transparency (Look through window)
   - [ ] Godrays
   - [ ] Mirror reflection

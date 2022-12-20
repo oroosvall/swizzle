@@ -43,4 +43,26 @@ private:
     glm::vec3 mRotation;
 };
 
+class OrthoCamera
+{
+public:
+
+    OrthoCamera();
+    ~OrthoCamera();
+
+    void lookAt(glm::vec3 pos, glm::vec3 dir, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f));
+
+    const glm::vec3& getPosition();
+
+    const glm::mat4& getView() const;
+    const glm::mat4& getProjection() const;
+
+private:
+
+    glm::mat4 mProjectionMatrix;
+    glm::mat4 mViewMatrix;
+
+    glm::vec3 mPosition;
+};
+
 #endif

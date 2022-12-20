@@ -26,5 +26,5 @@ void main()
     normalColor = vec4(normalize(norm) * 0.5 + 0.5, 1.0);
     //normalColor = vec4(normalize(norm), 1.0);
     //normalColor.y = 0.0;
-    worldColor = vec4(worldPos, linearDepth(gl_FragCoord.z, 0.01, 100.0));
+    worldColor = vec4(worldPos, 1.0);
 }

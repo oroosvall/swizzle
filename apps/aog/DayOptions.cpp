@@ -108,4 +108,8 @@ void DrawDayOptions(SceneRenderSettings& settings, DayOptions& opt)
     ImGui::Text("(Day 17) Asset streaming showcase");
     ImGui::SameLine();
     ImGui::Checkbox("##day17", &settings.mAssetSlowLoad);
+    ImGui::Text("(Day 20) Shadow mapping");
+    ImGui::Text("View from light");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day20", &opt.mViewFromLight);
 }

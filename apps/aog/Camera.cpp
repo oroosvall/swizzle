@@ -110,3 +110,34 @@ void PerspectiveCamera::recalculateViewProj()
     mViewMatrix = glm::inverse(transform * rot);
     mProjView = mProjectionMatrix * mViewMatrix;
 }
+
+OrthoCamera::OrthoCamera()
+    : mViewMatrix()
+    , mProjectionMatrix()
+    , mPosition()
+{
+    mProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 100.0f);
+}
+
+OrthoCamera::~OrthoCamera() {}
+
+void OrthoCamera::lookAt(glm::vec3 pos, glm::vec3 dir, glm::vec3 up)
+{
+    mPosition = pos;
+    mViewMatrix = glm::lookAt(pos, dir, up);
+}
+
+const glm::vec3& OrthoCamera::getPosition()
+{
+    return mPosition;
+}
+
+const glm::mat4& OrthoCamera::getView() const
+{
+    return mViewMatrix;
+}
+
+const glm::mat4& OrthoCamera::getProjection() const
+{
+    return mProjectionMatrix;
+}

@@ -55,6 +55,7 @@ public:
 
     SceneState update(DeltaTime dt, SceneRenderSettings& settings,
                       common::Unique<swizzle::gfx::CommandTransaction>& trans);
+    void renderShadows(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam);
     void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam);
 
 private:
@@ -72,6 +73,7 @@ private:
     common::Resource<AssetManager> mAssetManager;
     SceneState mSceneState;
 
+    common::Resource<swizzle::gfx::Shader> mShadowShader;
     std::vector<common::Resource<Renderable>> mRenderables;
 
     std::vector<std::string> mItemsToLoad;

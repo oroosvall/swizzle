@@ -22,7 +22,8 @@
 /* Class Public Function Definition */
 
 Compositor::Compositor(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::gfx::Swapchain> swap,
-                       common::Resource<swizzle::gfx::FrameBuffer> glowTexture)
+                       common::Resource<swizzle::gfx::FrameBuffer> glowTexture,
+                       common::Resource<swizzle::gfx::FrameBuffer> shadow)
     : mCtx(ctx)
     , mLayers()
 {
@@ -33,6 +34,10 @@ Compositor::Compositor(common::Resource<swizzle::gfx::GfxContext> ctx, common::R
     RenderLayer fb(RenderLayerType::RenderLayer_FrameBuffer);
     fb.mFrameBuffer = glowTexture;
     mLayers[1u] = fb;
+
+    RenderLayer sfb(RenderLayerType::RenderLayer_FrameBuffer);
+    sfb.mFrameBuffer = shadow;
+    mLayers[2u] = sfb;
 }
 
 common::Resource<swizzle::gfx::Shader> Compositor::createShader(U32 layerIndex,
@@ -70,8 +75,8 @@ common::Resource<swizzle::gfx::Shader> Compositor::createComputeShader(U32 layer
     }
     else if (layer.mType == RenderLayerType::RenderLayer_FrameBuffer)
     {
-        shader = mCtx->createShader(mLayers[layerIndex].mFrameBuffer, swizzle::gfx::ShaderType::ShaderType_Compute,
-                                    attribs);
+        shader =
+            mCtx->createShader(mLayers[layerIndex].mFrameBuffer, swizzle::gfx::ShaderType::ShaderType_Compute, attribs);
     }
     else
     {

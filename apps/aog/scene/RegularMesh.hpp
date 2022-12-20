@@ -22,16 +22,17 @@ class RegularMesh : public Renderable
 {
 public:
     RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<MeshInfo> meshInfo,
-                common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,  common::Resource<swizzle::gfx::Texture> normalTex,
+                common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
+                common::Resource<swizzle::gfx::Texture> normalTex,
                 common::Resource<swizzle::gfx::Texture> optionalTexture, common::Resource<swizzle::gfx::Shader> shader,
-                common::Resource<swizzle::gfx::Shader> optionalShader);
+                common::Resource<swizzle::gfx::Shader> optionalShader, common::Resource<swizzle::gfx::Shader> shadow);
 
     virtual void update(DeltaTime dt, SceneRenderSettings& settings,
                         common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
+    virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam) override;
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam) override;
 
 private:
-
     common::Resource<MeshInfo> mMeshInfo;
 
     common::Resource<swizzle::gfx::Texture> mTexture;
@@ -46,6 +47,7 @@ private:
     common::Resource<swizzle::gfx::Buffer> mUniform;
 
     common::Resource<swizzle::gfx::Shader> mSelectedShader;
+    common::Resource<swizzle::gfx::Shader> mShadowShader;
 
     SwBool mNormalEnabled;
 };

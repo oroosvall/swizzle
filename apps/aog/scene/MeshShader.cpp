@@ -65,6 +65,12 @@ void MeshShader::update(DeltaTime dt, SceneRenderSettings& settings,
     mMeshShaderEnabled = settings.mMeshShaders;
 }
 
+void MeshShader::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    UNUSED_ARG(trans);
+    UNUSED_ARG(cam);
+}
+
 void MeshShader::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
 {
     struct tmp

@@ -37,5 +37,5 @@ void main()
     glowColor = vec4(0.0);
 
     normalColor = vec4(normalize(normalMap.xyz) * 0.5 + 0.5, 1.0);
-    worldColor = vec4(worldPos, linearDepth(gl_FragCoord.z, 0.01, 100.0));
+    worldColor = vec4(worldPos, 1.0);
 }

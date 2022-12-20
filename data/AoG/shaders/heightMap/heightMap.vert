@@ -27,12 +27,12 @@ uniform layout( push_constant) Camera
 void main() 
 {
     //pos = vertPos;
-    vec4 wpos = view * mdlMat * vec4(vertPos, 1.0);
+    vec4 wpos = mdlMat * vec4(vertPos, 1.0);
     worldPos = wpos.xyz;
     //outNormals = (mdlMat * vec4(normals, 0.0)).xyz;
     mat3 normalMatrix = transpose(inverse(mat3(view * mdlMat)));
     outNormals = normalMatrix * -normals;
 
-    gl_Position = proj * wpos;
+    gl_Position = viewProj *  wpos;
     outUV = uvs;
 }

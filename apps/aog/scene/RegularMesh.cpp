@@ -6,8 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <swizzle/core/Input.hpp>
 #include "../AssetManager.hpp"
+#include <swizzle/core/Input.hpp>
 
 /* Defines */
 
@@ -25,13 +25,13 @@
 
 /* Class Public Function Definition */
 
-RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
-                         common::Resource<MeshInfo> meshInfo,
+RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<MeshInfo> meshInfo,
                          common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
                          common::Resource<swizzle::gfx::Texture> normalTex,
                          common::Resource<swizzle::gfx::Texture> optionalTexture,
                          common::Resource<swizzle::gfx::Shader> shader,
-                         common::Resource<swizzle::gfx::Shader> optionalShader)
+                         common::Resource<swizzle::gfx::Shader> optionalShader,
+                         common::Resource<swizzle::gfx::Shader> shadow)
     : mMeshInfo(meshInfo)
     , mTexture(texture)
     , mNormalTex(normalTex)
@@ -40,6 +40,7 @@ RegularMesh::RegularMesh(common::Resource<swizzle::gfx::GfxContext> ctx,
     , mShader(shader)
     , mOptionalShader(optionalShader)
     , mInst(inst)
+    , mShadowShader(shadow)
 {
     mUniform = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
 
@@ -76,6 +77,15 @@ void RegularMesh::update(DeltaTime dt, SceneRenderSettings& settings,
     {
         mSelectedShader = mOptionalShader;
     }
+}
+
+void RegularMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    glm::mat4 camMat = cam.getProjection() * cam.getView();
+    trans->bindShader(mShadowShader);
+    trans->setViewport(2048, 2048);
+    trans->setShaderConstant(mShadowShader, (U8*)&camMat, sizeof(glm::mat4));
+    trans->drawIndexedInstanced(mMeshInfo->mVertex, mMeshInfo->mIndex, mInst);
 }
 
 void RegularMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)

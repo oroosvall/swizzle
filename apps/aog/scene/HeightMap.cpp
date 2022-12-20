@@ -39,13 +39,15 @@ struct HeightMapTriangle
 /* Class Public Function Definition */
 
 HeightMap::HeightMap(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::gfx::Buffer> inst,
-                     common::Resource<swizzle::gfx::Texture> texture, common::Resource<swizzle::gfx::Shader> shader)
+                     common::Resource<swizzle::gfx::Texture> texture, common::Resource<swizzle::gfx::Shader> shader,
+                     common::Resource<swizzle::gfx::Shader> shadow)
     : mMesh(nullptr)
     , mTexture(texture)
     , mMaterial(nullptr)
     , mShader(shader)
     , mInst(inst)
     , mDisplaced(true)
+    , mShadowShader(shadow)
 {
     mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
     mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
@@ -57,7 +59,8 @@ HeightMap::HeightMap(common::Resource<swizzle::gfx::GfxContext> ctx, common::Res
     mMaterial->setDescriptorTextureResource(1u, mTexture);
 }
 
-void HeightMap::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swizzle::gfx::CommandTransaction>& trans)
+void HeightMap::update(DeltaTime dt, SceneRenderSettings& settings,
+                       common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     UNUSED_ARG(dt);
     if (mDisplaced != settings.mHeightMap)
@@ -67,6 +70,15 @@ void HeightMap::update(DeltaTime dt, SceneRenderSettings& settings, common::Uniq
     }
 
     trans->uploadTexture(mTexture);
+}
+
+void HeightMap::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    glm::mat4 camMat = cam.getProjection() * cam.getView();
+    trans->bindShader(mShadowShader);
+    trans->setViewport(2048, 2048);
+    trans->setShaderConstant(mShadowShader, (U8*)&camMat, sizeof(glm::mat4));
+    trans->drawIndexedInstanced(mMesh, mIndex, mInst);
 }
 
 void HeightMap::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
@@ -147,8 +159,8 @@ void HeightMap::loadHeightMap(SwBool cpuDisplace)
             U32 currRow = (y * 50) + x;
             U32 nextRow = ((y + 1) * 50) + x;
 
-            HeightMapTriangle t1{ currRow + 1, nextRow + 1, currRow };
-            HeightMapTriangle t2{ currRow, nextRow + 1, nextRow };
+            HeightMapTriangle t1{currRow + 1, nextRow + 1, currRow};
+            HeightMapTriangle t2{currRow, nextRow + 1, nextRow};
             tris.push_back(t1);
             tris.push_back(t2);
         }

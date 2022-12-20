@@ -46,6 +46,12 @@ void Sky::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<swi
     mMaterial->setDescriptorBufferResource(0u, mUniformBuffer, sizeof(SkyInfo));
 }
 
+void Sky::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+{
+    UNUSED_ARG(trans);
+    UNUSED_ARG(cam);
+}
+
 void Sky::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
 {
     struct tmp

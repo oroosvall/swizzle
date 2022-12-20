@@ -31,10 +31,11 @@ class ParticleSystem : public Renderable
 {
 public:
     ParticleSystem(common::Resource<swizzle::gfx::GfxContext> ctx, U32 particleCount, glm::vec3 startPos, glm::vec3 dir,
-                   common::Resource<swizzle::gfx::Texture> texture, common::Resource<swizzle::gfx::Shader> shader);
+                   common::Resource<swizzle::gfx::Texture> texture, common::Resource<swizzle::gfx::Shader> shader, common::Resource<swizzle::gfx::Shader> shadow);
 
     virtual void update(DeltaTime dt, SceneRenderSettings& settings,
                         common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
+    virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam) override;
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam) override;
 
 private:
@@ -44,6 +45,7 @@ private:
     common::Resource<swizzle::gfx::Texture> mTexture;
     common::Resource<swizzle::gfx::Material> mMaterial;
     common::Resource<swizzle::gfx::Shader> mShader;
+    common::Resource<swizzle::gfx::Shader> mShadowShader;
 
     common::Resource<swizzle::gfx::Buffer> mUniform;
 
