@@ -93,6 +93,7 @@ void MeshShader::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tr
         trans->bindMaterial(mShader, mMaterial);
 
         trans->setViewport(U32(x), U32(y));
+        trans->enableStencilTest(false);
 
         trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
 
@@ -104,12 +105,20 @@ void MeshShader::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tr
         trans->bindMaterial(mNormalShader, mNormalMaterial);
 
         trans->setViewport(U32(x), U32(y));
+        trans->enableStencilTest(false);
         trans->setShaderConstant(mNormalShader, (U8*)&t, sizeof(t));
 
         trans->drawIndexedInstanced(mNormalVertex, mNormalIndex, mInst);
     }
 
     //trans->drawIndexedInstanced(mMesh, mIndex, mInst);
+}
+
+void MeshShader::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+{
+    UNUSED_ARG(trans);
+    UNUSED_ARG(cam);
+    UNUSED_ARG(mat);
 }
 
 /* Class Protected Function Definition */

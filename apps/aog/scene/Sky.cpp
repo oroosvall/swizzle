@@ -76,10 +76,43 @@ void Sky::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, Pe
 
     trans->bindMaterial(mShader, mMaterial);
     trans->setViewport(U32(x), U32(y));
+    trans->enableStencilTest(false);
 
     trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
 
     trans->drawInstanced(mMesh, mInst);
+}
+
+void Sky::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+{
+    struct tmp
+    {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+        glm::vec4 eye;
+    };
+
+    float x, y;
+
+    cam.getCameraSize(x, y);
+
+    tmp t = {};
+    t.model = glm::translate(glm::mat4(1.0F), { cam.getPosition() });
+    t.view = cam.getView() * mat;
+    t.proj = cam.getProjection();
+    t.eye = glm::vec4(cam.getPosition(), 1.0F);
+
+    trans->bindShader(mShader);
+
+    trans->bindMaterial(mShader, mMaterial);
+    trans->setViewport(U32(x), U32(y));
+    trans->enableStencilTest(true);
+
+    trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+
+    trans->drawInstanced(mMesh, mInst);
+    trans->enableStencilTest(false);
 }
 
 /* Class Protected Function Definition */

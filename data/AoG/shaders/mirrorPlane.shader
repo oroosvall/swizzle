@@ -1,0 +1,11 @@
+[properties]
+stencilOp=OpKeep,OpReplace,OpKeep
+stencilCompare=OpGreater
+stencilMask=255,255,5
+stencilEnable=1
+[src]
+vertex=mirrorPlane/mirrorPlane.vert
+fragment=mirrorPlane/mirrorPlane.frag
+[vulkan]
+vertex=mirrorPlane/vert.spv
+fragment=mirrorPlane/frag.spv

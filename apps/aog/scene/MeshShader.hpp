@@ -36,6 +36,7 @@ public:
                         common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam) override;
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam) override;
+    virtual void renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat);
 
 private:
     void generateMeshlets(common::Resource<swizzle::gfx::GfxContext> ctx);

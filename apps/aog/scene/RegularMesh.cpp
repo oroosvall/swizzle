@@ -115,10 +115,46 @@ void RegularMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& t
 
     trans->bindMaterial(mSelectedShader, mMaterial);
     trans->setViewport(U32(x), U32(y));
+    trans->enableStencilTest(false);
 
     trans->setShaderConstant(mSelectedShader, (U8*)&t, sizeof(t));
 
     trans->drawIndexedInstanced(mMeshInfo->mVertex, mMeshInfo->mIndex, mInst);
+}
+
+void RegularMesh::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+{
+    struct tmp
+    {
+        glm::mat4 viewProj;
+        glm::vec4 eye;
+    };
+
+    float x, y;
+
+    cam.getCameraSize(x, y);
+
+    tmp t = {};
+    t.viewProj = cam.getProjection() * cam.getView() * mat;
+    t.eye = glm::vec4(cam.getPosition(), 1.0F);
+
+    ViewProjection c{};
+    c.proj = cam.getProjection();
+    c.view = cam.getView();
+
+    mUniform->setBufferData(&c, sizeof(ViewProjection), sizeof(ViewProjection));
+    mMaterial->setDescriptorBufferResource(0u, mUniform, ~0ull);
+
+    trans->bindShader(mSelectedShader);
+
+    trans->bindMaterial(mSelectedShader, mMaterial);
+    trans->setViewport(U32(x), U32(y));
+    trans->enableStencilTest(true);
+
+    trans->setShaderConstant(mSelectedShader, (U8*)&t, sizeof(t));
+
+    trans->drawIndexedInstanced(mMeshInfo->mVertex, mMeshInfo->mIndex, mInst);
+    trans->enableStencilTest(false);
 }
 
 /* Class Protected Function Definition */

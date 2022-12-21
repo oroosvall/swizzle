@@ -10,14 +10,6 @@ layout (location = 0) out vec3 worldPos;
 layout (location = 1) out vec2 outUV;
 layout (location = 2) out vec3 outNormals;
 
-//layout (location = 3) out mat3 normalMatrix;
-
-uniform layout(binding=0) UBO
-{
-    mat4 view;
-    mat4 proj;
-};
-
 uniform layout( push_constant) Camera
 {
     mat4 viewProj;
@@ -26,12 +18,10 @@ uniform layout( push_constant) Camera
 
 void main() 
 {
-    //pos = vertPos;
     vec4 wpos = mdlMat * vec4(vertPos, 1.0);
     worldPos = wpos.xyz;
-    //outNormals = (mdlMat * vec4(normals, 0.0)).xyz;
-    mat3 normalMatrix = transpose(inverse(mat3(view * mdlMat)));
-    outNormals = normalMatrix * -normals;
+    
+    outNormals = normals;
 
     gl_Position = cam.viewProj *  wpos;
     outUV = uvs;

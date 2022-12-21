@@ -121,6 +121,7 @@ void Game::userSetup()
     mSceneSettings.mSkyInfo.mSunMoonDir = glm::vec4(1.0, 0.0, 0.0, 0.0f);
 
     mSceneSettings.mAssetSlowLoad = false;
+    mSceneSettings.mReflections = true;
 
     mDayOptions.mShowShaderEditor = false;
     mDayOptions.mEnableDof = false;
@@ -489,6 +490,7 @@ void Game::updateMainWindow(F32 dt)
     dTrans = mCmdBuffer->beginRenderPass(mGBuffer, std::move(trans));
 
     mScene->render(dTrans, cam);
+    mScene->renderMirror(dTrans, cam);
 
     if (mDayOptions.mBesierCurves)
     {
@@ -635,7 +637,7 @@ void Game::updateSkyTime()
     mShadowCam.lookAt(sunMoonDir, { 0.0f, 0.0f, 0.0f });
     if (mDayOptions.mViewFromLight)
     {
-        cam.lookAt(sunMoonDir, { 0.0f, 0.0f, 0.0f });
+        cam.lookAt(glm::normalize(sunMoonDir) * 10.0f, { 0.0f, 0.0f, 0.0f });
     }
     // LampBuffer lampBuf{};
     // lampBuf.mLightPos = glm::vec4(mSunMoonDir., 1000.0f); // w is radius

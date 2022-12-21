@@ -131,11 +131,19 @@ void Animated::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tran
 
     trans->bindMaterial(mShader, mMaterial);
     trans->setViewport(U32(x), U32(y));
+    trans->enableStencilTest(false);
 
     trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
 
     // cmd->drawIndexed(mMesh, mIndex);
     trans->drawIndexedInstanced(mMesh, mIndex, mInst);
+}
+
+void Animated::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+{
+    UNUSED_ARG(trans);
+    UNUSED_ARG(cam);
+    UNUSED_ARG(mat);
 }
 
 /* Class Protected Function Definition */

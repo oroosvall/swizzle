@@ -31,6 +31,6 @@ void main()
     mat3 normalMatrix = transpose(inverse(mat3(view * mdlMat)));
     outNormals = normalMatrix * -normals;
 
-    gl_Position = proj * view *  wpos;
+    gl_Position = cam.viewProj *  wpos;
     outUV = uvs;
 }

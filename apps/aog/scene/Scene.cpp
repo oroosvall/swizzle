@@ -371,8 +371,8 @@ void Scene::loadTesselationMesh()
 
     auto texture = mAssetManager->loadTexture("AoG/textures/displaceTest.png");
 
-    mRenderables.emplace_back(
-        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, texture, texture, texture, shader, otherShader, mShadowShader));
+    mRenderables.emplace_back(common::CreateRef<RegularMesh>(mContext, asset, instBuffer, texture, texture, texture,
+                                                             shader, otherShader, mShadowShader));
 }
 
 void Scene::loadGlow()
@@ -422,7 +422,8 @@ void Scene::loadGlow()
     auto grid = mAssetManager->loadTexture("AoG/textures/Grid.png");
     auto glow = mAssetManager->loadTexture("AoG/textures/Glow.png");
 
-    mRenderables.emplace_back(common::CreateRef<GlowMesh>(mContext, mesh2, instBuffer, grid, glow, shader, mShadowShader));
+    mRenderables.emplace_back(
+        common::CreateRef<GlowMesh>(mContext, mesh2, instBuffer, grid, glow, shader, mShadowShader));
 }
 
 void Scene::loadMeshShader()
@@ -572,6 +573,8 @@ SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings, common::Un
         }
     }
 
+    mReflections = settings.mReflections;
+
     for (auto& it : mRenderables)
     {
         it->update(dt, settings, trans);
@@ -593,6 +596,19 @@ void Scene::render(common::Unique<sgfx::DrawCommandTransaction>& trans, Perspect
     for (auto& it : mRenderables)
     {
         it->render(trans, cam);
+    }
+}
+
+void Scene::renderMirror(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
+{
+    if (mReflections)
+    {
+        mMirror->renderPlane(trans, cam);
+        for (auto& it : mRenderables)
+        {
+            glm::mat4 transform = mMirror->getMirrorTransform();
+            it->renderMirrorTransform(trans, cam, transform);
+        }
     }
 }
 
@@ -666,6 +682,16 @@ void Scene::loadThing(std::string line)
 
         loadAnimTextureParams(filePath.c_str(), texturePath.c_str(), mats);
     }
+    else if (line._Starts_with("mirror"))
+    {
+        std::vector<std::string> itms = split(line, ";");
+        std::string frame = itms[1];
+        std::string plane = itms[2];
+        std::string position = itms[3];
+        std::string normal = itms[4];
+
+        loadMirror(frame.c_str(), plane.c_str(), vec3FromString(position), vec3FromString(normal));
+    }
 }
 
 void Scene::loadParticleSystemParams(const SwChar* texturePath, glm::vec3 pos, glm::vec3 dir, U32 count)
@@ -689,7 +715,8 @@ void Scene::loadParticleSystemParams(const SwChar* texturePath, glm::vec3 pos, g
 
     auto texture = mAssetManager->loadTexture(texturePath);
 
-    mRenderables.emplace_back(common::CreateRef<ParticleSystem>(mContext, count, pos, dir, texture, shader, mShadowShader));
+    mRenderables.emplace_back(
+        common::CreateRef<ParticleSystem>(mContext, count, pos, dir, texture, shader, mShadowShader));
 }
 
 void Scene::loadAnimTextureParams(const SwChar* meshFile, const SwChar* texturePath, std::vector<glm::mat4>& inst)
@@ -770,6 +797,55 @@ void Scene::loadRegular(const SwChar* meshFile, const SwChar* diffuseTexture, co
     auto normal = mAssetManager->loadTexture(normalTexture);
     auto optNormal = mAssetManager->loadTexture("AoG/textures/neutral.png");
 
-    mRenderables.emplace_back(
-        common::CreateRef<RegularMesh>(mContext, asset, instBuffer, diffuse, normal, optNormal, shader, shader, mShadowShader));
+    mRenderables.emplace_back(common::CreateRef<RegularMesh>(mContext, asset, instBuffer, diffuse, normal, optNormal,
+                                                             shader, shader, mShadowShader));
+}
+
+void Scene::loadMirror(const SwChar* frame, const SwChar* plane, glm::vec3 pos, glm::vec3 normal)
+{
+    auto frameMesh = mAssetManager->loadMesh(frame, false);
+    auto planeMesh = mAssetManager->loadMesh(plane, false);
+
+    sgfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = {{sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
+    attribs.mAttributes = {
+        {0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
+        {0u, sgfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
+        {0u, sgfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
+    attribs.mDescriptors = {};
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableBlending = false;
+    attribs.mEnableDepthWrite = true;
+    attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
+
+    auto frameShader = mCompositor->createShader(1u, attribs);
+    mAssetManager->loadShader(frameShader, "AoG/shaders/mirrorFrame.shader");
+
+    auto planeShader = mCompositor->createShader(1u, attribs);
+    mAssetManager->loadShader(planeShader, "AoG/shaders/mirrorPlane.shader");
+
+    auto clearDepth = mCompositor->createShader(1u, attribs);
+    mAssetManager->loadShader(clearDepth, "AoG/shaders/clearDepth.shader");
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, pos);
+    std::vector<glm::mat4> insts = {transform};
+    common::Resource<sgfx::Buffer> instBuffer = createInstanceBuffer(insts);
+
+    glm::mat4 mirrorTransform = glm::mat4(1.0f);
+    mirrorTransform = glm::translate(mirrorTransform, pos);
+    mirrorTransform = glm::scale(mirrorTransform, normal);
+    mirrorTransform = glm::translate(mirrorTransform, -pos);
+    //mirrorTransform = glm::translate(mirrorTransform, pos);
+
+    mMirror = common::CreateRef<Mirror>(mContext, frameMesh, planeMesh, frameShader, planeShader, mShadowShader,
+                                        clearDepth, instBuffer, mirrorTransform);
+    mRenderables.emplace_back(mMirror);
 }

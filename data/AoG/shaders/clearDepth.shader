@@ -1,0 +1,12 @@
+[properties]
+stencilOp=OpKeep,OpKeep,OpKeep
+stencilCompare=OpEq
+stencilMask=255,255,5
+stencilEnable=1
+depthCompare=OpAlways
+[src]
+vertex=clearDepth/clearDepth.vert
+fragment=clearDepth/clearDepth.frag
+[vulkan]
+vertex=clearDepth/vert.spv
+fragment=clearDepth/frag.spv

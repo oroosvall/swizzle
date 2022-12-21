@@ -1,3 +1,8 @@
+[properties]
+stencilOp=OpKeep,OpKeep,OpKeep
+stencilCompare=OpEq
+stencilMask=255,0,5
+stencilEnable=0
 [src]
 vertex=particle/simple.vert
 geometry=particle/simple.geom

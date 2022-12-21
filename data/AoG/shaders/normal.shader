@@ -1,3 +1,8 @@
+[properties]
+stencilOp=OpKeep,OpKeep,OpKeep
+stencilCompare=OpEq
+stencilMask=255,0,5
+stencilEnable=0
 [src]
 vertex=normal/normal.vert
 geometry=normal/normal.geom

@@ -88,10 +88,39 @@ void GlowMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tran
 
     trans->bindMaterial(mShader, mMaterial);
     trans->setViewport(U32(x), U32(y));
+    trans->enableStencilTest(false);
 
     trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
 
     trans->drawIndexedInstanced(mMesh, mIndex, mInst);
+}
+
+void GlowMesh::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+{
+    struct tmp
+    {
+        glm::mat4 viewProj;
+        glm::vec4 eye;
+    };
+
+    float x, y;
+
+    cam.getCameraSize(x, y);
+
+    tmp t = {};
+    t.viewProj = cam.getProjection() * cam.getView() * mat;
+    t.eye = glm::vec4(cam.getPosition(), 1.0F);
+
+    trans->bindShader(mShader);
+
+    trans->bindMaterial(mShader, mMaterial);
+    trans->setViewport(U32(x), U32(y));
+    trans->enableStencilTest(true);
+
+    trans->setShaderConstant(mShader, (U8*)&t, sizeof(t));
+
+    trans->drawIndexedInstanced(mMesh, mIndex, mInst);
+    trans->enableStencilTest(false);
 }
 
 /* Class Protected Function Definition */
