@@ -99,7 +99,7 @@ const glm::mat4& PerspectiveCamera::getViewProjection() const
 
 void PerspectiveCamera::recalculatePerspective()
 {
-    mProjectionMatrix = glm::perspective(mFov, mWidth / mHeight, 0.01F, 100.0F);
+    mProjectionMatrix = glm::perspective(mFov, mWidth / mHeight, 0.01F, 400.0F);
 }
 
 void PerspectiveCamera::recalculateViewProj()
@@ -116,7 +116,7 @@ OrthoCamera::OrthoCamera()
     , mProjectionMatrix()
     , mPosition()
 {
-    mProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 100.0f);
+    mProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 400.0f);
 }
 
 OrthoCamera::~OrthoCamera() {}

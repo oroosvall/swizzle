@@ -16,6 +16,7 @@ void main()
 {
     fragColor = texture(diffuseTexture, uv);
     glowColor = texture(glowTexture, uv);
+    glowColor.w = 0.0;
     // glowColor = vec4(1.0);
     normalColor = vec4(norm, 1.0);
     worldColor = vec4(worldPos, 1.0);

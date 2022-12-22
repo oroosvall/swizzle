@@ -33,6 +33,7 @@ uniform layout( push_constant) Dof
     float lensFlareEnabled;
     vec2 flarePos;
     vec2 screenSize;
+    vec3 sunPos;
 } dof;
 
 uniform layout( binding = 9) Cam
@@ -154,47 +155,47 @@ vec4 sampleGlow()
 vec3 lensFlare(vec2 uv, vec2 pos)
 {
     vec2 main = uv-pos;
-	vec2 uvd = uv*(length(uv));
-	
-	float ang = atan(main.x,main.y);
-	float dist=length(main); dist = pow(dist,.1);
-	float n = noise(vec2(ang*16.0,dist*32.0));
-	
-	float f0 = 1.0/(length(uv-pos)*16.0+1.0);
-	
-	f0 = f0 + f0*(sin(noise(sin(ang*2.+pos.x)*4.0 - cos(ang*3.+pos.y))*16.)*.1 + dist*.1 + .8);
-	
-	float f1 = max(0.01-pow(length(uv+1.2*pos),1.9),.0)*7.0;
+    vec2 uvd = uv*(length(uv));
+    
+    float ang = atan(main.x,main.y);
+    float dist=length(main); dist = pow(dist,.1);
+    float n = noise(vec2(ang*16.0,dist*32.0));
+    
+    float f0 = 1.0/(length(uv-pos)*16.0+1.0);
+    
+    f0 = f0 + f0*(sin(noise(sin(ang*2.+pos.x)*4.0 - cos(ang*3.+pos.y))*16.)*.1 + dist*.1 + .8);
+    
+    float f1 = max(0.01-pow(length(uv+1.2*pos),1.9),.0)*7.0;
 
-	float f2 = max(1.0/(1.0+32.0*pow(length(uvd+0.8*pos),2.0)),.0)*00.25;
-	float f22 = max(1.0/(1.0+32.0*pow(length(uvd+0.85*pos),2.0)),.0)*00.23;
-	float f23 = max(1.0/(1.0+32.0*pow(length(uvd+0.9*pos),2.0)),.0)*00.21;
-	
-	vec2 uvx = mix(uv,uvd,-0.5);
-	
-	float f4 = max(0.01-pow(length(uvx+0.4*pos),2.4),.0)*6.0;
-	float f42 = max(0.01-pow(length(uvx+0.45*pos),2.4),.0)*5.0;
-	float f43 = max(0.01-pow(length(uvx+0.5*pos),2.4),.0)*3.0;
-	
-	uvx = mix(uv,uvd,-.4);
-	
-	float f5 = max(0.01-pow(length(uvx+0.2*pos),5.5),.0)*2.0;
-	float f52 = max(0.01-pow(length(uvx+0.4*pos),5.5),.0)*2.0;
-	float f53 = max(0.01-pow(length(uvx+0.6*pos),5.5),.0)*2.0;
-	
-	uvx = mix(uv,uvd,-0.5);
-	
-	float f6 = max(0.01-pow(length(uvx-0.3*pos),1.6),.0)*6.0;
-	float f62 = max(0.01-pow(length(uvx-0.325*pos),1.6),.0)*3.0;
-	float f63 = max(0.01-pow(length(uvx-0.35*pos),1.6),.0)*5.0;
-	
-	vec3 c = vec3(.0);
-	
-	c.r+=f2+f4+f5+f6; c.g+=f22+f42+f52+f62; c.b+=f23+f43+f53+f63;
-	c = c*1.3 - vec3(length(uvd)*.05);
-	c+=vec3(f0);
-	
-	return c;
+    float f2 = max(1.0/(1.0+32.0*pow(length(uvd+0.8*pos),2.0)),.0)*00.25;
+    float f22 = max(1.0/(1.0+32.0*pow(length(uvd+0.85*pos),2.0)),.0)*00.23;
+    float f23 = max(1.0/(1.0+32.0*pow(length(uvd+0.9*pos),2.0)),.0)*00.21;
+    
+    vec2 uvx = mix(uv,uvd,-0.5);
+    
+    float f4 = max(0.01-pow(length(uvx+0.4*pos),2.4),.0)*6.0;
+    float f42 = max(0.01-pow(length(uvx+0.45*pos),2.4),.0)*5.0;
+    float f43 = max(0.01-pow(length(uvx+0.5*pos),2.4),.0)*3.0;
+    
+    uvx = mix(uv,uvd,-.4);
+    
+    float f5 = max(0.01-pow(length(uvx+0.2*pos),5.5),.0)*2.0;
+    float f52 = max(0.01-pow(length(uvx+0.4*pos),5.5),.0)*2.0;
+    float f53 = max(0.01-pow(length(uvx+0.6*pos),5.5),.0)*2.0;
+    
+    uvx = mix(uv,uvd,-0.5);
+    
+    float f6 = max(0.01-pow(length(uvx-0.3*pos),1.6),.0)*6.0;
+    float f62 = max(0.01-pow(length(uvx-0.325*pos),1.6),.0)*3.0;
+    float f63 = max(0.01-pow(length(uvx-0.35*pos),1.6),.0)*5.0;
+    
+    vec3 c = vec3(.0);
+    
+    c.r+=f2+f4+f5+f6; c.g+=f22+f42+f52+f62; c.b+=f23+f43+f53+f63;
+    c = c*1.3 - vec3(length(uvd)*.05);
+    c+=vec3(f0);
+
+    return c;
 }
 
 vec4 ao()
@@ -284,6 +285,33 @@ vec4 ao()
     // return vec4(occlusion);
 }
 
+const float exposure = 0.3;
+const float decay = 0.96815;
+const float density  = 0.926;
+const float weight  = 0.587;
+
+float godRay()
+{
+    int NUM_SAMPLES = 80;
+    vec2 tc = uv.xy;
+    // vec2 deltatexCoord = (tc - (dof.sunPos.xy*0.5 + 0.5));
+    vec2 deltatexCoord = tc - vec2(dof.sunPos.x, 1.0 - dof.sunPos.y);
+    deltatexCoord *= 1.0/ float(NUM_SAMPLES);
+    float illuminationDecay = 1.0f;
+
+    float godRayColor = texture(glowTexture , tc).w*0.4;
+    for(int i = 0 ; i< NUM_SAMPLES ; i++)
+    {
+        tc-= deltatexCoord;
+        float samp = texture(glowTexture , tc ).w*0.4;
+        samp *= illuminationDecay*weight;
+        godRayColor += samp;
+        illuminationDecay *= decay;
+    }
+
+    return godRayColor * exposure;
+}
+
 float shadow()
 {
     vec3 worldPos = texture(worldTex, uv).xyz;
@@ -301,7 +329,7 @@ float shadow()
     float closestDepth = texture(shadowTex, coord).r;
     float currentDepth = projCoords.z;
 
-    float bias = 0.005;
+    float bias = 0.0005;
     float shadow = currentDepth - bias > closestDepth  ? 0.9 : 0.0;  
     // return vec4(vec3(closestDepth, currentDepth, 0.0), 1.0);
     return shadow;
@@ -309,11 +337,11 @@ float shadow()
 
 void main()
 {
-	float depth1 = texture(depth, uv ).x;
+    float depth1 = texture(depth, uv ).x;
     depth1 = toLinear(depth1, 0.01, 100.0);
-	float factor = ( depth1 - dof.settings.x ) / dof.settings.y;
-	 
-	vec2 dofblur = vec2(factor); //vec2 (clamp( factor / dof.settings.y, -blurclamp, blurclamp ));
+    float factor = ( depth1 - dof.settings.x ) / dof.settings.y;
+    
+    vec2 dofblur = vec2(factor); //vec2 (clamp( factor / dof.settings.y, -blurclamp, blurclamp ));
     float dither = 0.0;
 
     vec4 color = vec4(0.0);
@@ -338,7 +366,11 @@ void main()
         lensFlareColor = lensFlare(uv, dof.flarePos);
     }
 
-    vec4 finalColor = (color * 1.0 - shadow()) + vec4(dither/255.0) + vec4(lensFlareColor, 0.0);
+    float gr = godRay() + (dither/255.0);
+
+    vec4 finalColor = (color * 1.0 - shadow()) + vec4(dither/255.0) + vec4(lensFlareColor * gr, 0.0) + vec4(gr);
+    finalColor.a = 1.0;
+    // finalColor *= vec4(vec3(godRay()), 1.0);
     // finalColor = shadow();
     // finalColor = ao();
     // finalColor = vec4(ao());

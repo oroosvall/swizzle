@@ -527,6 +527,7 @@ void Game::updateMainWindow(F32 dt)
         float mLenseFlareEnabled;
         glm::vec2 mFlarePos;
         glm::vec2 mScreenSize;
+        glm::vec3 mSunPos;
     } d{};
     d.mproj = cam.getProjection();
     d.dof.x = mDayOptions.mDoFFocalPoint;
@@ -537,9 +538,11 @@ void Game::updateMainWindow(F32 dt)
     d.mGlowEnabled = mDayOptions.mGlow ? 1.0f : 0.0f;
     d.mDitherEnabled = mDayOptions.mDithering ? 1.0f : 0.0f;
     d.mLenseFlareEnabled = mDayOptions.mLensFlare ? 1.0f : 0.0f;
+    //glm::vec2 lfPos = glm::normalize()
     d.mFlarePos = mDayOptions.mFlarePos;
     d.mScreenSize.x = F32(x);
     d.mScreenSize.y = F32(y);
+    d.mSunPos = mSunPos;
 
     glm::mat4 shadowMat = mShadowCam.getProjection() * mShadowCam.getView();
     mShadowCamBuffer->setBufferData(&shadowMat, sizeof(glm::mat4), sizeof(glm::mat4));
@@ -633,12 +636,22 @@ void Game::updateSkyTime()
         s *= 0.2F;
     }
     glm::vec3 sunMoonDir = glm::vec3(-r * 0.4F, r * s, r * c);
+    //glm::vec3 sunMoonDir = { 100, 100, 100 };
 
-    mShadowCam.lookAt(sunMoonDir, { 0.0f, 0.0f, 0.0f });
+    mShadowCam.lookAt(sunMoonDir + cam.getPosition(), cam.getPosition());
     if (mDayOptions.mViewFromLight)
     {
         cam.lookAt(glm::normalize(sunMoonDir) * 10.0f, { 0.0f, 0.0f, 0.0f });
     }
+
+    glm::vec4 sunPosScreenSpace = cam.getProjection() * cam.getView() * glm::vec4(sunMoonDir, 1.0);
+    sunPosScreenSpace = sunPosScreenSpace / sunPosScreenSpace.w;
+    sunPosScreenSpace = sunPosScreenSpace * 0.5f;
+    sunPosScreenSpace = sunPosScreenSpace + 0.5f;
+    mSunPos = sunPosScreenSpace;
+    mDayOptions.mFlarePos.x = sunPosScreenSpace.x;
+    mDayOptions.mFlarePos.y = 1.0f - sunPosScreenSpace.y;
+
     // LampBuffer lampBuf{};
     // lampBuf.mLightPos = glm::vec4(mSunMoonDir., 1000.0f); // w is radius
     // lampBuf.mLightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // w is intensity
@@ -646,6 +659,6 @@ void Game::updateSkyTime()
 
     // mLampBuffer->setBufferData(&lampBuf, sizeof(LampBuffer), sizeof(LampBuffer));
 
-    sunMoonDir = glm::normalize(glm::vec3(0) - sunMoonDir);
+    sunMoonDir = glm::normalize(glm::vec3(cam.getPosition()) - sunMoonDir);
     mSceneSettings.mSkyInfo.mSunMoonDir = glm::vec4(sunMoonDir, 1.0f);
 }

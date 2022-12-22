@@ -89,6 +89,8 @@ private:
     OrthoCamera mShadowCam;
     SwBool mShadowTexturePreview;
 
+    glm::vec3 mSunPos;
+
 };
 
 #endif

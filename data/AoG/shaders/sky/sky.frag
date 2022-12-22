@@ -69,7 +69,7 @@ float noise(vec3 p){
 
 // end noise
 
-vec3 sky(in vec3 lightDir, in vec3 rayDir)
+vec3 sky(in vec3 lightDir, in vec3 rayDir, out float sunDot)
 {
     vec3 col = vec3(0.0);
 
@@ -85,8 +85,11 @@ vec3 sky(in vec3 lightDir, in vec3 rayDir)
 	
 	// Sun
 	float sundot = clamp(dot(rayDir, lightDir), 0.0, 1.0);
-	col += 0.25 * s * pow(sundot, 16.0);
-	col += 0.75 * s2 * pow(sundot, 128.0);
+	//col += 0.25 * s * pow(sundot, 16.0);
+	//col += 0.75 * s2 * pow(sundot, 128.0);
+    //sunDot = 0.25 * pow(sundot, 16) + 0.75 * pow(sundot, 128.0);
+    sunDot = pow(sundot, 128.0);
+    
 
     // Horizon/atmospheric perspective
 	vec3 persp = mix(vec3(0.7, 0.75, 0.8), settings.mNightSkyColor.rgb, si);
@@ -98,12 +101,13 @@ vec3 sky(in vec3 lightDir, in vec3 rayDir)
 
 void main()
 {
-    vec3 skyColor = sky(normalize(settings.mSunMoonDir.xyz), normalize(settings.mCameraEye.xyz - worldPos2.xyz));
+    float sunDot = 0.0;
+    vec3 skyColor = sky(normalize(settings.mSunMoonDir.xyz), normalize(settings.mCameraEye.xyz - worldPos2.xyz), sunDot);
 
     skyColor += noise(worldPos.xyz * 1000.0) * 0.01;
 
     diffuse = vec4(skyColor, 1.0);
-    glow = vec4(0.0);
+    glow = vec4(vec3(0.0), sunDot);
     normal = vec4(inNormal, 1.0);
     worldPosOut = worldPos;
     worldPosOut.rgb *= 100.0;
