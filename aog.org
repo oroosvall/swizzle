@@ -1,7 +1,7 @@
 
 
 * List
-- [-] Advent of graphics [91%] [22/24]
+- [-] Advent of graphics [95%] [23/24]
   - [X] Normal mapping (Day 1)
   - [X] Animated Textures (Day 2)
   - [X] Shader editor (Day 3)
@@ -24,7 +24,7 @@
   - [X] Shadow mapping (Day 20)
   - [X] Mirror reflection (Day 21)
   - [X] Godrays (Day 22)
-  - [ ] Transparency (Look through window)
+  - [X] Transparency (Look through window) (Day 23 (Day 23)
   - [ ] Portal
 
 

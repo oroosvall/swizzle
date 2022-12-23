@@ -11,8 +11,9 @@
 
 #include "../AssetManager.hpp"
 #include "Compositor.hpp"
-#include "Renderable.hpp"
 #include "Mirror.hpp"
+#include "Renderable.hpp"
+#include "TransparentMesh.hpp"
 
 #include "../Camera.hpp"
 #include "SceneSettings.hpp"
@@ -55,7 +56,7 @@ public:
     void loadWater();
 
     SceneState update(DeltaTime dt, SceneRenderSettings& settings,
-                      common::Unique<swizzle::gfx::CommandTransaction>& trans);
+                      common::Unique<swizzle::gfx::CommandTransaction>& trans, const glm::vec3& camPos);
     void renderShadows(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam);
     void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam);
     void renderMirror(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam);
@@ -68,8 +69,10 @@ private:
 
     void loadParticleSystemParams(const SwChar* texturePath, glm::vec3 pos, glm::vec3 dir, U32 count);
     void loadAnimTextureParams(const SwChar* meshFile, const SwChar* texture, std::vector<glm::mat4>& inst);
-    void loadRegular(const SwChar* meshFile, const SwChar* diffuseTexture, const SwChar* normalTexture, std::vector<glm::mat4>& inst);
+    void loadRegular(const SwChar* meshFile, const SwChar* diffuseTexture, const SwChar* normalTexture,
+                     std::vector<glm::mat4>& inst);
     void loadMirror(const SwChar* frame, const SwChar* plane, glm::vec3 pos, glm::vec3 normal);
+    void loadTransparent(const SwChar* meshFilePath, glm::vec4 color, glm::vec3 pos);
 
     common::Resource<swizzle::gfx::GfxContext> mContext;
     common::Resource<Compositor> mCompositor;
@@ -84,6 +87,8 @@ private:
 
     common::Resource<Mirror> mMirror;
     SwBool mReflections;
+
+    std::vector<common::Resource<TransparentMesh>> mTransparent;
 };
 
 /* Function Declaration */

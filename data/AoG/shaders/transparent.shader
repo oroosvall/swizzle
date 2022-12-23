@@ -1,0 +1,16 @@
+[properties]
+stencilOp=OpKeep,OpKeep,OpKeep
+stencilCompare=OpEq
+stencilMask=255,0,5
+stencilEnable=0
+colorBlend=ADD
+alphaBlend=ADD
+sourceBlend=[SRC_ALPHA,SRC_ALPHA]
+destinationBlend=[ONE_MINUS_SRC_ALPHA,ONE]
+blending=enabled
+[src]
+vertex=transparent/transparent.vert
+fragment=transparent/transparent.frag
+[vulkan]
+vertex=transparent/vert.spv
+fragment=transparent/frag.spv

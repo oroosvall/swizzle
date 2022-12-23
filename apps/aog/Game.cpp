@@ -479,7 +479,7 @@ void Game::updateMainWindow(F32 dt)
     auto trans = mCmdBuffer->begin();
     trans->uploadTexture(mNoiseTexture);
 
-    mScene->update(dt, mSceneSettings, trans);
+    mScene->update(dt, mSceneSettings, trans, cam.getPosition());
 
     imGuiRender(trans);
 

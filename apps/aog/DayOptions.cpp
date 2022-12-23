@@ -112,7 +112,7 @@ void DrawDayOptions(SceneRenderSettings& settings, DayOptions& opt)
     ImGui::Text("View from light");
     ImGui::SameLine();
     ImGui::Checkbox("##day20", &opt.mViewFromLight);
-    ImGui::Text("(Day 22) Reflections");
+    ImGui::Text("(Day 21) Reflections");
     ImGui::SameLine();
-    ImGui::Checkbox("##day22", &settings.mReflections);
+    ImGui::Checkbox("##day21", &settings.mReflections);
 }

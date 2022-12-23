@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <swizzle/asset2/Assets.hpp>
 
+#include <algorithm>
+
 /* Defines */
 
 /* Typedefs */
@@ -60,6 +62,16 @@ glm::vec3 vec3FromString(std::string& str)
     std::vector<std::string> values = split(str, ",");
 
     return {std::stof(values[0]), std::stof(values[1]), std::stof(values[2])};
+}
+
+glm::vec4 vec4FromString(std::string& str)
+{
+    str.pop_back();
+    str.erase(0, 1);
+
+    std::vector<std::string> values = split(str, ",");
+
+    return { std::stof(values[0]), std::stof(values[1]), std::stof(values[2]), std::stof(values[3]) };
 }
 
 glm::mat4 mat4FromStringTransform(std::string& str)
@@ -114,6 +126,7 @@ Scene::Scene(common::Resource<sgfx::GfxContext> ctx, common::Resource<Compositor
     attribs.mDescriptors = {};
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
@@ -180,6 +193,7 @@ void Scene::loadSky()
     };
     attribsSky.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribsSky.mEnableDepthTest = false;
+    attribsSky.mEnableDepthWrite = false;
     attribsSky.mEnableBlending = false;
     attribsSky.mEnableDepthWrite = false;
     attribsSky.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
@@ -268,6 +282,7 @@ void Scene::loadAnimMesh()
     };
     attribsAnim.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribsAnim.mEnableDepthTest = true;
+    attribsAnim.mEnableDepthWrite = true;
     attribsAnim.mEnableBlending = false;
     attribsAnim.mEnableDepthWrite = true;
     attribsAnim.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
@@ -310,6 +325,7 @@ void Scene::loadHeightMap()
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
@@ -359,6 +375,7 @@ void Scene::loadTesselationMesh()
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
@@ -412,6 +429,7 @@ void Scene::loadGlow()
                             {sgfx::DescriptorType::TextureSampler, sgfx::Count(1u), {sgfx::StageType::fragmentStage}}};
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
@@ -457,6 +475,7 @@ void Scene::loadMeshShader()
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
@@ -482,6 +501,7 @@ void Scene::loadMeshShader()
     };
     attribs2.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs2.mEnableDepthTest = true;
+    attribs2.mEnableDepthWrite = true;
     attribs2.mEnableBlending = false;
     attribs2.mEnableDepthWrite = true;
     attribs2.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
@@ -522,6 +542,7 @@ void Scene::loadWater()
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
@@ -550,7 +571,8 @@ void Scene::loadWater()
     mRenderables.emplace_back(common::CreateRef<Water>(mContext, instBuffer, shader, compute, shadow));
 }
 
-SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<sgfx::CommandTransaction>& trans)
+SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings, common::Unique<sgfx::CommandTransaction>& trans,
+                         const glm::vec3& camPos)
 {
     if (!mItemsToLoad.empty())
     {
@@ -580,6 +602,18 @@ SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings, common::Un
         it->update(dt, settings, trans);
     }
 
+    for (auto& it : mTransparent)
+    {
+        it->update(dt, settings, trans);
+    }
+
+    std::sort(mTransparent.begin(), mTransparent.end(),
+              [&camPos](common::Resource<TransparentMesh> r, common::Resource<TransparentMesh> l) {
+                  float d1 = glm::distance(r->getPos(), camPos);
+                  float d2 = glm::distance(l->getPos(), camPos);
+                  return d1 > d2;
+              });
+
     return mSceneState;
 }
 
@@ -597,14 +631,25 @@ void Scene::render(common::Unique<sgfx::DrawCommandTransaction>& trans, Perspect
     {
         it->render(trans, cam);
     }
+
+    for (auto& it : mTransparent)
+    {
+        it->render(trans, cam);
+    }
 }
 
 void Scene::renderMirror(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
 {
-    if (mReflections)
+    if (mReflections && mMirror)
     {
         mMirror->renderPlane(trans, cam);
         for (auto& it : mRenderables)
+        {
+            glm::mat4 transform = mMirror->getMirrorTransform();
+            it->renderMirrorTransform(trans, cam, transform);
+        }
+
+        for (auto& it : mTransparent)
         {
             glm::mat4 transform = mMirror->getMirrorTransform();
             it->renderMirrorTransform(trans, cam, transform);
@@ -692,6 +737,15 @@ void Scene::loadThing(std::string line)
 
         loadMirror(frame.c_str(), plane.c_str(), vec3FromString(position), vec3FromString(normal));
     }
+    else if (line._Starts_with("transparent"))
+    {
+        std::vector<std::string> itms = split(line, ";");
+        std::string mesh = itms[1];
+        std::string color = itms[2];
+        std::string position = itms[3];
+
+        loadTransparent(mesh.c_str(), vec4FromString(color), vec3FromString(position));
+    }
 }
 
 void Scene::loadParticleSystemParams(const SwChar* texturePath, glm::vec3 pos, glm::vec3 dir, U32 count)
@@ -706,6 +760,7 @@ void Scene::loadParticleSystemParams(const SwChar* texturePath, glm::vec3 pos, g
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = sgfx::PrimitiveType::point;
@@ -743,6 +798,7 @@ void Scene::loadAnimTextureParams(const SwChar* meshFile, const SwChar* textureP
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
@@ -786,6 +842,7 @@ void Scene::loadRegular(const SwChar* meshFile, const SwChar* diffuseTexture, co
     };
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
@@ -821,6 +878,7 @@ void Scene::loadMirror(const SwChar* frame, const SwChar* plane, glm::vec3 pos, 
     attribs.mDescriptors = {};
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
     attribs.mEnableBlending = false;
     attribs.mEnableDepthWrite = true;
     attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
@@ -843,9 +901,45 @@ void Scene::loadMirror(const SwChar* frame, const SwChar* plane, glm::vec3 pos, 
     mirrorTransform = glm::translate(mirrorTransform, pos);
     mirrorTransform = glm::scale(mirrorTransform, normal);
     mirrorTransform = glm::translate(mirrorTransform, -pos);
-    //mirrorTransform = glm::translate(mirrorTransform, pos);
+    // mirrorTransform = glm::translate(mirrorTransform, pos);
 
     mMirror = common::CreateRef<Mirror>(mContext, frameMesh, planeMesh, frameShader, planeShader, mShadowShader,
                                         clearDepth, instBuffer, mirrorTransform);
     mRenderables.emplace_back(mMirror);
+}
+
+void Scene::loadTransparent(const SwChar* meshFilePath, glm::vec4 color, glm::vec3 pos)
+{
+    auto mesh = mAssetManager->loadMesh(meshFilePath, false);
+
+    sgfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = { {sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mAttributes = {
+        {0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
+        {0u, sgfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
+        {0u, sgfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
+    attribs.mDescriptors = {
+        {sgfx::DescriptorType::UniformBuffer, sgfx::Count(1u), {sgfx::StageType::vertexStage}}
+    };
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = false;
+    attribs.mEnableBlending = true;
+    attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
+
+    auto transparentShader = mCompositor->createShader(1u, attribs);
+    mAssetManager->loadShader(transparentShader, "AoG/shaders/transparent.shader");
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, pos);
+    std::vector<glm::mat4> insts = { transform };
+    common::Resource<sgfx::Buffer> instBuffer = createInstanceBuffer(insts);
+
+    mTransparent.emplace_back(common::CreateRef<TransparentMesh>(mContext, mesh, instBuffer, transparentShader, mShadowShader, pos, color));
 }
