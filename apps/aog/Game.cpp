@@ -122,6 +122,7 @@ void Game::userSetup()
 
     mSceneSettings.mAssetSlowLoad = false;
     mSceneSettings.mReflections = true;
+    mSceneSettings.mPortals = true;
 
     mDayOptions.mShowShaderEditor = false;
     mDayOptions.mEnableDof = false;

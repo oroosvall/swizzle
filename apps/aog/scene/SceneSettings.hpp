@@ -31,6 +31,7 @@ struct SceneRenderSettings
     SkyInfo mSkyInfo;
     SwBool mAssetSlowLoad;
     SwBool mReflections;
+    SwBool mPortals;
 };
 
 struct ViewProjection

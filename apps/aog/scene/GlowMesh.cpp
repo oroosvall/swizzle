@@ -95,7 +95,7 @@ void GlowMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tran
     trans->drawIndexedInstanced(mMesh, mIndex, mInst);
 }
 
-void GlowMesh::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+void GlowMesh::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
 {
     struct tmp
     {

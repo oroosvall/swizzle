@@ -83,8 +83,9 @@ void Sky::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, Pe
     trans->drawInstanced(mMesh, mInst);
 }
 
-void Sky::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+void Sky::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
 {
+    UNUSED_ARG(mat);
     struct tmp
     {
         glm::mat4 model;
@@ -99,9 +100,14 @@ void Sky::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransact
 
     tmp t = {};
     t.model = glm::translate(glm::mat4(1.0F), { cam.getPosition() });
-    t.view = cam.getView() * mat;
+    t.view = cam.getView();
     t.proj = cam.getProjection();
     t.eye = glm::vec4(cam.getPosition(), 1.0F);
+
+    //glm::mat4 pos = mat * glm::translate(glm::mat4(1.0F), { cam.getPosition() });
+    //mInst->setBufferData(&pos, sizeof(glm::mat4), sizeof(glm::mat4));
+
+    //mMaterial->setDescriptorBufferResource(0u, mUniformBuffer, sizeof(SkyInfo));
 
     trans->bindShader(mShader);
 

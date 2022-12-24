@@ -139,7 +139,7 @@ void ParticleSystem::render(common::Unique<swizzle::gfx::DrawCommandTransaction>
     //trans->draw(mParticleBuffer);
 }
 
-void ParticleSystem::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+void ParticleSystem::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
 {
     if (!mEnabled)
     {

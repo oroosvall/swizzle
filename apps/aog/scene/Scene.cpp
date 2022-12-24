@@ -71,7 +71,7 @@ glm::vec4 vec4FromString(std::string& str)
 
     std::vector<std::string> values = split(str, ",");
 
-    return { std::stof(values[0]), std::stof(values[1]), std::stof(values[2]), std::stof(values[3]) };
+    return {std::stof(values[0]), std::stof(values[1]), std::stof(values[2]), std::stof(values[3])};
 }
 
 glm::mat4 mat4FromStringTransform(std::string& str)
@@ -596,6 +596,7 @@ SceneState Scene::update(DeltaTime dt, SceneRenderSettings& settings, common::Un
     }
 
     mReflections = settings.mReflections;
+    mPortals = settings.mPortals;
 
     for (auto& it : mRenderables)
     {
@@ -646,13 +647,25 @@ void Scene::renderMirror(common::Unique<swizzle::gfx::DrawCommandTransaction>& t
         for (auto& it : mRenderables)
         {
             glm::mat4 transform = mMirror->getMirrorTransform();
-            it->renderMirrorTransform(trans, cam, transform);
+            it->renderTransform(trans, cam, transform);
         }
 
         for (auto& it : mTransparent)
         {
             glm::mat4 transform = mMirror->getMirrorTransform();
-            it->renderMirrorTransform(trans, cam, transform);
+            it->renderTransform(trans, cam, transform);
+        }
+    }
+
+
+    if (mPortals && mPortal1)
+    {
+        mPortal1->renderPlane(trans, cam);
+        //mPortal2->renderPlane(trans, cam);
+        for (auto& it : mRenderables)
+        {
+            glm::mat4 transform = mPortal1->getMirrorTransform();
+            it->renderTransform(trans, cam, transform);
         }
     }
 }
@@ -745,6 +758,18 @@ void Scene::loadThing(std::string line)
         std::string position = itms[3];
 
         loadTransparent(mesh.c_str(), vec4FromString(color), vec3FromString(position));
+    }
+    else if (line._Starts_with("portal"))
+    {
+        std::vector<std::string> itms = split(line, ";");
+        std::string mesh = itms[1];
+        std::string plne = itms[2];
+        std::string pos1 = itms[3];
+        std::string rot1 = itms[4];
+        std::string pos2 = itms[5];
+        std::string rot2 = itms[6];
+
+        loadPortal(mesh.c_str(), plne.c_str(), vec3FromString(pos1), vec3FromString(rot1), vec3FromString(pos2), vec3FromString(rot2));
     }
 }
 
@@ -860,6 +885,12 @@ void Scene::loadRegular(const SwChar* meshFile, const SwChar* diffuseTexture, co
 
 void Scene::loadMirror(const SwChar* frame, const SwChar* plane, glm::vec3 pos, glm::vec3 normal)
 {
+    // only allow 1 mirror
+    if (mMirror)
+    {
+        return;
+    }
+
     auto frameMesh = mAssetManager->loadMesh(frame, false);
     auto planeMesh = mAssetManager->loadMesh(plane, false);
 
@@ -913,8 +944,8 @@ void Scene::loadTransparent(const SwChar* meshFilePath, glm::vec4 color, glm::ve
     auto mesh = mAssetManager->loadMesh(meshFilePath, false);
 
     sgfx::ShaderAttributeList attribs = {};
-    attribs.mBufferInput = { {sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
-                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)} };
+    attribs.mBufferInput = {{sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
     attribs.mAttributes = {
         {0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
         {0u, sgfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
@@ -924,9 +955,7 @@ void Scene::loadTransparent(const SwChar* meshFilePath, glm::vec4 color, glm::ve
         {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
         {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
     };
-    attribs.mDescriptors = {
-        {sgfx::DescriptorType::UniformBuffer, sgfx::Count(1u), {sgfx::StageType::vertexStage}}
-    };
+    attribs.mDescriptors = {{sgfx::DescriptorType::UniformBuffer, sgfx::Count(1u), {sgfx::StageType::vertexStage}}};
     attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribs.mEnableDepthTest = true;
     attribs.mEnableDepthWrite = false;
@@ -938,8 +967,78 @@ void Scene::loadTransparent(const SwChar* meshFilePath, glm::vec4 color, glm::ve
 
     glm::mat4 transform = glm::mat4(1.0f);
     transform = glm::translate(transform, pos);
-    std::vector<glm::mat4> insts = { transform };
+    std::vector<glm::mat4> insts = {transform};
     common::Resource<sgfx::Buffer> instBuffer = createInstanceBuffer(insts);
 
-    mTransparent.emplace_back(common::CreateRef<TransparentMesh>(mContext, mesh, instBuffer, transparentShader, mShadowShader, pos, color));
+    mTransparent.emplace_back(
+        common::CreateRef<TransparentMesh>(mContext, mesh, instBuffer, transparentShader, mShadowShader, pos, color));
+}
+
+void Scene::loadPortal(const SwChar* frame, const SwChar* plane, glm::vec3 pos1, glm::vec3 rot1, glm::vec3 pos2,
+                       glm::vec3 rot2)
+{
+    // only allow 1 portal
+    if (mPortal1)
+    {
+        return;
+    }
+
+    auto frameMesh = mAssetManager->loadMesh(frame, false);
+    auto planeMesh = mAssetManager->loadMesh(plane, false);
+
+    sgfx::ShaderAttributeList attribs = {};
+    attribs.mBufferInput = {{sgfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u + 2u)},
+                            {sgfx::ShaderBufferInputRate::InputRate_Instance, sizeof(float) * (16u)}};
+    attribs.mAttributes = {
+        {0u, sgfx::ShaderAttributeDataType::vec3f, 0u},
+        {0u, sgfx::ShaderAttributeDataType::vec3f, sizeof(float) * 3u},
+        {0u, sgfx::ShaderAttributeDataType::vec2f, sizeof(float) * 6u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, 0u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 4u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 8u},
+        {1u, sgfx::ShaderAttributeDataType::vec4f, sizeof(float) * 12u},
+    };
+    attribs.mDescriptors = {};
+    attribs.mPushConstantSize = sizeof(glm::mat4) * 2u;
+    attribs.mEnableDepthTest = true;
+    attribs.mEnableDepthWrite = true;
+    attribs.mEnableBlending = false;
+    attribs.mPrimitiveType = sgfx::PrimitiveType::triangle;
+
+    auto frameShader = mCompositor->createShader(1u, attribs);
+    mAssetManager->loadShader(frameShader, "AoG/shaders/mirrorFrame.shader");
+
+    auto planeShader = mCompositor->createShader(1u, attribs);
+    mAssetManager->loadShader(planeShader, "AoG/shaders/mirrorPlane.shader");
+
+    auto clearDepth = mCompositor->createShader(1u, attribs);
+    mAssetManager->loadShader(clearDepth, "AoG/shaders/clearDepth.shader");
+
+    glm::mat4 t1 = glm::mat4(1.0f);
+    glm::mat4 t2 = glm::mat4(1.0f);
+
+    t1 = glm::translate(t1, pos1);
+    t2 = glm::translate(t2, pos2);
+
+    t1 = glm::rotate(t1, glm::radians(rot1.y), {0.0f, 1.0f, 0.0f});
+    t2 = glm::rotate(t2, glm::radians(rot2.y), {0.0f, 1.0f, 0.0f});
+
+    std::vector<glm::mat4> i1 = {t1, t2};
+    common::Resource<sgfx::Buffer> ib1 = createInstanceBuffer(i1);
+
+    glm::mat4 p1tfm = glm::mat4(1.0f);
+    // translate to origo
+    p1tfm = glm::translate(p1tfm, pos1);
+    // translate to the other portal
+    p1tfm = glm::translate(p1tfm, pos2 - pos1);
+    // rotate, this will be more complicated but this will work for this specific setup
+    p1tfm = glm::rotate(p1tfm, glm::radians(rot1.y + rot2.y), {0.0f, 1.0f, 0.0f});
+    // translate back
+    p1tfm = glm::translate(p1tfm, -pos1);
+
+    mPortal1 = common::CreateRef<Portal>(mContext, frameMesh, planeMesh, frameShader, planeShader, mShadowShader,
+                                         clearDepth, ib1, p1tfm);
+
+    mRenderables.emplace_back(mPortal1);
+
 }

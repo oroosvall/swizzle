@@ -115,4 +115,8 @@ void DrawDayOptions(SceneRenderSettings& settings, DayOptions& opt)
     ImGui::Text("(Day 21) Reflections");
     ImGui::SameLine();
     ImGui::Checkbox("##day21", &settings.mReflections);
+
+    ImGui::Text("(Day 24) Portals");
+    ImGui::SameLine();
+    ImGui::Checkbox("##day24", &settings.mPortals);
 }

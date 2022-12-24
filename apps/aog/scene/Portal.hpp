@@ -1,5 +1,5 @@
-#ifndef MIRROR_HPP
-#define MIRROR_HPP
+#ifndef PORTAL_HPP
+#define PORTAL_HPP
 
 /* Include files */
 
@@ -18,10 +18,10 @@
 
 /* Class Declaration */
 
-class Mirror : public Renderable
+class Portal : public Renderable
 {
 public:
-    Mirror(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<MeshInfo> frane,
+    Portal(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<MeshInfo> frane,
            common::Resource<MeshInfo> plane, common::Resource<swizzle::gfx::Shader> frameShader,
            common::Resource<swizzle::gfx::Shader> planeShader, common::Resource<swizzle::gfx::Shader> shadow,
            common::Resource<swizzle::gfx::Shader> clearDepth, common::Resource<swizzle::gfx::Buffer> inst,

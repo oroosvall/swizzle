@@ -95,7 +95,7 @@ void TransparentMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction
     trans->drawIndexedInstanced(mMeshInfo->mVertex, mMeshInfo->mIndex, mInst);
 }
 
-void TransparentMesh::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans,
+void TransparentMesh::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans,
                                             PerspectiveCamera& cam, glm::mat4& mat)
 {
     struct tmp

@@ -1,7 +1,7 @@
 
 /* Include files */
 
-#include "Mirror.hpp"
+#include "Portal.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,7 +25,7 @@
 
 /* Class Public Function Definition */
 
-Mirror::Mirror(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<MeshInfo> frame,
+Portal::Portal(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<MeshInfo> frame,
                common::Resource<MeshInfo> plane, common::Resource<swizzle::gfx::Shader> frameShader,
                common::Resource<swizzle::gfx::Shader> planeShader, common::Resource<swizzle::gfx::Shader> shadow,
                common::Resource<swizzle::gfx::Shader> clearDepth, common::Resource<swizzle::gfx::Buffer> inst,
@@ -41,7 +41,7 @@ Mirror::Mirror(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<
 {
 }
 
-void Mirror::update(DeltaTime dt, SceneRenderSettings& settings,
+void Portal::update(DeltaTime dt, SceneRenderSettings& settings,
                     common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     UNUSED_ARG(dt);
@@ -49,7 +49,7 @@ void Mirror::update(DeltaTime dt, SceneRenderSettings& settings,
     UNUSED_ARG(trans);
 }
 
-void Mirror::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
+void Portal::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, OrthoCamera& cam)
 {
     glm::mat4 camMat = cam.getProjection() * cam.getView();
     trans->bindShader(mShadowShader);
@@ -58,7 +58,7 @@ void Mirror::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans,
     trans->drawIndexedInstanced(mFrame->mVertex, mFrame->mIndex, mInstance);
 }
 
-void Mirror::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
+void Portal::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
 {
     struct tmp
     {
@@ -92,7 +92,7 @@ void Mirror::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans,
     trans->drawIndexedInstanced(mFrame->mVertex, mFrame->mIndex, mInstance);
 }
 
-void Mirror::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam,
+void Portal::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam,
                                    glm::mat4& mat)
 {
     UNUSED_ARG(trans);
@@ -100,7 +100,7 @@ void Mirror::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction
     UNUSED_ARG(mat);
 }
 
-void Mirror::renderPlane(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
+void Portal::renderPlane(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)
 {
     struct tmp
     {
@@ -131,7 +131,7 @@ void Mirror::renderPlane(common::Unique<swizzle::gfx::DrawCommandTransaction>& t
     trans->drawIndexedInstanced(mPlane->mVertex, mPlane->mIndex, mInstance);
 }
 
-glm::mat4 Mirror::getMirrorTransform() const
+glm::mat4 Portal::getMirrorTransform() const
 {
     return mTransform;
 }

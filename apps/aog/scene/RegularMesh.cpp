@@ -122,7 +122,7 @@ void RegularMesh::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& t
     trans->drawIndexedInstanced(mMeshInfo->mVertex, mMeshInfo->mIndex, mInst);
 }
 
-void RegularMesh::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+void RegularMesh::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
 {
     struct tmp
     {

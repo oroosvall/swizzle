@@ -12,6 +12,7 @@
 #include "../AssetManager.hpp"
 #include "Compositor.hpp"
 #include "Mirror.hpp"
+#include "Portal.hpp"
 #include "Renderable.hpp"
 #include "TransparentMesh.hpp"
 
@@ -74,6 +75,8 @@ private:
     void loadMirror(const SwChar* frame, const SwChar* plane, glm::vec3 pos, glm::vec3 normal);
     void loadTransparent(const SwChar* meshFilePath, glm::vec4 color, glm::vec3 pos);
 
+    void loadPortal(const SwChar* frame, const SwChar* plane, glm::vec3 pos1, glm::vec3 rot1, glm::vec3 pos2, glm::vec3 rot2);
+
     common::Resource<swizzle::gfx::GfxContext> mContext;
     common::Resource<Compositor> mCompositor;
     common::Resource<AssetManager> mAssetManager;
@@ -89,6 +92,9 @@ private:
     SwBool mReflections;
 
     std::vector<common::Resource<TransparentMesh>> mTransparent;
+
+    common::Resource<Portal> mPortal1;
+    SwBool mPortals;
 };
 
 /* Function Declaration */

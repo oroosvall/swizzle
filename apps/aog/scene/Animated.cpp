@@ -139,7 +139,7 @@ void Animated::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tran
     trans->drawIndexedInstanced(mMesh, mIndex, mInst);
 }
 
-void Animated::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+void Animated::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
 {
     UNUSED_ARG(trans);
     UNUSED_ARG(cam);

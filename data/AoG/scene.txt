@@ -17,3 +17,4 @@ mirror;AoG/meshes/MirrorFrame.swm;AoG/meshes/MirrorPlane.swm;{0,0,-10};{1,1,-1}
 transparent;AoG/meshes/cube.swm;{1,0,0,0.1};{0,2,2}
 transparent;AoG/meshes/cube.swm;{0,1,0,0.1};{0,2,5}
 transparent;AoG/meshes/cube.swm;{0,0,1,0.1};{0,2,8}
+portal;AoG/meshes/MirrorFrame.swm;AoG/meshes/MirrorPlane.swm;{-10,0,0};{0,90,0};{-10,-0.338,92};{0,90,0}

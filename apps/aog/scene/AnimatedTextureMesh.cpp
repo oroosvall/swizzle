@@ -107,7 +107,7 @@ void AnimatedTextureMesh::render(common::Unique<swizzle::gfx::DrawCommandTransac
     trans->drawIndexedInstanced(mMeshInfo->mVertex, mMeshInfo->mIndex, mInst);
 }
 
-void AnimatedTextureMesh::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+void AnimatedTextureMesh::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
 {
     struct tmp
     {

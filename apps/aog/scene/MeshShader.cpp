@@ -114,7 +114,7 @@ void MeshShader::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tr
     //trans->drawIndexedInstanced(mMesh, mIndex, mInst);
 }
 
-void MeshShader::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+void MeshShader::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
 {
     UNUSED_ARG(trans);
     UNUSED_ARG(cam);

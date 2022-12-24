@@ -115,7 +115,7 @@ void HeightMap::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& tra
     trans->drawIndexedInstanced(mMesh, mIndex, mInst);
 }
 
-void HeightMap::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+void HeightMap::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
 {
     struct tmp
     {

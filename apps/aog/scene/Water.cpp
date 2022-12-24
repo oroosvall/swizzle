@@ -162,7 +162,7 @@ void Water::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, 
     trans->drawIndexedInstanced(mVertexBuffer, mIndexBuffer, mInst);
 }
 
-void Water::renderMirrorTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
+void Water::renderTransform(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam, glm::mat4& mat)
 {
     struct tmp
     {
