@@ -54,9 +54,27 @@ namespace swizzle
             gfx::GfxContextCreateInfo info = {};
             info.mDebugCallbacks = true;
             info.mDebugMemory = true;
-            info.mDeviceIndex = 0u;
 
             mGfxContext = gfx::CreateContext(info);
+
+            U32 devCount = mGfxContext->getDeviceCount();
+            U32 preferred = 0u;
+
+            for (U32 i = 0u; i < devCount; ++i) {
+                const SwChar* type = "Igpu";
+                if (mGfxContext->isDiscreteGpu(i)) {
+                    preferred = i;
+                    type = "Discrete";
+                }
+                LOG_INFO("%d: %s (%s)", i, mGfxContext->getDeviceName(i), type);
+            }
+
+            gfx::GfxContextInitializeInfo deviceInfo{};
+            deviceInfo.mDeviceIndex = preferred;
+            deviceInfo.mNumWorkerQueues = 1;
+            deviceInfo.mNumTransferQueues = 1;
+
+            mGfxContext->initializeDevice(deviceInfo);
 
             mSwapchain = mGfxContext->createSwapchain(mWindow, 2);
             mSwapchain->setVsync(gfx::VSyncTypes::vSyncAdaptive);

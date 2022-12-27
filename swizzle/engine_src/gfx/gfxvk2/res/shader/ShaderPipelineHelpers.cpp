@@ -51,7 +51,7 @@ namespace vk::shader
         tessState.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
         tessState.pNext = VK_NULL_HANDLE;
         tessState.flags = 0;
-        tessState.patchControlPoints = 0;
+        tessState.patchControlPoints = 3;
 
         return tessState;
     }
@@ -83,7 +83,7 @@ namespace vk::shader
         return viewState;
     }
 
-    VkPipelineRasterizationStateCreateInfo CreateRasterizationState(VkCullModeFlags cullMode)
+    VkPipelineRasterizationStateCreateInfo CreateRasterizationState(VkCullModeFlags cullMode, VkPolygonMode polyMode)
     {
         VkPipelineRasterizationStateCreateInfo rasterState = {};
         rasterState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -91,7 +91,7 @@ namespace vk::shader
         rasterState.flags = 0;
         rasterState.depthClampEnable = VK_FALSE;
         rasterState.rasterizerDiscardEnable = VK_FALSE;
-        rasterState.polygonMode = VkPolygonMode::VK_POLYGON_MODE_FILL;
+        rasterState.polygonMode = polyMode;
         rasterState.cullMode = cullMode;
         rasterState.frontFace = VkFrontFace::VK_FRONT_FACE_CLOCKWISE;
         rasterState.depthBiasEnable = VK_FALSE;
@@ -119,14 +119,14 @@ namespace vk::shader
         return multisampleState;
     }
 
-    VkPipelineDepthStencilStateCreateInfo CreateDepthStencilState(SwBool depthTest, VkCompareOp depthCompare)
+    VkPipelineDepthStencilStateCreateInfo CreateDepthStencilState(SwBool depthTest, SwBool depthWrite, VkCompareOp depthCompare)
     {
         VkPipelineDepthStencilStateCreateInfo depthState = {};
         depthState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthState.pNext = VK_NULL_HANDLE;
         depthState.flags = 0;
         depthState.depthTestEnable = depthTest;
-        depthState.depthWriteEnable = depthTest;
+        depthState.depthWriteEnable = depthWrite;
         depthState.depthCompareOp = depthCompare;
         depthState.depthBoundsTestEnable = VK_FALSE;
         depthState.stencilTestEnable = VK_FALSE;
@@ -195,6 +195,9 @@ namespace vk::shader
         case swizzle::gfx::DescriptorType::StorageBuffer:
             ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             break;
+        case swizzle::gfx::DescriptorType::StorageImage:
+            ttype = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            break;
         default:
             break;
         }
@@ -213,8 +216,21 @@ namespace vk::shader
             case swizzle::gfx::StageType::fragmentStage:
                 flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
                 break;
+            case swizzle::gfx::StageType::tessellationStage:
+                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+                break;
+            case swizzle::gfx::StageType::taskStage:
+                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_TASK_BIT_EXT;
+                break;
+            case swizzle::gfx::StageType::meshStage:
+                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_MESH_BIT_EXT;
+                break;
             case swizzle::gfx::StageType::vertexStage:
                 flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
+                break;
+            case swizzle::gfx::StageType::computeStage:
+                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
                 break;
             default:
                 break;
@@ -231,6 +247,14 @@ namespace vk::shader
         {
             type = shader::ShaderModuleType::ShaderModuleType_Vertex;
         }
+        else if (strcmp(shaderType, "tessCtrl") == 0)
+        {
+            type = shader::ShaderModuleType::ShaderModuleType_TessellationControl;
+        }
+        else if (strcmp(shaderType, "tessEval") == 0)
+        {
+            type = shader::ShaderModuleType::ShaderModuleType_TessellationEvaluate;
+        }
         else if (strcmp(shaderType, "geometry") == 0)
         {
             type = shader::ShaderModuleType::ShaderModuleType_Geometry;
@@ -242,6 +266,14 @@ namespace vk::shader
         else if (strcmp(shaderType, "compute") == 0)
         {
             type = shader::ShaderModuleType::ShaderModuleType_Compute;
+        }
+        else if (strcmp(shaderType, "task") == 0)
+        {
+            type = shader::ShaderModuleType::ShaderModuleType_Task;
+        }
+        else if (strcmp(shaderType, "mesh") == 0)
+        {
+            type = shader::ShaderModuleType::ShaderModuleType_Mesh;
         }
         else
         {

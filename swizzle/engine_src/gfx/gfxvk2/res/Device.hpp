@@ -5,11 +5,11 @@
 
 #include <swizzle/gfx/GfxStats.hpp>
 
-#include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
+#include "_fwDecl.hpp"
 
-#include "VkResource.hpp"
 #include "DeviceMemory.hpp"
+#include "VkResource.hpp"
 
 #include <memory>
 
@@ -53,6 +53,7 @@ namespace vk
         VkPhysicalDevice getPhysicalHandle() const;
         const SwChar* getDeviceName() const;
         VkPhysicalDeviceFeatures getDeviceFeatures() const;
+        VkPhysicalDeviceProperties getDeviceProperties() const;
 
         VkQueue getQueue();
 
@@ -67,8 +68,8 @@ namespace vk
         void destroyQueryPool(VkQueryPool pool);
 
         common::Resource<VkResource<VkBuffer>> createBuffer(VkDeviceSize size, VkBufferUsageFlags flags);
-        common::Resource<VkResource<VkImage>> createImage(VkImageType type, VkFormat format,
-                                                          VkImageUsageFlags usage, VkExtent3D size, U32 layerCount);
+        common::Resource<VkResource<VkImage>> createImage(VkImageType type, VkFormat format, VkImageUsageFlags usage,
+                                                          VkExtent3D size, U32 layerCount, U32 mipLevel);
         common::Resource<VkResource<VkDescriptorSet>> allocateDescriptorSet(common::Resource<ShaderPipeline> shader);
 
         void destroyResource(common::Resource<IVkResource>& resource);
@@ -95,10 +96,10 @@ namespace vk
         swizzle::gfx::MemoryStatistics* getHeapStatsistics(U32 index) const;
         swizzle::gfx::DeviceStatistics* getDeviceStats();
 
-        common::Resource<QueryPool> getQueryPool() const;
+        common::Resource<Query> getStatisticsQuery() const;
+        common::Resource<Query> getTimingQuery() const;
 
     private:
-
         void initMemoryPools();
         void deinitMemoryPools();
 
@@ -128,9 +129,13 @@ namespace vk
 
         swizzle::gfx::DeviceStatistics mDeviceStats;
 
-        common::Resource<QueryPool> mQueryPool;
+        common::Resource<Query> mStatisticsQuery;
+        common::Resource<Query> mTimingQuery;
+
+
+        std::mutex mDescriptorMutex;
     };
-}
+} // namespace vk
 /* Function Declaration */
 
 #endif

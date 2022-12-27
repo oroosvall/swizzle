@@ -28,7 +28,9 @@ namespace vk
     class Fence;
     class VFrameBuffer;
     class BaseFrameBuffer;
-    class QueryPool;
+    class Query;
+    class StatisticsQuery;
+    class TimeQuery;
     class LifetimeToken;
 } // namespace vk
 

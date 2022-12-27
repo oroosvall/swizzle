@@ -68,6 +68,18 @@ namespace vk
         return (SwChar*)name;
     }
 
+    SwBool Instance::isDiscreteGpu(U32 index)
+    {
+        SwBool dedicated = false;
+        VkPhysicalDevice dev = getDevice(index);
+        if (dev) {
+            VkPhysicalDeviceProperties deviceProperties;
+            vkGetPhysicalDeviceProperties(dev, &deviceProperties);
+            dedicated = deviceProperties.deviceType ==  VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+        }
+        return dedicated;
+    }
+
     std::vector<std::string> Instance::listAvailableExtensions(U32 index)
     {
         std::vector<std::string> extensions;
@@ -113,20 +125,40 @@ namespace vk
         info.enabledExtensionCount = static_cast<U32>(extensions.size());
         info.enabledLayerCount = 0u;
 
-        VkPhysicalDeviceFeatures features{};
+        VkPhysicalDevice phys = getDevice(createInfo.mDeviceIndex);
 
-        features.geometryShader = true;
-        features.pipelineStatisticsQuery = true;
+        getDeviceFeatures(phys);
+
+        VkPhysicalDeviceFeatures2 features{};
+
+        features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        features.features.geometryShader = true;
+        features.features.pipelineStatisticsQuery = true;
+        features.features.tessellationShader = true;
+        features.features.fillModeNonSolid = true;
+
+        VkPhysicalDeviceVulkan13Features maint{};
+        maint.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+        maint.maintenance4 = true;
+
+        features.pNext = &maint;
+
+        VkPhysicalDeviceMeshShaderFeaturesEXT meshFeatures{};
+        meshFeatures.meshShader = false;
+        meshFeatures.taskShader = false;
+        meshFeatures.pNext = VK_NULL_HANDLE;
+        meshFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
+
+        maint.pNext = &meshFeatures;
 
         info.flags = 0u;
-        info.pEnabledFeatures = &features;
-        info.pNext = VK_NULL_HANDLE;
+        info.pEnabledFeatures = VK_NULL_HANDLE;
+        info.pNext = &features;
         info.ppEnabledExtensionNames = extensions.data();
         info.ppEnabledLayerNames = VK_NULL_HANDLE;
         info.pQueueCreateInfos = &queueCreateInfo;
         info.queueCreateInfoCount = 1u;
 
-        VkPhysicalDevice phys = getDevice(createInfo.mDeviceIndex);
         VkDevice dev = VK_NULL_HANDLE;
 
         if (phys)
@@ -202,6 +234,10 @@ namespace vk
             initDebug();
         }
 #endif
+        if (!vk::loadMeshShaderExtensions(mInstance))
+        {
+            LOG_WARNING("Mesh shader extensions not loaded");
+        }
     }
 
     void Instance::cleanup()
@@ -337,6 +373,28 @@ namespace vk
                 layers.emplace_back(layerName);
             }
         }
+    }
+
+    void Instance::getDeviceFeatures(VkPhysicalDevice phys)
+    {
+
+        VkPhysicalDeviceFeatures2 features{};
+
+        features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+
+        VkPhysicalDeviceVulkan13Features maint{};
+        maint.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+
+        features.pNext = &maint;
+
+        VkPhysicalDeviceMeshShaderFeaturesEXT meshFeatures{};
+        meshFeatures.pNext = VK_NULL_HANDLE;
+        meshFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
+
+        maint.pNext = &meshFeatures;
+
+        vkGetPhysicalDeviceFeatures2(phys, &features);
+
     }
 
 } // namespace vk

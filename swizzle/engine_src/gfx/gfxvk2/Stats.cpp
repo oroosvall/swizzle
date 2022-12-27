@@ -92,8 +92,22 @@ namespace swizzle::gfx
 
     void StatsIterator::addPipelineStats()
     {
-        auto stats = mDevice->getQueryPool()->getGfxPipelineStatistics(true);
+        OPTICK_EVENT("StatsIterator::addPipelineStats()");
+        GfxPipelineStatistics* stats = nullptr;
+        U64 size = sizeof(GfxPipelineStatistics);
+        mDevice->getStatisticsQuery()->getQueryData((U64**)&stats, &size, true);
         mStats.push_back(std::make_pair(gfx::GfxStatsType::GfxPipelineStats, stats));
+    }
+
+    void StatsIterator::addTimingStats()
+    {
+        OPTICK_EVENT("StatsIterator::addTimingStats()");
+        static GfxTimingStatistics stats{};
+        stats.mSampleCount = 0ull;
+        stats.mNsPerSample = (U64)mDevice->getDeviceProperties().limits.timestampPeriod;
+        stats.mSamples = nullptr;
+        mDevice->getTimingQuery()->getQueryData(&stats.mSamples, &stats.mSampleCount, true);
+        mStats.push_back(std::make_pair(gfx::GfxStatsType::GfxTiming, &stats));
     }
 }
 

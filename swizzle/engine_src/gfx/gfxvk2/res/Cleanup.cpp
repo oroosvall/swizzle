@@ -73,15 +73,21 @@ namespace vk
 
     void CleanupRunnable::scheduleResourceDestruction(common::Resource<IVkResource> resource)
     {
-        std::lock_guard lock(mMux);
-        mLists[mBufferIndex].mResources.emplace_back(resource);
+        if (resource)
+        {
+            std::lock_guard lock(mMux);
+            mLists[mBufferIndex].mResources.emplace_back(resource);
+        }
         //mCond.notify_one();
     }
 
     void CleanupRunnable::scheduleFreeingMemory(common::Resource<DeviceMemory> memory)
     {
-        std::lock_guard lock(mMux);
-        mLists[mBufferIndex].mMemoryAllocations.emplace_back(memory);
+        if (memory)
+        {
+            std::lock_guard lock(mMux);
+            mLists[mBufferIndex].mMemoryAllocations.emplace_back(memory);
+        }
         //mCond.notify_one();
     }
 

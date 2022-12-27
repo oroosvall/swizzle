@@ -19,6 +19,7 @@ namespace swizzle::gfx
     {
         ShaderType_Graphics,
         ShaderType_Compute,
+        ShaderType_Mesh
     };
 
     enum class ShaderBufferInputRate
@@ -41,7 +42,18 @@ namespace swizzle::gfx
     enum class StageType
     {
         vertexStage = 0,
-        fragmentStage
+        tessellationStage = 1,
+        meshStage = 2,
+        taskStage = 3,
+        fragmentStage = 4,
+        computeStage,
+    };
+
+    enum class PrimitiveType
+    {
+        point = 0,
+        line = 1,
+        triangle = 2
     };
 
     typedef U32 Count;
@@ -96,8 +108,9 @@ namespace swizzle::gfx
         common::IterType<ShaderDescriptorBindings> mDescriptors;
         U32 mPushConstantSize;
         SwBool mEnableDepthTest;
+        SwBool mEnableDepthWrite;
         SwBool mEnableBlending;
-        SwBool mPoints;
+        PrimitiveType mPrimitiveType;
     };
 
     class Shader

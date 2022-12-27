@@ -30,9 +30,9 @@ namespace vk::shader
     VkPipelineTessellationStateCreateInfo CreateTesselationState();
     VkViewport CreateViewport(VkRect2D rect);
     VkPipelineViewportStateCreateInfo CreateViewportState(VkViewport* viewport, VkRect2D* rect);
-    VkPipelineRasterizationStateCreateInfo CreateRasterizationState(VkCullModeFlags cullMode);
+    VkPipelineRasterizationStateCreateInfo CreateRasterizationState(VkCullModeFlags cullMode, VkPolygonMode polyMode);
     VkPipelineMultisampleStateCreateInfo CreateMultisampleState(VkSampleCountFlagBits sampleCount);
-    VkPipelineDepthStencilStateCreateInfo CreateDepthStencilState(SwBool depthTest, VkCompareOp depthCompare);
+    VkPipelineDepthStencilStateCreateInfo CreateDepthStencilState(SwBool depthTest, SwBool depthWrite, VkCompareOp depthCompare);
 
     void ReadShaderInfo(const std::string& info, std::string& type, std::string& path);
     VkFormat GetShaderAttributeFormat(swizzle::gfx::ShaderAttributeDataType type);

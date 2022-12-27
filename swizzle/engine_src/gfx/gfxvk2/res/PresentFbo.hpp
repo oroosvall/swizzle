@@ -36,6 +36,7 @@ namespace vk
         virtual void setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue) override;
 
         virtual common::Resource<swizzle::gfx::Texture> getColorAttachment(U32 index) override;
+        virtual common::Resource<swizzle::gfx::Texture> getDepthAttachment() override;
 
         virtual void resize(U32 width, U32 height) override;
 

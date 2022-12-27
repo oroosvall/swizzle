@@ -21,6 +21,8 @@ namespace vk
 
     void LogVulkanError(VkResult res, const char* functionName);
 
+    SwBool loadMeshShaderExtensions(VkInstance inst);
+
 }
 
 #endif

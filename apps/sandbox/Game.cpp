@@ -56,11 +56,12 @@ void Game::userSetup()
     };
     attribFsq.mPushConstantSize = 0u;
     attribFsq.mEnableBlending = true;
+    attribFsq.mPrimitiveType = sw::gfx::PrimitiveType::triangle;
 
     mFsq = mGfxContext->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Graphics, attribFsq);
     mFsq->load("shaders/fsq.shader");
 
-    mFsqMat = mGfxContext->createMaterial(mFsq);
+    mFsqMat = mGfxContext->createMaterial(mFsq, sw::gfx::SamplerMode::SamplerModeClamp);
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
 
     sw::gfx::ShaderAttributeList attribCompute = {};
@@ -189,7 +190,7 @@ void Game::updateMainWindow(F32 dt)
 
     imGuiRender(trans);
 
-    trans->bindComputeShader(mComputeShader);
+    trans->bindComputeShader(mComputeShader, nullptr, nullptr, 0);
     trans->dispatchCompute(10, 10, 10);
 
     auto dTrans = mCmdBuffer->beginRenderPass(mSwapchain, std::move(trans));

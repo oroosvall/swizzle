@@ -165,6 +165,16 @@ namespace vk
         mUploaded = true;
     }
 
+    void TextureCube::transferImageToCompute(VkCommandBuffer cmdBuffer)
+    {
+        UNUSED_ARG(cmdBuffer);
+    }
+
+    void TextureCube::transferImageToRender(VkCommandBuffer cmdBuffer)
+    {
+        UNUSED_ARG(cmdBuffer);
+    }
+
     common::Resource<VkResource<VkImage>> TextureCube::getImg()
     {
         return mImage;
@@ -173,6 +183,10 @@ namespace vk
     VkImageView TextureCube::getView()
     {
         return mImageView;
+    }
+    bool TextureCube::isDepth()
+    {
+        return false;
     }
 } // namespace vk
 
@@ -187,7 +201,7 @@ namespace vk
         VkImageUsageFlags usage =
             VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-        mImage = mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, format, usage, {mWidth, mHeight, 1u}, mLayers);
+        mImage = mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, format, usage, {mWidth, mHeight, 1u}, mLayers, 1u);
     }
 
     void TextureCube::allocMemory()

@@ -18,14 +18,23 @@ namespace vk::shader
         CullMode,
         ColorBlendOp,
         AlphaBlendOp,
+        StencilOp,
+        StencilCompare,
+        StencilMask,
+        StencilEnable,
+        DepthCompare,
     };
 
     enum class ShaderModuleType
     {
         ShaderModuleType_Vertex,
+        ShaderModuleType_TessellationControl,
+        ShaderModuleType_TessellationEvaluate,
         ShaderModuleType_Geometry,
         ShaderModuleType_Fragment,
-        ShaderModuleType_Compute
+        ShaderModuleType_Compute,
+        ShaderModuleType_Task,
+        ShaderModuleType_Mesh
     };
 }
 
@@ -43,6 +52,11 @@ namespace vk::shader
             VkCullModeFlagBits mCullMode;
             VkBlendOp mColorBlendOp;
             VkBlendOp mAlphaBlendOp;
+            VkStencilOp mStencilOp[3];
+            VkCompareOp mStencilCompare;
+            U32 mStencilMasks[3];
+            SwBool mEnableStencilWrite;
+            VkCompareOp mDepthCompare;
         };
     };
 }

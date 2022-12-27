@@ -1,6 +1,8 @@
 #ifndef WIN32_XInput_HPP
 #define WIN32_XInput_HPP
 
+#ifdef SW_WINDOWS
+
 /* Include files */
 
 #define WIN32_LEAN_AND_MEAN
@@ -26,5 +28,7 @@ namespace win32
 {
     void ProcessXInput(swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler);
 }
+
+#endif
 
 #endif

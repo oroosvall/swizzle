@@ -97,12 +97,14 @@ void Scene::loadSky()
     };
     attribsSky.mPushConstantSize = sizeof(glm::mat4) * 4u;
     attribsSky.mEnableDepthTest = false;
+    attribsSky.mEnableDepthWrite = false;
     attribsSky.mEnableBlending = false;
+    attribsSky.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
     skyShader = mCompositor->createShader(0u, attribsSky);
     skyShader->load("shaders/sky.shader");
 
-    skyMaterial = mContext->createMaterial(skyShader);
+    skyMaterial = mContext->createMaterial(skyShader, swizzle::gfx  ::SamplerMode::SamplerModeClamp);
 
     skyTexture = mAssetManager->loadCubeTexture("texture/right.png", "texture/left.png", "texture/top.png",
                                                 "texture/bottom.png", "texture/front.png", "texture/back.png");
@@ -187,7 +189,9 @@ void Scene::loadAnimMesh()
     };
     attribsAnim.mPushConstantSize = sizeof(glm::mat4) * 2u;
     attribsAnim.mEnableDepthTest = true;
+    attribsAnim.mEnableDepthWrite = true;
     attribsAnim.mEnableBlending = false;
+    attribsAnim.mPrimitiveType = sgfx::PrimitiveType::triangle;
 
     texture = mAssetManager->loadTexture("texture/lightGray.png");
 

@@ -33,6 +33,7 @@ namespace vk
 
         U32 getNumDevices();
         SwChar* getDeviceName(U32 index);
+        SwBool isDiscreteGpu(U32 index);
         std::vector<std::string> listAvailableExtensions(U32 index);
 
         common::Resource<Device> initializeDevice(const swizzle::gfx::GfxContextInitializeInfo& createInfo,
@@ -55,6 +56,8 @@ namespace vk
 
         void addLayerIfExisting(std::vector<const char*>& layers, const std::vector<VkLayerProperties>& availableLayers,
                                 const char* layerName);
+
+        void getDeviceFeatures(VkPhysicalDevice phys);
 
         VkInstance mInstance;
 

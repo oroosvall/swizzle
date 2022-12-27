@@ -57,6 +57,9 @@ namespace swizzle::core
         bool mCursorVisible;
         bool mVisible;
 
+        int mXLast;
+        int mYLast;
+
         EventHandlerList<WindowEvent> mEventHandlers;
     };
 

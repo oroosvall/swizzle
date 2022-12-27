@@ -42,6 +42,7 @@ namespace swizzle::gfx
         virtual void bindMaterial(common::Resource<Shader> shader, common::Resource<Material> material) = 0;
         virtual void setShaderConstant(common::Resource<Shader> shader, U8* data, U32 size) = 0;
         virtual void setViewport(U32 x, U32 y) = 0;
+        virtual void enableStencilTest(SwBool enable) = 0;
 
         virtual void bindVertexBuffer(common::Resource<Buffer> buffer) = 0;
         virtual void bindIndexBuffer(common::Resource<Buffer> buffer, SwBool bitSize16) = 0;
@@ -52,6 +53,8 @@ namespace swizzle::gfx
         virtual void drawInstanced(common::Resource<Buffer> buffer, common::Resource<Buffer> instanceData) = 0;
         virtual void drawIndexedInstanced(common::Resource<Buffer> buffer, common::Resource<Buffer> index,
                                           common::Resource<Buffer> instanceData) = 0;
+
+        virtual void drawMeshlet(U32 meshletCount) = 0;
 
         virtual void drawNoBind(U32 vertexCount, U32 first) = 0;
         virtual void drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset) = 0;
@@ -78,7 +81,8 @@ namespace swizzle::gfx
         /// Bind a shader for compute operations
         /// </summary>
         /// <param name="shader">Compute shader to bind</param>
-        virtual void bindComputeShader(common::Resource<Shader> shader) = 0;
+        virtual void bindComputeShader(common::Resource<Shader> shader, common::Resource<swizzle::gfx::Material> mat,
+                                       U8* constants, U32 constantsSize) = 0;
         /// <summary>
         /// Execute compute operations on previous bound compute shader
         /// </summary>
@@ -92,6 +96,9 @@ namespace swizzle::gfx
         /// </summary>
         /// <param name="texture">Texture to upload to GPU</param>
         virtual void uploadTexture(common::Resource<Texture> texture) = 0;
+
+        virtual void changeImageLayoutCompute(common::Resource<swizzle::gfx::Texture> texture) = 0;
+        virtual void changeImageLayoutRender(common::Resource<swizzle::gfx::Texture> texture) = 0;
     };
 
     class CommandBuffer : public std::enable_shared_from_this<CommandBuffer>

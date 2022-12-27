@@ -31,7 +31,11 @@ namespace vk
         virtual void uploadImage(VkCommandBuffer cmdBuffer) = 0;
 
         virtual common::Resource<VkResource<VkImage>> getImg() = 0;
+        virtual bool isDepth() = 0;
         virtual VkImageView getView() = 0;
+
+        virtual void transferImageToCompute(VkCommandBuffer cmdBuffer) = 0;
+        virtual void transferImageToRender(VkCommandBuffer cmdBuffer) = 0;
     };
 }
 

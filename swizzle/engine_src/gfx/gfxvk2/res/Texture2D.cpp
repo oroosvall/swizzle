@@ -6,6 +6,8 @@
 #include "Device.hpp"
 #include "DeviceMemory.hpp"
 
+#include <cmath>
+
 /* Defines */
 
 /* Typedefs */
@@ -24,7 +26,8 @@
 
 namespace vk
 {
-    Texture2D::Texture2D(common::Resource<Device> device, U32 width, U32 height, U32 channels, const U8* pixelData)
+    Texture2D::Texture2D(common::Resource<Device> device, U32 width, U32 height, U32 channels, SwBool f32,
+                         const U8* pixelData)
         : mDevice(device)
         , mImage()
         , mImageMemory()
@@ -35,7 +38,14 @@ namespace vk
         , mWidth(width)
         , mHeight(height)
         , mChannels(channels)
+        , mMipLevels(1u)
+        , mFloat(f32)
     {
+        mMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(mWidth, mHeight)))) + 1;
+        if (mFloat)
+        {
+            mMipLevels = 1u;
+        }
         createResources();
 
         if (pixelData)
@@ -69,6 +79,7 @@ namespace vk
             destroyResources();
             mWidth = width;
             mHeight = height;
+            mMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(mWidth, mHeight)))) + 1;
             createResources();
         }
 
@@ -83,6 +94,11 @@ namespace vk
         }
 
         VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * (U64)channels;
+        if (mFloat)
+        {
+            imageSize *= 4ull;
+            mMipLevels = 1u;
+        }
 
         mStageBuffer = mDevice->createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
@@ -130,7 +146,7 @@ namespace vk
         imgBarrier.image = mImage->getVkHandle();
         imgBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         imgBarrier.subresourceRange.baseMipLevel = 0U;
-        imgBarrier.subresourceRange.levelCount = 1U;
+        imgBarrier.subresourceRange.levelCount = mMipLevels;
         imgBarrier.subresourceRange.baseArrayLayer = 0U;
         imgBarrier.subresourceRange.layerCount = 1U;
 
@@ -155,13 +171,61 @@ namespace vk
                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1U, &region);
 
         imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
         vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
                              VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0U, VK_NULL_HANDLE, 0U,
                              VK_NULL_HANDLE, 1U, &imgBarrier);
 
+        generateMipMaps(cmdBuffer);
+
         mUploaded = true;
+    }
+
+    void Texture2D::transferImageToCompute(VkCommandBuffer cmdBuffer)
+    {
+        VkImageMemoryBarrier imgBarrier = {};
+        imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        imgBarrier.pNext = VK_NULL_HANDLE;
+        imgBarrier.srcAccessMask = 0u;
+        imgBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_SHADER_WRITE_BIT | VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT;
+        imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
+        imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imgBarrier.image = mImage->getVkHandle();
+        imgBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imgBarrier.subresourceRange.baseMipLevel = 0U;
+        imgBarrier.subresourceRange.levelCount = mMipLevels;
+        imgBarrier.subresourceRange.baseArrayLayer = 0U;
+        imgBarrier.subresourceRange.layerCount = 1U;
+
+        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0U, VK_NULL_HANDLE, 0U,
+                             VK_NULL_HANDLE, 1U, &imgBarrier);
+    }
+
+    void Texture2D::transferImageToRender(VkCommandBuffer cmdBuffer)
+    {
+        VkImageMemoryBarrier imgBarrier = {};
+        imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        imgBarrier.pNext = VK_NULL_HANDLE;
+        imgBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_SHADER_WRITE_BIT | VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT;
+        imgBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT;
+        imgBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+        imgBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imgBarrier.image = mImage->getVkHandle();
+        imgBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imgBarrier.subresourceRange.baseMipLevel = 0U;
+        imgBarrier.subresourceRange.levelCount = mMipLevels;
+        imgBarrier.subresourceRange.baseArrayLayer = 0U;
+        imgBarrier.subresourceRange.layerCount = 1U;
+
+        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0U, VK_NULL_HANDLE, 0U,
+                             VK_NULL_HANDLE, 1U, &imgBarrier);
     }
 
     common::Resource<VkResource<VkImage>> Texture2D::getImg()
@@ -173,6 +237,11 @@ namespace vk
     {
         return mImageView;
     }
+
+    bool Texture2D::isDepth()
+    {
+        return false;
+    }
 } // namespace vk
 
 /* Class Protected Function Definition */
@@ -183,8 +252,14 @@ namespace vk
 {
     void Texture2D::createImage(VkFormat format)
     {
-        VkImageUsageFlags usage =
-            VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        VkImageUsageFlags usage = VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT |
+                                  VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                                  VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+        if (mFloat)
+        {
+            usage |= VkImageUsageFlagBits::VK_IMAGE_USAGE_STORAGE_BIT;
+        }
 
         if (mImage)
         {
@@ -192,7 +267,8 @@ namespace vk
             mImage.reset();
         }
 
-        mImage = mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, format, usage, {mWidth, mHeight, 1u}, 1u);
+        mImage =
+            mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, format, usage, {mWidth, mHeight, 1u}, 1u, mMipLevels);
     }
 
     void Texture2D::allocMemory()
@@ -230,7 +306,7 @@ namespace vk
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0U;
         imageViewCreateInfo.subresourceRange.baseMipLevel = 0U;
         imageViewCreateInfo.subresourceRange.layerCount = 1U;
-        imageViewCreateInfo.subresourceRange.levelCount = 1U;
+        imageViewCreateInfo.subresourceRange.levelCount = mMipLevels;
 
         // TODO: bind memory before this
         vkCreateImageView(mDevice->getDeviceHandle(), &imageViewCreateInfo, mDevice->getAllocCallbacks(), &mImageView);
@@ -257,6 +333,10 @@ namespace vk
         {
         case 1:
             selectedFormat = VkFormat::VK_FORMAT_R8_SRGB;
+            if (mFloat)
+            {
+                selectedFormat = VkFormat::VK_FORMAT_R32_SFLOAT;
+            }
             break;
         case 2:
             selectedFormat = VkFormat::VK_FORMAT_R8G8_SRGB;
@@ -264,9 +344,14 @@ namespace vk
         case 3:
             selectedFormat = VkFormat::VK_FORMAT_R8G8B8_SRGB;
             break;
-        case 4:
+        case 4: {
             selectedFormat = VkFormat::VK_FORMAT_R8G8B8A8_SRGB;
-            break;
+            if (mFloat)
+            {
+                selectedFormat = VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
+            }
+        }
+        break;
         default:
             selectedFormat = VkFormat::VK_FORMAT_R8G8B8A8_SRGB;
             break;
@@ -275,5 +360,72 @@ namespace vk
         createImage(selectedFormat);
         allocMemory();
         createView(selectedFormat);
+    }
+
+    void Texture2D::generateMipMaps(VkCommandBuffer cmdBuffer)
+    {
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.image = mImage->getVkHandle();
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.subresourceRange.levelCount = 1;
+
+        int32_t mipWidth = mWidth;
+        int32_t mipHeight = mHeight;
+
+        for (uint32_t i = 1; i < mMipLevels; i++)
+        {
+            barrier.subresourceRange.baseMipLevel = i - 1;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+            vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
+                                 nullptr, 0, nullptr, 1, &barrier);
+
+            VkImageBlit blit{};
+            blit.srcOffsets[0] = {0, 0, 0};
+            blit.srcOffsets[1] = {mipWidth, mipHeight, 1};
+            blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.srcSubresource.mipLevel = i - 1;
+            blit.srcSubresource.baseArrayLayer = 0;
+            blit.srcSubresource.layerCount = 1;
+            blit.dstOffsets[0] = {0, 0, 0};
+            blit.dstOffsets[1] = {mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1};
+            blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.dstSubresource.mipLevel = i;
+            blit.dstSubresource.baseArrayLayer = 0;
+            blit.dstSubresource.layerCount = 1;
+
+            vkCmdBlitImage(cmdBuffer, mImage->getVkHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                           mImage->getVkHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
+                                 nullptr, 0, nullptr, 1, &barrier);
+
+            if (mipWidth > 1)
+                mipWidth /= 2;
+            if (mipHeight > 1)
+                mipHeight /= 2;
+        }
+
+        barrier.subresourceRange.baseMipLevel = mMipLevels - 1;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
+                             nullptr, 0, nullptr, 1, &barrier);
     }
 } // namespace vk

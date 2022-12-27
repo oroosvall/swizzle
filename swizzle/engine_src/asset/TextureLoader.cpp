@@ -35,11 +35,11 @@ namespace swizzle::asset
         U8* textureData = stbi_load(file, &x, &y, &c, 4);
         if (textureData)
         {
-            texture = ctx->createTexture(x, y, 4, textureData);
+            texture = ctx->createTexture(x, y, 4, false, textureData);
         }
         else
         {
-            texture = ctx->createTexture(1,1,1, nullptr);
+            texture = ctx->createTexture(1,1,1, false, nullptr);
             LOG_ERROR("Texture %s failed to load", file);
         }
 

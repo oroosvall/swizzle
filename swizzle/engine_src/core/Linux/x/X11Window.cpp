@@ -3,6 +3,8 @@
 #include "X11Window.hpp"
 #include <X11/Xutil.h>
 
+#include <stdio.h>
+
 namespace swizzle::core
 {
 
@@ -32,7 +34,7 @@ namespace swizzle::core
         windowAttributes.colormap = colormap;
         windowAttributes.background_pixel = 0xFFFFFFFF;
         windowAttributes.border_pixel = 0;
-        windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
+        windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | EnterWindowMask | LeaveWindowMask;
 
         mWindow = XCreateWindow(mDisplay, RootWindow(mDisplay, s), 0, 0, width,
             height, 0, visualInfo->depth, InputOutput, visualInfo->visual,
@@ -46,6 +48,7 @@ namespace swizzle::core
 
         XFlush(mDisplay);
         mVisible = true;
+        mXLast = mYLast = 0;
     }
 
     XlibWindow::~XlibWindow()
@@ -140,9 +143,81 @@ namespace swizzle::core
             {
             case ConfigureNotify:
             {
-                WindowResizeEvent e;
+                WindowResizeEvent e{};
                 e.mHeight = evt.xconfigure.height;
                 e.mWidth = evt.xconfigure.width;
+                mEventHandlers.publishEvent(e);
+                break;
+            }
+            case EnterNotify:
+            {
+                WindowFocusEvent e{};
+                e.mFocused = true;
+                mEventHandlers.publishEvent(e);
+                break;
+            }
+            case LeaveNotify:
+            {
+                WindowFocusEvent e{};
+                e.mFocused = false;
+                mEventHandlers.publishEvent(e);
+                break;
+            }
+            case MotionNotify:
+            {
+                MouseMoveEvent eMove {};
+                eMove.mX = evt.xmotion.x;
+                eMove.mY = evt.xmotion.y;
+                mEventHandlers.publishEvent(eMove);
+
+                MouseMoveDelta eDelta{};
+                eDelta.dX = evt.xmotion.x - mXLast;
+                eDelta.dY = evt.xmotion.y - mYLast;
+
+                mXLast = evt.xmotion.x;
+                mYLast = evt.xmotion.y;
+                mEventHandlers.publishEvent(eDelta);
+
+                break;
+            }
+            case ButtonPress:
+            {
+                InputEvent e;
+                e.mPressed = true;
+                e.mFromKeyboard = false;
+                e.mModKeys = 0;
+                e.mKey = evt.xbutton.button;
+                mEventHandlers.publishEvent(e);
+                break;
+            }
+            case ButtonRelease:
+            {
+                InputEvent e;
+                e.mPressed = false;
+                e.mFromKeyboard = false;
+                e.mModKeys = 0;
+                e.mKey = evt.xbutton.button;
+                mEventHandlers.publishEvent(e);
+                break;
+            }
+            case KeyPress:
+            {
+                InputEvent e;
+                e.mPressed = true;
+                e.mFromKeyboard = true;
+                e.mModKeys = 0;
+                e.mKey = evt.xkey.keycode;
+                printf("%d\n", e.mKey);
+                mEventHandlers.publishEvent(e);
+                break;
+            }
+            case KeyRelease:
+            {
+                InputEvent e;
+                e.mPressed = false;
+                e.mFromKeyboard = true;
+                e.mModKeys = 0;
+                e.mKey = evt.xkey.keycode;
                 mEventHandlers.publishEvent(e);
                 break;
             }

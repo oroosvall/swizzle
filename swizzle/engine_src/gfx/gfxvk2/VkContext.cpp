@@ -47,6 +47,7 @@ namespace swizzle::gfx
         , mCmdPool(nullptr)
         , mQueue(VK_NULL_HANDLE)
         , mFrameAllocator(sizeof(void*) * 128u)
+        , mMeshShaderSupported(false)
     {
         mVkInstance = common::CreateRef<vk::Instance>(createInfo);
     }
@@ -78,6 +79,12 @@ namespace swizzle::gfx
         return name;
     }
 
+    SwBool VkGfxContext::isDiscreteGpu(U32 deviceIndex)
+    {
+        return mVkInstance->isDiscreteGpu(deviceIndex);
+    }
+
+
     SwBool VkGfxContext::initializeDevice(const GfxContextInitializeInfo& createInfo)
     {
         std::vector<const char*> extensions;
@@ -87,6 +94,12 @@ namespace swizzle::gfx
         addExtensionIfExisting(extensions, supportedExtensions, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
         addExtensionIfExisting(extensions, supportedExtensions, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         addExtensionIfExisting(extensions, supportedExtensions, VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME);
+        addExtensionIfExisting(extensions, supportedExtensions, VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
+
+        if (addExtensionIfExisting(extensions, supportedExtensions, VK_EXT_MESH_SHADER_EXTENSION_NAME))
+        {
+            mMeshShaderSupported = true;
+        }
 
         LOG_INFO("Initializing Vulkan Device: %s", getDeviceName(createInfo.mDeviceIndex));
         mVkDevice = mVkInstance->initializeDevice(createInfo, extensions);
@@ -104,6 +117,11 @@ namespace swizzle::gfx
         }
 
         return ok;
+    }
+
+    SwBool VkGfxContext::hasMeshShaderSupport()
+    {
+        return mMeshShaderSupported;
     }
 
     void VkGfxContext::waitIdle()
@@ -136,6 +154,7 @@ namespace swizzle::gfx
         stats->addDeviceStats();
         stats->addInstanceStats();
         stats->addPipelineStats();
+        stats->addTimingStats();
         return stats;
     }
 
@@ -155,9 +174,9 @@ namespace swizzle::gfx
         return common::CreateRef<vk::VSwapchain>(mVkInstance, mVkDevice, window);
     }
 
-    common::Resource<Texture> VkGfxContext::createTexture(U32 width, U32 height, U32 channels, const U8* data)
+    common::Resource<Texture> VkGfxContext::createTexture(U32 width, U32 height, U32 channels, SwBool f32, const U8* data)
     {
-        return common::CreateRef<vk::Texture2D>(mVkDevice, width, height, channels, data);
+        return common::CreateRef<vk::Texture2D>(mVkDevice, width, height, channels, f32, data);
     }
 
     common::Resource<Texture> VkGfxContext::createCubeMapTexture(U32 width, U32 height, U32 channels, const U8* data)
@@ -182,14 +201,19 @@ namespace swizzle::gfx
         return common::CreateRef<vk::ShaderPipeline>(mVkDevice, type, fbo, attribs);
     }
 
-    common::Resource<Material> VkGfxContext::createMaterial(common::Resource<Shader> shader)
+    common::Resource<Material> VkGfxContext::createMaterial(common::Resource<Shader> shader, SamplerMode samplerMode)
     {
-        return common::CreateRef<vk::VMaterial>(mVkDevice, shader);
+        return common::CreateRef<vk::VMaterial>(mVkDevice, shader, samplerMode);
     }
 
     void VkGfxContext::enablePipelineStatistics(SwBool enable)
     {
-        mVkDevice->getQueryPool()->enableStatistics(enable);
+        mVkDevice->getStatisticsQuery()->enable(enable);
+    }
+
+    void VkGfxContext::enableGpuTiming(SwBool enable)
+    {
+        mVkDevice->getTimingQuery()->enable(enable);
     }
 
     void VkGfxContext::submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount, common::Resource<Swapchain> swapchain)
@@ -273,7 +297,7 @@ namespace swizzle::gfx
 
 namespace swizzle::gfx
 {
-    void VkGfxContext::addExtensionIfExisting(std::vector<const char*>& extensions,
+    SwBool VkGfxContext::addExtensionIfExisting(std::vector<const char*>& extensions,
                                                const std::vector<std::string>& availableExtensions,
                                                const char* extensionName)
     {
@@ -282,9 +306,10 @@ namespace swizzle::gfx
             if (ext == extensionName)
             {
                 extensions.emplace_back(extensionName);
+                return true;
             }
         }
-
+        return false;
     }
 
     common::Resource<vk::Fence> VkGfxContext::getFence()

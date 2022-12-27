@@ -63,4 +63,31 @@ namespace vk
         }
     }
 
+    PFN_vkCmdDrawMeshTasksEXT gPfnDrawMeshTask = nullptr;
+    PFN_vkCmdDrawMeshTasksIndirectEXT gPfnDrawMeshTaskIndirect = nullptr;
+    PFN_vkCmdDrawMeshTasksIndirectCountEXT gPfnDrawMeshTaskIndirectCount = nullptr;
+
+    SwBool loadMeshShaderExtensions(VkInstance inst)
+    {
+        gPfnDrawMeshTask = reinterpret_cast<PFN_vkCmdDrawMeshTasksEXT>(
+            vkGetInstanceProcAddr(inst, "vkCmdDrawMeshTasksEXT"));
+        gPfnDrawMeshTaskIndirect = reinterpret_cast<PFN_vkCmdDrawMeshTasksIndirectEXT>(
+            vkGetInstanceProcAddr(inst, "vkCmdDrawMeshTasksIndirectEXT"));
+        gPfnDrawMeshTaskIndirectCount = reinterpret_cast<PFN_vkCmdDrawMeshTasksIndirectCountEXT>(
+            vkGetInstanceProcAddr(inst, "vkCmdDrawMeshTasksIndirectCountEXT"));
+
+        return (gPfnDrawMeshTask && gPfnDrawMeshTaskIndirect && gPfnDrawMeshTaskIndirectCount);
+    }
+}
+
+VKAPI_ATTR void VKAPI_CALL vkCmdDrawMeshTasksEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    groupCountX,
+    uint32_t                                    groupCountY,
+    uint32_t                                    groupCountZ)
+{
+    if (vk::gPfnDrawMeshTask)
+    {
+        vk::gPfnDrawMeshTask(commandBuffer, groupCountX, groupCountY, groupCountZ);
+    }
 }

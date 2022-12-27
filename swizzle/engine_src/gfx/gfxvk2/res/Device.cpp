@@ -74,7 +74,8 @@ namespace vk
 
     Device::~Device()
     {
-        mQueryPool.reset();
+        mTimingQuery.reset();
+        mStatisticsQuery.reset();
         vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool_TEMP, mInstance->getAllocCallbacks());
         mCleanup->stop();
         deinitMemoryPools();
@@ -85,8 +86,9 @@ namespace vk
     {
         initMemoryPools();
         mCleanup = new CleanupRunnable(shared_from_this());
-        U32 queryCount = 1u;
-        mQueryPool = std::make_shared<QueryPool>(shared_from_this(), queryCount);
+        mStatisticsQuery = std::make_shared<StatisticsQuery>(shared_from_this());
+        U32 queryCount = 500u;
+        mTimingQuery = common::CreateRef<TimingQuery>(shared_from_this(), queryCount);
     }
 
     void Device::waitDeviceIdle()
@@ -113,6 +115,11 @@ namespace vk
     VkPhysicalDeviceFeatures Device::getDeviceFeatures() const
     {
         return mPhysicalDeviceFeatures;
+    }
+
+    VkPhysicalDeviceProperties Device::getDeviceProperties() const
+    {
+        return mPhysicalDeviceProperties;
     }
 
     VkQueue Device::getQueue()
@@ -207,7 +214,7 @@ namespace vk
         return common::CreateRef<VkResource<VkBuffer>>(buffer, ResourceType::BufferResource);
     }
 
-    common::Resource<VkResource<VkImage>> Device::createImage(VkImageType type, VkFormat format, VkImageUsageFlags usage, VkExtent3D size, U32 layerCount)
+    common::Resource<VkResource<VkImage>> Device::createImage(VkImageType type, VkFormat format, VkImageUsageFlags usage, VkExtent3D size, U32 layerCount, U32 mipLevel)
     {
         U32 flags = 0;
         if (layerCount == 6)
@@ -221,7 +228,7 @@ namespace vk
         createInfo.imageType = type;
         createInfo.format = format;
         createInfo.extent = size;
-        createInfo.mipLevels = 1u;
+        createInfo.mipLevels = mipLevel;
         createInfo.arrayLayers = layerCount;
         createInfo.samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
         createInfo.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
@@ -241,6 +248,7 @@ namespace vk
 
     common::Resource<VkResource<VkDescriptorSet>> Device::allocateDescriptorSet(common::Resource<ShaderPipeline> shader)
     {
+        std::unique_lock l{ mDescriptorMutex };
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.pNext = VK_NULL_HANDLE;
@@ -399,9 +407,14 @@ namespace vk
         return &mDeviceStats;
     }
 
-    common::Resource<QueryPool> Device::getQueryPool() const
+    common::Resource<Query> Device::getStatisticsQuery() const
     {
-        return mQueryPool;
+        return mStatisticsQuery;
+    }
+
+    common::Resource<Query> Device::getTimingQuery() const
+    {
+        return mTimingQuery;
     }
 
 }
@@ -459,6 +472,7 @@ namespace vk
 
     void Device::freeDescriptorSet(common::Resource<VkResource<VkDescriptorSet>> resource)
     {
+        std::unique_lock l{ mDescriptorMutex };
         VkDescriptorSet set = resource->reset();
         vkFreeDescriptorSets(mLogicalDevice, getDescriptorPool_TEMP(), 1, &set);
         mDescriptorCount--;

@@ -35,8 +35,12 @@ namespace vk
         virtual SwBool isUploaded() const override;
         virtual void uploadImage(VkCommandBuffer cmdBuffer) override;
 
+        virtual void transferImageToCompute(VkCommandBuffer cmdBuffer) override;
+        virtual void transferImageToRender(VkCommandBuffer cmdBuffer) override;
+
         virtual common::Resource<VkResource<VkImage>> getImg() override;
         virtual VkImageView getView() override;
+        virtual bool isDepth() override;
 
     private:
         void createImage(VkFormat format);

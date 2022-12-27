@@ -5,8 +5,23 @@
 
 #if defined(SW_LINUX_XLIB)
 #include "Linux/x/X11Window.hpp"
+#include "Linux/x/X11Input.hpp"
 #elif defined(SW_LINUX_XCB)
 #include "Linux/xcb/XcbWindow.hpp"
+
+namespace swizzle::core
+{
+    void InputInit() {}
+    void InputCleanup() {}
+
+    input::Keys ScanCode2Key(S32 scanCode){UNUSED_ARG(scanCode)}
+
+    S32 Key2ScanCode(input::Keys key){UNUSED_ARG(key)}
+
+    const SwChar* GetWinKeyText(S32 scanCode){UNUSED_ARG(scanCode);return "";}
+    const SwWChar* GetWinKeyTextW(S32 scanCode){UNUSED_ARG(scanCode);return L"";}
+} // namespace swizzle::core
+
 #endif
 
 namespace swizzle::core
@@ -98,8 +113,7 @@ namespace swizzle::core
 
         S32 PlatformKeyToScanCode(input::Keys key)
         {
-            UNUSED_ARG(key);
-            return 0;
+            return Key2ScanCode(key);
         }
 
         void PlatformShowCriticalMessage(const SwChar* text)

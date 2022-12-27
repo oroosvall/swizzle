@@ -11,6 +11,13 @@ namespace swizzle::gfx
 {
     class Shader;
 
+    enum class SamplerMode
+    {
+        SamplerModeClamp,
+        SamplerModeClampEdge,
+        SamplerModeRepeat
+    };
+
     class Material
     {
     public:
@@ -19,9 +26,11 @@ namespace swizzle::gfx
 
         virtual U32 getNumDescriptors() const = 0;
         virtual DescriptorType getDescriptorType(U32 index) = 0;
+        virtual void useMipLevels(SwBool enable, SwBool forceLowest) = 0;
 
         virtual void setDescriptorBufferResource(U32 index, common::Resource<Buffer> buffer, U64 size) = 0;
-        virtual void setDescriptorTextureResource(U32 index, common::Resource<Texture> texture) = 0;
+        virtual void setDescriptorTextureResource(U32 index, common::Resource<Texture> texture, SwBool copy = true) = 0;
+        virtual void setDescriptorComputeImageResource(U32 index, common::Resource<swizzle::gfx::Texture> texture) = 0;
 
     };
 }

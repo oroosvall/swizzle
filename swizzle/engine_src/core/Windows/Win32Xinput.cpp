@@ -1,6 +1,8 @@
 
 /* Include files */
 
+#ifdef SW_WINDOWS
+
 #include "Win32Xinput.hpp"
 
 /* Defines */
@@ -155,3 +157,5 @@ namespace win32
 /* Class Protected Function Definition */
 
 /* Class Private Function Definition */
+
+#endif

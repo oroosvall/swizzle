@@ -25,6 +25,7 @@ namespace vk
     {
         common::Resource<VkResource<VkImage>> mImage;
         VkImageView mImageView;
+        VkFormat mFormat;
 
         common::Resource<DeviceMemory> mImageMemory;
         VkClearValue mClearValue;
@@ -41,10 +42,12 @@ namespace vk
         DummyTexture(common::Resource<VkResource<VkImage>> image, VkImageView view)
             : mImage(image)
             , mImageView(view)
+            , mDepth(false)
         {
         }
         common::Resource<VkResource<VkImage>> mImage;
         VkImageView mImageView;
+        SwBool mDepth;
 
         virtual SwBool isUploaded() const
         {
@@ -59,10 +62,17 @@ namespace vk
         {
             return mImageView;
         }
+        virtual bool isDepth()
+        {
+            return mDepth;
+        }
         virtual void setData(U32, U32, U32, const U8*) {}
         virtual void getTextureSize(U32&, U32&) {}
 
         virtual void upload() {}
+
+        virtual void transferImageToCompute(VkCommandBuffer){};
+        virtual void transferImageToRender(VkCommandBuffer){};
     };
 
     class VFrameBuffer : public BaseFrameBuffer
@@ -79,6 +89,7 @@ namespace vk
         virtual void setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue) override;
 
         virtual common::Resource<swizzle::gfx::Texture> getColorAttachment(U32 index) override;
+        virtual common::Resource<swizzle::gfx::Texture> getDepthAttachment() override;
 
         virtual void resize(U32 width, U32 height) override;
 
@@ -99,6 +110,8 @@ namespace vk
         void createRenderPass();
         void createFramebuffer();
 
+        VkFormat getFormat(swizzle::gfx::FrameBufferAttachmentType type);
+
         common::Resource<Device> mDevice;
         const swizzle::gfx::FrameBufferCreateInfo mCreateInfo;
 
@@ -111,7 +124,6 @@ namespace vk
         SwBool mHasDepthBuffer;
         VFrameBufferImage mDepthImage;
 
-        VkFormat mImageFormat;
         std::vector<VFrameBufferImage> mImages;
 
         common::Resource<swizzle::gfx::Material> mMaterial;

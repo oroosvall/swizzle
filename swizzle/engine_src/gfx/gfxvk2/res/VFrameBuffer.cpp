@@ -41,7 +41,6 @@ namespace vk
         , mHeight(createInfo.mHeight)
         , mHasDepthBuffer(false)
         , mDepthImage()
-        , mImageFormat(VkFormat::VK_FORMAT_R8G8B8A8_UNORM)
         , mImages()
     {
         if (mWidth == 0u)
@@ -56,11 +55,6 @@ namespace vk
         if (createInfo.mDepthType != swizzle::gfx::FrameBufferDepthType::DepthNone)
         {
             mHasDepthBuffer = true;
-        }
-
-        if (createInfo.mAttachmentType == swizzle::gfx::FrameBufferAttachmentType::F32)
-        {
-            mImageFormat = VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
         }
 
         createColorImages();
@@ -112,6 +106,13 @@ namespace vk
     common::Resource<swizzle::gfx::Texture> VFrameBuffer::getColorAttachment(U32 index)
     {
         return common::CreateRef<DummyTexture>(mImages[index].mImage, mImages[index].mImageView);
+    }
+
+    common::Resource<swizzle::gfx::Texture> VFrameBuffer::getDepthAttachment()
+    {
+        auto img = common::CreateRef<DummyTexture>(mDepthImage.mImage, mDepthImage.mImageView);
+        img->mDepth = true;
+        return img;
     }
 
     void VFrameBuffer::resize(U32 width, U32 height)
@@ -218,14 +219,15 @@ namespace vk
 
     void VFrameBuffer::createColorImages()
     {
-        for (U32 i = 0u; i < mCreateInfo.mNumColAttach; ++i)
+        for (auto& attachFormat : mCreateInfo.mColorAttachFormats)
         {
+            VkFormat imageFormat = getFormat(attachFormat);
 
             common::Resource<VkResource<VkImage>> image = mDevice->createImage(
-                VkImageType::VK_IMAGE_TYPE_2D, mImageFormat,
+                VkImageType::VK_IMAGE_TYPE_2D, imageFormat,
                 VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
                     VkImageUsageFlagBits::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                {mWidth, mHeight, 1u}, 1u);
+                {mWidth, mHeight, 1u}, 1u, 1u);
 
             VkMemoryRequirements memreq;
             vkGetImageMemoryRequirements(mDevice->getDeviceHandle(), image->getVkHandle(), &memreq);
@@ -242,7 +244,7 @@ namespace vk
             imageViewInfo.flags = 0U;
             imageViewInfo.image = image->getVkHandle();
             imageViewInfo.viewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
-            imageViewInfo.format = mImageFormat;
+            imageViewInfo.format = imageFormat;
             imageViewInfo.components.a = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
             imageViewInfo.components.r = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
             imageViewInfo.components.g = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -265,7 +267,7 @@ namespace vk
             clearColor.float32[2] = 0.0f;
             clearColor.float32[3] = 0.0f;
 
-            mImages.emplace_back(VFrameBufferImage{image, imageView, memory, clearColor});
+            mImages.emplace_back(VFrameBufferImage{image, imageView, imageFormat, memory, clearColor});
         }
     }
 
@@ -274,9 +276,12 @@ namespace vk
         if (mHasDepthBuffer)
         {
 
-            mDepthImage.mImage = mDevice->createImage(
-                VkImageType::VK_IMAGE_TYPE_2D, VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT,
-                VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, {mWidth, mHeight, 1u}, 1u);
+            mDepthImage.mImage =
+                mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT,
+                                     VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                         VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT |
+                                         VkImageUsageFlagBits::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
+                                     {mWidth, mHeight, 1u}, 1u, 1u);
 
             VkMemoryRequirements memreq;
             vkGetImageMemoryRequirements(mDevice->getDeviceHandle(), mDepthImage.mImage->getVkHandle(), &memreq);
@@ -348,7 +353,7 @@ namespace vk
             VkAttachmentDescription desc{};
 
             desc.flags = 0u;
-            desc.format = mImageFormat;
+            desc.format = mImages[i].mFormat;
             desc.samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
             desc.loadOp = VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
             desc.storeOp = VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_STORE;
@@ -368,12 +373,13 @@ namespace vk
             desc.format = VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
             desc.samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
             desc.loadOp = VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
-            desc.storeOp = VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            desc.storeOp = VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_STORE;
             desc.stencilLoadOp = VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
-            desc.stencilStoreOp = VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            desc.stencilStoreOp = VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_STORE;
             desc.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
-            desc.finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            // desc.finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL;
+            desc.finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            // desc.finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            //  desc.finalLayout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL;
 
             attachDescr.emplace_back(desc);
         }
@@ -431,4 +437,20 @@ namespace vk
             LOG_ERROR("Framebuffer creation failed %s", vk::VkResultToString(result));
         }
     }
+
+    VkFormat VFrameBuffer::getFormat(swizzle::gfx::FrameBufferAttachmentType type)
+    {
+        switch (type)
+        {
+        case swizzle::gfx::FrameBufferAttachmentType::Default:
+            return VK_FORMAT_R8G8B8A8_UNORM;
+        case swizzle::gfx::FrameBufferAttachmentType::F32:
+            return VK_FORMAT_R32G32B32A32_SFLOAT;
+        case swizzle::gfx::FrameBufferAttachmentType::Srgb:
+            return VK_FORMAT_B8G8R8A8_SRGB;
+        default:
+            return VK_FORMAT_R8G8B8A8_UNORM;
+        }
+    }
+
 } // namespace vk

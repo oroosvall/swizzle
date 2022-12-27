@@ -24,7 +24,8 @@ namespace swizzle::gfx
     enum class FrameBufferAttachmentType
     {
         Default,
-        F32
+        F32,
+        Srgb
     };
 }
 
@@ -48,9 +49,8 @@ namespace swizzle::gfx
         U32 mHeight;
 
         U32 mSwapCount;
-        U32 mNumColAttach;
         FrameBufferDepthType mDepthType;
-        FrameBufferAttachmentType mAttachmentType;
+        common::IterType<FrameBufferAttachmentType> mColorAttachFormats;
     };
 }
 
@@ -71,6 +71,7 @@ namespace swizzle::gfx
         virtual void setDepthAttachmentClearValue(F32 depthValue, U8 stencilValue) = 0;
 
         virtual common::Resource<Texture> getColorAttachment(U32 index) = 0;
+        virtual common::Resource<Texture> getDepthAttachment() = 0;
 
         virtual void resize(U32 width, U32 height) = 0;
     };

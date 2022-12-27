@@ -128,6 +128,11 @@ namespace vk
         return mVertCount;
     }
 
+    swizzle::gfx::BufferType DBuffer::getType()
+    {
+        return mType;
+    }
+
 }
 
 /* Class Protected Function Definition */

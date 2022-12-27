@@ -46,6 +46,8 @@ namespace vk
 
         U32 getCount();
 
+        swizzle::gfx::BufferType getType();
+
     private:
 
         void createOrResize(U64 newSize);

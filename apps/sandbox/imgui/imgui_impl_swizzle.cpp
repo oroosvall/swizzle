@@ -209,7 +209,7 @@ void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
         bd->mImGuiFbo->resize(e.mWidth, e.mHeight);
         if (bd->mImGuiMat)
         {
-            bd->mImGuiMat->setDescriptorTextureResource(0u, bd->mImGuiFbo->getColorAttachment(0u));
+            bd->mImGuiMat->setDescriptorTextureResource(0u, bd->mImGuiFbo->getColorAttachment(0u), false);
         }
     }
     default:
@@ -234,8 +234,8 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
 
     swizzle::gfx::FrameBufferCreateInfo info{};
     info.mDepthType = swizzle::gfx::FrameBufferDepthType::DepthNone;
-    info.mNumColAttach = 1u;
     info.mSwapCount = 3u;
+    info.mColorAttachFormats = { swizzle::gfx::FrameBufferAttachmentType::Default };
     window->getSize(info.mWidth, info.mHeight);
 
     bd->mImGuiFbo = ctx->createFramebuffer(info);
@@ -257,8 +257,9 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
     };
     attributeList.mPushConstantSize = sizeof(float) * 4u;
     attributeList.mEnableDepthTest = false;
+    attributeList.mEnableDepthWrite = false;
     attributeList.mEnableBlending = true;
-    attributeList.mPoints = false;
+    attributeList.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
     bd->mShader = ctx->createShader(bd->mImGuiFbo, swizzle::gfx::ShaderType::ShaderType_Graphics, attributeList);
     bd->mShader->loadVertFragMemory(__glsl_shader_vert_spv, sizeof(__glsl_shader_vert_spv), __glsl_shader_frag_spv,
@@ -268,8 +269,8 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
     int width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    bd->mFontTexture = ctx->createTexture(width, height, 4, pixels);
-    bd->mFontMaterial = ctx->createMaterial(bd->mShader);
+    bd->mFontTexture = ctx->createTexture(width, height, 4, false, pixels);
+    bd->mFontMaterial = ctx->createMaterial(bd->mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
     bd->mFontMaterial->setDescriptorTextureResource(0, bd->mFontTexture);
 
     bd->mVertexBuffer = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);

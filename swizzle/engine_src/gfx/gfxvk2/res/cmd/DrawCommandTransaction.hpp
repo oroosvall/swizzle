@@ -30,6 +30,7 @@ namespace vk
                                   common::Resource<swizzle::gfx::Material> material) override;
         virtual void setShaderConstant(common::Resource<swizzle::gfx::Shader> shader, U8* data, U32 size) override;
         virtual void setViewport(U32 x, U32 y) override;
+        virtual void enableStencilTest(SwBool enable) override;
 
         virtual void bindVertexBuffer(common::Resource<swizzle::gfx::Buffer> buffer) override;
         virtual void bindIndexBuffer(common::Resource<swizzle::gfx::Buffer> buffer, SwBool bitSize16) override;
@@ -43,6 +44,8 @@ namespace vk
         virtual void drawIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
                                           common::Resource<swizzle::gfx::Buffer> index,
                                           common::Resource<swizzle::gfx::Buffer> instanceData) override;
+
+        virtual void drawMeshlet(U32 meshletCount) override;
 
         virtual void drawNoBind(U32 vertexCount, U32 first) override;
         virtual void drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset) override;

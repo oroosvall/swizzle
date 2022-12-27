@@ -18,7 +18,8 @@ namespace swizzle::gfx
         MemoryStats,
         DeviceStats,
         InstanceStats,
-        GfxPipelineStats
+        GfxPipelineStats,
+        GfxTiming
     };
 }
 
@@ -70,6 +71,13 @@ namespace swizzle::gfx
         U64 mComputeShaderInvocations; // bit 10
         U64 mTaskShaderInvocations; // bit 11
         U64 mMeshShaderInvocations; // bit 12
+    };
+
+    struct GfxTimingStatistics : public swizzle::core::StatsBase
+    {
+        U64 mSampleCount;
+        U64 mNsPerSample;
+        U64* mSamples;
     };
 }
 

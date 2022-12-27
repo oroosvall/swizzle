@@ -14,7 +14,8 @@ namespace swizzle::gfx
         Invalid,
         TextureSampler,
         UniformBuffer,
-        StorageBuffer
+        StorageBuffer,
+        StorageImage
     };
 }
 

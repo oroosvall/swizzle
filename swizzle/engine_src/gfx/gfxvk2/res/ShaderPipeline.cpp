@@ -11,8 +11,8 @@
 #include <glm/glm.hpp>
 
 #include <fstream>
-#include <swizzle/core/Platform.hpp>
 #include <sstream>
+#include <swizzle/core/Platform.hpp>
 
 /* Defines */
 
@@ -29,7 +29,7 @@ namespace vk
     // @ TODO: move to File handling api
     static std::string getPathFromFileName(const std::string& fileName);
 
-} // namespace swizzle::gfx
+} // namespace vk
 
 /* Static Function Definition */
 
@@ -42,8 +42,7 @@ namespace vk
         return fileName.substr(0, found + 1);
     }
 
-
-} // namespace swizzle::gfx
+} // namespace vk
 
 /* Function Definition */
 
@@ -71,6 +70,11 @@ namespace vk
         mProperties[shader::PropertyType::CullMode].mCullMode = VkCullModeFlagBits::VK_CULL_MODE_NONE;
         mProperties[shader::PropertyType::ColorBlendOp].mColorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
         mProperties[shader::PropertyType::AlphaBlendOp].mAlphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
+        mProperties[shader::PropertyType::StencilOp].mStencilOp[0] = VkStencilOp::VK_STENCIL_OP_KEEP;
+        mProperties[shader::PropertyType::StencilOp].mStencilOp[1] = VkStencilOp::VK_STENCIL_OP_KEEP;
+        mProperties[shader::PropertyType::StencilOp].mStencilOp[2] = VkStencilOp::VK_STENCIL_OP_KEEP;
+        mProperties[shader::PropertyType::StencilEnable].mEnableStencilWrite = false;
+        mProperties[shader::PropertyType::DepthCompare].mDepthCompare = VkCompareOp::VK_COMPARE_OP_LESS;
 
         VkPushConstantRange push = {};
 
@@ -100,8 +104,8 @@ namespace vk
         descriptor_layout.pNext = NULL;
         descriptor_layout.bindingCount = (U32)layoutBindings.size();
         descriptor_layout.pBindings = layoutBindings.data();
-        VkResult res = vkCreateDescriptorSetLayout(mDevice->getDeviceHandle(), &descriptor_layout, mDevice->getAllocCallbacks(),
-                                    &mDescriptorLayout);
+        VkResult res = vkCreateDescriptorSetLayout(mDevice->getDeviceHandle(), &descriptor_layout,
+                                                   mDevice->getAllocCallbacks(), &mDescriptorLayout);
         vk::LogVulkanError(res, "vkCreateDescriptorSetLayout");
 
         VkPipelineLayoutCreateInfo info = {};
@@ -113,15 +117,13 @@ namespace vk
         info.pushConstantRangeCount = (attribList.mPushConstantSize != 0) ? 1 : 0;
         info.pPushConstantRanges = &push;
 
-        res = vkCreatePipelineLayout(mDevice->getDeviceHandle(), &info, mDevice->getAllocCallbacks(),
-                               &mPipelineLayout);
+        res = vkCreatePipelineLayout(mDevice->getDeviceHandle(), &info, mDevice->getAllocCallbacks(), &mPipelineLayout);
         vk::LogVulkanError(res, "vkCreatePipelineLayout");
     }
 
     ShaderPipeline::~ShaderPipeline()
     {
-        vkDestroyDescriptorSetLayout(mDevice->getDeviceHandle(), mDescriptorLayout,
-                                     mDevice->getAllocCallbacks());
+        vkDestroyDescriptorSetLayout(mDevice->getDeviceHandle(), mDescriptorLayout, mDevice->getAllocCallbacks());
 
         vkDestroyPipeline(mDevice->getDeviceHandle(), mPipeline, mDevice->getAllocCallbacks());
 
@@ -146,6 +148,7 @@ namespace vk
             enum class ParseState
             {
                 PsNone,
+                PsSrc,
                 PsProp,
                 PsVulkan
             };
@@ -163,6 +166,11 @@ namespace vk
                 if (line == "[properties]")
                 {
                     state = ParseState::PsProp;
+                    continue;
+                }
+                else if (line == "[src]")
+                {
+                    state = ParseState::PsSrc;
                     continue;
                 }
                 else if (line == "[vulkan]")
@@ -220,7 +228,8 @@ namespace vk
         return ok;
     }
 
-    SwBool ShaderPipeline::loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize, const SwChar* properties)
+    SwBool ShaderPipeline::loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize,
+                                              const SwChar* properties)
     {
         SwBool ok = false;
         std::istringstream propertyString(properties);
@@ -253,7 +262,8 @@ namespace vk
         VkShaderModule vertModule = VK_NULL_HANDLE;
         VkShaderModule fragModule = VK_NULL_HANDLE;
 
-        VkResult res = vkCreateShaderModule(mDevice->getDeviceHandle(), &vertInfo, mDevice->getAllocCallbacks(), &vertModule);
+        VkResult res =
+            vkCreateShaderModule(mDevice->getDeviceHandle(), &vertInfo, mDevice->getAllocCallbacks(), &vertModule);
         vk::LogVulkanError(res, "vkCreateShaderModule");
         res = vkCreateShaderModule(mDevice->getDeviceHandle(), &fragInfo, mDevice->getAllocCallbacks(), &fragModule);
         vk::LogVulkanError(res, "vkCreateShaderModule");
@@ -291,7 +301,7 @@ namespace vk
         return mShaderType;
     }
 
-}
+} // namespace vk
 
 /* Class Protected Function Definition */
 
@@ -345,14 +355,24 @@ namespace vk
         createAttributeDescriptions(attributeDescriptor);
 
         // Create VertexInput based on binding/attribute descriptors
-        VkPipelineVertexInputStateCreateInfo vertexInput = shader::CreateVertexInput(bindingDescriptors, attributeDescriptor);
+        VkPipelineVertexInputStateCreateInfo vertexInput =
+            shader::CreateVertexInput(bindingDescriptors, attributeDescriptor);
 
         // Setup InputAssembly
         auto topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        if (mShaderAttributes.mPoints)
+        if (mShaderAttributes.mPrimitiveType == swizzle::gfx::PrimitiveType::point)
         {
             topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
         }
+        else if (mShaderAttributes.mPrimitiveType == swizzle::gfx::PrimitiveType::line)
+        {
+            topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+        }
+        if (mShaders.count(shader::ShaderModuleType::ShaderModuleType_TessellationControl))
+        {
+            topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+        }
+
         VkPipelineInputAssemblyStateCreateInfo assemblyState = shader::CreateInputAssembly(topology);
 
         // Setup TesselationState
@@ -372,14 +392,36 @@ namespace vk
         VkPipelineViewportStateCreateInfo viewState = shader::CreateViewportState(&viewport, &r);
 
         // Setup RasterizationState
-        VkPipelineRasterizationStateCreateInfo rasterState = shader::CreateRasterizationState(mProperties[shader::PropertyType::CullMode].mCullMode);
+        VkPolygonMode polyMode = VkPolygonMode::VK_POLYGON_MODE_FILL;
+        // if (mShaders.count(shader::ShaderModuleType::ShaderModuleType_TesselationControl))
+        //{
+        //     polyMode = VkPolygonMode::VK_POLYGON_MODE_LINE;
+        // }
+        VkPipelineRasterizationStateCreateInfo rasterState =
+            shader::CreateRasterizationState(mProperties[shader::PropertyType::CullMode].mCullMode, polyMode);
 
         // Setup MultisampleState
-        VkPipelineMultisampleStateCreateInfo multiSampleState = shader::CreateMultisampleState(mFrameBuffer->getMultisampleCount());
+        VkPipelineMultisampleStateCreateInfo multiSampleState =
+            shader::CreateMultisampleState(mFrameBuffer->getMultisampleCount());
 
         // Setup DepthStencilState
-        auto depthCompare = mShaderAttributes.mEnableDepthTest ? VkCompareOp::VK_COMPARE_OP_LESS : VkCompareOp::VK_COMPARE_OP_ALWAYS;
-        VkPipelineDepthStencilStateCreateInfo depthState = shader::CreateDepthStencilState(mShaderAttributes.mEnableDepthTest, depthCompare);
+        VkPipelineDepthStencilStateCreateInfo depthState =
+            shader::CreateDepthStencilState(mShaderAttributes.mEnableDepthTest, mShaderAttributes.mEnableDepthWrite,
+                                            mProperties[shader::PropertyType::DepthCompare].mDepthCompare);
+
+        VkStencilOpState state{};
+
+        state.failOp = mProperties[shader::PropertyType::StencilOp].mStencilOp[0];
+        state.passOp = mProperties[shader::PropertyType::StencilOp].mStencilOp[1];
+        state.depthFailOp = mProperties[shader::PropertyType::StencilOp].mStencilOp[2];
+        state.compareOp = mProperties[shader::PropertyType::StencilCompare].mStencilCompare;
+        state.compareMask = mProperties[shader::PropertyType::StencilMask].mStencilMasks[0];
+        state.writeMask = mProperties[shader::PropertyType::StencilMask].mStencilMasks[1];
+        state.reference = mProperties[shader::PropertyType::StencilMask].mStencilMasks[2];
+
+        depthState.back = state;
+        depthState.front = state;
+        depthState.stencilTestEnable = mProperties[shader::PropertyType::StencilEnable].mEnableStencilWrite;
 
         VkPipelineColorBlendStateCreateInfo colorState = {};
         colorState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -412,7 +454,8 @@ namespace vk
         colorState.blendConstants[2] = 0.0F;
         colorState.blendConstants[3] = 0.0F;
 
-        VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR,
+                                          VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE};
 
         VkPipelineDynamicStateCreateInfo dynState = {};
         dynState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -450,6 +493,32 @@ namespace vk
             res = vkCreateGraphicsPipelines(mDevice->getDeviceHandle(), VK_NULL_HANDLE, 1u, &createInfo,
                                             mDevice->getAllocCallbacks(), &mPipeline);
         }
+        else if (mShaderType == swizzle::gfx::ShaderType::ShaderType_Mesh)
+        {
+            VkGraphicsPipelineCreateInfo createInfo = {};
+            createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+            createInfo.pNext = VK_NULL_HANDLE;
+            createInfo.flags = 0;
+            createInfo.stageCount = static_cast<uint32_t>(shaderInfos.size());
+            createInfo.pStages = shaderInfos.data();
+            createInfo.pVertexInputState = VK_NULL_HANDLE;
+            createInfo.pInputAssemblyState = VK_NULL_HANDLE;
+            createInfo.pTessellationState = VK_NULL_HANDLE;
+            createInfo.pViewportState = &viewState;
+            createInfo.pRasterizationState = &rasterState;
+            createInfo.pMultisampleState = &multiSampleState;
+            createInfo.pDepthStencilState = &depthState;
+            createInfo.pColorBlendState = &colorState;
+            createInfo.pDynamicState = &dynState;
+            createInfo.layout = mPipelineLayout;
+            createInfo.renderPass = mFrameBuffer->getRenderPass();
+            createInfo.subpass = 0U;
+            createInfo.basePipelineHandle = VK_NULL_HANDLE;
+            createInfo.basePipelineIndex = -1;
+
+            res = vkCreateGraphicsPipelines(mDevice->getDeviceHandle(), VK_NULL_HANDLE, 1u, &createInfo,
+                                            mDevice->getAllocCallbacks(), &mPipeline);
+        }
         else
         {
 
@@ -463,7 +532,8 @@ namespace vk
             createInfo.basePipelineHandle = VK_NULL_HANDLE;
             createInfo.basePipelineIndex = -1;
 
-            res = vkCreateComputePipelines(mDevice->getDeviceHandle(), VK_NULL_HANDLE, 1u, &createInfo, mDevice->getAllocCallbacks(), &mPipeline);
+            res = vkCreateComputePipelines(mDevice->getDeviceHandle(), VK_NULL_HANDLE, 1u, &createInfo,
+                                           mDevice->getAllocCallbacks(), &mPipeline);
         }
 
         if (res != VK_SUCCESS)
@@ -481,12 +551,20 @@ namespace vk
             VkShaderStageFlagBits stage = {};
             if (it.first == shader::ShaderModuleType::ShaderModuleType_Vertex)
                 stage = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
+            else if (it.first == shader::ShaderModuleType::ShaderModuleType_TessellationControl)
+                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+            else if (it.first == shader::ShaderModuleType::ShaderModuleType_TessellationEvaluate)
+                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
             else if (it.first == shader::ShaderModuleType::ShaderModuleType_Geometry)
                 stage = VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
             else if (it.first == shader::ShaderModuleType::ShaderModuleType_Fragment)
                 stage = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
             else if (it.first == shader::ShaderModuleType::ShaderModuleType_Compute)
                 stage = VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
+            else if (it.first == shader::ShaderModuleType::ShaderModuleType_Task)
+                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_TASK_BIT_EXT;
+            else if (it.first == shader::ShaderModuleType::ShaderModuleType_Mesh)
+                stage = VkShaderStageFlagBits::VK_SHADER_STAGE_MESH_BIT_EXT;
 
             VkPipelineShaderStageCreateInfo shInfo = {};
             shInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -509,14 +587,15 @@ namespace vk
         {
             bindingDescriptors[count].binding = count;
             bindingDescriptors[count].inputRate = (it->mRate == swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex
-                                                   ? VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX
-                                                   : VkVertexInputRate::VK_VERTEX_INPUT_RATE_INSTANCE);
+                                                       ? VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX
+                                                       : VkVertexInputRate::VK_VERTEX_INPUT_RATE_INSTANCE);
             bindingDescriptors[count].stride = it->mStride;
             count++;
         }
     }
 
-    void ShaderPipeline::createAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptor)
+    void
+        ShaderPipeline::createAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptor)
     {
         S32 count = 0;
         attributeDescriptor.resize(mShaderAttributes.mAttributes.size());

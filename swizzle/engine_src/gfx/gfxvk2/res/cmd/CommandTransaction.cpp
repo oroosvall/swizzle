@@ -3,8 +3,9 @@
 
 #include "CommandTransaction.hpp"
 #include "../DBuffer.hpp"
-#include "../TextureBase.hpp"
 #include "../ShaderPipeline.hpp"
+#include "../TextureBase.hpp"
+#include "../VMaterial.hpp"
 
 #include <optick/optick.h>
 
@@ -58,10 +59,32 @@ namespace vk
         vkCmdCopyBuffer(mCommandBuffer, srcBuf, dstBuf, regionCount, &bufferCopy);
     }
 
-    void VCommandTransaction::bindComputeShader(common::Resource<swizzle::gfx::Shader> shader)
+    void VCommandTransaction::bindComputeShader(common::Resource<swizzle::gfx::Shader> shader,
+                                                common::Resource<swizzle::gfx::Material> material, U8* constants,
+                                                U32 constantsSize)
     {
+        OPTICK_EVENT("CmdBuffer::bindComputeShader");
+
         ShaderPipeline* shad = (ShaderPipeline*)(shader.get());
         vkCmdBindPipeline(mCommandBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_COMPUTE, shad->getPipeline());
+
+        if (material)
+        {
+            VMaterial* mat = (VMaterial*)(material.get());
+            mat->setDirty();
+
+            common::Resource<VkResource<VkDescriptorSet>> descSet = mat->getDescriptorSet();
+            descSet->addUser(mLifetimeToken, mLifetimeToken->getCheckpoint());
+            VkDescriptorSet descriptorHandle = descSet->getVkHandle();
+
+            vkCmdBindDescriptorSets(mCommandBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_COMPUTE,
+                                    shad->getPipelineLayout(), 0u, 1u, &descriptorHandle, 0u, VK_NULL_HANDLE);
+        }
+
+        if (constants)
+        {
+            vkCmdPushConstants(mCommandBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0u, constantsSize, constants);
+        }
     }
 
     void VCommandTransaction::dispatchCompute(U32 groupX, U32 groupY, U32 groupZ)
@@ -77,6 +100,20 @@ namespace vk
         {
             tex->uploadImage(mCommandBuffer);
         }
+    }
+
+    void VCommandTransaction::changeImageLayoutCompute(common::Resource<swizzle::gfx::Texture> texture)
+    {
+        OPTICK_EVENT("CmdBuffer::uploadTexture");
+        TextureBase* tex = (TextureBase*)(texture.get());
+        tex->transferImageToCompute(mCommandBuffer);
+    }
+
+    void VCommandTransaction::changeImageLayoutRender(common::Resource<swizzle::gfx::Texture> texture)
+    {
+        OPTICK_EVENT("CmdBuffer::uploadTexture");
+        TextureBase* tex = (TextureBase*)(texture.get());
+        tex->transferImageToRender(mCommandBuffer);
     }
 
     VkCommandBuffer VCommandTransaction::getBuffer() const

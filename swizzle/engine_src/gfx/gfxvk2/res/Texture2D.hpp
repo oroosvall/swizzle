@@ -25,7 +25,8 @@ namespace vk
     class Texture2D : public TextureBase
     {
     public:
-        Texture2D(common::Resource<Device> device, U32 width, U32 height, U32 channels, const U8* pixelData);
+        Texture2D(common::Resource<Device> device, U32 width, U32 height, U32 channels, SwBool f32,
+                  const U8* pixelData);
         virtual ~Texture2D();
 
         virtual void setData(U32 width, U32 height, U32 channels, const U8* pixelData) override;
@@ -35,8 +36,12 @@ namespace vk
         virtual SwBool isUploaded() const override;
         virtual void uploadImage(VkCommandBuffer cmdBuffer) override;
 
+        virtual void transferImageToCompute(VkCommandBuffer cmdBuffer) override;
+        virtual void transferImageToRender(VkCommandBuffer cmdBuffer) override;
+
         virtual common::Resource<VkResource<VkImage>> getImg() override;
         virtual VkImageView getView() override;
+        virtual bool isDepth() override;
 
     private:
         void createImage(VkFormat format);
@@ -45,6 +50,8 @@ namespace vk
 
         void destroyResources();
         void createResources();
+
+        void generateMipMaps(VkCommandBuffer cmdBuffer);
 
         common::Resource<Device> mDevice;
 
@@ -61,6 +68,10 @@ namespace vk
         U32 mWidth;
         U32 mHeight;
         U32 mChannels;
+
+        U32 mMipLevels;
+
+        SwBool mFloat;
     };
 } // namespace vk
 

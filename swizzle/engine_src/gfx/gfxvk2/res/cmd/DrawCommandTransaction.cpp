@@ -90,6 +90,11 @@ namespace vk
         vkCmdSetScissor(mCommandBuffer, 0u, 1u, &r);
     }
 
+    void VDrawCommandTransaction::enableStencilTest(SwBool enable)
+    {
+        vkCmdSetStencilTestEnable(mCommandBuffer, enable);
+    }
+
     void VDrawCommandTransaction::bindVertexBuffer(common::Resource<swizzle::gfx::Buffer> buffer)
     {
         OPTICK_EVENT("CmdBuffer::bindVertexBuffer");
@@ -214,6 +219,11 @@ namespace vk
         vkCmdBindIndexBuffer(mCommandBuffer, idxBuf, offset, VkIndexType::VK_INDEX_TYPE_UINT32);
 
         vkCmdDrawIndexed(mCommandBuffer, idx->getCount() * 3u, instance->getCount(), 0u, 0u, 0u);
+    }
+
+    void VDrawCommandTransaction::drawMeshlet(U32 meshletCount)
+    {
+        vkCmdDrawMeshTasksEXT(mCommandBuffer, meshletCount, 1, 1);
     }
 
     void VDrawCommandTransaction::drawNoBind(U32 vertexCount, U32 first)

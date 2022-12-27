@@ -163,12 +163,20 @@ namespace vk
         VkResult res = vkBeginCommandBuffer(getCmdBuffer(mActiveIndex), &beginInfo);
         vk::LogVulkanError(res, "vkBeginCommandBuffer");
 
-        mCachedGatherPipelineStatistics = mDevice->getQueryPool()->isStatisticsEnabled();
+        mCachedGatherPipelineStatistics = mDevice->getStatisticsQuery()->isEnabled();
 
         if (mCachedGatherPipelineStatistics)
         {
-            vkCmdResetQueryPool(getCmdBuffer(mActiveIndex), mDevice->getQueryPool()->getHandle(), 0u, 1u);
-            vkCmdBeginQuery(getCmdBuffer(mActiveIndex), mDevice->getQueryPool()->getHandle(), 0u, 0u);
+            QueryData qd = mDevice->getStatisticsQuery()->getQuery();
+            vkCmdResetQueryPool(getCmdBuffer(mActiveIndex), qd.mQuery, 0u, 1u);
+            vkCmdBeginQuery(getCmdBuffer(mActiveIndex), qd.mQuery, 0u, 0u);
+        }
+
+        if (mDevice->getTimingQuery()->isEnabled())
+        {
+            QueryData qd = mDevice->getTimingQuery()->getQuery();
+            vkCmdResetQueryPool(getCmdBuffer(mActiveIndex), qd.mQuery, 0u, qd.mQueryCount);
+            mDevice->getTimingQuery()->resetQuery();
         }
 
         mLifetimeToken->incrementCheckpoint();
@@ -183,7 +191,16 @@ namespace vk
 
         if (mCachedGatherPipelineStatistics)
         {
-            vkCmdEndQuery(getCmdBuffer(mActiveIndex), mDevice->getQueryPool()->getHandle(), 0u);
+            QueryData qd = mDevice->getStatisticsQuery()->getQuery();
+            vkCmdEndQuery(getCmdBuffer(mActiveIndex), qd.mQuery, 0u);
+        }
+
+        if (mDevice->getTimingQuery()->isEnabled())
+        {
+            QueryData qd = mDevice->getTimingQuery()->getQuery();
+            vkCmdWriteTimestamp(getCmdBuffer(mActiveIndex),
+                                VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+                                qd.mQuery, qd.mQueryIndex);
         }
 
         VkResult res = vkEndCommandBuffer(getCmdBuffer(mActiveIndex));
@@ -237,6 +254,12 @@ namespace vk
         beginInfo.pClearValues = clears.data();
 
         vkCmdBeginRenderPass(cmd, &beginInfo, VkSubpassContents::VK_SUBPASS_CONTENTS_INLINE);
+        if (mDevice->getTimingQuery()->isEnabled())
+        {
+            QueryData qd = mDevice->getTimingQuery()->getQuery();
+            vkCmdWriteTimestamp(cmd, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, qd.mQuery,
+                                qd.mQueryIndex);
+        }
 
         return common::CreateUnique<VDrawCommandTransaction>(cmd, token);
     }

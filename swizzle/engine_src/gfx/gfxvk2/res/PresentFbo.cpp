@@ -102,6 +102,11 @@ namespace vk
         return nullptr;
     }
 
+    common::Resource<swizzle::gfx::Texture> PresentFBO::getDepthAttachment()
+    {
+        return nullptr;
+    }
+
     void PresentFBO::resize(U32 width, U32 height)
     {
         UNUSED_ARG(width);
@@ -146,7 +151,7 @@ namespace vk
 
         mDepthImage = mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT,
                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                                           {mWidth, mHeight, 1u}, 1u);
+                                           {mWidth, mHeight, 1u}, 1u, 1u);
 
         VkMemoryRequirements memreq;
         vkGetImageMemoryRequirements(mDevice->getDeviceHandle(), mDepthImage->getVkHandle(), &memreq);

@@ -14,6 +14,7 @@ namespace swizzle::gfx
         virtual void getTextureSize(U32& w, U32& h) = 0;
 
         virtual void upload() = 0;
+        virtual bool isDepth() = 0;
     };
 }
 

@@ -24,18 +24,16 @@
 
 namespace vk
 {
-
-    QueryPool::QueryPool(common::Resource<Device> device, U32 queryCount)
+    StatisticsQuery::StatisticsQuery(common::Resource<Device> device)
         : mDevice(device)
         , mPipelineStatistics()
         , mQueryPool(VK_NULL_HANDLE)
-        , mQueryCount(queryCount)
-        , mStatisticsCount(0u)
+        , mQueryCount(1u)
+        , mStatisticsCount(7u)
         , mQueryBits(0u)
-        , mStatisticsEnabled(false)
+        , mEnabled(false)
         , mHasRequestedAfterEnable(false)
     {
-
         auto features = mDevice->getDeviceFeatures();
         VkQueryPoolCreateInfo createInfo = {};
         createInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
@@ -45,20 +43,18 @@ namespace vk
 
         mQueryCount = 1u;
         mStatisticsCount = 7u;
-        mQueryBits =
-            VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT |
-            VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT |
-            VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT |
-            VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT |
-            VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT |
-            VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT |
-            VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
+        mQueryBits = VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT |
+                     VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT |
+                     VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT |
+                     VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT |
+                     VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT |
+                     VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT |
+                     VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
 
         if (features.tessellationShader)
         {
-            mQueryBits |=
-                VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT |
-                VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT;
+            mQueryBits |= VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT |
+                          VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT;
             mStatisticsCount += 2u;
         }
 
@@ -66,34 +62,55 @@ namespace vk
         createInfo.pipelineStatistics = mQueryBits;
 
         mQueryPool = mDevice->createQueryPool(createInfo);
-        //vkResetQueryPool(mDevice->getDeviceHandle(), mQueryPool, 0u, mQueryCount); // Vulkan 1.2 feature
     }
 
-    QueryPool::~QueryPool()
+    StatisticsQuery::~StatisticsQuery()
     {
         mDevice->destroyQueryPool(mQueryPool);
     }
 
-    U32 QueryPool::getQueryCount() const
+    U32 StatisticsQuery::getQueryCount() const
     {
         return mQueryCount;
     }
 
-    VkQueryPool QueryPool::getHandle() const
+    QueryData StatisticsQuery::getQuery() const
     {
+        QueryData qd{};
+        qd.mQuery = mQueryPool;
+        qd.mQueryIndex = 0u;
         mHasRequestedAfterEnable = true;
-        return mQueryPool;
+        return qd;
     }
 
-    swizzle::gfx::GfxPipelineStatistics* QueryPool::getGfxPipelineStatistics(SwBool awaiResult)
+    void StatisticsQuery::resetQuery()
+    {
+        // Nothing to be done
+    }
+
+    void StatisticsQuery::enable(SwBool enable)
+    {
+        mEnabled = enable;
+        mHasRequestedAfterEnable = false;
+    }
+
+    SwBool StatisticsQuery::isEnabled() const
+    {
+        return mEnabled;
+    }
+
+    SwBool StatisticsQuery::getQueryData(U64** outData, U64* inOutSize, SwBool awaitResults)
     {
         std::vector<U64> result(mStatisticsCount);
         VkQueryResultFlags flags = VkQueryResultFlagBits::VK_QUERY_RESULT_64_BIT;
-        if (awaiResult && mHasRequestedAfterEnable)
+        if (awaitResults && mHasRequestedAfterEnable)
         {
             flags |= VkQueryResultFlagBits::VK_QUERY_RESULT_WAIT_BIT;
         }
-        vkGetQueryPoolResults(mDevice->getDeviceHandle(), mQueryPool, 0u, 1u, mStatisticsCount * sizeof(U64), result.data(), sizeof(U64), flags);
+        VkResult res = vkGetQueryPoolResults(mDevice->getDeviceHandle(), mQueryPool, 0u, 1u, mStatisticsCount * sizeof(U64),
+                              result.data(), sizeof(U64), flags);
+
+        vk::LogVulkanError(res, "vkGetQueryPoolResults");
 
         mPipelineStatistics.mEnabledBits = mQueryBits;
         U64* addr = (U64*)&mPipelineStatistics.mInputAssemblyVertices;
@@ -107,23 +124,106 @@ namespace vk
             }
         }
 
-        return &mPipelineStatistics;
+        if (inOutSize && *inOutSize == sizeof(mPipelineStatistics))
+        {
+            if (outData)
+            {
+                *outData = (U64*)&mPipelineStatistics;
+            }
+        }
+        return true;
     }
 
-    void QueryPool::enableStatistics(SwBool enable)
+    // Timing query
+
+    TimingQuery::TimingQuery(common::Resource<Device> device, U32 queryCount)
+        : mDevice(device)
+        , mPipelineStatistics()
+        , mQueryPool(VK_NULL_HANDLE)
+        , mQueryCount(queryCount)
+        , mCurrentIndex(0u)
+        , mEnabled(false)
+        , mHasRequestedAfterEnable(false)
+        , mTimestaps()
     {
-        mStatisticsEnabled = enable;
+        auto features = mDevice->getDeviceFeatures();
+        VkQueryPoolCreateInfo createInfo = {};
+        createInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+        createInfo.pNext = VK_NULL_HANDLE;
+        createInfo.flags = 0u;
+        createInfo.queryType = VkQueryType::VK_QUERY_TYPE_TIMESTAMP;
+        createInfo.queryCount = mQueryCount;
+        createInfo.pipelineStatistics = 0u;
+
+        mQueryPool = mDevice->createQueryPool(createInfo);
+
+        mTimestaps.resize(queryCount);
+    }
+
+    TimingQuery::~TimingQuery()
+    {
+        mDevice->destroyQueryPool(mQueryPool);
+    }
+
+    U32 TimingQuery::getQueryCount() const
+    {
+        return mQueryCount;
+    }
+
+    QueryData TimingQuery::getQuery() const
+    {
+        QueryData qd{};
+        qd.mQuery = mQueryPool;
+        qd.mQueryCount = mQueryCount;
+        qd.mQueryIndex = mCurrentIndex;
+
+        mHasRequestedAfterEnable = true;
+        mCurrentIndex++;
+        return qd;
+    }
+
+    void TimingQuery::resetQuery()
+    {
+        mCurrentIndex = 0u;
+    }
+
+    void TimingQuery::enable(SwBool enable)
+    {
+        mEnabled = enable;
         mHasRequestedAfterEnable = false;
     }
-
-    SwBool QueryPool::isStatisticsEnabled() const
+    SwBool TimingQuery::isEnabled() const
     {
-        return mStatisticsEnabled;
+        return mEnabled;
     }
 
-}
+    SwBool TimingQuery::getQueryData(U64** outData, U64* inOutSize, SwBool awaitResults)
+    {
+        VkQueryResultFlags flags = VkQueryResultFlagBits::VK_QUERY_RESULT_64_BIT;
+        if (awaitResults && mHasRequestedAfterEnable)
+        {
+            flags |= VkQueryResultFlagBits::VK_QUERY_RESULT_WAIT_BIT;
+        }
+        if (mEnabled && mCurrentIndex != 0u)
+        {
+            VkResult res = vkGetQueryPoolResults(mDevice->getDeviceHandle(), mQueryPool, 0u, mCurrentIndex,
+                                                 mCurrentIndex * sizeof(U64), mTimestaps.data(), sizeof(U64), flags);
+
+            vk::LogVulkanError(res, "vkGetQueryPoolResults");
+
+            if (inOutSize && outData)
+            {
+                *inOutSize = mCurrentIndex;
+                *outData = mTimestaps.data();
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+} // namespace vk
 
 /* Class Protected Function Definition */
 
 /* Class Private Function Definition */
-
