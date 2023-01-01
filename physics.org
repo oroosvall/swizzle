@@ -1,0 +1,24 @@
+
+* List
+
+- [ ] Physics engine [0%]
+  - [ ] Setup physics module
+  - [ ] Physics engine api
+  - [ ] Aabb vs aabb (with tests)
+  - [ ] Sphere vs sphere (with tests)
+  - [ ] Sphere vs aabb (with tests)
+  - [ ] Separating Axis Theorem (with tests)
+  - [ ] Oobb vs oobb (with tests)
+  - [ ] Oobb vs Aabb (with tests)
+  - [ ] Oobb vs sphere (with tests)
+  - [ ] Triangle vs Triangle (with tests)
+  - [ ] Triangle vs oobb (with tests)
+  - [ ] Triangle vs Aabb (with tests)
+  - [ ] Triangle vs sphere (with tests)
+  - [ ] ConvexHull vs ConvexHull (with tests)
+  - [ ] ConvexHull vs Triangle (with tests)
+  - [ ] ConvexHull vs oobb (with tests)
+  - [ ] ConvexHull vs Aabb (with tests)
+  - [ ] ConvexHull vs sphere (with tests)
+  - [ ] Static geometry
+  - [ ] Dynamic geometry
