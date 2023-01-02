@@ -2,11 +2,13 @@
     "kind": "StaticLib",
     "language": "c++",
     "files": [
+        "../include/common/**.hpp",
         "include/**.hpp",
         "src/**.hpp",
         "src/**.cpp"
     ],
     "pub_inc_dirs": [
+        "../include/",
         "include/"
     ],
     "vpaths": [
@@ -20,7 +22,14 @@
         },
         {
             "name": "include/*",
+            "value": "../include/**.hpp"
+        },
+        {
+            "name": "include/*",
             "value": "include/**.hpp"
         }
-    ]
+    ],
+    "buildflags": {
+        "rtti": "Off"
+    }
 }

@@ -1,8 +1,8 @@
 
 * List
 
-- [ ] Physics engine [0%]
-  - [ ] Setup physics module
+- [-] Physics engine [5%]
+  - [X] Setup physics module
   - [ ] Physics engine api
   - [ ] Aabb vs aabb (with tests)
   - [ ] Sphere vs sphere (with tests)
