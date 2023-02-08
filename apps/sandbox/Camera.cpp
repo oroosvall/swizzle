@@ -74,12 +74,12 @@ void PerspectiveCamera::lookAt(glm::vec3 pos, glm::vec3 dir, glm::vec3 up)
 
 const glm::vec3& PerspectiveCamera::getPosition()
 {
-    return *&mPosition;
+    return mPosition;
 }
 
 const glm::vec3& PerspectiveCamera::getRotation()
 {
-    return *&mRotation;
+    return mRotation;
 }
 
 const glm::mat4& PerspectiveCamera::getView() const

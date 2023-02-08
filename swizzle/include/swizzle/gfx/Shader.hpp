@@ -54,7 +54,8 @@ namespace swizzle::gfx
     {
         point = 0,
         line = 1,
-        triangle = 2
+        triangle = 2,
+        linelist = 3
     };
 
     typedef U32 Count;

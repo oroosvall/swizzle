@@ -356,6 +356,10 @@ namespace vk
         {
             topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
         }
+        else if (mShaderAttributes.mPrimitiveType == swizzle::gfx::PrimitiveType::linelist)
+        {
+            topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        }
         if (mShaders.count(shader::ShaderModuleType::ShaderModuleType_TessellationControl))
         {
             topology = VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;

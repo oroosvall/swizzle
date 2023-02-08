@@ -1,14 +1,14 @@
 
 * List
 
-- [-] Physics engine [5%]
+- [-] Physics engine [20%]
   - [X] Setup physics module
   - [ ] Physics engine api
-  - [ ] Aabb vs aabb (with tests)
-  - [ ] Sphere vs sphere (with tests)
-  - [ ] Sphere vs aabb (with tests)
+  - [X] Aabb vs aabb (with tests)
+  - [X] Sphere vs sphere (with tests)
+  - [X] Sphere vs aabb (with tests)
   - [ ] Separating Axis Theorem (with tests)
-  - [ ] Oobb vs oobb (with tests)
+  - [ ] Oobb vs Oobb (with tests)
   - [ ] Oobb vs Aabb (with tests)
   - [ ] Oobb vs sphere (with tests)
   - [ ] Triangle vs Triangle (with tests)

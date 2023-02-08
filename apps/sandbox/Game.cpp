@@ -8,12 +8,13 @@
 
 #include <utils/StringUtils.hpp>
 
-#include <imgui/imgui.h>
+#include <imgui/imgui>
 #include <ImGuiSwzzle.hpp>
 #include <ImGuiSwizzleStyle.hpp>
 
 #include <scene/Scene.hpp>
 
+#include <glm/gtx/quaternion.hpp>
 
 Game::Game(const SwChar* appName)
     : Application(appName)
@@ -79,6 +80,8 @@ void Game::userSetup()
 
     mFsqMat = mGfxDevice->createMaterial(mFsq, sw::gfx::SamplerMode::SamplerModeClamp);
     mFsqMat->setDescriptorTextureResource(0u, mImGuiRenderTarget->getTexture(), false);
+
+    mPhysicsRenderer = common::CreateRef<PhysicsColliderRenderer>(mGfxContext, mSwapchain);
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -209,6 +212,7 @@ void Game::userCleanup()
 
 void Game::updateMainWindow(F32 dt)
 {
+    mRot += dt;
     UNUSED_ARG(dt);
     SWIZZLE_PROFILE_EVENT("Game::updateMainWindow");
     U32 x, y;
@@ -241,6 +245,23 @@ void Game::updateMainWindow(F32 dt)
     auto dTrans = mCmdBuffer->beginRenderPass(mSwapchain, std::move(trans));
 
     mScene->render(dTrans, cam);
+
+    mPhysicsRenderer->reset();
+    mPhysicsRenderer->addAABB(physics::AABB{{}, {0.5f, 0.5f, 0.5f}});
+    mPhysicsRenderer->addOOBB(physics::OOBB{ {1.0f, 1.0f, 1.0f}, glm::angleAxis(mRot, glm::vec3{0.0f, 0.0f, 1.0f}), {0.5f, 0.5f, 0.5f} });
+    mPhysicsRenderer->flush();
+
+    struct tmp
+    {
+        glm::mat4 viewProj;
+    };
+
+    tmp t = {};
+    t.viewProj = cam.getProjection() * cam.getView();
+
+    dTrans->bindShader(mPhysicsRenderer->getShader());
+    dTrans->setShaderConstant(mPhysicsRenderer->getShader(), (U8*)&t, sizeof(glm::mat4));
+    dTrans->draw(mPhysicsRenderer->getVertexBuffer());
 
     dTrans->bindShader(mFsq);
     dTrans->bindMaterial(mFsq, mFsqMat);

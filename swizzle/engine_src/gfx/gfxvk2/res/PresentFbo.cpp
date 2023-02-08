@@ -40,6 +40,11 @@ namespace vk
         , mDepthMemory()
         , mDepthClearValue()
     {
+        mClearValue.color.float32[0] = 0.8f;
+        mClearValue.color.float32[1] = 0.6f;
+        mClearValue.color.float32[2] = 0.2f;
+        mClearValue.color.float32[3] = 1.0f;
+
         if (mWidth == 0u)
         {
             mWidth = 1u;
@@ -250,11 +255,6 @@ namespace vk
 
     void PresentFBO::createFramebuffer()
     {
-        mClearValue.color.float32[0] = 0.8f;
-        mClearValue.color.float32[1] = 0.6f;
-        mClearValue.color.float32[2] = 0.2f;
-        mClearValue.color.float32[3] = 1.0f;
-
         VkFramebufferCreateInfo createInfo{};
 
         VkImageView views[] = {mExternalImageView, mDepthImageView};

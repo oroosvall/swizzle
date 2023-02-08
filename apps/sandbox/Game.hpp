@@ -15,6 +15,8 @@
 #include "scene/Scene.hpp"
 
 #include <ImGuiSwzzle.hpp>
+#include <physics/Physics.hpp>
+#include "PhysicsColliderRenderer.hpp"
 
 class Game : public sw::Application
 {
@@ -51,6 +53,9 @@ private:
 
     U32 mLastWidth;
     U32 mLastHeight;
+
+    common::Resource<PhysicsColliderRenderer> mPhysicsRenderer;
+    F32 mRot = 0.0f;
 };
 
 #endif

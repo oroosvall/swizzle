@@ -1,0 +1,10 @@
+[properties]
+sourceBlend=[SRC_ALPHA,SRC_ALPHA]
+destinationBlend=[ONE_MINUS_SRC_ALPHA,ONE]
+blending=disabled
+depthTest=enabled
+colorBlend=ADD
+alphaBlend=ADD
+[vulkan]
+vertex=physicsCollider/vert.spv
+fragment=physicsCollider/frag.spv
