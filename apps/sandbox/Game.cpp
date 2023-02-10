@@ -93,43 +93,54 @@ SwBool Game::userUpdate(F32 dt)
         if (iter->getType() == sw::gfx::GfxStatsType::MemoryStats)
         {
             sw::gfx::MemoryStatistics* memStat = (sw::gfx::MemoryStatistics*)iter->getStatisticsData();
-
-            title += "Memory Heap: " + std::string(memStat->mName) + "\n";
-            title += "  Mem: " + utils::toMemoryString(memStat->mUsed) + "/" + utils::toMemoryString(memStat->mSize);
-            title += "; Allocs: " + std::to_string(memStat->mNumAllocations) + "p, " +
-                     std::to_string(memStat->mNumVirtualAllocations) + "v\n";
+            if (memStat)
+            {
+                title += "Memory Heap: " + std::string(memStat->mName) + "\n";
+                title += "  Mem: " + utils::toMemoryString(memStat->mUsed) + "/" + utils::toMemoryString(memStat->mSize);
+                title += "; Allocs: " + std::to_string(memStat->mNumAllocations) + "p, " +
+                            std::to_string(memStat->mNumVirtualAllocations) + "v\n";
+            }
         }
         else if (iter->getType() == sw::gfx::GfxStatsType::DeviceStats)
         {
             sw::gfx::DeviceStatistics* devStats = (sw::gfx::DeviceStatistics*)iter->getStatisticsData();
-            title += "Device\n";
-            title += "  Num Staged Objects: " + std::to_string(devStats->mNumStagedObjects) + "\n";
-            title += "  Num Textures: " + std::to_string(devStats->mNumTextures) + "\n";
-            title += "  Num Buffers: " + std::to_string(devStats->mNumBuffers) + "\n";
-            title += "  Pipelines: " + std::to_string(devStats->mNumPipelines) + "\n";
+            if (devStats)
+            {
+                title += "Device\n";
+                title += "  Num Staged Objects: " + std::to_string(devStats->mNumStagedObjects) + "\n";
+                title += "  Num Textures: " + std::to_string(devStats->mNumTextures) + "\n";
+                title += "  Num Buffers: " + std::to_string(devStats->mNumBuffers) + "\n";
+                title += "  Pipelines: " + std::to_string(devStats->mNumPipelines) + "\n";
+            }
         }
         else if (iter->getType() == sw::gfx::GfxStatsType::InstanceStats)
         {
             sw::gfx::InstanceStatistics* instStats = (sw::gfx::InstanceStatistics*)iter->getStatisticsData();
-            title += "Instance\n";
-            title += "  Alloc Count " + std::to_string(instStats->mAllocCount) + "\n";
-            title += "  Internal Alloc Count " + std::to_string(instStats->mInternalAllocCount) + "\n";
+            if (instStats)
+            {
+                title += "Instance\n";
+                title += "  Alloc Count " + std::to_string(instStats->mAllocCount) + "\n";
+                title += "  Internal Alloc Count " + std::to_string(instStats->mInternalAllocCount) + "\n";
+            }
         }
         else if (iter->getType() == sw::gfx::GfxStatsType::GfxPipelineStats)
         {
             sw::gfx::GfxPipelineStatistics* gfxStats = (sw::gfx::GfxPipelineStatistics*)iter->getStatisticsData();
-            title += "Graphics Pipeline statistics\n";
-            title += "  Input Assemby Vertices " + std::to_string(gfxStats->mInputAssemblyVertices) + "\n";
-            title += "  Input Assemby Primitives " + std::to_string(gfxStats->mInputAssemblyPrimitives) + "\n";
-            title += "  Vertex Shader Invocations " + std::to_string(gfxStats->mVertexShaderInvocations) + "\n";
-            title += "  Clipping Invocations " + std::to_string(gfxStats->mClippingInvocations) + "\n";
-            title += "  Clipping Primitives " + std::to_string(gfxStats->mClippingInvocations) + "\n";
-            title += "  Fragment Shader Invocations " + std::to_string(gfxStats->mFragmentShaderInvocations) + "\n";
-            title += "  Tesselation Control Shader Patches " +
-                     std::to_string(gfxStats->mTesselationControlShaderPatches) + "\n";
-            title += "  Tesselation Evaluation Shader Invocations " +
-                     std::to_string(gfxStats->mTesselationEvaluationShaderInvocations) + "\n";
-            title += "  Compute Shader Invocations " + std::to_string(gfxStats->mComputeShaderInvocations) + "\n";
+            if (gfxStats)
+            {
+                title += "Graphics Pipeline statistics\n";
+                title += "  Input Assemby Vertices " + std::to_string(gfxStats->mInputAssemblyVertices) + "\n";
+                title += "  Input Assemby Primitives " + std::to_string(gfxStats->mInputAssemblyPrimitives) + "\n";
+                title += "  Vertex Shader Invocations " + std::to_string(gfxStats->mVertexShaderInvocations) + "\n";
+                title += "  Clipping Invocations " + std::to_string(gfxStats->mClippingInvocations) + "\n";
+                title += "  Clipping Primitives " + std::to_string(gfxStats->mClippingInvocations) + "\n";
+                title += "  Fragment Shader Invocations " + std::to_string(gfxStats->mFragmentShaderInvocations) + "\n";
+                title += "  Tesselation Control Shader Patches " +
+                        std::to_string(gfxStats->mTesselationControlShaderPatches) + "\n";
+                title += "  Tesselation Evaluation Shader Invocations " +
+                        std::to_string(gfxStats->mTesselationEvaluationShaderInvocations) + "\n";
+                title += "  Compute Shader Invocations " + std::to_string(gfxStats->mComputeShaderInvocations) + "\n";
+            }
         }
 
     } while (iter->next());

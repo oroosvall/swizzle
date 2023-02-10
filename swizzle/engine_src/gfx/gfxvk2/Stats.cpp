@@ -96,7 +96,10 @@ namespace swizzle::gfx
         GfxPipelineStatistics* stats = nullptr;
         U64 size = sizeof(GfxPipelineStatistics);
         mDevice->getStatisticsQuery()->getQueryData((U64**)&stats, &size, true);
-        mStats.push_back(std::make_pair(gfx::GfxStatsType::GfxPipelineStats, stats));
+        if (stats)
+        {
+            mStats.push_back(std::make_pair(gfx::GfxStatsType::GfxPipelineStats, stats));
+        }
     }
 
     void StatsIterator::addTimingStats()
