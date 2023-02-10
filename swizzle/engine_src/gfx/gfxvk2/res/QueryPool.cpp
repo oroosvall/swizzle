@@ -110,28 +110,32 @@ namespace vk
         VkResult res = vkGetQueryPoolResults(mDevice->getDeviceHandle(), mQueryPool, 0u, 1u, mStatisticsCount * sizeof(U64),
                               result.data(), sizeof(U64), flags);
 
-        vk::LogVulkanError(res, "vkGetQueryPoolResults");
-
-        mPipelineStatistics.mEnabledBits = mQueryBits;
-        U64* addr = (U64*)&mPipelineStatistics.mInputAssemblyVertices;
-
-        U32 resultOffset = 0u;
-        for (U32 i = 0; i < 13u; ++i) // 13 is the number of bits set
+        if (mEnabled)
         {
-            if (utils::IsBitSet(mQueryBits, i))
-            {
-                addr[i] = result[resultOffset++];
-            }
-        }
+            vk::LogVulkanError(res, "vkGetQueryPoolResults");
 
-        if (inOutSize && *inOutSize == sizeof(mPipelineStatistics))
-        {
-            if (outData)
+            mPipelineStatistics.mEnabledBits = mQueryBits;
+            U64* addr = (U64*)&mPipelineStatistics.mInputAssemblyVertices;
+
+            U32 resultOffset = 0u;
+            for (U32 i = 0; i < 13u; ++i) // 13 is the number of bits set
             {
-                *outData = (U64*)&mPipelineStatistics;
+                if (utils::IsBitSet(mQueryBits, i))
+                {
+                    addr[i] = result[resultOffset++];
+                }
             }
+
+            if (inOutSize && *inOutSize == sizeof(mPipelineStatistics))
+            {
+                if (outData)
+                {
+                    *outData = (U64*)&mPipelineStatistics;
+                }
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 
     // Timing query
