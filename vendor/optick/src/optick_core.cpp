@@ -24,6 +24,7 @@
 
 #if USE_OPTICK
 
+#include "optick.h"
 #include "optick_server.h"
 
 #include <algorithm>
@@ -37,8 +38,6 @@
 #include "optick_core.win.h"
 #elif defined(OPTICK_LINUX)
 #include "optick_core.linux.h"
-#define strcpy_s strcpy
-#define strcat_s strcat
 #elif defined(OPTICK_OSX)
 #include "optick_core.macos.h"
 #elif defined(OPTICK_PS4)
@@ -66,7 +65,11 @@ namespace Optick
 void* (*Memory::allocate)(size_t) = [](size_t size)->void* { return operator new(size); };
 void (*Memory::deallocate)(void* p) = [](void* p) { operator delete(p); };
 void (*Memory::initThread)(void) = nullptr;
-std::atomic<uint64_t> Memory::memAllocated;
+#if defined(OPTICK_32BIT)
+	std::atomic<uint32_t> Memory::memAllocated;
+#else
+	std::atomic<uint64_t> Memory::memAllocated;
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint64_t MurmurHash64A(const void * key, int len, uint64_t seed)
 {
@@ -740,7 +743,7 @@ bool SwitchContextCollector::Serialize(OutputDataStream& stream)
 #if defined(OPTICK_MSVC)
 #include <intrin.h>
 #define CPUID(INFO, ID) __cpuid(INFO, ID)
-#elif defined(__ANDROID__)
+#elif (defined(__ANDROID__) || defined(OPTICK_ARM))
 // Nothing
 #elif defined(OPTICK_GCC)
 #include <cpuid.h>
@@ -764,6 +767,12 @@ string GetCPUName()
     	return s;
     }
 	return "Undefined CPU";
+#elif defined(OPTICK_ARM)
+	#if defined(OPTICK_ARM32)
+		return "ARM 32-bit";
+	#else
+		return "ARM 64-bit";
+	#endif
 #else
 	int cpuInfo[4] = { -1 };
 	char cpuBrandString[0x40] = { 0 };
@@ -888,7 +897,7 @@ void Core::DumpEvents(EventStorage& entry, const EventTime& timeSlice, ScopeData
 				{
 					rootEvent = &data;
 					scope.InitRootEvent(*rootEvent);
-				}
+				} 
 				else if (rootEvent->finish < data.finish)
 				{
 					// Batching together small buckets
@@ -927,7 +936,7 @@ void Core::DumpTags(EventStorage& entry, ScopeData& scope)
 	{
 		OutputDataStream tagStream;
 		tagStream << scope.header.boardNumber << scope.header.threadNumber;
-		tagStream
+		tagStream  
 			<< (uint32)0
 			<< entry.tagFloatBuffer
 			<< entry.tagU32Buffer
@@ -1000,7 +1009,7 @@ EventTime CalculateRange(FrameStorage& frameStorage)
 void Core::DumpFrames(uint32 mode)
 {
     std::lock_guard<std::recursive_mutex> lock(threadsLock);
-
+    
 	if (frames.empty() || threads.empty())
 		return;
 
@@ -1019,7 +1028,7 @@ void Core::DumpFrames(uint32 mode)
 	for (int i = 0; i < FrameType::COUNT; ++i)
 	{
 		timeSlice[i] = CalculateRange(frames[i]);
-	}
+	} 
 
 	DumpBoard(mode, timeSlice[FrameType::CPU]);
 
@@ -1095,7 +1104,7 @@ void Core::DumpFrames(uint32 mode)
 
 		// We can free some memory now to unlock space for callstack serialization
 		DumpProgress("Deallocating memory for SymbolEngine");
-		Memory::Free(symbolEngine);
+		Memory::Delete(symbolEngine);
 		symbolEngine = nullptr;
 
 		DumpProgress("Serializing callstacks");
@@ -1256,19 +1265,22 @@ void Core::Update()
 	{
 		FrameBuffer frameBuffer = frames[FrameType::CPU].m_Frames;
 
-		if (settings.frameLimit > 0 && frameBuffer.Size() >= settings.frameLimit)
-			DumpCapture();
-
-		if (settings.timeLimitUs > 0)
+		if (frameBuffer.Size() > 0)
 		{
-			if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.timeLimitUs)
+			if (settings.frameLimit > 0 && frameBuffer.Size() >= settings.frameLimit)
 				DumpCapture();
-		}
 
-		if (settings.spikeLimitUs > 0)
-		{
-			if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.spikeLimitUs)
-				DumpCapture();
+			if (settings.timeLimitUs > 0)
+			{
+				if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.timeLimitUs)
+					DumpCapture();
+			}
+
+			if (settings.spikeLimitUs > 0)
+			{
+				if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.spikeLimitUs)
+					DumpCapture();
+			}
 		}
 
 		if (IsTimeToReportProgress())
@@ -1364,7 +1376,7 @@ void Core::Activate(Mode::Type mode)
 					std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
 					status = tracer->Start(mode, settings.samplingFrequency, threads);
-
+					
 					// Let's retry with more narrow setup
 					if (status != CaptureStatus::OK && (mode & Mode::AUTOSAMPLING))
 						status = tracer->Start((Mode::Type)(mode & ~Mode::AUTOSAMPLING), settings.samplingFrequency, threads);
@@ -1389,7 +1401,7 @@ void Core::Activate(Mode::Type mode)
 				Memory::Delete(tracer);
 				tracer = nullptr;
 			}
-
+				
 
 			if (gpuProfiler)
 				gpuProfiler->Stop(previousMode);
@@ -1577,7 +1589,6 @@ bool Core::AttachFile(File::Type type, const char* name, const wchar_t* path)
 void Core::InitGPUProfiler(GPUProfiler* profiler)
 {
 	OPTICK_ASSERT(gpuProfiler == nullptr, "Can't reinitialize GPU profiler! Not supported yet!");
-	Memory::Delete<GPUProfiler>(gpuProfiler);
 	gpuProfiler = profiler;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1624,6 +1635,9 @@ void Core::Shutdown()
 {
 	std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
+	Memory::Delete<GPUProfiler>(gpuProfiler);
+	gpuProfiler = nullptr;
+
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
 		Memory::Delete(*it);
@@ -1635,6 +1649,9 @@ void Core::Shutdown()
 		Memory::Delete(*it);
 	}
 	fibers.clear();
+
+	Memory::Delete(symbolEngine);
+	symbolEngine = nullptr;
 
 	EventDescriptionBoard::Get().Shutdown();
 }
@@ -1834,7 +1851,7 @@ OPTICK_API bool StartCapture(Mode::Type mode /*= Mode::DEFAULT*/, int samplingFr
 		core.SetMainThreadID(Platform::GetThreadID());
 		core.BeginFrame(FrameType::CPU, GetHighPrecisionTime(), Platform::GetThreadID());
 	}
-
+	
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1887,8 +1904,12 @@ bool EndsWith(const char* str, const char* substr)
 OPTICK_API bool SaveCapture(const char* path, bool force /*= true*/)
 {
 	char filePath[512] = { 0 };
-	strcpy_s(filePath, path);
-
+#if defined(OPTICK_MSVC)
+	strcpy_s(filePath, 512, path);
+#else
+	strcpy(filePath, path);
+#endif
+	
 	if (path == nullptr || !EndsWith(path, ".opt"))
 	{
 		time_t now = time(0);
@@ -1900,7 +1921,11 @@ OPTICK_API bool SaveCapture(const char* path, bool force /*= true*/)
 #endif
 		char timeStr[80] = { 0 };
 		strftime(timeStr, sizeof(timeStr), "(%Y-%m-%d.%H-%M-%S).opt", &tstruct);
-		strcat_s(filePath, timeStr);
+#if defined(OPTICK_MSVC)
+		strcat_s(filePath, 512, timeStr);
+#else
+		strcat(filePath, timeStr);
+#endif
 	}
 
 	SaveHelper::Init(filePath);
@@ -1926,7 +1951,7 @@ OPTICK_API void Shutdown()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventStorage::EventStorage(): currentMode(Mode::OFF), pushPopEventStackIndex(0), isFiberStorage(false)
 {
-
+	 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ThreadEntry::Activate(Mode::Type mode)

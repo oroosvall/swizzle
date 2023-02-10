@@ -143,7 +143,7 @@ namespace Optick
 		VkResult r;
 		for (uint32_t i = 0; i < nodeCount; ++i)
 		{
-			VkPhysicalDeviceProperties properties { };
+			VkPhysicalDeviceProperties properties = { 0 };
 			(*vulkanFunctions.vkGetPhysicalDeviceProperties)(physicalDevices[i], &properties);
 			GPUProfiler::InitNode(properties.deviceName, i);
 
@@ -240,7 +240,7 @@ namespace Optick
 
 	void GPUProfilerVulkan::WaitForFrame(uint64_t frameNumberToWait)
 	{
-		OPTICK_EVENT("GPUProfilerVulkan::WaitForFrame");
+		OPTICK_EVENT();
 
 		int r = VK_SUCCESS;
 		do
@@ -395,8 +395,6 @@ namespace Optick
 
 	GPUProfilerVulkan::~GPUProfilerVulkan()
 	{
-		WaitForFrame(frameNumber - 1);
-
 		for (NodePayload* payload : nodePayloads)
 		{
 			for (Frame& frame : payload->frames)
