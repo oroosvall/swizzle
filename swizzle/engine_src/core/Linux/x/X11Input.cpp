@@ -295,11 +295,13 @@ namespace swizzle
 
         const SwChar* GetWinKeyText(S32 scanCode)
         {
+            UNUSED_ARG(scanCode);
             return "";
         }
 
         const SwWChar* GetWinKeyTextW(S32 scanCode)
         {
+            UNUSED_ARG(scanCode);
             return L"";
         }
     }

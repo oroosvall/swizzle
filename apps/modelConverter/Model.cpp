@@ -207,7 +207,7 @@ void Model::loadSwm(const std::string& file)
 
 void Model::loadSwm1v0(std::ifstream& file, uint8_t variant)
 {
-    CompressionFlags compressFlags = {0};
+    CompressionFlags compressFlags {};
 
     MeshDescr_v1_0_variant_1 descr;
     file.read((char*)&descr.mNumMeshes, sizeof(descr.mNumMeshes));
@@ -567,13 +567,13 @@ void Model::saveSwm(const std::string& file, bool attemptCompression)
             outFile.write((char*)&nameLength, sizeof(nameLength));
             outFile.write((char*)m.mName.c_str(), nameLength);
 
-            CompressionFlags cf{ 0 };
+            CompressionFlags cf {};
             if (attemptCompression)
             {
                 cf.mVertexIndex = 1;
                 cf.mTriangleIndex = 1;
             }
-            MeshFlags mf{0};
+            MeshFlags mf {};
 
             size_t vertexSize = 0U;
             size_t triangleSize = 0U;

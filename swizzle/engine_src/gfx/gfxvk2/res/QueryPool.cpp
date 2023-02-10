@@ -146,7 +146,6 @@ namespace vk
         , mHasRequestedAfterEnable(false)
         , mTimestaps()
     {
-        auto features = mDevice->getDeviceFeatures();
         VkQueryPoolCreateInfo createInfo = {};
         createInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
         createInfo.pNext = VK_NULL_HANDLE;
