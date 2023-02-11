@@ -3,7 +3,10 @@
     "language": "c++",
     "files": [
         "test/**.hpp",
-        "test/**.cpp"
+        "test/**.cpp",
+        "include/**.hpp",
+        "src/**.hpp",
+        "src/**.cpp"
     ],
     "pub_inc_dirs": [
         "../include/",
@@ -19,6 +22,25 @@
         {
             "name": "test/*",
             "value": "test/**.cpp"
+        },
+        {
+            "name": "physics/*",
+            "value": "src/**.hpp"
+        },
+        {
+            "name": "physics/*",
+            "value": "src/**.cpp"
+        },
+        {
+            "name": "include/*",
+            "value": "../include/**.hpp"
+        },
+        {
+            "name": "include/*",
+            "value": "include/**.hpp"
         }
-    ]
+    ],
+    "buildflags": {
+        "rtti": "Off"
+    }
 }
