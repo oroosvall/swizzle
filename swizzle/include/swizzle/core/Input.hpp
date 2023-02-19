@@ -66,11 +66,12 @@ namespace swizzle::input
 
     enum class Mouse
     {
-        RightClick,
+        None = 0,
         LeftClick,
         MiddleClick,
-        ExtButton3,
+        RightClick,
         ExtButton4,
+        ExtButton5,
     };
 }
 
