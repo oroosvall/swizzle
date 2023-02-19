@@ -7,6 +7,8 @@
 #include <physics/shapes/OOBB.hpp>
 #include <physics/shapes/Sphere.hpp>
 
+#include <glm/glm.hpp>
+
 /* Defines */
 
 /* Typedefs/enums */
@@ -18,5 +20,11 @@
 /* Class Declaration */
 
 /* Function Declaration */
+
+namespace physics
+{
+    AABB simulateMove(const AABB& aabb, const glm::vec3& vel, const OOBB& obb);
+    AABB simulateMove(const AABB& aabb, const glm::vec3& vel, const AABB& aabb2);
+}
 
 #endif

@@ -48,7 +48,7 @@ void PhysicsColliderRenderer::reset()
     mBuildBuffer.clear();
 }
 
-void PhysicsColliderRenderer::addAABB(const physics::AABB& aabb)
+void PhysicsColliderRenderer::addAABB(const physics::AABB& aabb, glm::vec3 color)
 {
     glm::vec3 min = aabb.mHalfSlab;
     glm::vec3 max = -aabb.mHalfSlab;
@@ -64,23 +64,23 @@ void PhysicsColliderRenderer::addAABB(const physics::AABB& aabb)
     vertices[6] = aabb.mPos + glm::vec3(max.x, max.y, min.z);
     vertices[7] = aabb.mPos + max;
 
-    pushLine(vertices[0], vertices[1], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[0], vertices[2], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[1], vertices[3], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[2], vertices[3], {1.0f, 1.0f, 1.0f});
+    pushLine(vertices[0], vertices[1], color);
+    pushLine(vertices[0], vertices[2], color);
+    pushLine(vertices[1], vertices[3], color);
+    pushLine(vertices[2], vertices[3], color);
 
-    pushLine(vertices[7], vertices[6], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[7], vertices[5], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[6], vertices[4], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[5], vertices[4], {1.0f, 1.0f, 1.0f});
+    pushLine(vertices[7], vertices[6], color);
+    pushLine(vertices[7], vertices[5], color);
+    pushLine(vertices[6], vertices[4], color);
+    pushLine(vertices[5], vertices[4], color);
 
-    pushLine(vertices[0], vertices[4], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[1], vertices[5], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[2], vertices[6], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[3], vertices[7], {1.0f, 1.0f, 1.0f});
+    pushLine(vertices[0], vertices[4], color);
+    pushLine(vertices[1], vertices[5], color);
+    pushLine(vertices[2], vertices[6], color);
+    pushLine(vertices[3], vertices[7], color);
 }
 
-void PhysicsColliderRenderer::addOOBB(const physics::OOBB& oobb)
+void PhysicsColliderRenderer::addOOBB(const physics::OOBB& oobb, glm::vec3 color)
 {
     glm::vec3 min = oobb.mHalfSlab;
     glm::vec3 max = -oobb.mHalfSlab;
@@ -96,20 +96,25 @@ void PhysicsColliderRenderer::addOOBB(const physics::OOBB& oobb)
     vertices[6] = oobb.mPos + oobb.mRot * glm::vec3(max.x, max.y, min.z);
     vertices[7] = oobb.mPos + oobb.mRot * max;
 
-    pushLine(vertices[0], vertices[1], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[0], vertices[2], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[1], vertices[3], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[2], vertices[3], {1.0f, 1.0f, 1.0f});
+    pushLine(vertices[0], vertices[1], color);
+    pushLine(vertices[0], vertices[2], color);
+    pushLine(vertices[1], vertices[3], color);
+    pushLine(vertices[2], vertices[3], color);
 
-    pushLine(vertices[7], vertices[6], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[7], vertices[5], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[6], vertices[4], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[5], vertices[4], {1.0f, 1.0f, 1.0f});
+    pushLine(vertices[7], vertices[6], color);
+    pushLine(vertices[7], vertices[5], color);
+    pushLine(vertices[6], vertices[4], color);
+    pushLine(vertices[5], vertices[4], color);
 
-    pushLine(vertices[0], vertices[4], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[1], vertices[5], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[2], vertices[6], {1.0f, 1.0f, 1.0f});
-    pushLine(vertices[3], vertices[7], {1.0f, 1.0f, 1.0f});
+    pushLine(vertices[0], vertices[4], color);
+    pushLine(vertices[1], vertices[5], color);
+    pushLine(vertices[2], vertices[6], color);
+    pushLine(vertices[3], vertices[7], color);
+}
+
+void PhysicsColliderRenderer::drawLine(const glm::vec3& pos1, const glm::vec3& pos2)
+{
+    pushLine(pos1, pos2, {0.2f, 1.0f, 0.2f});
 }
 
 void PhysicsColliderRenderer::flush()

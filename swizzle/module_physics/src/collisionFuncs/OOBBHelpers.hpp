@@ -5,6 +5,7 @@
 
 #include <common/Common_new.hpp>
 #include <physics/shapes/OOBB.hpp>
+#include <physics/shapes/AABB.hpp>
 
 #include <array>
 
@@ -37,11 +38,34 @@ namespace physics
         outVertices[7] = oobb.mPos + oobb.mRot * max;
     }
 
+    inline AABB OobbGetAABB(const OOBB& oobb)
+    {
+        glm::vec3 min = oobb.mHalfSlab;
+        glm::vec3 max = -oobb.mHalfSlab;
+
+        glm::vec3 halfSlab {};
+
+        halfSlab = glm::max(halfSlab, min);
+        halfSlab = glm::max(halfSlab, glm::vec3(min.x, min.y, max.z));
+        halfSlab = glm::max(halfSlab, glm::vec3(min.x, max.y, min.z));
+        halfSlab = glm::max(halfSlab, glm::vec3(min.x, max.y, max.z));
+        halfSlab = glm::max(halfSlab, glm::vec3(max.x, min.y, min.z));
+        halfSlab = glm::max(halfSlab, glm::vec3(max.x, min.y, max.z));
+        halfSlab = glm::max(halfSlab, glm::vec3(max.x, max.y, min.z));
+        halfSlab = glm::max(halfSlab, max);
+
+        AABB aabb{};
+        aabb.mHalfSlab = halfSlab;
+        aabb.mPos = oobb.mPos;
+
+        return aabb;
+    }
+
     inline void OobbGetNormals(const OOBB& oobb, std::array<glm::vec3, 3>& outNormals)
     {
-        outNormals[0] = oobb.mRot * glm::vec3(1.0f, 0.0f, 0.0f);
-        outNormals[1] = oobb.mRot * glm::vec3(0.0f, 1.0f, 0.0f);
-        outNormals[2] = oobb.mRot * glm::vec3(0.0f, 0.0f, 1.0f);
+        outNormals[0] = glm::normalize(oobb.mRot * glm::vec3(1.0f, 0.0f, 0.0f));
+        outNormals[1] = glm::normalize(oobb.mRot * glm::vec3(0.0f, 1.0f, 0.0f));
+        outNormals[2] = glm::normalize(oobb.mRot * glm::vec3(0.0f, 0.0f, 1.0f));
     }
 
     inline void OobbGetAllAxis(const std::array<glm::vec3, 3>& s1, const std::array<glm::vec3, 3>& s2, std::array<glm::vec3, 15>& allAxis)

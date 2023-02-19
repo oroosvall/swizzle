@@ -212,7 +212,7 @@ void Game::userCleanup()
 
 void Game::updateMainWindow(F32 dt)
 {
-    mRot += dt;
+    mRot += dt * 0.1f;
     UNUSED_ARG(dt);
     SWIZZLE_PROFILE_EVENT("Game::updateMainWindow");
     U32 x, y;
@@ -247,8 +247,16 @@ void Game::updateMainWindow(F32 dt)
     mScene->render(dTrans, cam);
 
     mPhysicsRenderer->reset();
-    mPhysicsRenderer->addAABB(physics::AABB{{}, {0.5f, 0.5f, 0.5f}});
-    mPhysicsRenderer->addOOBB(physics::OOBB{ {1.0f, 1.0f, 1.0f}, glm::angleAxis(mRot, glm::vec3{0.0f, 0.0f, 1.0f}), {0.5f, 0.5f, 0.5f} });
+    physics::AABB aabb{{0.0f, 0.0f, 1.0f}, {0.5f, 0.5f, 0.5f}};
+    // physics::AABB aabb2{{0.5f, 1.5f, 1.0f}, {0.5f, 0.5f, 0.5f}};
+    physics::OOBB oobb{{0.0f, 2.0f, 1.0f}, glm::angleAxis(mRot, glm::vec3{0.0f, 0.0f, 1.0f}), {0.5f, 0.5f, 0.5f} };
+    physics::AABB moved {physics::simulateMove(aabb, {0.0f, 2.0f, 0.0f}, oobb)};
+    // physics::AABB moved {physics::simulateMove(aabb, {0.0f, 1.0f, 0.0f}, aabb2)};
+    mPhysicsRenderer->addAABB(aabb);
+    // mPhysicsRenderer->addAABB(aabb2);
+    mPhysicsRenderer->addOOBB(oobb);
+    mPhysicsRenderer->addAABB(moved, {1.0f, 0.2f, 0.2f});
+    mPhysicsRenderer->drawLine(aabb.mPos, moved.mPos);
     mPhysicsRenderer->flush();
 
     struct tmp

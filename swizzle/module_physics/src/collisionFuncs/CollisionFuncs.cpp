@@ -175,17 +175,21 @@ namespace physics
     RayHit OobbRaycast(const OOBB& moving, const glm::vec3& vel, const OOBB& collider)
     {
         RayHit hit{};
+        hit.mHit = false;
 
         F32 tMin = 0.0f;
         F32 tMax = FLT_MAX;
 
         glm::vec3 oobbRayDist = collider.mPos - moving.mPos;
+        const F32 l = glm::length(vel);
+
+        AABB obbsAabb {OobbGetAABB(collider)};
 
         OOBB added = collider;
         added.mHalfSlab += moving.mHalfSlab;
 
-        glm::vec3 min = added.mHalfSlab;
-        glm::vec3 max = -added.mHalfSlab;
+        glm::vec3 min = -added.mHalfSlab;
+        glm::vec3 max = +added.mHalfSlab;
 
         std::array<glm::vec3, 3> normals{};
         OobbGetNormals(added, normals);
@@ -196,33 +200,40 @@ namespace physics
             F32 e = glm::dot(ax, oobbRayDist);
             F32 f = glm::dot(glm::normalize(vel), ax);
 
-            if (e > 0.0f && f > 0.0f)
+            if (fabs(f) > FLT_EPSILON)
             {
-                return hit;
+                F32 t1 = (e + min[i]) / f;
+                F32 t2 = (e + max[i]) / f;
+
+                if (t1 > t2)
+                {
+                    F32 w = t1;
+                    t1 = t2;
+                    t2 = w;
+                }
+
+                tMin = glm::max(tMin, t1);
+                tMax = glm::min(tMax, t2);
+
+                if(tMax < tMin)
+                {
+                    return hit;
+                }
             }
-
-            F32 t1 = (e + min[i]) / f;
-            F32 t2 = (e + max[i]) / f;
-
-            if (t1 > t2)
+            else
             {
-                F32 w = t1;
-                t1 = t2;
-                t2 = w;
-            }
-
-            tMin = glm::max(tMin, t1);
-            tMax = glm::min(tMax, t2);
-
-            if(tMax < tMin)
-            {
-                return hit;
+                if (-e+min[i] > 0.0f || -e+max[i] < 0.0f)
+                {
+                    return hit;
+                }
             }
         }
 
+        tMin /= l;
+
         hit.mHit = true;
         hit.mTime = tMin;
-        hit.mPos = moving.mPos + vel * tMin;
+        hit.mPos = moving.mPos + (vel * tMin);
 
         return hit;
     }

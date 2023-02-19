@@ -30,8 +30,9 @@ public:
     PhysicsColliderRenderer(common::Resource<sw::gfx::GfxContext> ctx, common::Resource<sw::gfx::Swapchain> swp);
 
     void reset();
-    void addAABB(const physics::AABB& aabb);
-    void addOOBB(const physics::OOBB& oobb);
+    void addAABB(const physics::AABB& aabb, glm::vec3 color = {1.0f, 1.0f, 1.0f});
+    void addOOBB(const physics::OOBB& oobb, glm::vec3 color = {1.0f, 1.0f, 1.0f});
+    void drawLine(const glm::vec3& pos1, const glm::vec3& pos2);
     void flush();
 
     common::Resource<sw::gfx::Shader> getShader() const;
@@ -45,6 +46,5 @@ private:
 
     common::Resource<sw::gfx::Buffer> mVertexBuffer;
     common::Resource<sw::gfx::Shader> mShader;
-
 };
 /* Function Declaration */
