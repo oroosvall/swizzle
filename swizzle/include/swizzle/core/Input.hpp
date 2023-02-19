@@ -68,8 +68,8 @@ namespace swizzle::input
     {
         None = 0,
         LeftClick,
-        MiddleClick,
         RightClick,
+        MiddleClick,
         ExtButton4,
         ExtButton5,
     };
