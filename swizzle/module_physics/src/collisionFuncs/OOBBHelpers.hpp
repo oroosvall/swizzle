@@ -45,14 +45,14 @@ namespace physics
 
         glm::vec3 halfSlab {};
 
-        halfSlab = glm::max(halfSlab, min);
-        halfSlab = glm::max(halfSlab, glm::vec3(min.x, min.y, max.z));
-        halfSlab = glm::max(halfSlab, glm::vec3(min.x, max.y, min.z));
-        halfSlab = glm::max(halfSlab, glm::vec3(min.x, max.y, max.z));
-        halfSlab = glm::max(halfSlab, glm::vec3(max.x, min.y, min.z));
-        halfSlab = glm::max(halfSlab, glm::vec3(max.x, min.y, max.z));
-        halfSlab = glm::max(halfSlab, glm::vec3(max.x, max.y, min.z));
-        halfSlab = glm::max(halfSlab, max);
+        halfSlab = glm::max(halfSlab, oobb.mRot * min);
+        halfSlab = glm::max(halfSlab, oobb.mRot * glm::vec3(min.x, min.y, max.z));
+        halfSlab = glm::max(halfSlab, oobb.mRot * glm::vec3(min.x, max.y, min.z));
+        halfSlab = glm::max(halfSlab, oobb.mRot * glm::vec3(min.x, max.y, max.z));
+        halfSlab = glm::max(halfSlab, oobb.mRot * glm::vec3(max.x, min.y, min.z));
+        halfSlab = glm::max(halfSlab, oobb.mRot * glm::vec3(max.x, min.y, max.z));
+        halfSlab = glm::max(halfSlab, oobb.mRot * glm::vec3(max.x, max.y, min.z));
+        halfSlab = glm::max(halfSlab, oobb.mRot * max);
 
         AABB aabb{};
         aabb.mHalfSlab = halfSlab;
@@ -89,34 +89,5 @@ namespace physics
         allAxis[12] = glm::cross(s1[2], s2[0]);
         allAxis[13] = glm::cross(s1[2], s2[1]);
         allAxis[14] = glm::cross(s1[2], s2[2]);
-    }
-
-    inline SwBool AxisSeparated(const std::array<glm::vec3, 8>& vertA, const std::array<glm::vec3, 8>& vertB, const glm::vec3 axis)
-    {
-        if (axis.length() == 0)
-        {
-            return false;
-        }
-
-        F32 aMin = FLT_MAX;
-        F32 bMin = FLT_MAX;
-        F32 aMax = FLT_MIN;
-        F32 bMax = FLT_MIN;
-
-        for (S32 i = 0; i < 8; ++i)
-        {
-            F32 aDist = glm::dot(vertA[i], axis);
-
-            aMin = glm::min(aDist, aMin);
-            aMax = glm::max(aDist, aMax);
-
-            F32 bDist = glm::dot(vertB[i], axis);
-            bMin = glm::min(bDist, bMin);
-            bMax = glm::max(aDist, bMax);
-        }
-
-        F32 longSpan = glm::max(aMax, bMax) - glm::min(aMin, bMin);
-        F32 sumSpan = (aMax - aMin) + (bMax - bMin);
-        return longSpan >= sumSpan;
     }
 }

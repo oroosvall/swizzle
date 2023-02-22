@@ -25,6 +25,8 @@ namespace physics
 {
     AABB simulateMove(const AABB& aabb, const glm::vec3& vel, const OOBB& obb);
     AABB simulateMove(const AABB& aabb, const glm::vec3& vel, const AABB& aabb2);
+
+    AABB fromOOBB(const OOBB& obb);
 }
 
 #endif

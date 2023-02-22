@@ -56,6 +56,9 @@ private:
 
     common::Resource<PhysicsColliderRenderer> mPhysicsRenderer;
     F32 mRot = 0.0f;
+
+    glm::vec3 aabbPos;
+    SwBool mInputLocked;
 };
 
 #endif

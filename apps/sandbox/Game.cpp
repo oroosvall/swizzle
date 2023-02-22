@@ -20,6 +20,7 @@ Game::Game(const SwChar* appName)
     : Application(appName)
     , cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
+    , mInputLocked(false)
 {
 }
 
@@ -82,6 +83,7 @@ void Game::userSetup()
     mFsqMat->setDescriptorTextureResource(0u, mImGuiRenderTarget->getTexture(), false);
 
     mPhysicsRenderer = common::CreateRef<PhysicsColliderRenderer>(mGfxContext, mSwapchain);
+    aabbPos = {0.0f, 0.0f, 1.0f};
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -89,6 +91,7 @@ SwBool Game::userUpdate(F32 dt)
     SWIZZLE_PROFILE_EVENT("userUpdate");
 
     mFpsCounter.tick(dt);
+    mInputLocked = ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
 
     std::string title;
     title.reserve(1024);
@@ -110,9 +113,10 @@ SwBool Game::userUpdate(F32 dt)
             if (memStat)
             {
                 title += "Memory Heap: " + std::string(memStat->mName) + "\n";
-                title += "  Mem: " + utils::toMemoryString(memStat->mUsed) + "/" + utils::toMemoryString(memStat->mSize);
+                title +=
+                    "  Mem: " + utils::toMemoryString(memStat->mUsed) + "/" + utils::toMemoryString(memStat->mSize);
                 title += "; Allocs: " + std::to_string(memStat->mNumAllocations) + "p, " +
-                            std::to_string(memStat->mNumVirtualAllocations) + "v\n";
+                         std::to_string(memStat->mNumVirtualAllocations) + "v\n";
             }
         }
         else if (iter->getType() == sw::gfx::GfxStatsType::DeviceStats)
@@ -150,9 +154,9 @@ SwBool Game::userUpdate(F32 dt)
                 title += "  Clipping Primitives " + std::to_string(gfxStats->mClippingInvocations) + "\n";
                 title += "  Fragment Shader Invocations " + std::to_string(gfxStats->mFragmentShaderInvocations) + "\n";
                 title += "  Tesselation Control Shader Patches " +
-                        std::to_string(gfxStats->mTesselationControlShaderPatches) + "\n";
+                         std::to_string(gfxStats->mTesselationControlShaderPatches) + "\n";
                 title += "  Tesselation Evaluation Shader Invocations " +
-                        std::to_string(gfxStats->mTesselationEvaluationShaderInvocations) + "\n";
+                         std::to_string(gfxStats->mTesselationEvaluationShaderInvocations) + "\n";
                 title += "  Compute Shader Invocations " + std::to_string(gfxStats->mComputeShaderInvocations) + "\n";
             }
         }
@@ -170,6 +174,14 @@ SwBool Game::userUpdate(F32 dt)
     {
         SWIZZLE_PROFILE_EVENT("ImGui::Text");
         ImGui::Text("%s", title.c_str());
+    }
+
+    ImGui::End();
+
+    ImGui::Begin("AABB pos");
+    {
+        OPTICK_EVENT("ImGui::Text");
+        ImGui::DragFloat3("##input", &aabbPos[0], 0.01f, -1.0f, 1.0f);
     }
 
     ImGui::End();
@@ -247,15 +259,21 @@ void Game::updateMainWindow(F32 dt)
     mScene->render(dTrans, cam);
 
     mPhysicsRenderer->reset();
-    physics::AABB aabb{{0.0f, 0.0f, 1.0f}, {0.5f, 0.5f, 0.5f}};
+    physics::AABB aabb{aabbPos, {0.5f, 0.5f, 0.5f}};
     // physics::AABB aabb2{{0.5f, 1.5f, 1.0f}, {0.5f, 0.5f, 0.5f}};
-    physics::OOBB oobb{{0.0f, 2.0f, 1.0f}, glm::angleAxis(mRot, glm::vec3{0.0f, 0.0f, 1.0f}), {0.5f, 0.5f, 0.5f} };
-    physics::AABB moved {physics::simulateMove(aabb, {0.0f, 2.0f, 0.0f}, oobb)};
+    physics::OOBB oobb{{0.0f, 2.0f, 1.0f}, glm::angleAxis(mRot, glm::vec3{0.0f, 0.0f, 1.0f}), {0.5f, 0.5f, 0.5f}};
+    physics::AABB moved{physics::simulateMove(aabb, {0.0f, 2.0f, 0.0f}, oobb)};
     // physics::AABB moved {physics::simulateMove(aabb, {0.0f, 1.0f, 0.0f}, aabb2)};
     mPhysicsRenderer->addAABB(aabb);
     // mPhysicsRenderer->addAABB(aabb2);
-    mPhysicsRenderer->addOOBB(oobb);
+    mPhysicsRenderer->addOOBB(oobb, {0.2f, 0.2f, 1.0f});
+    // auto oobbtmp = oobb;
+    // oobbtmp.mHalfSlab += moved.mHalfSlab;
+    // oobbtmp.mRot *= glm::angleAxis(glm::radians(45.0f), glm::vec3{ 0.0f, 0.0f, 1.0f });
+    auto asAabb = physics::fromOOBB(oobb);
+    // mPhysicsRenderer->addOOBB(oobbtmp, { 0.1f, 0.1f, 0.5f });
     mPhysicsRenderer->addAABB(moved, {1.0f, 0.2f, 0.2f});
+    mPhysicsRenderer->addAABB(asAabb, {1.0f, 1.0f, 0.0f});
     mPhysicsRenderer->drawLine(aabb.mPos, moved.mPos);
     mPhysicsRenderer->flush();
 

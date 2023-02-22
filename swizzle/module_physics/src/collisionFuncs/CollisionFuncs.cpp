@@ -4,6 +4,7 @@
 #include "CollisionFuncs.hpp"
 #include "AABBHelpers.hpp"
 #include "OOBBHelpers.hpp"
+#include "AxisSeparation.hpp"
 
 #include <cmath>
 
@@ -163,7 +164,7 @@ namespace physics
 
         for (const auto& ax : allAxis)
         {
-            if (AxisSeparated(s1Vertices, s2Vertices, ax))
+            if (IsAxisSeparated(s1Vertices, s2Vertices, ax))
             {
                 return false;
             }
@@ -186,7 +187,8 @@ namespace physics
         AABB obbsAabb {OobbGetAABB(collider)};
 
         OOBB added = collider;
-        added.mHalfSlab += moving.mHalfSlab;
+        //added.mHalfSlab = obbsAabb.mHalfSlab;
+        //added.mHalfSlab += moving.mHalfSlab;
 
         glm::vec3 min = -added.mHalfSlab;
         glm::vec3 max = +added.mHalfSlab;
