@@ -130,20 +130,22 @@ namespace utils
 
         if (inFile.is_open())
         {
-
-            std::string line;
-            std::getline(inFile, line);
-
-            if (!line.empty())
+            while (!inFile.eof())
             {
+                std::string line;
+                std::getline(inFile, line);
 
-                size_t indexOfEq = line.find("=");
-                std::string firstPart = line.substr(0, indexOfEq);
-                std::string lastPart = line.substr(indexOfEq + 1);
+                if (!line.empty())
+                {
 
-                Value v;
-                v.setString(lastPart);
-                mValues.push_back(std::make_pair(firstPart, v));
+                    size_t indexOfEq = line.find("=");
+                    std::string firstPart = line.substr(0, indexOfEq);
+                    std::string lastPart = line.substr(indexOfEq + 1);
+
+                    Value v;
+                    v.setString(lastPart);
+                    mValues.push_back(std::make_pair(firstPart, v));
+                }
             }
         }
 
