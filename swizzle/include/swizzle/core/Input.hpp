@@ -123,6 +123,7 @@ namespace swizzle::input
 
     void SWIZZLE_API GetMousePosition(int32_t& xPos, int32_t& yPos);
     void SWIZZLE_API GetMouseDelta(float& x, float& y);
+    void SWIZZLE_API GetMouseScrollDelta(float& x, float& y);
 
 }
 

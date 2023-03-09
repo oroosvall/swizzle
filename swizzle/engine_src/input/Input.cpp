@@ -26,6 +26,8 @@ namespace swizzle::input
         InputCallback mCb = {};
         F32 mDx = 0.0f;
         F32 mDy = 0.0f;
+        F32 mScrollDx = 0.0f;
+        F32 mScrollDy = 0.0f;
         S32 mX = 0;
         S32 mY = 0;
         std::unordered_map<S32, SwBool> mPressedKeys = {};
@@ -80,6 +82,8 @@ namespace swizzle::input
         OPTICK_EVENT("InputFrameReset");
         inputCtx.mDx = 0.0f;
         inputCtx.mDy = 0.0f;
+        inputCtx.mScrollDx = 0.0f;
+        inputCtx.mScrollDy = 0.0f;
         inputCtx.mPressedKeysThisFrame.clear();
         inputCtx.mCharacterHadEventThisFrame = false;
     }
@@ -184,6 +188,15 @@ namespace swizzle::input
         }
     }
 
+    void GetMouseScrollDelta(float& x, float& y)
+    {
+        if (inputCtx.mInputFocused)
+        {
+            x = inputCtx.mScrollDx;
+            y = inputCtx.mScrollDy;
+        }
+    }
+
 }
 
 /* Class Public Function Definition */
@@ -259,7 +272,12 @@ namespace swizzle::input
             break;
         }
         case core::WindowEventType::MouseScrollEvent:
+        {
+            core::MouseScrollEvent& e = (core::MouseScrollEvent&)evt;
+            inputCtx.mScrollDx += (float)e.mScrollX;
+            inputCtx.mScrollDy += (float)e.mScrollY;
             break;
+        }
         default:
             break;
         }
