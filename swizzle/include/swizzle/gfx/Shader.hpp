@@ -58,7 +58,7 @@ namespace swizzle::gfx
 
     typedef U32 Count;
 
-}
+} // namespace swizzle::gfx
 
 /* Forward Declared Structs/Classes */
 
@@ -69,8 +69,16 @@ namespace swizzle::gfx
     class ShaderBufferInput
     {
     public:
-        ShaderBufferInput() : mRate(ShaderBufferInputRate::InputRate_Vertex), mStride(0u) {}
-        ShaderBufferInput(ShaderBufferInputRate rate, U32 stride) : mRate(rate), mStride(stride) {}
+        ShaderBufferInput()
+            : mRate(ShaderBufferInputRate::InputRate_Vertex)
+            , mStride(0u)
+        {
+        }
+        ShaderBufferInput(ShaderBufferInputRate rate, U32 stride)
+            : mRate(rate)
+            , mStride(stride)
+        {
+        }
         virtual ~ShaderBufferInput() {}
 
         ShaderBufferInputRate mRate;
@@ -80,7 +88,12 @@ namespace swizzle::gfx
     class ShaderAttribute
     {
     public:
-        ShaderAttribute(U32 index, ShaderAttributeDataType dataType, U32 offset) : mBufferIndex(index), mDataType(dataType), mOffset(offset) {}
+        ShaderAttribute(U32 index, ShaderAttributeDataType dataType, U32 byteOffset)
+            : mBufferIndex(index)
+            , mDataType(dataType)
+            , mOffset(byteOffset)
+        {
+        }
         virtual ~ShaderAttribute() {}
         // Buffer index to fetch data from
         U32 mBufferIndex;
@@ -93,8 +106,13 @@ namespace swizzle::gfx
     class ShaderDescriptorBindings
     {
     public:
-        ShaderDescriptorBindings(DescriptorType type, U32 descriptorCount, common::IterType<StageType> stages) : mType(type), mDescriptorCount(descriptorCount), mStages(stages) { }
-        virtual ~ShaderDescriptorBindings() { }
+        ShaderDescriptorBindings(DescriptorType type, U32 descriptorCount, common::IterType<StageType> stages)
+            : mType(type)
+            , mDescriptorCount(descriptorCount)
+            , mStages(stages)
+        {
+        }
+        virtual ~ShaderDescriptorBindings() {}
 
         DescriptorType mType;
         U32 mDescriptorCount;
@@ -119,13 +137,11 @@ namespace swizzle::gfx
         virtual ~Shader() {}
 
         virtual SwBool load(const SwChar* file) = 0;
-        virtual SwBool loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize, const SwChar* properties) = 0;
-
+        virtual SwBool loadVertFragMemory(U32* vert, U32 vertSize, U32* frag, U32 fragSize,
+                                          const SwChar* properties) = 0;
     };
-}
-
+} // namespace swizzle::gfx
 
 /* Function Declaration */
-
 
 #endif
