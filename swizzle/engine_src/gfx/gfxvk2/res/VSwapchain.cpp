@@ -247,6 +247,8 @@ namespace vk
         // make sure device is idle before recreating the swapchain
         vkDeviceWaitIdle(mDevice->getDeviceHandle());
 
+        auto clear = getClearColor();
+
         mCurrentFrame = 0u;
         mImageIndex = 0u;
         mFrameBuffers.clear();
@@ -267,6 +269,8 @@ namespace vk
         createSynchronizationObjects();
 
         createFrameBuffers();
+
+        setClearColor(clear);
     }
 
     void VSwapchain::createSwapchain(VkSwapchainKHR oldSwapchain)
@@ -502,6 +506,14 @@ namespace vk
                                                   mSurfaceHeight);
             mFrameBuffers.emplace_back(f);
         }
+    }
+
+    swizzle::gfx::ClearColor VSwapchain::getClearColor()
+    {
+        VkClearValue cv = mFrameBuffers[0]->getColorClearValue(0);
+
+        return swizzle::gfx::ClearColor{cv.color.float32[0], cv.color.float32[1], cv.color.float32[2],
+                                        cv.color.float32[3]};
     }
 
 } // namespace vk

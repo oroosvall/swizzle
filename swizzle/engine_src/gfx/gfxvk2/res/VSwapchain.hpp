@@ -76,6 +76,8 @@ namespace vk
 
         void createFrameBuffers();
 
+        swizzle::gfx::ClearColor getClearColor();
+
         common::Resource<Instance> mInstance;
         common::Resource<Device> mDevice;
         common::Resource<swizzle::core::SwWindow> mWindow;
