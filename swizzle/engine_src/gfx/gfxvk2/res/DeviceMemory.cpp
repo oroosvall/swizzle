@@ -353,6 +353,7 @@ namespace vk
                 chSize = reqs.size;
             }
             ch = allocateNewChunk(chSize, memoryTypeIndex);
+            increaseChunkSiez();
         }
 
         if (ch)
@@ -464,4 +465,13 @@ namespace vk
         return valloc;
     }
 
+    void DeviceMemoryPool::increaseChunkSiez()
+    {
+        const VkDeviceSize maxChunkSize = 1024ull * 1024ull * 64ull;
+        mChunkSize *= 2ull;
+        if (mChunkSize > maxChunkSize)
+        {
+            mChunkSize = maxChunkSize;
+        }
+    }
 }

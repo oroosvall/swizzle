@@ -120,6 +120,7 @@ namespace vk
         common::Resource<MemoryChunk> getChunk(VkMemoryRequirements memreq, U32 memoryTypeIndex);
 
         U32 getVirtAllocs() const;
+        void increaseChunkSiez();
 
         common::Resource<Device> mDevice;
         std::vector<common::Resource<MemoryChunk>> mMemoryChunks;
