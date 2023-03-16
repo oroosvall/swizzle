@@ -85,6 +85,7 @@ namespace swizzle::input
         inputCtx.mScrollDx = 0.0f;
         inputCtx.mScrollDy = 0.0f;
         inputCtx.mPressedKeysThisFrame.clear();
+        inputCtx.mPressedMouseThisFrame.clear();
         inputCtx.mCharacterHadEventThisFrame = false;
     }
 
