@@ -75,6 +75,9 @@ namespace vk
         mProperties[shader::PropertyType::StencilOp].mStencilOp[2] = VkStencilOp::VK_STENCIL_OP_KEEP;
         mProperties[shader::PropertyType::StencilEnable].mEnableStencilWrite = false;
         mProperties[shader::PropertyType::DepthCompare].mDepthCompare = VkCompareOp::VK_COMPARE_OP_LESS;
+        mProperties[shader::PropertyType::WriteMask].mWriteMask =
+            VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT |
+            VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_B_BIT;
 
         VkPushConstantRange push = {};
 
@@ -441,10 +444,7 @@ namespace vk
             blendState.dstAlphaBlendFactor = mProperties[shader::PropertyType::DestinationBlend].mBlendFactor[1];
             blendState.colorBlendOp = mProperties[shader::PropertyType::ColorBlendOp].mColorBlendOp;
             blendState.alphaBlendOp = mProperties[shader::PropertyType::AlphaBlendOp].mAlphaBlendOp;
-            blendState.colorWriteMask = VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT |
-                                        VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT |
-                                        VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT |
-                                        VkColorComponentFlagBits::VK_COLOR_COMPONENT_B_BIT;
+            blendState.colorWriteMask = mProperties[shader::PropertyType::WriteMask].mWriteMask;
 
             attachs.push_back(blendState);
         }
@@ -455,7 +455,7 @@ namespace vk
         colorState.blendConstants[3] = 0.0F;
 
         VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR,
-                                          VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE};
+                                          VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE, VK_DYNAMIC_STATE_STENCIL_REFERENCE};
 
         VkPipelineDynamicStateCreateInfo dynState = {};
         dynState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;

@@ -229,6 +229,9 @@ namespace vk::shader
             case swizzle::gfx::StageType::vertexStage:
                 flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
                 break;
+            case swizzle::gfx::StageType::geometryStage:
+                flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
+                break;
             case swizzle::gfx::StageType::computeStage:
                 flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
                 break;

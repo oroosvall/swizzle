@@ -29,6 +29,7 @@ namespace vk::shader::_int
     static SwBool ParseStencilMask(Property& out, const std::string& value);
     static SwBool ParseStencilEnable(Property& out, const std::string& value);
     static SwBool ParseDepthCompare(Property& out, const std::string& value);
+    static SwBool ParseWriteMask(Property& out, const std::string& value);
 
 } // namespace vk::shader::_int
 
@@ -116,6 +117,7 @@ namespace vk::shader::_int
         {"stencilMask", PropertyType::StencilMask, ParseStencilMask},
         {"stencilEnable", PropertyType::StencilEnable, ParseStencilEnable},
         {"depthCompare", PropertyType::DepthCompare, ParseDepthCompare},
+        {"writeMask", PropertyType::WriteMask, ParseWriteMask }
     };
 
 } // namespace vk::shader::_int
@@ -266,6 +268,24 @@ namespace vk::shader::_int
         out.mDepthCompare = GetCompareOp(val);
 
         return true;
+    }
+
+    static SwBool ParseWriteMask(Property& out, const std::string& value)
+    {
+        std::vector<std::string> val = split(value, ",");
+
+        if (val.size() == 4)
+        {
+            val[0].erase(0, 1);
+            val[3].pop_back();
+            out.mWriteMask = std::stoul(val[0]) == 1 ? VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT : 0;
+            out.mWriteMask |= std::stoul(val[1]) == 1 ? VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT : 0;
+            out.mWriteMask |= std::stoul(val[2]) == 1 ? VkColorComponentFlagBits::VK_COLOR_COMPONENT_B_BIT : 0;
+            out.mWriteMask |= std::stoul(val[3]) == 1 ? VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT : 0;
+            return true;
+        }
+
+        return false;
     }
 } // namespace vk::shader::_int
 

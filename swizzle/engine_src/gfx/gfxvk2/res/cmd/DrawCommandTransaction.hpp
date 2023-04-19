@@ -31,6 +31,7 @@ namespace vk
         virtual void setShaderConstant(common::Resource<swizzle::gfx::Shader> shader, U8* data, U32 size) override;
         virtual void setViewport(U32 x, U32 y) override;
         virtual void enableStencilTest(SwBool enable) override;
+        virtual void setStencilReference(U8 reference) override;
 
         virtual void bindVertexBuffer(common::Resource<swizzle::gfx::Buffer> buffer) override;
         virtual void bindIndexBuffer(common::Resource<swizzle::gfx::Buffer> buffer, SwBool bitSize16) override;
@@ -44,6 +45,11 @@ namespace vk
         virtual void drawIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
                                           common::Resource<swizzle::gfx::Buffer> index,
                                           common::Resource<swizzle::gfx::Buffer> instanceData) override;
+
+        virtual void drawMultiBufferIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
+                                                     common::Resource<swizzle::gfx::Buffer> buffer2,
+                                                     common::Resource<swizzle::gfx::Buffer> index,
+                                                     common::Resource<swizzle::gfx::Buffer> instanceData) override;
 
         virtual void drawMeshlet(U32 meshletCount) override;
 
@@ -59,7 +65,6 @@ namespace vk
         const common::Resource<LifetimeToken> getToken() const;
 
     private:
-
         VkViewport makeViewport(F32 x, F32 y, F32 w, F32 h);
         VkRect2D makeRect2D(U32 w, U32 h);
 

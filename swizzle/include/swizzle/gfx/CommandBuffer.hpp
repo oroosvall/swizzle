@@ -43,6 +43,7 @@ namespace swizzle::gfx
         virtual void setShaderConstant(common::Resource<Shader> shader, U8* data, U32 size) = 0;
         virtual void setViewport(U32 x, U32 y) = 0;
         virtual void enableStencilTest(SwBool enable) = 0;
+        virtual void setStencilReference(U8 reference) = 0;
 
         virtual void bindVertexBuffer(common::Resource<Buffer> buffer) = 0;
         virtual void bindIndexBuffer(common::Resource<Buffer> buffer, SwBool bitSize16) = 0;
@@ -53,6 +54,11 @@ namespace swizzle::gfx
         virtual void drawInstanced(common::Resource<Buffer> buffer, common::Resource<Buffer> instanceData) = 0;
         virtual void drawIndexedInstanced(common::Resource<Buffer> buffer, common::Resource<Buffer> index,
                                           common::Resource<Buffer> instanceData) = 0;
+
+        virtual void drawMultiBufferIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
+                                                     common::Resource<swizzle::gfx::Buffer> buffer2,
+                                                     common::Resource<swizzle::gfx::Buffer> index,
+                                                     common::Resource<swizzle::gfx::Buffer> instanceData) = 0;
 
         virtual void drawMeshlet(U32 meshletCount) = 0;
 

@@ -93,6 +93,12 @@ namespace vk
     void VDrawCommandTransaction::enableStencilTest(SwBool enable)
     {
         vkCmdSetStencilTestEnable(mCommandBuffer, enable);
+        vkCmdSetStencilReference(mCommandBuffer, VkStencilFaceFlagBits::VK_STENCIL_FRONT_AND_BACK, 0);
+    }
+
+    void VDrawCommandTransaction::setStencilReference(U8 reference)
+    {
+        vkCmdSetStencilReference(mCommandBuffer, VkStencilFaceFlagBits::VK_STENCIL_FRONT_AND_BACK, reference);
     }
 
     void VDrawCommandTransaction::bindVertexBuffer(common::Resource<swizzle::gfx::Buffer> buffer)
@@ -216,6 +222,39 @@ namespace vk
 
         vkCmdBindVertexBuffers(mCommandBuffer, 0u, 1u, &vertBuf, &offset);
         vkCmdBindVertexBuffers(mCommandBuffer, 1u, 1u, &inst, &offset);
+        vkCmdBindIndexBuffer(mCommandBuffer, idxBuf, offset, VkIndexType::VK_INDEX_TYPE_UINT32);
+
+        vkCmdDrawIndexed(mCommandBuffer, idx->getCount() * 3u, instance->getCount(), 0u, 0u, 0u);
+    }
+
+    void VDrawCommandTransaction::drawMultiBufferIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
+                                                                  common::Resource<swizzle::gfx::Buffer> buffer2,
+                                                                  common::Resource<swizzle::gfx::Buffer> index,
+                                                                  common::Resource<swizzle::gfx::Buffer> instanceData)
+    {
+        OPTICK_EVENT("CmdBuffer::drawMultiBufferIndexedInstanced");
+
+        auto vertex = GetBufferAsDBuffer(buffer);
+        auto vertex2 = GetBufferAsDBuffer(buffer2);
+        auto idx = GetBufferAsDBuffer(index);
+        auto instance = GetBufferAsDBuffer(instanceData);
+
+        auto tokenCheckpoint = mLifetimeToken->getCheckpoint();
+        vertex->getBuffer()->addUser(mLifetimeToken, tokenCheckpoint);
+        vertex2->getBuffer()->addUser(mLifetimeToken, tokenCheckpoint);
+        idx->getBuffer()->addUser(mLifetimeToken, tokenCheckpoint);
+        instance->getBuffer()->addUser(mLifetimeToken, tokenCheckpoint);
+
+        VkBuffer vertBuf = vertex->getBuffer()->getVkHandle();
+        VkBuffer vertBuf2 = vertex2->getBuffer()->getVkHandle();
+        VkBuffer idxBuf = idx->getBuffer()->getVkHandle();
+        VkBuffer inst = instance->getBuffer()->getVkHandle();
+
+        VkDeviceSize offset = 0u;
+
+        vkCmdBindVertexBuffers(mCommandBuffer, 0u, 1u, &vertBuf, &offset);
+        vkCmdBindVertexBuffers(mCommandBuffer, 1u, 1u, &vertBuf2, &offset);
+        vkCmdBindVertexBuffers(mCommandBuffer, 2u, 1u, &inst, &offset);
         vkCmdBindIndexBuffer(mCommandBuffer, idxBuf, offset, VkIndexType::VK_INDEX_TYPE_UINT32);
 
         vkCmdDrawIndexed(mCommandBuffer, idx->getCount() * 3u, instance->getCount(), 0u, 0u, 0u);

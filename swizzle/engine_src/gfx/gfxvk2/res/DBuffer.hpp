@@ -36,6 +36,7 @@ namespace vk
         virtual void setBufferData(void* data, U64 size, U32 stride) override;
         virtual U64 getRemainingSize() const override;
         virtual U64 getSize() const override;
+        virtual U64 getUsedSize() const override;
 
         virtual void setStride(U32 stride) override;
 

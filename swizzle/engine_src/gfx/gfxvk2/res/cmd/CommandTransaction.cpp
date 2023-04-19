@@ -53,7 +53,7 @@ namespace vk
 
         bufferCopy.srcOffset = 0u;
         bufferCopy.dstOffset = 0u;
-        bufferCopy.size = from->getSize();
+        bufferCopy.size = from->getUsedSize();
         const U32 regionCount = 1u;
 
         vkCmdCopyBuffer(mCommandBuffer, srcBuf, dstBuf, regionCount, &bufferCopy);

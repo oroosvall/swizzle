@@ -74,6 +74,11 @@ namespace vk
         return mMemory->mSize;
     }
 
+    U64 DBuffer::getUsedSize() const
+    {
+        return mUsedSize;
+    }
+
     void DBuffer::setStride(U32 stride)
     {
         mStride = stride;
@@ -166,7 +171,7 @@ namespace vk
             usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
             break;
         case swizzle::gfx::BufferType::UniformBuffer:
-            usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+            usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
             break;
         case swizzle::gfx::BufferType::StorageBuffer:
             usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;

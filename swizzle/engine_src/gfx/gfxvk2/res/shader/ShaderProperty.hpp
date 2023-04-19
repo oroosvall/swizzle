@@ -23,6 +23,7 @@ namespace vk::shader
         StencilMask,
         StencilEnable,
         DepthCompare,
+        WriteMask,
     };
 
     enum class ShaderModuleType
@@ -57,6 +58,7 @@ namespace vk::shader
             U32 mStencilMasks[3];
             SwBool mEnableStencilWrite;
             VkCompareOp mDepthCompare;
+            VkColorComponentFlags mWriteMask;
         };
     };
 }

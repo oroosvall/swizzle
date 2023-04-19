@@ -46,6 +46,7 @@ namespace swizzle::gfx
         meshStage = 2,
         taskStage = 3,
         fragmentStage = 4,
+        geometryStage = 5,
         computeStage,
     };
 
