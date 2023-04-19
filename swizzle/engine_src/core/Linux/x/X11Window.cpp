@@ -207,7 +207,6 @@ namespace swizzle::core
                 e.mFromKeyboard = true;
                 e.mModKeys = 0;
                 e.mKey = evt.xkey.keycode;
-                printf("%d\n", e.mKey);
                 mEventHandlers.publishEvent(e);
                 break;
             }

@@ -227,46 +227,46 @@ namespace swizzle
             /*                                                              */
             /* Key0, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9,  */ 19, 10, 11, 12, 13, 14, 15, 16, 17, 18,
             /*                                                              */
-            /* KeyHyphen(-), KeyEquals (=),                                 */ 12, 13,
+            /* KeyHyphen(-), KeyEquals (=),                                 */ 20, 21,
             /*                                                              */
             /* KeyA, KeyB, KeyC, KeyD, KeyE, KeyF, KeyG, KeyH, KeyI, KeyJ,  */ 38, 56, 54, 40, 26, 41, 42, 43, 31, 44,
             /* KeyK, KeyL, KeyM, KeyN, KeyO, KeyP, KeyQ, KeyR, KeyS, KeyT,  */ 45, 46, 58, 57, 32, 33, 24, 27, 39, 28,
             /* KeyU, KeyV, KeyW, KeyX, KeyY, KeyZ,                          */ 30, 55, 25, 53, 29, 52,
             /*                                                              */
-            /* KeyLBracket, KeyRBracket, KeyEnter,                          */ 26, 27, 28,
-            /* KeySemiColon, KeyApostrophe, KeyBackslash, KeyForwardslash,  */ 39, 40, 43, 53,
+            /* KeyLBracket, KeyRBracket, KeyEnter,                          */ 34, 35, 36,
+            /* KeySemiColon, KeyApostrophe, KeyBackslash, KeyForwardslash,  */ 33, 48, 51, 61,
             /*                                                              */
-            /* KeySpace, KeyGraveAccent, KeyPause, KeyScrollLock,           */ 57, 41, 69, 70,
-            /* KeySysReq, KeyNumLock, KeyApplication,                       */ 311, 325, 349,
+            /* KeySpace, KeyGraveAccent, KeyPause, KeyScrollLock,           */ 65, 49, 127, 78,
+            /* KeySysReq, KeyNumLock, KeyApplication,                       */ 107, 325, 349,
             /*                                                              */
-            /* KeyArrowUp, KeyArrowDown, KeyArrowLeft, KeyArrowRight,       */ 328, 336, 331, 333,
+            /* KeyArrowUp, KeyArrowDown, KeyArrowLeft, KeyArrowRight,       */ 111, 116, 113, 114,
             /*                                                              */
-            /* KeyF1, KeyF2, KeyF3, KeyF4, KeyF5, KeyF6,                    */ 59, 60, 61, 62, 63, 64,
-            /* KeyF7, KeyF8, KeyF9, KeyF10, KeyF11, KeyF12,                 */ 65, 66, 67, 68, 87, 88,
+            /* KeyF1, KeyF2, KeyF3, KeyF4, KeyF5, KeyF6,                    */ 67, 68, 69, 70, 71, 72,
+            /* KeyF7, KeyF8, KeyF9, KeyF10, KeyF11, KeyF12,                 */ 73, 74, 75, 76, 95, 96,
             /*                                                              */
-            /* KeyLCtrl, KeyRCtrl,                                          */ 29, 285,
-            /* KeyLShift, KeyRShift,                                        */ 42, 54,
-            /* KeyLAlt, KeyRAlt,                                            */ 56, 312,
-            /* KeyLSpecial, KeyRSpecial,                                    */ 347, 348,
+            /* KeyLCtrl, KeyRCtrl,                                          */ 37, 105,
+            /* KeyLShift, KeyRShift,                                        */ 50, 62,
+            /* KeyLAlt, KeyRAlt,                                            */ 64, 108,
+            /* KeyLSpecial, KeyRSpecial,                                    */ 133, 123,
             /*                                                              */
-            /* KeyTab, KeyCaps, KeyPipe,                                    */ 15, 58, 86,
-            /* KeyComma, KeyPeriod,                                         */ 51, 52,
+            /* KeyTab, KeyCaps, KeyPipe,                                    */ 23, 66, 94,
+            /* KeyComma, KeyPeriod,                                         */ 59, 60,
             /*                                                              */
-            /* KeyNumPad0, KeyNumPad1, KeyNumPad2,                          */ 82, 79, 80,
-            /* KeyNumPad3, KeyNumPad4, KeyNumPad5,                          */ 81, 75, 76,
-            /* KeyNumPad6, KeyNumPad7, KeyNumPad8,                          */ 77, 71, 72,
-            /* KeyNumPad9,                                                  */ 73,
+            /* KeyNumPad0, KeyNumPad1, KeyNumPad2,                          */ 90, 87, 88,
+            /* KeyNumPad3, KeyNumPad4, KeyNumPad5,                          */ 89, 83, 84,
+            /* KeyNumPad6, KeyNumPad7, KeyNumPad8,                          */ 85, 79, 80,
+            /* KeyNumPad9,                                                  */ 81,
             /*                                                              */
-            /* KeyDelete, KeyInsert, KeyHome,                               */ 339, 338, 327,
-            /* KeyEnd, KeyPageUp, KeyPageDown,                              */ 335, 329, 337,
+            /* KeyDelete, KeyInsert, KeyHome,                               */ 119, 118, 110,
+            /* KeyEnd, KeyPageUp, KeyPageDown,                              */ 115, 112, 117,
             /*                                                              */
-            /* KeyBackspace,                                                */ 14,
-            /* KeyNumPadEnter,                                              */ 284,
-            /* KeyNumPadAdd,                                                */ 78,
-            /* KeyNumPadSubtract,                                           */ 74,
-            /* KeyNumPadMultiply,                                           */ 55,
-            /* KeyNumPadDivide,                                             */ 309,
-            /* KeyNumPadDelete,                                             */ 83,
+            /* KeyBackspace,                                                */ 22,
+            /* KeyNumPadEnter,                                              */ 104,
+            /* KeyNumPadAdd,                                                */ 86,
+            /* KeyNumPadSubtract,                                           */ 82,
+            /* KeyNumPadMultiply,                                           */ 63,
+            /* KeyNumPadDivide,                                             */ 106,
+            /* KeyNumPadDelete,                                             */ 91,
             // clang-format on
         };
 
