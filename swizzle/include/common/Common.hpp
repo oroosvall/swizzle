@@ -77,7 +77,9 @@ namespace common
     public:
         virtual void release() = 0;
     protected:
-        virtual ~IResource() {}
+        virtual ~IResource()
+        {
+        }
     };
 
     template<typename T> using IterType = std::vector<T>;

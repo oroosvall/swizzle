@@ -4,7 +4,7 @@
 /* Include files */
 
 #include <swm/Swm.hpp>
-#include <common/Common_new.hpp>
+#include <common/Common.hpp>
 
 /* Defines */
 

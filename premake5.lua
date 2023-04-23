@@ -15,7 +15,6 @@ vulkanLibDirs = {os.getenv("VULKAN_SDK") .. "/Lib", os.getenv("VULKAN_SDK") .. "
 glmIncludeDirs = "vendor/glm/include"
 
 -- common include dirs
-commonIncludeDirs = "libs/common/include"
 
 projects = {}
 
@@ -46,8 +45,6 @@ addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "opti
 addDependencies(projects["sandbox"], {"swizzle", "imgui", "utils", "optick"})
 
 addExternalHeadersProjectList(projects, {"swm", "swmTest", "swizzle", "sandbox"}, glmIncludeDirs)
-
-addExternalHeadersProjectList(projects, {"swm", "swizzle", "sandbox", "scriptTest", "swmTest"}, commonIncludeDirs)
 
 addExternalHeaders(projects["swizzle"], vulkanIncludeDirs)
 addExternalLibDir(projects["swizzle"], vulkanLibDirs)
