@@ -1,6 +1,6 @@
 if _ACTION ~= nil then platform = _ACTION end
 
-function defaultWorkspaceConfig()
+function default_workspace_config()
     config = {}
     config["buildDir"] = "build/"
     config["disableTests"] = false
@@ -9,8 +9,8 @@ function defaultWorkspaceConfig()
     return config
 end
 
-function loadWorkspaceConfig(configFile)
-    defaultConfig = defaultWorkspaceConfig()
+function load_workspace_config(configFile)
+    defaultConfig = default_workspace_config()
 
     config = json.decode(io.readfile(configFile))
     config = table.merge(defaultConfig, config)
@@ -18,12 +18,13 @@ function loadWorkspaceConfig(configFile)
     return config
 end
 
-function storeWorkspaceConfig(configFile, config)
+function store_workspace_config(configFile, config)
     io.writefile(configFile, json.encode(config))
 end
 
-function setupWorkspace(buildDir)
-workspace "Swizzle"
+function setup_workspace(ws_cfg)
+workspace(ws_cfg.name)
+    buildDir = ws_cfg.build_dir
     architecture "x64"
     location(buildDir .. platform)
     debugdir("data/")
@@ -34,7 +35,7 @@ workspace "Swizzle"
         "Release"
     }
     flags { "MultiProcessorCompile" }
-    startproject "sandbox"
+    startproject(ws_cfg.startup_project)
 
 targetdir (buildDir .. platform .. "/bin-%{cfg.shortname}/")
 objdir (buildDir .. platform .. "/int-%{cfg.shortname}/")

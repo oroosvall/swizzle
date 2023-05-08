@@ -1,29 +1,27 @@
 {
     "kind": "SharedLib",
     "language": "c++",
-    "files": [
-        "include/**.hpp",
-        "engine_src/**.hpp",
-        "engine_src/**.cpp"
+    "sources": [
+        {
+            "files": "include/**.hpp",
+            "vpath": "include/*",
+            "filter": ""
+        },
+        {
+            "files": "engine_src/**.hpp",
+            "vpath": "swizzle/*",
+            "filter": ""
+        },
+        {
+            "files": "engine_src/**.cpp",
+            "vpath": "swizzle/*",
+            "filter": ""
+        }
     ],
     "pub_inc_dirs": [
         "include/"
     ],
-    "includedirs": [
+    "inc_dirs": [
         "engine_src/"
-    ],
-    "vpaths": [
-        {
-            "name": "swizzle/*",
-            "value": "engine_src/**.hpp"
-        },
-        {
-            "name": "swizzle/*",
-            "value": "engine_src/**.cpp"
-        },
-        {
-            "name": "include/*",
-            "value": "include/**.hpp"
-        }
     ]
 }

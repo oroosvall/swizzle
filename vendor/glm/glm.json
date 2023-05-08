@@ -1,11 +1,14 @@
 {
-    "kind": "ConsoleApp",
+    "kind": "None",
     "language": "c++",
     "sources":[
         {
-            "files": "test/**.cpp",
+            "files": "include/**.hpp",
             "vpath": "*",
             "filter": ""
         }
+    ],
+    "pub_inc_dirs": [
+        "include/"
     ]
 }

@@ -1,177 +1,91 @@
+include "project_config.lua"
+include "helpers.lua"
 
-function generateDefaultProjectConfig()
+Project = {
+    name = nil,
+    prj = nil,
+    prj_test = nil
+}
 
-    defaultConfig = {}
-    defaultConfig['kind'] = ""
-    defaultConfig['language'] = ""
-    defaultConfig['files'] = {}
-    defaultConfig['pub_inc_dirs'] = {}
-    defaultConfig['includedirs'] = {}
-    defaultConfig['extheaders'] = {}
-    defaultConfig['extlibdir'] = {}
-    defaultConfig['extlibs'] = {}
-    defaultConfig['dep'] = {}
-    defaultConfig['defines'] = {}
-    defaultConfig['vpaths'] = {}
-    defaultConfig['postbuildcommands'] = {}
-    defaultConfig['buildflags'] = {}
-
-    return defaultConfig
+function Project:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
-function loadProjectConfig(configFile)
-    print("Loading \"" .. configFile .."\"")
+function Project:get_name()
+    return self.name
+end
 
-    defaultConfig = generateDefaultProjectConfig()
+function Project:load(name, prj, inc_dir, lib_dir)
+    print("\t" .. name .. ": " .. prj.source)
+    self.name = name
+    self.prj = ProjectConfig:new(nil)
+    self.prj:set_name(self.name)
+    self.prj:set_group(prj.group)
+    self.prj:load_from_json(prj.source)
 
-    configFilePath = path.getdirectory(configFile) .. "/"
-    config = json.decode(io.readfile(configFile))
-
-    config = table.merge(defaultConfig, config)
-
-    for i, f in pairs(config.files) do
-        config.files[i] = configFilePath .. f
+    if prj.external_include_dirs ~= nil then
+        for i, inc in pairs(prj.external_include_dirs) do
+            self.prj:add_external_headers(resolve_dir(inc, inc_dir[inc]))
+        end
     end
-    for i, f in pairs(config.includedirs) do
-        config.includedirs[i] = configFilePath .. f
+    if prj.external_lib_dirs ~= nil then
+        for i, dir in pairs(prj.external_lib_dirs) do
+            self.prj:add_external_lib_dir(resolve_dir(dir, lib_dir[dir]))
+        end
     end
-    for i, f in pairs(config.pub_inc_dirs) do
-        config.pub_inc_dirs[i] = configFilePath .. f
+    if prj.external_libs ~= nil then
+        for i, lib in pairs(prj.external_libs) do
+            self.prj:add_external_lib(lib)
+        end
     end
-    for i, vpath in pairs(config.vpaths) do
-        vpath.value = configFilePath .. vpath.value
-        config.vpaths[i] = vpath
+    if prj.defines ~= nil then
+        for i, def in pairs(prj.defines) do
+            self.prj:add_define(def)
+        end
     end
-
-    return config
-end
-
-function generateVSCodeProjectSettings(projectTable, configFile)
-
-    projectDefines = ""
-    projectIncludes = [[
-                "${workspaceFolder}/**",
-                "${VULKAN_SDK}/include/**"
-]]
-
-    vscodeProjectConfig =
-[[{
-    "configurations": [
-        {
-            "name": "Linux",
-            "includePath": [
-]] .. projectIncludes .. [[
-            ],
-            "defines": [
-]] .. projectDefines .. [[
-            ],
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "gnu17",
-            "cppStandard": "gnu++17",
-            "intelliSenseMode": "linux-gcc-x64"
-        }
-    ],
-    "version": 4
-}]]
-
-    io.writefile(configFile, vscodeProjectConfig)
-
-end
-
-function addDependencies(project, dependencies)
-    project.dep = table.join(project.dep, dependencies)
-end
-
-function addExternalHeaders(project, headerPath)
-    project.extheaders = table.join(project.extheaders, headerPath)
-end
-
-function addExternalHeadersProjectList(project, projects, headerPath)
-    tbl = table.join(projects)
-    for i, prj in pairs(tbl) do
-        addExternalHeaders(project[prj], headerPath)
-    end
-    project.extheaders = table.join(project.extheaders, headerPath)
-end
-
-function addExternalLibDir(project, libDir)
-    project.extlibdir = table.join(project.extlibdir, libDir)
-end
-
-function addExternalLib(project, libName)
-    project.extlibs = table.join(project.extlibs, libName)
-end
-
-function addDefine(project, define)
-    project.defines = table.join(project.defines, define)
-end
-
-function addPostBuildCommands(project, commands)
-    project.postbuildcommands = table.join(project.postbuildcommands, commands)
-end
-
-function generateProject(projectTable, buildDir, prjName)
-    projectName = prjName
-    prj = projectTable[prjName]
-    projectFiles = prj.files
-    projectIncludeDirs = table.join(prj.pub_inc_dirs, prj.includedirs, prj.extheaders)
-    projectLinks = {}
-    projectDefs = prj.defines
-    projectLibDirs = prj.extlibdir
-    for i, dep in pairs(prj.dep) do
-        link = projectTable[dep]
-        table.insert(projectLinks, dep)
-        projectIncludeDirs = table.join(projectIncludeDirs, link.pub_inc_dirs)
+    if prj.enabled_defines ~= nil then
+        for i, def in pairs(prj.enabled_defines) do
+            self.prj:add_enabled_define(def)
+        end
     end
 
-    for i, lnk in pairs(prj.extlibs) do
-        table.insert(projectLinks, lnk)
+    if prj.dependencies ~= nil then
+        for i, dep in pairs(prj.dependencies) do
+            self.prj:add_dependencies(dep)
+        end
     end
 
-    project(prjName)
-    location(buildDir .. platform .."/%{prj.name}")
-    objdir ("!" .. buildDir .. platform .. "/int-%{cfg.shortname}/%{prj.name}/")
-    kind(prj.kind)
-    language(prj.language)
-    files(projectFiles)
-    includedirs(projectIncludeDirs)
-    libdirs(projectLibDirs)
-    if (projectDefs ~= nil and (projectDefs ~= "" or type(projectDefs) == "table")) then
-        for i,j in pairs(projectDefs) do
-            if(j ~= "") then
-                defines(j)
+    if prj.test_source ~= nil then
+        print("\t" .. name .. "-test: " .. prj.test_source)
+        self.prj_test = ProjectConfig:new(nil)
+        self.prj_test:set_name(self.name .. "-test")
+        self.prj_test:set_group("test")
+        self.prj_test:load_from_json(prj.test_source)
+        self.prj_test:add_dependencies(name)
+
+        if prj.test_dependencies ~= nil then
+            for i, dep in pairs(prj.test_dependencies) do
+                self.prj_test:add_dependencies(dep)
             end
         end
     end
-    for i,j in pairs(prj.buildflags) do
-        if _G[i] ~= nil then
-            _G[i](j)
-        else
-            print("undefined function " .. i)
-        end
-    end
-    for i,j in pairs(prj.postbuildcommands) do
-        postbuildcommands(j)
-    end
-    for i,vp in pairs(prj.vpaths) do
-        vpaths({[vp.name] = vp.value})
-    end
-    
-    links(projectLinks)
 end
 
-function generateTestProject(projectTable, buildDir, prjName, reportLinks)
-    generateProject(projectTable, buildDir, prjName)
-    filter {"system:linux", "toolset:gcc"}
-        buildoptions {"-fprofile-arcs -ftest-coverage "}
-        linkoptions {"-lgcov --coverage"}
-        postbuildcommands("{MKDIR} %{wks.location}/reports/")
-        postbuildcommands("./%{cfg.linktarget.relpath}")
-        l = ""
-        if (reportLinks ~= nil) then
-            for i,j in pairs(table.join(reportLinks)) do
-                l = l .. "%{cfg.objdir}/../" .. j .. " "
-            end
-        end
-        postbuildcommands("gcovr -r . --html-details %{wks.location}/reports/%{prj.name}.html --object-directory %{cfg.objdir} %{cfg.objdir} " .. l .." -f '(.+)?[ch]pp$$'")
+function Project:is_loaded()
+    return self.prj ~= nil
+end
+
+function Project:has_tests()
+    return self.prj_test ~= nil
+end
+
+function Project:get_project()
+    return self.prj
+end
+
+function Project:get_tests()
+    return self.prj_test
 end

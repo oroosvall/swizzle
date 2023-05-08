@@ -1,10 +1,16 @@
 {
     "kind": "SharedLib",
     "language": "c++",
-    "files":[
-        "include/optic/*.h",
-        "src/*.h",
-        "src/*.cpp"
+    "sources":[
+        {
+            "files": "include/optic/*.h"
+        },
+        {
+            "files": "src/*.h"
+        },
+        {
+            "files": "src/*.cpp"
+        }
     ],
     "pub_inc_dirs":[
         "include/"

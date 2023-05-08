@@ -1,26 +1,24 @@
 {
     "kind": "StaticLib",
     "language": "c++",
-    "files": [
-        "include/**.hpp",
-        "src/**.hpp",
-        "src/**.cpp"
+    "sources":[
+        {
+            "files": "include/**.hpp",
+            "vpath": "include/*",
+            "filter": ""
+        },
+        {
+            "files": "src/**.hpp",
+            "vpath": "utils/*",
+            "filter": ""
+        },
+        {
+            "files": "src/**.cpp",
+            "vpath": "utils/*",
+            "filter": ""
+        }
     ],
     "pub_inc_dirs": [
         "include/"
-    ],
-    "vpaths": [
-        {
-            "name": "utils/*",
-            "value": "src/**.hpp"
-        },
-        {
-            "name": "utils/*",
-            "value": "src/**.cpp"
-        },
-        {
-            "name": "include/*",
-            "value": "include/**.hpp"
-        }
     ]
 }

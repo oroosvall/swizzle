@@ -1,21 +1,19 @@
 {
     "kind": "ConsoleApp",
     "language": "c++",
-    "files": [
-        "sandbox/**.hpp",
-        "sandbox/**.cpp"
-    ],
-    "includedirs":[
-        "sandbox/"
-    ],
-    "vpaths": [
+    "sources":[
         {
-            "name": "sandbox/*",
-            "value": "sandbox/**.hpp"
+            "files": "sandbox/**.hpp",
+            "vpath": "sandbox/*",
+            "filter": ""
         },
         {
-            "name": "sandbox/*",
-            "value": "sandbox/**.cpp"
+            "files": "sandbox/**.cpp",
+            "vpath": "sandbox/*",
+            "filter": ""
         }
+    ],
+    "inc_dirs":[
+        "sandbox/"
     ]
 }

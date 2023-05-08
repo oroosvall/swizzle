@@ -1,35 +1,33 @@
 {
     "kind": "StaticLib",
     "language": "c++",
-    "files": [
-        "../include/common/**.hpp",
-        "include/**.hpp",
-        "src/**.hpp",
-        "src/**.cpp"
+    "sources": [
+        {
+            "files": "../include/common/**.hpp",
+            "vpath": "include/*",
+            "filter": ""
+        },
+        {
+            "files": "include/**.hpp",
+            "vpath": "include/*",
+            "filter": ""
+        },
+        {
+            "files": "src/**.hpp",
+            "vpath": "swm/*",
+            "filter": ""
+        },
+        {
+            "files": "src/**.cpp",
+            "vpath": "swm/*",
+            "filter": ""
+        }
     ],
     "pub_inc_dirs": [
         "../include/",
         "include/"
     ],
-    "vpaths": [
-        {
-            "name": "swm/*",
-            "value": "src/**.hpp"
-        },
-        {
-            "name": "swm/*",
-            "value": "src/**.cpp"
-        },
-        {
-            "name": "include/*",
-            "value": "include/**.hpp"
-        },
-        {
-            "name": "include/*",
-            "value": "../include/**.hpp"
-        }
-    ],
-    "buildflags": {
+    "build_flags": {
         "rtti": "Off"
     }
 }

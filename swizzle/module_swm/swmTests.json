@@ -1,25 +1,22 @@
 {
     "kind": "ConsoleApp",
     "language": "c++",
-    "files": [
-        "test/**.cpp",
-        "test/**.hpp"
+    "sources": [
+        {
+            "files": "test/**.cpp",
+            "vpath": "test/*",
+            "filter": ""
+        },
+        {
+            "files": "test/**.hpp",
+            "vpath": "test/*",
+            "filter": ""
+        }
     ],
-    "includedirs":[
+    "inc_dirs":[
         "../include/",
         "include/",
         "test/",
         "src/"
-    ],
-    "vpaths": [
-        {
-            "name": "test/*",
-            "value": "test/**.cpp"
-        },
-        {
-            "name": "test/*",
-            "value": "test/**.hpp"
-        }
-
     ]
 }

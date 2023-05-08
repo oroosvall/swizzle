@@ -1,14 +1,18 @@
 {
     "kind": "StaticLib",
     "language": "c++",
-    "files":[
-        "include/*.h",
-        "src/*.cpp"
+    "sources":[
+        {
+            "files": "include/**.h"
+        },
+        {
+            "files": "src/*.cpp"
+        }
     ],
     "pub_inc_dirs":[
         "include/"
     ],
-    "includedirs":[
+    "inc_dirs":[
         "include/imgui/"
     ]
 

@@ -1,0 +1,172 @@
+{
+    "workspace": {
+        "name": "Swizzle",
+        "startup_project": "sandbox",
+        "build_dir": "build/"
+    },
+    "inc_dirs": {
+        "vulkan": {
+            "type": "env",
+            "env": "VULKAN_SDK",
+            "paths":[
+                "/include",
+                "/Include"
+            ]
+        }
+    },
+    "lib_dirs":{
+        "vulkan": {
+            "type": "env",
+            "env": "VULKAN_SDK",
+            "paths": [
+                "/lib",
+                "/Lib"
+            ]
+        }
+    },
+    "projects": {
+        "google-test": {
+            "source": "vendor/google-test/gtest.json",
+            "group": "test"
+        },
+        "imgui": {
+            "source": "vendor/imgui/imgui.json",
+            "group": "vendor"
+        },
+        "optick": {
+            "source": "vendor/optick/optick.json",
+            "group": "vendor",
+            "external_include_dirs": ["vulkan"],
+            "external_lib_dirs": ["vulkan"],
+            "external_libs":[
+                {
+                    "name": "vulkan-1",
+                    "filter": "system:windows"
+                },
+                {
+                    "name": "vulkan",
+                    "filter": "system:linux"
+                }
+            ]
+        },
+        "stb": {
+            "source": "vendor/stb/stb.json",
+            "group": "vendor"
+        },
+        "glm": {
+            "source": "vendor/glm/glm.json",
+            "group": "vendor"
+        },
+        "portaudio": {
+            "source": "vendor/portaudio/pa.json",
+            "group": "vendor",
+            "defines": [
+                {
+                    "name": "PA_USE_WASAPI",
+                    "filter": "system:windows"
+                }
+            ],
+            "enabled_defines": [
+                "PA_ENABLED"
+            ]
+        },
+        "utils": {
+            "source": "libs/utils/utils.json",
+            "test_source": "libs/utils/utilsTests.json",
+            "group": "libs",
+            "dependencies": [],
+            "test_dependencies": [
+                "google-test"
+            ]
+        },
+        "script": {
+            "source": "libs/script/script.json",
+            "test_source": "libs/script/scriptTests.json",
+            "group": "libs",
+            "dependencies": [],
+            "test_dependencies": [
+                "google-test"
+            ]
+        },
+        "swm": {
+            "source": "swizzle/module_swm/swm.json",
+            "test_source": "swizzle/module_swm/swmTests.json",
+            "group": "libs",
+            "dependencies": [
+                "utils",
+                "glm"
+            ],
+            "test_dependencies": [
+                "utils",
+                "google-test",
+                "glm"
+            ]
+        },
+        "swizzle": {
+            "source": "swizzle/swizzle.json",
+            "group": "engine",
+            "dependencies": [
+                "utils",
+                "script",
+                {
+                    "name": "optick",
+                    "filter": "not configurations:Release"
+                },
+                {
+                    "name":"portaudio",
+                    "filter": "system:windows",
+                    "comment": "filter can be removed when linux build has been fixed"
+                },
+                "imgui",
+                "stb",
+                "swm",
+                "glm"
+            ],
+            "external_include_dirs": ["vulkan"],
+            "external_lib_dirs": ["vulkan"],
+            "external_libs": [
+                {
+                    "name": "vulkan-1",
+                    "filter": "system:windows"
+                },
+                {
+                    "name": "Xinput",
+                    "filter": "system:windows"
+                },
+                {
+                    "name": "vulkan",
+                    "filter": "system:linux"
+                }
+            ],
+            "defines": [
+                "SWIZZLE_DLL",
+                "SWIZZLE_DLL_EXPORT",
+                {
+                    "name": "SW_WINDOWS",
+                    "filter": "system:windows"
+                },
+                {
+                    "name": "SW_LINUX_XLIB",
+                    "filter": "system:linux"
+                }
+            ]
+        },
+        "sandbox": {
+            "source": "apps/sandbox.json",
+            "group": "apps",
+            "dependencies": [
+                "swizzle",
+                "imgui",
+                "utils",
+                "glm",
+                {
+                    "name": "optick",
+                    "filter": "not configurations:Release"
+                }
+            ],
+            "defines": [
+                "SWIZZLE_DLL"
+            ]
+        }
+    }
+}

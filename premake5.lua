@@ -1,102 +1,42 @@
+include "build_scripts/options.lua"
 include "build_scripts/workspace_funcs.lua"
 include "build_scripts/project_funcs.lua"
 
+print(_ACTION)
+proj_cfg_file = _OPTIONS["projectConfig"]
+print(proj_cfg_file)
+project_config = load_workspace_config(proj_cfg_file)
 
-projectConfig = loadWorkspaceConfig("projectConfig.json")
-setupWorkspace(projectConfig.buildDir)
-
-print(table.tostring(projectConfig))
-
--- vulkan sdk
-vulkanIncludeDirs = {os.getenv("VULKAN_SDK") .. "/Include", os.getenv("VULKAN_SDK") .. "/include"}
-vulkanLibDirs = {os.getenv("VULKAN_SDK") .. "/Lib", os.getenv("VULKAN_SDK") .. "/lib"}
-
--- glm include dirs
-glmIncludeDirs = "vendor/glm/include"
-
--- common include dirs
+print(project_config.workspace.name)
+setup_workspace(project_config.workspace)
 
 projects = {}
 
--- projects
-projects["utils"] = loadProjectConfig("libs/utils/utils.json")
-projects["script"] = loadProjectConfig("libs/script/script.json")
-projects["physics"] = loadProjectConfig("libs/physics/physics.json")
-projects["swizzle"] = loadProjectConfig("swizzle/swizzle.json")
-projects["swm"] = loadProjectConfig("swizzle/module_swm/swm.json")
--- vendor
-projects["google-test"] = loadProjectConfig("vendor/google-test/gtest.json")
-projects["imgui"] = loadProjectConfig("vendor/imgui/imgui.json")
-projects["optick"] = loadProjectConfig("vendor/optick/optick.json")
-projects["stb"] = loadProjectConfig("vendor/stb/stb.json")
--- tests
-projects["utilsTest"] = loadProjectConfig("libs/utils/utilsTests.json")
-projects["scriptTest"] = loadProjectConfig("libs/script/scriptTests.json")
-projects["swmTest"] = loadProjectConfig("swizzle/module_swm/swmTests.json")
--- apps
-projects["sandbox"] = loadProjectConfig("apps/sandbox.json")
+print("Loading projects")
+for prj_name, prj_cfg in pairs(project_config.projects) do
+    prj = Project:new(nil)
+    prj:load(prj_name, prj_cfg, project_config.inc_dirs, project_config.lib_dirs)
 
-addDependencies(projects["utilsTest"], {"utils", "google-test"})
-addDependencies(projects["scriptTest"], {"script", "google-test"})
-addDependencies(projects["swmTest"], {"swm", "google-test", "utils"})
-addDependencies(projects["swm"], {"utils"})
-addDependencies(projects["swizzle"], {"swm", "utils", "script", "physics", "optick", "imgui", "stb"})
-
-addDependencies(projects["sandbox"], {"swizzle", "imgui", "utils", "optick"})
-
-addExternalHeadersProjectList(projects, {"swm", "swmTest", "swizzle", "sandbox"}, glmIncludeDirs)
-
-addExternalHeaders(projects["swizzle"], vulkanIncludeDirs)
-addExternalLibDir(projects["swizzle"], vulkanLibDirs)
-
-addExternalHeaders(projects["optick"], vulkanIncludeDirs)
-addExternalLibDir(projects["optick"], vulkanLibDirs)
-
-addDefine(projects["swizzle"], {"__MODULE__=\"SW_ENGINE\"", "SWIZZLE_DLL", "SWIZZLE_DLL_EXPORT"})
-
-addDefine(projects["sandbox"], "SWIZZLE_DLL")
-
-if os.target() == "windows" then
-    addExternalLib(projects["optick"], "vulkan-1")
-    addExternalLib(projects["swizzle"], "vulkan-1")
-    addExternalLib(projects["swizzle"], "Xinput")
-    addDefine(projects["swizzle"], "SW_WINDOWS")
-elseif os.target() == "linux" then
-    addExternalLib(projects["optick"], "vulkan")
-    addExternalLib(projects["swizzle"], "vulkan")
-    addDefine(projects["swizzle"], "SW_LINUX_XLIB")
+    if prj:is_loaded() then
+        projects[prj:get_name()] = prj:get_project()
+        if prj:has_tests() then
+            projects[prj:get_name().."-test"] = prj:get_tests()
+        end
+    else
+        print("Problem loading project: " .. prj_cfg)
+    end
 end
 
-group("vendor")
-generateProject(projects, projectConfig.buildDir, "imgui")
-generateProject(projects, projectConfig.buildDir, "optick")
-generateProject(projects, projectConfig.buildDir, "stb")
-
-group("libs")
-generateProject(projects, projectConfig.buildDir, "utils")
-generateProject(projects, projectConfig.buildDir, "script")
-generateProject(projects, projectConfig.buildDir, "swm")
-generateProject(projects, projectConfig.buildDir, "physics")
-
-group("engine")
-generateProject(projects, projectConfig.buildDir, "swizzle")
-
-if not projectConfig.disableApps then
-    group("apps")
-    generateProject(projects, projectConfig.buildDir, "sandbox")
-end
-
-if not projectConfig.disableTests then
-    group("tests")
-    generateProject(projects, projectConfig.buildDir, "google-test")
-    generateTestProject(projects, projectConfig.buildDir, "utilsTest")
-    generateProject(projects, projectConfig.buildDir, "scriptTest")
-    generateTestProject(projects, projectConfig.buildDir, "swmTest", "swm")
+print("Generating...")
+for name, project in pairs(projects) do
+    print("\t" .. project:get_name())
+    group(project:get_group())
+    project:generate(projects, project_config.workspace.build_dir, name)
 end
 
 if not os.isfile("projectConfig.json") then
-    storeWorkspaceConfig("projectConfig.json", projectConfig)
+    store_workspace_config("projectConfig.json", project_config)
 end
 
 os.mkdir(".vscode")
-generateVSCodeProjectSettings(projects, ".vscode/c_cpp_properties.json")
+-- generateVSCodeProjectSettings(projects, ".vscode/c_cpp_properties.json")
