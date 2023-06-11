@@ -24,12 +24,13 @@ end
 
 function setup_workspace(ws_cfg)
 workspace(ws_cfg.name)
-    buildDir = ws_cfg.build_dir
+    buildDir = _WORKING_DIR .. "/" .. ws_cfg.build_dir
     architecture "x64"
     location(buildDir .. platform)
     debugdir("data/")
     configurations
     {
+        "Asan",
         "Debug",
         "RelWDbgInfo",
         "Release"
@@ -41,6 +42,27 @@ targetdir (buildDir .. platform .. "/bin-%{cfg.shortname}/")
 objdir (buildDir .. platform .. "/int-%{cfg.shortname}/")
 
 warnings "Extra"
+
+filter {"configurations:Asan", "system:windows", "action:vs2022"}
+    defines
+    {
+        "SW_DEBUG",
+        "OTP_PROFILING",
+    }
+    symbols "On"
+    buildoptions { "/fsanitize=address", "/Zi" }
+    editandcontinue "Off"
+    flags { "NoIncrementalLink" }
+    ignoredefaultlibraries { "LIBCMT" }
+
+    filter {"configurations:Asan", "system:linux"}
+    defines
+    {
+        "SW_DEBUG",
+        "OTP_PROFILING",
+    }
+    symbols "On"
+    buildoptions { "-fsanitize=address", "-static-libasan" }
 
 filter "configurations:Debug"
     defines
@@ -72,7 +94,9 @@ filter "system:windows"
     staticruntime "On"
     systemversion "latest"
     
-    if (platform ~= "vs2019") then -- If on windows and not visual studio manually add some core defines and libs that are used
+    if (platform == "vs2019" or platform == "vs2022") then
+        buildoptions { "/Ob2" }
+    elseif (platform ~= "vs2019") then -- If on windows and not visual studio manually add some core defines and libs that are used
         defines
         {
             "_WIN32_WINNT=0x0A00", -- Windows 10
@@ -84,9 +108,8 @@ filter "system:windows"
             "uuid",
             "ole32"
         }
-    elseif (platform == "vs2019") then
-        buildoptions { "/Ob2" }
     end
+
 
 filter "system:linux"
     cppdialect "C++17"

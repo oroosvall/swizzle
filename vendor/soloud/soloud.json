@@ -1,0 +1,46 @@
+{
+    "kind": "StaticLib",
+    "language": "c++",
+    "sources":[
+        {
+            "files": "soloud/include/*.h",
+            "vpath": "include/*"
+        },
+        {
+            "files": "soloud/src/core/*.cpp",
+            "vpath": "src/common/*"
+        },
+        {
+            "files": "soloud/src/filter/*.cpp",
+            "vpath": "src/filter/*"
+        },
+        {
+            "files": "soloud/src/audiosource/wav/*.cpp",
+            "vpath": "src/audiosource/wav/*"
+        },
+        {
+            "files": "soloud/src/audiosource/wav/*.c",
+            "vpath": "src/audiosource/wav/*"
+        },
+        {
+            "files": "soloud/src/backend/miniaudio/*.h",
+            "vpath": "src/backend/*"
+        },
+        {
+            "files": "soloud/src/backend/miniaudio/*.cpp",
+            "vpath": "src/backend/*"
+        }
+    ],
+    "pub_inc_dirs":[
+        "soloud/include"
+    ],
+    "inc_dirs":[
+        "soloud/include"
+    ],
+    "build_flags": {
+        "removeflags": "FatalCompileWarnings"
+    },
+    "defines": [
+        "WITH_MINIAUDIO"
+    ]
+}

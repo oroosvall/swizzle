@@ -5,7 +5,6 @@
 
 #include "core/Core.hpp"
 #include "gfx/Gfx.hpp"
-#include "sound/Sound.hpp"
 
 #include "utils/HighResolutionClock.hpp"
 
@@ -31,7 +30,6 @@ namespace swizzle
 
         SwBool status = core::CoreInitialize(appName);
         status &= gfx::GfxInitialize();
-        status &= sound::SoundInitialize();
 
         return status;
     }
@@ -41,7 +39,6 @@ namespace swizzle
         LOG_INFO("Shutting down");
         SwBool status = gfx::GfxCleanup();
         status &= core::CoreCleanup();
-        status &= sound::SoundCleanup();
 
         return status;
     }

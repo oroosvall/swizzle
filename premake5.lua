@@ -2,10 +2,8 @@ include "build_scripts/options.lua"
 include "build_scripts/workspace_funcs.lua"
 include "build_scripts/project_funcs.lua"
 
-print(_ACTION)
 proj_cfg_file = _OPTIONS["projectConfig"]
-print(proj_cfg_file)
-project_config = load_workspace_config(proj_cfg_file)
+project_config = load_workspace_config(_WORKING_DIR .. "/" .. proj_cfg_file)
 
 print(project_config.workspace.name)
 setup_workspace(project_config.workspace)
@@ -31,7 +29,7 @@ print("Generating...")
 for name, project in pairs(projects) do
     print("\t" .. project:get_name())
     group(project:get_group())
-    project:generate(projects, project_config.workspace.build_dir, name)
+    project:generate(projects, _WORKING_DIR .. "/" .. project_config.workspace.build_dir, name)
 end
 
 if not os.isfile("projectConfig.json") then

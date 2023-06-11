@@ -275,7 +275,7 @@ namespace swizzle
         {
             S32 scanCode = 0;
             S32 maxSize = _countof(scanCodeMapping);
-            if ((S32)key < maxSize)
+            if ((S32)key > 0 && (S32)key < maxSize)
             {
                 scanCode = scanCodeMapping[(S32)key];
             }

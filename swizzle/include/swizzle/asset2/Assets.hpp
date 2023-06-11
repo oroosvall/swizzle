@@ -28,16 +28,22 @@ namespace swizzle::asset2
 
 /* Struct Declaration */
 
+/* Class Declaration */
+
 namespace swizzle::asset2
 {
     class VertexLoadPosition
     {
     public:
-        VertexLoadPosition(AttributeTypes attribute, U32 offset) : mAttributeType(attribute), mByteOffset(offset) { }
-        virtual ~VertexLoadPosition() { }
+        VertexLoadPosition(AttributeTypes attribute, U32 offset)
+            : mAttributeType(attribute)
+            , mByteOffset(offset)
+        {
+        }
+        virtual ~VertexLoadPosition() {}
 
         AttributeTypes mAttributeType; // The attribute that will be loaded
-        U32 mByteOffset;  // the offset where the attribute will be loaded
+        U32 mByteOffset;               // the offset where the attribute will be loaded
     };
 
     struct MeshAssetLoaderDescription
@@ -48,7 +54,7 @@ namespace swizzle::asset2
     class IMeshAsset
     {
     public:
-        virtual ~IMeshAsset() { }
+        virtual ~IMeshAsset() {}
 
         virtual U64 getVertexDataSize() const = 0;
         virtual const U8* getVertexDataPtr() const = 0;
@@ -63,11 +69,8 @@ namespace swizzle::asset2
         virtual U32 getNumberOfKeyFrames(U32 animationIndex) const = 0;
         virtual const SwChar* getAnimationName(U32 animationIndex) const = 0;
         virtual const U8* getAnimationDataPtr(U32 animationIndex, U32 keyFrameIndex) const = 0;
-
     };
-}
-
-/* Class Declaration */
+} // namespace swizzle::asset2
 
 /* Function Declaration */
 

@@ -6,6 +6,6 @@
 	path = vendor/glm/include
 	url = https://github.com/g-truc/glm.git
 	branch = master
-[submodule "vendor/portaudio/portaudio"]
-	path = vendor/portaudio/portaudio
-	url = https://github.com/PortAudio/portaudio.git
+[submodule "vendor/soloud/soloud"]
+	path = vendor/soloud/soloud
+	url = https://github.com/jarikomppa/soloud.git
