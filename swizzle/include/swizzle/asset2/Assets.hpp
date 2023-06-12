@@ -6,6 +6,8 @@
 #include <common/Common.hpp>
 #include <swizzle/Api.hpp>
 
+#include <swizzle/core/Buffer.hpp>
+
 /* Defines */
 
 /* Typedefs/enums */
@@ -69,6 +71,19 @@ namespace swizzle::asset2
         virtual const SwChar* getAnimationName(U32 animationIndex) const = 0;
         virtual const U8* getAnimationDataPtr(U32 animationIndex, U32 keyFrameIndex) const = 0;
     };
+
+    class ITextureAsset
+    {
+    public:
+        virtual ~ITextureAsset() {}
+
+        virtual U32 getWidth() const = 0;
+        virtual U32 getHeight() const = 0;
+        virtual U32 getChannels() const = 0;
+
+        virtual common::Resource<IBuffer> getData() const = 0;
+    };
+
 } // namespace swizzle::asset2
 
 /* Function Declaration */
@@ -76,6 +91,7 @@ namespace swizzle::asset2
 namespace swizzle::asset2
 {
     common::Resource<IMeshAsset> SWIZZLE_API LoadMesh(const SwChar* fileName, MeshAssetLoaderDescription& loadInfo);
+    common::Resource<ITextureAsset> SWIZZLE_API LoadTexture(const SwChar* fileName);
 }
 
 #endif
