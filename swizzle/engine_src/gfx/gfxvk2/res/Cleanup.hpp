@@ -3,7 +3,7 @@
 
 /* Include files */
 
-#include <swizzle/core/Thread.hpp>
+#include <common/Common.hpp>
 
 #include <mutex>
 #include <condition_variable>

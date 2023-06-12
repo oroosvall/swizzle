@@ -54,11 +54,6 @@ namespace swizzle::core
         return platform::createPlatformWindow(width, height, title);
     }
 
-    common::Resource<Thread> CreateThread()
-    {
-        return nullptr;
-    }
-
     const SwChar* GetKeyText(S32 scanCode)
     {
         return platform::GetPlatformKeyText(scanCode);

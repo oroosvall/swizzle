@@ -5,7 +5,6 @@
 
 #include <common/Common.hpp>
 #include <swizzle/Api.hpp>
-#include <swizzle/core/DataBuffer.hpp>
 
 /* Defines */
 

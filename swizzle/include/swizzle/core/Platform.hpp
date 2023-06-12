@@ -6,9 +6,6 @@
 #include <swizzle/core/Input.hpp>
 
 #include "Window.hpp"
-#include "File.hpp"
-#include "Mutex.hpp"
-#include "Thread.hpp"
 
 namespace swizzle::core
 {
@@ -26,7 +23,6 @@ namespace swizzle::core
     U32 SWIZZLE_API GetCurrentThreadId();
 
     common::Resource<SwWindow> SWIZZLE_API CreateSwWindow(const U32 width, const U32 height, const SwChar* title);
-    common::Resource<Thread> SWIZZLE_API CreateThread();
 
     const SwChar SWIZZLE_API * GetKeyText(S32 key);
     const SwWChar SWIZZLE_API * GetKeyTextW(S32 key);
