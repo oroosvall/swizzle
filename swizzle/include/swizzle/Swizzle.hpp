@@ -74,9 +74,9 @@ namespace swizzle
             deviceInfo.mNumWorkerQueues = 1;
             deviceInfo.mNumTransferQueues = 1;
 
-            mGfxContext->initializeDevice(deviceInfo);
+            mGfxDevice = mGfxContext->initializeDevice(deviceInfo);
 
-            mSwapchain = mGfxContext->createSwapchain(mWindow, 2);
+            mSwapchain = mGfxDevice->createSwapchain(mWindow, 2);
             mSwapchain->setVsync(gfx::VSyncTypes::vSyncAdaptive);
 
             userSetup();
@@ -109,12 +109,13 @@ namespace swizzle
     private:
         void cleanup()
         {
-            mGfxContext->waitIdle();
+            mGfxDevice->waitIdle();
             userCleanup();
 
             mSwapchain.reset();
             mWindow.reset();
 
+            mGfxDevice.reset();
             mGfxContext.reset();
 
             SwCleanup();
@@ -122,9 +123,10 @@ namespace swizzle
 
     protected:
 
-        common::Resource<gfx::GfxContext> mGfxContext;
-        common::Resource<core::SwWindow> mWindow;
-        common::Resource<gfx::Swapchain> mSwapchain;
+        common::Resource<gfx::GfxDevice> mGfxDevice = nullptr;
+        common::Resource<gfx::GfxContext> mGfxContext = nullptr;
+        common::Resource<core::SwWindow> mWindow = nullptr;
+        common::Resource<gfx::Swapchain> mSwapchain = nullptr;
 
     };
 

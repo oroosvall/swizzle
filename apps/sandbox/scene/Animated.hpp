@@ -21,7 +21,7 @@
 class Animated : public Renderable
 {
 public:
-    Animated(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::asset2::IMeshAsset> asset,
+    Animated(common::Resource<swizzle::gfx::GfxDevice> dev, common::Resource<swizzle::asset2::IMeshAsset> asset,
              common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
              common::Resource<swizzle::gfx::Shader> shader);
 

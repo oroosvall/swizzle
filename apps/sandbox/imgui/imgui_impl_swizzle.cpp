@@ -217,7 +217,7 @@ void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
     }
 }
 
-bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
+bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
                             common::Resource<swizzle::core::SwWindow> window)
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -230,7 +230,7 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset; // We can honor the ImDrawCmd::VtxOffset field, allowing
                                                                // for large meshes.
 
-    IM_ASSERT(ctx != nullptr);
+    IM_ASSERT(dev != nullptr);
 
     swizzle::gfx::FrameBufferCreateInfo info{};
     info.mDepthType = swizzle::gfx::FrameBufferDepthType::DepthNone;
@@ -238,7 +238,7 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
     info.mColorAttachFormats = { swizzle::gfx::FrameBufferAttachmentType::Default };
     window->getSize(info.mWidth, info.mHeight);
 
-    bd->mImGuiFbo = ctx->createFramebuffer(info);
+    bd->mImGuiFbo = dev->createFramebuffer(info);
     bd->mImGuiFbo->setColorAttachmentClearColor(0u, {0.0f, 0.0f, 0.0f, 0.0f});
 
     swizzle::gfx::ShaderAttributeList attributeList = {};
@@ -261,7 +261,7 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
     attributeList.mEnableBlending = true;
     attributeList.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
-    bd->mShader = ctx->createShader(bd->mImGuiFbo, swizzle::gfx::ShaderType::ShaderType_Graphics, attributeList);
+    bd->mShader = dev->createShader(bd->mImGuiFbo, swizzle::gfx::ShaderType::ShaderType_Graphics, attributeList);
     bd->mShader->loadVertFragMemory(__glsl_shader_vert_spv, sizeof(__glsl_shader_vert_spv), __glsl_shader_frag_spv,
                                     sizeof(__glsl_shader_frag_spv), properties);
 
@@ -269,12 +269,12 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
     int width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    bd->mFontTexture = ctx->createTexture(width, height, 4, false, pixels);
-    bd->mFontMaterial = ctx->createMaterial(bd->mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
+    bd->mFontTexture = dev->createTexture(width, height, 4, false, pixels);
+    bd->mFontMaterial = dev->createMaterial(bd->mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
     bd->mFontMaterial->setDescriptorTextureResource(0, bd->mFontTexture);
 
-    bd->mVertexBuffer = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
-    bd->mIndexBuffer = ctx->createBuffer(swizzle::gfx::BufferType::Index);
+    bd->mVertexBuffer = dev->createBuffer(swizzle::gfx::BufferType::Vertex);
+    bd->mIndexBuffer = dev->createBuffer(swizzle::gfx::BufferType::Index);
 
     io.Fonts->SetTexID((ImTextureID)&bd->mFontMaterial);
 

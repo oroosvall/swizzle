@@ -79,6 +79,16 @@ namespace swizzle::gfx
         U64 mNsPerSample;
         U64* mSamples;
     };
+
+    // TODO: remove me
+    struct GfxStatistics
+    {
+        U64 mGpuMemoryUsage;
+        U64 mCpuMemoryUsage;
+        U32 mStagedObjects;
+        U32 mNumTextures;
+        U32 mNumBuffers;
+    };
 }
 
 /* Class Declaration */

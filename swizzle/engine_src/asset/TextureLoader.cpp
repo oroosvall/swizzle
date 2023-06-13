@@ -25,7 +25,7 @@
 
 namespace swizzle::asset
 {
-    common::Resource<gfx::Texture>  LoadTexture2D(common::Resource<gfx::GfxContext> ctx, const SwChar* file)
+    common::Resource<gfx::Texture>  LoadTexture2D(common::Resource<gfx::GfxDevice> ctx, const SwChar* file)
     {
         common::Resource<gfx::Texture> texture = nullptr;
         S32 x = 0;
@@ -48,7 +48,7 @@ namespace swizzle::asset
         return texture;
     }
 
-    common::Resource<gfx::Texture> SWIZZLE_API LoadTextureCubeMap(common::Resource<gfx::GfxContext> ctx,
+    common::Resource<gfx::Texture> SWIZZLE_API LoadTextureCubeMap(common::Resource<gfx::GfxDevice> ctx,
         const SwChar* rightFile, const SwChar* leftFile, const SwChar* topFile, const SwChar* bottomFile, const SwChar* frontFile, const SwChar* backFile)
     {
         common::Resource<gfx::Texture> texture = nullptr;

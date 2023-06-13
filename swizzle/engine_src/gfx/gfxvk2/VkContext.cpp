@@ -4,6 +4,7 @@
 #include <swizzle/core/Logging.hpp>
 
 #include "VkContext.hpp"
+#include "VkDevice.hpp"
 #include "Stats.hpp"
 
 #include "res/DBuffer.hpp"
@@ -85,7 +86,7 @@ namespace swizzle::gfx
     }
 
 
-    SwBool VkGfxContext::initializeDevice(const GfxContextInitializeInfo& createInfo)
+    common::Resource<GfxDevice> VkGfxContext::initializeDevice(const GfxContextInitializeInfo& createInfo)
     {
         std::vector<const char*> extensions;
 
@@ -104,192 +105,10 @@ namespace swizzle::gfx
         LOG_INFO("Initializing Vulkan Device: %s", getDeviceName(createInfo.mDeviceIndex));
         mVkDevice = mVkInstance->initializeDevice(createInfo, extensions);
 
-        SwBool ok = false;
-        if (mVkDevice)
-        {
-            mCmdPool = common::CreateRef<vk::CmdPool>(mVkDevice, 0);
-            //mQueue = mVkDevice->getQueue();
+        auto device = common::CreateRef<VkGfxDevice>(mVkInstance, mVkDevice);
 
-            if (mCmdPool)
-            {
-                ok = true;
-            }
-        }
-
-        return ok;
+        return device;
     }
-
-    SwBool VkGfxContext::hasMeshShaderSupport()
-    {
-        return mMeshShaderSupported;
-    }
-
-    void VkGfxContext::waitIdle()
-    {
-        if (mVkDevice)
-        {
-            mVkDevice->waitDeviceIdle();
-        }
-    }
-
-    GfxStatistics VkGfxContext::getStatistics()
-    {
-        OPTICK_EVENT("VkGfxContext::getStatistics()");
-        GfxStatistics stats{};
-
-        stats.mGpuMemoryUsage = mVkDevice->getGPUMemUsage();
-        stats.mCpuMemoryUsage = mVkDevice->getCPUMemUsage();
-
-        stats.mNumBuffers = mVkDevice->getBufferCount();
-        stats.mNumTextures = mVkDevice->getImageCount();
-
-        return stats;
-    }
-
-    common::Resource<swizzle::core::StatisticsIterator<GfxStatsType>> VkGfxContext::getStatisticsIterator()
-    {
-        OPTICK_EVENT("VkGfxContext::getStatisticsIterator()");
-        auto stats = common::CreateRef<StatsIterator>(mVkDevice);
-        stats->addMemoryStats();
-        stats->addDeviceStats();
-        stats->addInstanceStats();
-        stats->addPipelineStats();
-        stats->addTimingStats();
-        return stats;
-    }
-
-    common::Resource<Buffer> VkGfxContext::createBuffer(BufferType type)
-    {
-        return common::CreateRef<vk::DBuffer>(mVkDevice, type);
-    }
-
-    common::Resource<CommandBuffer> VkGfxContext::createCommandBuffer(U32 swapCount)
-    {
-        return common::CreateRef<vk::CmdBuffer>(mVkDevice, mCmdPool, swapCount);
-    }
-
-    common::Resource<Swapchain> VkGfxContext::createSwapchain(common::Resource<core::SwWindow> window, U32 swapCount)
-    {
-        UNUSED_ARG(swapCount);
-        return common::CreateRef<vk::VSwapchain>(mVkInstance, mVkDevice, window);
-    }
-
-    common::Resource<Texture> VkGfxContext::createTexture(U32 width, U32 height, U32 channels, SwBool f32, const U8* data)
-    {
-        return common::CreateRef<vk::Texture2D>(mVkDevice, width, height, channels, f32, data);
-    }
-
-    common::Resource<Texture> VkGfxContext::createCubeMapTexture(U32 width, U32 height, U32 channels, const U8* data)
-    {
-        return common::CreateRef<vk::TextureCube>(mVkDevice, width, height, channels, data);
-    }
-
-    common::Resource<FrameBuffer> VkGfxContext::createFramebuffer(const FrameBufferCreateInfo& fboInfo)
-    {
-        return common::CreateRef<vk::VFrameBuffer>(mVkDevice, fboInfo);
-    }
-
-    common::Resource<Shader> VkGfxContext::createShader(common::Resource<FrameBuffer> framebuffer, const swizzle::gfx::ShaderType type, const ShaderAttributeList& attribs)
-    {
-        common::Resource<vk::BaseFrameBuffer> fbo = vk::GetFrameBufferAsBaseFrameBuffer(framebuffer);
-        return common::CreateRef<vk::ShaderPipeline>(mVkDevice, type, fbo, attribs);
-    }
-    common::Resource<Shader> VkGfxContext::createShader(common::Resource<Swapchain> swapchain, const swizzle::gfx::ShaderType type, const ShaderAttributeList& attribs)
-    {
-        vk::VSwapchain* swp = (vk::VSwapchain*)swapchain.get();
-        common::Resource<vk::BaseFrameBuffer> fbo = vk::GetFrameBufferAsBaseFrameBuffer(swp->getFrameBuffer());
-        return common::CreateRef<vk::ShaderPipeline>(mVkDevice, type, fbo, attribs);
-    }
-
-    common::Resource<Material> VkGfxContext::createMaterial(common::Resource<Shader> shader, SamplerMode samplerMode)
-    {
-        return common::CreateRef<vk::VMaterial>(mVkDevice, shader, samplerMode);
-    }
-
-    void VkGfxContext::enablePipelineStatistics(SwBool enable)
-    {
-        mVkDevice->getStatisticsQuery()->enable(enable);
-    }
-
-    void VkGfxContext::enableGpuTiming(SwBool enable)
-    {
-        mVkDevice->getTimingQuery()->enable(enable);
-    }
-
-    void VkGfxContext::submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount, common::Resource<Swapchain> swapchain)
-    {
-        OPTICK_EVENT("VkGfxContext::submit");
-        UNUSED_ARG(cmdBuffer);
-        UNUSED_ARG(cmdBufferCount);
-        UNUSED_ARG(swapchain);
-
-        mFrameAllocator.reset();
-
-        VkCommandBuffer* buffers = (VkCommandBuffer*)mFrameAllocator.allocate(sizeof(VkCommandBuffer) * cmdBufferCount);
-
-        if (buffers)
-        {
-            common::Resource<vk::Fence> fence = getFence();
-
-            for (U32 i = 0u; i < cmdBufferCount; ++i)
-            {
-                auto buf = (vk::CmdBuffer*)cmdBuffer[i].get();
-                buffers[i] = buf->getActiveCommandBuffer();
-                buf->setWaitFence(fence);
-            }
-
-            U32 signalCount = 0u;
-            VkSemaphore signalSemaphores = VK_NULL_HANDLE;
-            VkPipelineStageFlags waitStageMask{};
-            VkSemaphore waitSem = VK_NULL_HANDLE;
-            U32 waitCount = 0u;
-
-            if (swapchain)
-            {
-                vk::VSwapchain* swp = (vk::VSwapchain*)(swapchain.get());
-                signalSemaphores = swp->getSemaphoreToSignal();
-                waitStageMask = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-                waitSem = swp->getWaitForSemaphore();
-                waitCount = 1u;
-                signalCount = 1u;
-
-                VkFence waitFence = swp->getWaitFence();
-                vkResetFences(mVkDevice->getDeviceHandle(), 1, &waitFence);
-            }
-
-            VkSubmitInfo submitInfo{};
-            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-            submitInfo.pNext = VK_NULL_HANDLE;
-            submitInfo.waitSemaphoreCount = waitCount;
-            submitInfo.pWaitSemaphores = &waitSem;
-            submitInfo.pWaitDstStageMask = &waitStageMask;
-            submitInfo.commandBufferCount = cmdBufferCount;
-            submitInfo.pCommandBuffers = buffers;
-            submitInfo.signalSemaphoreCount = signalCount;
-            submitInfo.pSignalSemaphores = &signalSemaphores;
-
-            vkQueueSubmit(mVkDevice->getQueue(), 1u, &submitInfo, fence->getHandle());
-        }
-        else
-        {
-            LOG_ERROR("Failed to allocate frame memory");
-        }
-
-        mVkDevice->performCleanup();
-        //mVkDevice->freeOldMemoryPools();
-
-    }
-
-    void VkGfxContext::resetCommandPool()
-    {
-        mCmdPool->resetPool();
-    }
-
-    void VkGfxContext::updateHeapBudget()
-    {
-        mVkDevice->updateHeapBudget();
-    }
-
 }
 /* Class Protected Function Definition */
 
@@ -311,31 +130,4 @@ namespace swizzle::gfx
         }
         return false;
     }
-
-    common::Resource<vk::Fence> VkGfxContext::getFence()
-    {
-        OPTICK_EVENT("VkGfxContext::getFence()");
-
-        U64 index = ~0u;
-
-        for (U64 i = 0u; i < mFences.size(); ++i)
-        {
-            if (!mFences[i]->isInUse())
-            {
-                mFences[i]->resetFence();
-                index = i;
-                break;
-            }
-        }
-
-
-        if (index == ~0u)
-        {
-            index = mFences.size();
-            mFences.emplace_back(common::CreateRef<vk::Fence>(mVkDevice));
-        }
-
-        return mFences[index];
-    }
-
 }

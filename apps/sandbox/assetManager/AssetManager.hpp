@@ -22,7 +22,7 @@
 class AssetManager
 {
 public:
-    AssetManager(common::Resource<swizzle::gfx::GfxContext> context);
+    AssetManager(common::Resource<swizzle::gfx::GfxDevice> device);
     virtual ~AssetManager();
 
     void clear();
@@ -35,7 +35,7 @@ public:
 
 private:
 
-    common::Resource<swizzle::gfx::GfxContext> mContext;
+    common::Resource<swizzle::gfx::GfxDevice> mDevice;
 
     std::unordered_map<U32, common::Resource<swizzle::asset2::IMeshAsset>> mMeshAssets;
     //std::unordered_map<U32, swizzle::gfx::Texture> mTextures;

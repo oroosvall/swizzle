@@ -21,8 +21,8 @@
 
 /* Class Public Function Definition */
 
-AssetManager::AssetManager(common::Resource<swizzle::gfx::GfxContext> context)
-    : mContext(context)
+AssetManager::AssetManager(common::Resource<swizzle::gfx::GfxDevice> device)
+    : mDevice(device)
 {
 
 }
@@ -58,12 +58,12 @@ common::Resource<swizzle::asset2::IMeshAsset> AssetManager::loadAnimMesh(const S
 
 common::Resource<swizzle::gfx::Texture> AssetManager::loadTexture(const SwChar* filePath)
 {
-    return swizzle::asset::LoadTexture2D(mContext, filePath);
+    return swizzle::asset::LoadTexture2D(mDevice, filePath);
 }
 
 common::Resource<swizzle::gfx::Texture> AssetManager::loadCubeTexture(const SwChar* right, const SwChar* left, const SwChar* top, const SwChar* bottom, const SwChar* front, const SwChar* back)
 {
-    return swizzle::asset::LoadTextureCubeMap(mContext, right, left, top, bottom, front, back);
+    return swizzle::asset::LoadTextureCubeMap(mDevice, right, left, top, bottom, front, back);
 }
 
 /* Class Protected Function Definition */

@@ -21,7 +21,7 @@
 
 /* Class Public Function Definition */
 
-Compositor::Compositor(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::gfx::Swapchain> swap)
+Compositor::Compositor(common::Resource<swizzle::gfx::GfxDevice> ctx, common::Resource<swizzle::gfx::Swapchain> swap)
     : mCtx(ctx)
     , mLayers()
 {

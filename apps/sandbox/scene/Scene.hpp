@@ -36,7 +36,7 @@ enum class SceneState
 class Scene
 {
 public:
-    Scene(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<AssetManager> assetManager,
+    Scene(common::Resource<swizzle::gfx::GfxDevice> dev, common::Resource<AssetManager> assetManager,
           common::Resource<Compositor> compositor);
     ~Scene();
 
@@ -54,7 +54,7 @@ private:
     SwBool loadAscii(std::ifstream& stream);
     SwBool loadBinary(std::ifstream& stream);
 
-    common::Resource<swizzle::gfx::GfxContext> mContext;
+    common::Resource<swizzle::gfx::GfxDevice> mDevice;
     common::Resource<AssetManager> mAssetManager;
     common::Resource<Compositor> mCompositor;
     SceneState mSceneState;

@@ -33,11 +33,11 @@ void Game::userSetup()
 
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui_ImplSwizzle_Init(mGfxContext, mWindow);
+    ImGui_ImplSwizzle_Init(mGfxDevice, mWindow);
 
-    mAssetManager = common::CreateRef<AssetManager>(mGfxContext);
-    mCompositor = common::CreateRef<Compositor>(mGfxContext, mSwapchain);
-    mScene = common::CreateRef<Scene>(mGfxContext, mAssetManager, mCompositor);
+    mAssetManager = common::CreateRef<AssetManager>(mGfxDevice);
+    mCompositor = common::CreateRef<Compositor>(mGfxDevice, mSwapchain);
+    mScene = common::CreateRef<Scene>(mGfxDevice, mAssetManager, mCompositor);
     mScene->loadScene("scenes/test.scene");
     mScene->loadSky();
     mScene->loadAnimMesh();
@@ -45,8 +45,8 @@ void Game::userSetup()
     mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOn);
     // mSwapchain->setVsync(sw::gfx::VSyncTypes::vSyncOff);
 
-    mCmdBuffer = mGfxContext->createCommandBuffer(2);
-    mGfxContext->enablePipelineStatistics(true);
+    mCmdBuffer = mGfxDevice->createCommandBuffer(2);
+    mGfxDevice->enablePipelineStatistics(true);
 
     cam.setPosition({0.0F, 0.0F, 5.5F});
 
@@ -58,15 +58,15 @@ void Game::userSetup()
     attribFsq.mEnableBlending = true;
     attribFsq.mPrimitiveType = sw::gfx::PrimitiveType::triangle;
 
-    mFsq = mGfxContext->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Graphics, attribFsq);
+    mFsq = mGfxDevice->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Graphics, attribFsq);
     mFsq->load("shaders/fsq.shader");
 
-    mFsqMat = mGfxContext->createMaterial(mFsq, sw::gfx::SamplerMode::SamplerModeClamp);
+    mFsqMat = mGfxDevice->createMaterial(mFsq, sw::gfx::SamplerMode::SamplerModeClamp);
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
 
     sw::gfx::ShaderAttributeList attribCompute = {};
 
-    mComputeShader = mGfxContext->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Compute, attribCompute);
+    mComputeShader = mGfxDevice->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Compute, attribCompute);
     mComputeShader->load("shaders/compute.shader");
 }
 
@@ -85,7 +85,7 @@ SwBool Game::userUpdate(F32 dt)
 
     title += std::string(mGfxContext->getSelectedDeviceName()) + "\n";
 
-    auto iter = mGfxContext->getStatisticsIterator();
+    auto iter = mGfxDevice->getStatisticsIterator();
 
     do
     {
@@ -216,7 +216,7 @@ void Game::updateMainWindow(F32 dt)
 
     mCmdBuffer->end(std::move(trans));
 
-    mGfxContext->submit(&mCmdBuffer, 1u, mSwapchain);
+    mGfxDevice->submit(&mCmdBuffer, 1u, mSwapchain);
     mSwapchain->present();
 }
 

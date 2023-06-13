@@ -21,9 +21,9 @@
 
 namespace swizzle::asset
 {
-    common::Resource<gfx::Texture> SWIZZLE_API LoadTexture2D(common::Resource<gfx::GfxContext> ctx, const SwChar* file);
+    common::Resource<gfx::Texture> SWIZZLE_API LoadTexture2D(common::Resource<gfx::GfxDevice> ctx, const SwChar* file);
 
-    common::Resource<gfx::Texture> SWIZZLE_API LoadTextureCubeMap(common::Resource<gfx::GfxContext> ctx,
+    common::Resource<gfx::Texture> SWIZZLE_API LoadTextureCubeMap(common::Resource<gfx::GfxDevice> ctx,
         const SwChar* rightFile, const SwChar* leftFile,const SwChar* topFile, const SwChar* bottomFile, const SwChar* frontFile, const SwChar* backFile);
 
 }

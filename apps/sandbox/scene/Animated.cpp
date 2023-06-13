@@ -24,7 +24,7 @@
 
 /* Class Public Function Definition */
 
-Animated::Animated(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::asset2::IMeshAsset> asset,
+Animated::Animated(common::Resource<swizzle::gfx::GfxDevice> dev, common::Resource<swizzle::asset2::IMeshAsset> asset,
                    common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
                    common::Resource<swizzle::gfx::Shader> shader)
     : mAsset(asset)
@@ -39,9 +39,9 @@ Animated::Animated(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resou
     , mCurAnim(0u)
     , mFrameIndex(0u)
 {
-    mMesh = ctx->createBuffer(swizzle::gfx::BufferType::Vertex);
-    mIndex = ctx->createBuffer(swizzle::gfx::BufferType::Index);
-    mBone = ctx->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
+    mMesh = dev->createBuffer(swizzle::gfx::BufferType::Vertex);
+    mIndex = dev->createBuffer(swizzle::gfx::BufferType::Index);
+    mBone = dev->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
 
     mMesh->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(),
                          sizeof(float) * (3u + 3u + 2u + 4u + 4u));
@@ -50,7 +50,7 @@ Animated::Animated(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resou
     mBone->setBufferData((U8*)mAsset->getAnimationDataPtr(0, 0), mAsset->getNumberOfBones() * sizeof(glm::mat4),
                          sizeof(glm::mat4));
 
-    mMaterial = ctx->createMaterial(mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
+    mMaterial = dev->createMaterial(mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
     mMaterial->setDescriptorTextureResource(0u, mTexture);
     mMaterial->setDescriptorBufferResource(1u, mBone, ~0ull);
 }

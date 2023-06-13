@@ -93,12 +93,12 @@ struct RenderLayer
 class Compositor
 {
 public:
-    Compositor(common::Resource<swizzle::gfx::GfxContext> ctx, common::Resource<swizzle::gfx::Swapchain> swap);
+    Compositor(common::Resource<swizzle::gfx::GfxDevice> ctx, common::Resource<swizzle::gfx::Swapchain> swap);
 
     common::Resource<swizzle::gfx::Shader> createShader(U32 layerIndex, const swizzle::gfx::ShaderAttributeList& attribs);
 
 private:
-    common::Resource<swizzle::gfx::GfxContext> mCtx;
+    common::Resource<swizzle::gfx::GfxDevice> mCtx;
     std::unordered_map<U32, RenderLayer> mLayers;
 };
 

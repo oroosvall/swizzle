@@ -19,7 +19,7 @@
 /* Function Declaration */
 
 // Called by user code
-IMGUI_IMPL_API bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxContext> ctx,
+IMGUI_IMPL_API bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
                                            common::Resource<swizzle::core::SwWindow> window);
 IMGUI_IMPL_API void ImGui_ImplSwizzle_Shutdown();
 IMGUI_IMPL_API void ImGui_ImplSwizzle_NewFrame(common::Resource<swizzle::core::SwWindow> window);
