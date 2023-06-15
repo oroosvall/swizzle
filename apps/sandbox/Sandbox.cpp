@@ -1,5 +1,5 @@
-﻿#include <swizzle/Swizzle.hpp>
-#include <utils/HighResolutionClock.hpp>
+﻿
+#include <swizzle/core/Logging.hpp>
 
 #include "Game.hpp"
 

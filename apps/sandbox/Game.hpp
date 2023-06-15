@@ -4,6 +4,7 @@
 #include "Camera.hpp"
 #include "CameraController.hpp"
 #include <swizzle/Swizzle.hpp>
+#include <swizzle/ApplicationTemplate.hpp>
 
 #include <vector>
 

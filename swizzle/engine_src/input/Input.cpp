@@ -1,10 +1,12 @@
 
 /* Include files */
 
-#include "swizzle/core/Input.hpp"
-#include "swizzle/Swizzle.hpp"
+#include <swizzle/core/Input.hpp>
+#include <swizzle/core/Logging.hpp>
+#include <swizzle/core/Platform.hpp>
 
 #include <unordered_map>
+#include <optick/optick.h>
 
 /* Defines */
 

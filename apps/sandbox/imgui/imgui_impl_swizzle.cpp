@@ -235,7 +235,7 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
     swizzle::gfx::FrameBufferCreateInfo info{};
     info.mDepthType = swizzle::gfx::FrameBufferDepthType::DepthNone;
     info.mSwapCount = 3u;
-    info.mColorAttachFormats = { swizzle::gfx::FrameBufferAttachmentType::Default };
+    info.mColorAttachFormats = {swizzle::gfx::FrameBufferAttachmentType::Default};
     window->getSize(info.mWidth, info.mHeight);
 
     bd->mImGuiFbo = dev->createFramebuffer(info);

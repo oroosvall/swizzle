@@ -2,6 +2,7 @@
 /* Include files */
 
 #include <swizzle/Swizzle.hpp>
+#include <swizzle/core/Logging.hpp>
 
 #include "core/Core.hpp"
 #include "gfx/Gfx.hpp"

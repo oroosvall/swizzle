@@ -18,15 +18,14 @@ namespace swizzle::core
     struct StatsBase
     {
     };
-}
+} // namespace swizzle::core
 
 /* Class Declaration */
 
 namespace swizzle::core
 {
     // TODO: move to core
-    template<typename T>
-    class StatisticsIterator
+    template <typename T> class StatisticsIterator
     {
     public:
         virtual ~StatisticsIterator() {}
@@ -35,9 +34,8 @@ namespace swizzle::core
 
         virtual T getType() = 0;
         virtual StatsBase* getStatisticsData() = 0;
-
     };
-}
+} // namespace swizzle::core
 
 /* Function Declaration */
 
