@@ -1,13 +1,13 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "../backend/VkDebug.hpp"
 #include "Device.hpp"
 #include "Instance.hpp"
 #include "ShaderPipeline.hpp"
 #include "QueryPool.hpp"
-
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -285,7 +285,7 @@ namespace vk
     common::Resource<DeviceMemory> Device::allocateMemory(VkMemoryPropertyFlags propertyFlags,
                                                           VkMemoryRequirements req)
     {
-        OPTICK_EVENT("Device::allocateMemory");
+        SWIZZLE_PROFILE_EVENT("Device::allocateMemory");
         U32 memoryTypeIndex = ~0u; // Unable to find memoryType
         U32 heapIndex = ~0u;
 
@@ -305,21 +305,21 @@ namespace vk
 
     void Device::freeMemory(common::Resource<DeviceMemory> memory)
     {
-        OPTICK_EVENT("Device::freeMemory");
+        SWIZZLE_PROFILE_EVENT("Device::freeMemory");
         common::Resource<DeviceMemoryPool> pool = memory->mOwnerPool;
         pool->freeMemory(memory);
     }
 
     void Device::scheduleResourceDestruction(common::Resource<IVkResource> resource)
     {
-        OPTICK_EVENT("Device::scheduleResourceDestruction");
+        SWIZZLE_PROFILE_EVENT("Device::scheduleResourceDestruction");
         // send to cleanup thread
         mCleanup->scheduleResourceDestruction(resource);
     }
 
     void Device::scheduleFreeingMemory(common::Resource<DeviceMemory> memory)
     {
-        OPTICK_EVENT("Device::scheduleFreeingMemory");
+        SWIZZLE_PROFILE_EVENT("Device::scheduleFreeingMemory");
         // send to cleanup thread
         mCleanup->scheduleFreeingMemory(memory);
     }

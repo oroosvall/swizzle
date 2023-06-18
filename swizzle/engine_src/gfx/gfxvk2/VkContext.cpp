@@ -2,6 +2,7 @@
 /* Include files */
 
 #include <swizzle/core/Logging.hpp>
+#include <swizzle/profiler/Profiler.hpp>
 
 #include "VkContext.hpp"
 #include "VkDevice.hpp"
@@ -16,7 +17,6 @@
 #include "res/ShaderPipeline.hpp"
 #include "res/QueryPool.hpp"
 
-#include <optick/optick.h>
 
 //#include "VulkanBuffer.hpp"
 //#include "VulkanSwapchain.hpp"
@@ -66,7 +66,7 @@ namespace swizzle::gfx
 
     const SwChar* VkGfxContext::getDeviceName(U32 deviceIndex)
     {
-        OPTICK_EVENT("VkGfxContext::getDeviceName");
+        SWIZZLE_PROFILE_EVENT("VkGfxContext::getDeviceName");
         return mVkInstance->getDeviceName(deviceIndex);
     }
 

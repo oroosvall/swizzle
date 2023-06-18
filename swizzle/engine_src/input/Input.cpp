@@ -4,9 +4,9 @@
 #include <swizzle/core/Input.hpp>
 #include <swizzle/core/Logging.hpp>
 #include <swizzle/core/Platform.hpp>
+#include <swizzle/profiler/Profiler.hpp>
 
 #include <unordered_map>
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -81,7 +81,7 @@ namespace swizzle::input
 
     void InputFrameReset()
     {
-        OPTICK_EVENT("InputFrameReset");
+        SWIZZLE_PROFILE_EVENT("InputFrameReset");
         inputCtx.mDx = 0.0f;
         inputCtx.mDy = 0.0f;
         inputCtx.mScrollDx = 0.0f;

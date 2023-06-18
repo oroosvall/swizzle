@@ -1,6 +1,8 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "VSwapchain.hpp"
 
 #include "../backend/Vk.hpp"
@@ -8,8 +10,6 @@
 #include "../surface/Surface.hpp"
 #include "Device.hpp"
 #include "Instance.hpp"
-
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -124,13 +124,13 @@ namespace vk
 
     U64 VSwapchain::getFrameCounter()
     {
-        OPTICK_EVENT("VSwapchain::getFrameCounter()");
+        SWIZZLE_PROFILE_EVENT("VSwapchain::getFrameCounter()");
         return mFrameCounter;
     }
 
     void VSwapchain::prepare()
     {
-        OPTICK_EVENT("VSwapchain::prepare");
+        SWIZZLE_PROFILE_EVENT("VSwapchain::prepare");
         VkResult result = vkAcquireNextImageKHR(mDevice->getDeviceHandle(), mSwapchain, UINT64_MAX,
                                                 mImageAvailableSemaphore[mCurrentFrame], VK_NULL_HANDLE, &mImageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
@@ -153,7 +153,7 @@ namespace vk
 
     void VSwapchain::present()
     {
-        OPTICK_EVENT("VSwapchain::Present");
+        SWIZZLE_PROFILE_EVENT("VSwapchain::Present");
 
         VkSemaphore sems[] = {mRenderingFinishedSemaphore[mCurrentFrame]};
 
@@ -171,7 +171,7 @@ namespace vk
         // VkResult res =
         // OPTICK_GPU_FLIP(mSwapchain);
         {
-            OPTICK_EVENT("vkQueuePresentKHR");
+            SWIZZLE_PROFILE_EVENT("vkQueuePresentKHR");
             (void)vkQueuePresentKHR(queue, &presentInfo);
         }
         // LOG_ERROR("Present result %d\n", res);

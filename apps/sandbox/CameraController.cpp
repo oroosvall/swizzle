@@ -1,9 +1,11 @@
 
+
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "CameraController.hpp"
 #include <swizzle/core/Input.hpp>
 #include <glm/glm.hpp>
 
-#include <optick/optick.h>
 
 CameraController::CameraController(PerspectiveCamera& cam)
     : mCamera(cam)
@@ -25,7 +27,7 @@ CameraController::~CameraController()
 
 void CameraController::update(float dt)
 {
-    OPTICK_EVENT("CameraController::update");
+    SWIZZLE_PROFILE_EVENT("CameraController::update");
     mPosition = mCamera.getPosition();
 
     float dx, dy;

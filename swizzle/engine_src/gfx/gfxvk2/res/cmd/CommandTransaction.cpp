@@ -1,13 +1,13 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "CommandTransaction.hpp"
 #include "../DBuffer.hpp"
 #include "../ShaderPipeline.hpp"
 #include "../TextureBase.hpp"
 #include "../VMaterial.hpp"
-
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -63,7 +63,7 @@ namespace vk
                                                 common::Resource<swizzle::gfx::Material> material, U8* constants,
                                                 U32 constantsSize)
     {
-        OPTICK_EVENT("CmdBuffer::bindComputeShader");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::bindComputeShader");
 
         ShaderPipeline* shad = (ShaderPipeline*)(shader.get());
         vkCmdBindPipeline(mCommandBuffer, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_COMPUTE, shad->getPipeline());
@@ -83,7 +83,8 @@ namespace vk
 
         if (constants)
         {
-            vkCmdPushConstants(mCommandBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0u, constantsSize, constants);
+            vkCmdPushConstants(mCommandBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0u, constantsSize,
+                               constants);
         }
     }
 
@@ -94,7 +95,7 @@ namespace vk
 
     void VCommandTransaction::uploadTexture(common::Resource<swizzle::gfx::Texture> texture)
     {
-        OPTICK_EVENT("CmdBuffer::uploadTexture");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::uploadTexture");
         TextureBase* tex = (TextureBase*)(texture.get());
         if (!tex->isUploaded())
         {
@@ -104,14 +105,14 @@ namespace vk
 
     void VCommandTransaction::changeImageLayoutCompute(common::Resource<swizzle::gfx::Texture> texture)
     {
-        OPTICK_EVENT("CmdBuffer::uploadTexture");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::uploadTexture");
         TextureBase* tex = (TextureBase*)(texture.get());
         tex->transferImageToCompute(mCommandBuffer);
     }
 
     void VCommandTransaction::changeImageLayoutRender(common::Resource<swizzle::gfx::Texture> texture)
     {
-        OPTICK_EVENT("CmdBuffer::uploadTexture");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::uploadTexture");
         TextureBase* tex = (TextureBase*)(texture.get());
         tex->transferImageToRender(mCommandBuffer);
     }

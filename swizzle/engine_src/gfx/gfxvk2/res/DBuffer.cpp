@@ -1,11 +1,11 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "DBuffer.hpp"
 #include "Device.hpp"
 #include "CmdBuffer.hpp"
-
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -54,7 +54,7 @@ namespace vk
 
     void DBuffer::setBufferData(void* data, U64 size, U32 stride)
     {
-        OPTICK_EVENT("DBuffer::setBufferData");
+        SWIZZLE_PROFILE_EVENT("DBuffer::setBufferData");
 
         mVertCount = (U32)(size / (U64)stride);
         mStride = stride;
@@ -86,7 +86,7 @@ namespace vk
 
     void* DBuffer::mapMemory(U64 size)
     {
-        OPTICK_EVENT("DBuffer::mapMemory");
+        SWIZZLE_PROFILE_EVENT("DBuffer::mapMemory");
         UNUSED_ARG(size);
         createOrResize(size);
         void* ptr = nullptr;
@@ -108,7 +108,7 @@ namespace vk
 
     void DBuffer::unmapMemory()
     {
-        OPTICK_EVENT("DBuffer::unmapMemory");
+        SWIZZLE_PROFILE_EVENT("DBuffer::unmapMemory");
         //VkMappedMemoryRange rng{};
 
         //rng.memory = mMemory->mMemory;

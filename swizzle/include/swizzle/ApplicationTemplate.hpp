@@ -9,14 +9,13 @@
 #include "swizzle/core/Logging.hpp"
 #include "swizzle/core/Platform.hpp"
 #include "swizzle/core/Window.hpp"
+#include "swizzle/profiler/Profiler.hpp"
 
 #include "swizzle/gfx/Color.hpp"
 #include "swizzle/gfx/Context.hpp"
 #include "swizzle/core/Input.hpp"
 
 #include <utils/HighResolutionClock.hpp>
-
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -85,7 +84,7 @@ namespace swizzle
 
             while (running)
             {
-                OPTICK_FRAME("MainThread");
+                SWIZZLE_PROFILE_FRAME("MainThread");
                 F32 dt = highRes.secondsAsFloat(true);
 
                 swizzle::input::InputFrameReset();

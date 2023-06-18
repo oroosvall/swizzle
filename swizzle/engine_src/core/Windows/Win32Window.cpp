@@ -2,6 +2,7 @@
 
 #include <swizzle/core/Logging.hpp>
 #include <swizzle/core/WindowEvents.hpp>
+#include <swizzle/profiler/Profiler.hpp>
 
 #include "RawInput.hpp"
 #include "Win32Window.hpp"
@@ -13,8 +14,6 @@
 #include <Xinput.h>
 
 #include <algorithm>
-
-#include <optick/optick.h>
 
 namespace swizzle::core
 {
@@ -289,7 +288,7 @@ namespace swizzle::core
 
     void Win32Window::pollEvents()
     {
-        OPTICK_EVENT();
+        SWIZZLE_PROFILE_EVENT();
         MSG msg;
 
         win32::ProcessXInput(mEventHandlers);

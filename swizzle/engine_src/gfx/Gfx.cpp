@@ -3,11 +3,10 @@
 
 #include <common/Common.hpp>
 #include <swizzle/core/Logging.hpp>
-#include "Gfx.hpp"
-//#include "gfxvk/VkContext.hpp"
-#include "gfxvk2/VkContext.hpp"
+#include <swizzle/profiler/Profiler.hpp>
 
-#include <optick/optick.h>
+#include "Gfx.hpp"
+#include "gfxvk2/VkContext.hpp"
 
 /* Defines */
 

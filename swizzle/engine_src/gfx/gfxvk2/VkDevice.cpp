@@ -2,6 +2,7 @@
 /* Include files */
 
 #include <swizzle/core/Logging.hpp>
+#include <swizzle/profiler/Profiler.hpp>
 
 #include "Stats.hpp"
 #include "VkDevice.hpp"
@@ -15,7 +16,6 @@
 #include "res/VMaterial.hpp"
 #include "res/VSwapchain.hpp"
 
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -69,7 +69,7 @@ namespace swizzle::gfx
 
     GfxStatistics VkGfxDevice::getStatistics()
     {
-        OPTICK_EVENT("VkGfxDevice::getStatistics()");
+        SWIZZLE_PROFILE_EVENT("VkGfxDevice::getStatistics()");
         GfxStatistics stats{};
 
         stats.mGpuMemoryUsage = mVkDevice->getGPUMemUsage();
@@ -83,7 +83,7 @@ namespace swizzle::gfx
 
     common::Resource<swizzle::core::StatisticsIterator<GfxStatsType>> VkGfxDevice::getStatisticsIterator()
     {
-        OPTICK_EVENT("VkGfxDevice::getStatisticsIterator()");
+        SWIZZLE_PROFILE_EVENT("VkGfxDevice::getStatisticsIterator()");
         auto stats = common::CreateRef<StatsIterator>(mVkDevice);
         stats->addMemoryStats();
         stats->addDeviceStats();
@@ -159,7 +159,7 @@ namespace swizzle::gfx
     void VkGfxDevice::submit(common::Resource<CommandBuffer>* cmdBuffer, U32 cmdBufferCount,
                              common::Resource<Swapchain> swapchain)
     {
-        OPTICK_EVENT("VkGfxDevice::submit");
+        SWIZZLE_PROFILE_EVENT("VkGfxDevice::submit");
         UNUSED_ARG(cmdBuffer);
         UNUSED_ARG(cmdBufferCount);
         UNUSED_ARG(swapchain);
@@ -254,7 +254,7 @@ namespace swizzle::gfx
 
     common::Resource<vk::Fence> VkGfxDevice::getFence()
     {
-        OPTICK_EVENT("VkGfxDevice::getFence()");
+        SWIZZLE_PROFILE_EVENT("VkGfxDevice::getFence()");
 
         U64 index = ~0u;
 

@@ -1,11 +1,12 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "Stats.hpp"
 
 #include "backend/VkDebug.hpp"
 #include "res/QueryPool.hpp"
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -66,7 +67,7 @@ namespace swizzle::gfx
 
     void StatsIterator::addMemoryStats()
     {
-        OPTICK_EVENT("StatsIterator::addMemoryStats()");
+        SWIZZLE_PROFILE_EVENT("StatsIterator::addMemoryStats()");
         U32 count = mDevice->getMemoryHeapCount();
 
         for (U32 i = 0u; i < count; ++i)
@@ -77,13 +78,13 @@ namespace swizzle::gfx
 
     void StatsIterator::addDeviceStats()
     {
-        OPTICK_EVENT("StatsIterator::addDeviceStats()");
+        SWIZZLE_PROFILE_EVENT("StatsIterator::addDeviceStats()");
         mStats.push_back(std::make_pair(GfxStatsType::DeviceStats, mDevice->getDeviceStats()));
     }
 
     void StatsIterator::addInstanceStats()
     {
-        OPTICK_EVENT("StatsIterator::addInstanceStats()");
+        SWIZZLE_PROFILE_EVENT("StatsIterator::addInstanceStats()");
         static InstanceStatistics stats = {};
         stats.mAllocCount = vk::getAllocCount();
         stats.mInternalAllocCount = vk::getAllocInternalCount();
@@ -92,7 +93,7 @@ namespace swizzle::gfx
 
     void StatsIterator::addPipelineStats()
     {
-        OPTICK_EVENT("StatsIterator::addPipelineStats()");
+        SWIZZLE_PROFILE_EVENT("StatsIterator::addPipelineStats()");
         GfxPipelineStatistics* stats = nullptr;
         U64 size = sizeof(GfxPipelineStatistics);
         mDevice->getStatisticsQuery()->getQueryData((U64**)&stats, &size, true);
@@ -104,7 +105,7 @@ namespace swizzle::gfx
 
     void StatsIterator::addTimingStats()
     {
-        OPTICK_EVENT("StatsIterator::addTimingStats()");
+        SWIZZLE_PROFILE_EVENT("StatsIterator::addTimingStats()");
         static GfxTimingStatistics stats{};
         stats.mSampleCount = 0ull;
         stats.mNsPerSample = (U64)mDevice->getDeviceProperties().limits.timestampPeriod;

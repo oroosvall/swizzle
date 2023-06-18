@@ -1,6 +1,8 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "Cleanup.hpp"
 
 #include <mutex>
@@ -9,7 +11,6 @@
 #include "VkResource.hpp"
 #include "DeviceMemory.hpp"
 
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -48,10 +49,10 @@ namespace vk
 
     void CleanupRunnable::run()
     {
-        OPTICK_THREAD("Vk::Cleanup");
+        SWIZZLE_PROFILE_THREAD("Vk::Cleanup");
         while (mRunning)
         {
-            OPTICK_EVENT("WaitWork");
+            SWIZZLE_PROFILE_EVENT("WaitWork");
             while (!hasWork())
             {
                 waitWork();
@@ -129,10 +130,10 @@ namespace vk
 
     void CleanupRunnable::doCleanup()
     {
-        OPTICK_EVENT("doCleanup");
+        SWIZZLE_PROFILE_EVENT("doCleanup");
         if (mMux.try_lock())
         {
-            OPTICK_EVENT("swap");
+            SWIZZLE_PROFILE_EVENT("swap");
             U32 tmp = mCleanupIndex;
             mCleanupIndex = mBufferIndex;
             mBufferIndex = tmp;
@@ -142,7 +143,7 @@ namespace vk
         }
 
         {
-            OPTICK_EVENT("mResources.begin()");
+            SWIZZLE_PROFILE_EVENT("mResources.begin()");
             auto itRes = mLists[mCleanupIndex].mResources.begin();
             while (itRes != mLists[mCleanupIndex].mResources.end())
             {
@@ -160,7 +161,7 @@ namespace vk
         }
 
         {
-            OPTICK_EVENT("mMemoryAllocations.begin()");
+            SWIZZLE_PROFILE_EVENT("mMemoryAllocations.begin()");
             auto itMem = mLists[mCleanupIndex].mMemoryAllocations.begin();
             while (itMem != mLists[mCleanupIndex].mMemoryAllocations.end())
             {

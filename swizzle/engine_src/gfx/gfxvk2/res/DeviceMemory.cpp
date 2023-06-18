@@ -1,15 +1,14 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "DeviceMemory.hpp"
 
 #include "VkResource.hpp"
 #include "Device.hpp"
 
 #include <algorithm>
-
-#include <optick/optick.h>
-
 #include <assert.h>
 
 /* Defines */
@@ -338,7 +337,7 @@ namespace vk
     {
         std::lock_guard lck(mLock);
 
-        OPTICK_EVENT("DeviceMemoryPool::allocateMemory");
+        SWIZZLE_PROFILE_EVENT("DeviceMemoryPool::allocateMemory");
         // TODO: Needs thread locking for multiple threads
         // TODO: handle alignment from reqs
         common::Resource<DeviceMemory> mem = nullptr;
@@ -372,7 +371,7 @@ namespace vk
             return;
         }
         std::lock_guard lck(mLock);
-        OPTICK_EVENT("DeviceMemoryPool::freeMemory");
+        SWIZZLE_PROFILE_EVENT("DeviceMemoryPool::freeMemory");
         for (auto& ch : mMemoryChunks)
         {
             if (ch->isOwner(memory))
@@ -413,7 +412,7 @@ namespace vk
 
     common::Resource<MemoryChunk> DeviceMemoryPool::allocateNewChunk(VkDeviceSize size, U32 memoryTypeIndex)
     {
-        OPTICK_EVENT("DeviceMemoryPool::allocateNewChunk");
+        SWIZZLE_PROFILE_EVENT("DeviceMemoryPool::allocateNewChunk");
 
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -440,7 +439,7 @@ namespace vk
 
     common::Resource<MemoryChunk> DeviceMemoryPool::getChunk(VkMemoryRequirements memreq, U32 memoryTypeIndex)
     {
-        OPTICK_EVENT("DeviceMemoryPool::getChunk");
+        SWIZZLE_PROFILE_EVENT("DeviceMemoryPool::getChunk");
         common::Resource<MemoryChunk> chunk = nullptr;
 
         for (auto& ch : mMemoryChunks)

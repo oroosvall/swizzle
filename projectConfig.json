@@ -47,6 +47,9 @@
                     "name": "vulkan",
                     "filter": "system:linux"
                 }
+            ],
+            "enabled_defines": [
+                "OPTICK_ENABLED"
             ]
         },
         "stb": {

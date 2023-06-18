@@ -72,7 +72,7 @@ void Game::userSetup()
 
 SwBool Game::userUpdate(F32 dt)
 {
-    OPTICK_EVENT("userUpdate");
+    SWIZZLE_PROFILE_EVENT("userUpdate");
 
     mFpsCounter.tick(dt);
 
@@ -89,7 +89,7 @@ SwBool Game::userUpdate(F32 dt)
 
     do
     {
-        OPTICK_EVENT("Parse Stats");
+        SWIZZLE_PROFILE_EVENT("Parse Stats");
         if (iter->getType() == sw::gfx::GfxStatsType::MemoryStats)
         {
             sw::gfx::MemoryStatistics* memStat = (sw::gfx::MemoryStatistics*)iter->getStatisticsData();
@@ -154,7 +154,7 @@ SwBool Game::userUpdate(F32 dt)
 
     ImGui::Begin("Blah");
     {
-        OPTICK_EVENT("ImGui::Text");
+        SWIZZLE_PROFILE_EVENT("ImGui::Text");
         ImGui::Text("%s", title.c_str());
     }
 
@@ -184,7 +184,7 @@ void Game::userCleanup()
 void Game::updateMainWindow(F32 dt)
 {
     UNUSED_ARG(dt);
-    OPTICK_EVENT("Game::updateMainWindow");
+    SWIZZLE_PROFILE_EVENT("Game::updateMainWindow");
     U32 x, y;
     mWindow->getSize(x, y);
 

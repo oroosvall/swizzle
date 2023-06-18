@@ -1,6 +1,8 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "CmdBuffer.hpp"
 #include "CmdPool.hpp"
 #include "DBuffer.hpp"
@@ -13,8 +15,6 @@
 #include "VMaterial.hpp"
 #include "VSwapchain.hpp"
 #include "VkResource.hpp"
-
-#include <optick/optick.h>
 
 #include "cmd/CommandTransaction.hpp"
 #include "cmd/DrawCommandTransaction.hpp"
@@ -123,7 +123,7 @@ namespace vk
     common::Unique<swizzle::gfx::CommandTransaction> CmdBuffer::begin()
     {
         mDrawCount = 0u;
-        OPTICK_EVENT("CmdBuffer::begin");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::begin");
         mFrameCounter++;
 
         auto fence = getFence(mActiveIndex);
@@ -185,7 +185,7 @@ namespace vk
 
     void CmdBuffer::end(common::Unique<swizzle::gfx::CommandTransaction>&& transaction)
     {
-        OPTICK_EVENT("CmdBuffer::end");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::end");
 
         transaction.reset();
 

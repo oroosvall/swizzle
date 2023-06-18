@@ -1,13 +1,13 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "DrawCommandTransaction.hpp"
 #include "../DBuffer.hpp"
 #include "../ShaderPipeline.hpp"
 #include "../TextureBase.hpp"
 #include "../VMaterial.hpp"
-
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -47,7 +47,7 @@ namespace vk
     void VDrawCommandTransaction::bindMaterial(common::Resource<swizzle::gfx::Shader> shader,
                                                common::Resource<swizzle::gfx::Material> material)
     {
-        OPTICK_EVENT("CmdBuffer::bindMaterial");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::bindMaterial");
         ShaderPipeline* shad = (ShaderPipeline*)(shader.get());
         VMaterial* mat = (VMaterial*)(material.get());
         mat->setDirty();
@@ -62,7 +62,7 @@ namespace vk
 
     void VDrawCommandTransaction::setShaderConstant(common::Resource<swizzle::gfx::Shader> shader, U8* data, U32 size)
     {
-        OPTICK_EVENT("CmdBuffer::setShaderConstant");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::setShaderConstant");
         ShaderPipeline* shad = (ShaderPipeline*)(shader.get());
 
         vkCmdPushConstants(mCommandBuffer, shad->getPipelineLayout(), VK_SHADER_STAGE_ALL, 0u, size, data);
@@ -70,7 +70,7 @@ namespace vk
 
     void VDrawCommandTransaction::setViewport(U32 x, U32 y)
     {
-        OPTICK_EVENT("CmdBuffer::setViewport");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::setViewport");
         // This ensures that the region is valid, 0, 0 is invalid size
         if (x == 0u || y == 0u)
         {
@@ -103,7 +103,7 @@ namespace vk
 
     void VDrawCommandTransaction::bindVertexBuffer(common::Resource<swizzle::gfx::Buffer> buffer)
     {
-        OPTICK_EVENT("CmdBuffer::bindVertexBuffer");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::bindVertexBuffer");
         DBuffer* buff = (DBuffer*)buffer.get();
 
         auto& res = buff->getBuffer();
@@ -117,7 +117,7 @@ namespace vk
 
     void VDrawCommandTransaction::bindIndexBuffer(common::Resource<swizzle::gfx::Buffer> buffer, SwBool bitSize16)
     {
-        OPTICK_EVENT("CmdBuffer::bindIndexBuffer");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::bindIndexBuffer");
         DBuffer* buff = (DBuffer*)buffer.get();
 
         auto& res = buff->getBuffer();
@@ -133,7 +133,7 @@ namespace vk
 
     void VDrawCommandTransaction::draw(common::Resource<swizzle::gfx::Buffer> buffer)
     {
-        OPTICK_EVENT("CmdBuffer::draw");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::draw");
         // @TODO: Track draw count
         // mDrawCount++;
         DBuffer* buff = (DBuffer*)buffer.get();
@@ -152,7 +152,7 @@ namespace vk
     void VDrawCommandTransaction::drawIndexed(common::Resource<swizzle::gfx::Buffer> buffer,
                                               common::Resource<swizzle::gfx::Buffer> index)
     {
-        OPTICK_EVENT("CmdBuffer::drawIndexed");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::drawIndexed");
         // @TODO: Track draw count
         // mDrawCount++;
         DBuffer* buff = (DBuffer*)buffer.get();
@@ -179,7 +179,7 @@ namespace vk
                                                 common::Resource<swizzle::gfx::Buffer> instanceData)
     {
 
-        OPTICK_EVENT("CmdBuffer::drawInstanced");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::drawInstanced");
         // TODO: Track draw count
         // mDrawCount++;
 
@@ -202,7 +202,7 @@ namespace vk
                                                        common::Resource<swizzle::gfx::Buffer> index,
                                                        common::Resource<swizzle::gfx::Buffer> instanceData)
     {
-        OPTICK_EVENT("CmdBuffer::drawIndexed");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::drawIndexed");
         // TODO: Track draw count
         // mDrawCount++;
 
@@ -232,7 +232,7 @@ namespace vk
                                                                   common::Resource<swizzle::gfx::Buffer> index,
                                                                   common::Resource<swizzle::gfx::Buffer> instanceData)
     {
-        OPTICK_EVENT("CmdBuffer::drawMultiBufferIndexedInstanced");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::drawMultiBufferIndexedInstanced");
 
         auto vertex = GetBufferAsDBuffer(buffer);
         auto vertex2 = GetBufferAsDBuffer(buffer2);
@@ -267,7 +267,7 @@ namespace vk
 
     void VDrawCommandTransaction::drawNoBind(U32 vertexCount, U32 first)
     {
-        OPTICK_EVENT("CmdBuffer::drawNoBind");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::drawNoBind");
         // TODO: Track draw count
         // mDrawCount++;
         vkCmdDraw(mCommandBuffer, vertexCount, 1u, first, 0u);
@@ -275,7 +275,7 @@ namespace vk
 
     void VDrawCommandTransaction::drawIndexedNoBind(U32 vertexCount, U32 first, U32 vertOffset)
     {
-        OPTICK_EVENT("CmdBuffer::drawIndexedNoBind");
+        SWIZZLE_PROFILE_EVENT("CmdBuffer::drawIndexedNoBind");
         // TODO: Track draw count
         // mDrawCount++;
         vkCmdDrawIndexed(mCommandBuffer, vertexCount, 1u, first, vertOffset, 0u);

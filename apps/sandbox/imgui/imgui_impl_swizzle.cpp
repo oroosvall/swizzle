@@ -1,6 +1,8 @@
 
 /* Include files */
 
+#include <swizzle/profiler/Profiler.hpp>
+
 #include "imgui_impl_swizzle.hpp"
 #include "ImGuiTranslateKey.hpp"
 
@@ -8,8 +10,6 @@
 #include <swizzle/core/Input.hpp>
 #include <swizzle/core/Platform.hpp>
 #include <swizzle/core/WindowEvents.hpp>
-
-#include <optick/optick.h>
 
 /* Defines */
 
@@ -167,7 +167,7 @@ void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data,
 
 void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
 {
-    OPTICK_EVENT("ImGuiInputCallback::publishEvent");
+    SWIZZLE_PROFILE_EVENT("ImGuiInputCallback::publishEvent");
     ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplSwizzle_Data* bd = ImGui_ImplSwizzle_GetBackendData();
 
