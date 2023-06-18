@@ -13,7 +13,7 @@
 
 #define SWIZZLE_PROFILE_FRAME(frameName, ...) OPTICK_FRAME(frameName, __VA_ARGS__)
 #define SWIZZLE_PROFILE_EVENT(...) OPTICK_EVENT(__VA_ARGS__)
-#define SWIZZLE_PROFILE_THREAD(...) OPTICK_THREAD(...)
+#define SWIZZLE_PROFILE_THREAD(...) OPTICK_THREAD(__VA_ARGS__)
 
 #else
 #define SWIZZLE_PROFILE_FRAME(frameName, ...)
