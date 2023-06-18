@@ -5,7 +5,7 @@
 
 #include <common/Common.hpp>
 
-#include <swizzle/gfx/Buffer.hpp>
+#include <swizzle/gfx/GfxBuffer.hpp>
 #include <swizzle/gfx/CommandBuffer.hpp>
 #include <swizzle/gfx/Material.hpp>
 #include <swizzle/gfx/Shader.hpp>

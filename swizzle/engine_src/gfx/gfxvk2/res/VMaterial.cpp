@@ -111,7 +111,7 @@ namespace vk
         }
     }
 
-    void VMaterial::setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::Buffer> buffer, U64 size)
+    void VMaterial::setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::GfxBuffer> buffer, U64 size)
     {
         copyDescriptorIfDirty();
 
@@ -132,7 +132,7 @@ namespace vk
         writeDesc.dstBinding = index;
         writeDesc.dstArrayElement = 0;
         writeDesc.descriptorCount = 1;
-        if (bfr->getType() == swizzle::gfx::BufferType::UniformBuffer)
+        if (bfr->getType() == swizzle::gfx::GfxBufferType::UniformBuffer)
             writeDesc.descriptorType = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         else
             writeDesc.descriptorType = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;

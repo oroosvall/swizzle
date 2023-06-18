@@ -33,7 +33,7 @@ namespace vk
 
         virtual void useMipLevels(SwBool enable, SwBool forceLowest) override;
 
-        virtual void setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::Buffer> buffer,
+        virtual void setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::GfxBuffer> buffer,
             U64 size) override;
         virtual void setDescriptorTextureResource(U32 index, common::Resource<swizzle::gfx::Texture> texture, SwBool copy) override;
         virtual void setDescriptorComputeImageResource(U32 index, common::Resource<swizzle::gfx::Texture> texture) override;

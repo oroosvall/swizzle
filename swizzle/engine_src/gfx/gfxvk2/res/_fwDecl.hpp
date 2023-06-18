@@ -16,7 +16,7 @@ namespace vk
     class Instance;
     class CmdPool;
     class CmdBuffer;
-    class Buffer;
+    class GfxBuffer;
     class DeviceMemory;
     class DeviceMemoryPool;
     class VkBufferResource;

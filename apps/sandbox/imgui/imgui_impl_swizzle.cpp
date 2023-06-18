@@ -23,8 +23,8 @@ struct ImGui_ImplSwizzle_Data
     common::Resource<swizzle::gfx::Texture> mFontTexture;
     common::Resource<swizzle::gfx::Material> mFontMaterial;
 
-    common::Resource<swizzle::gfx::Buffer> mVertexBuffer;
-    common::Resource<swizzle::gfx::Buffer> mIndexBuffer;
+    common::Resource<swizzle::gfx::GfxBuffer> mVertexBuffer;
+    common::Resource<swizzle::gfx::GfxBuffer> mIndexBuffer;
 
     common::Resource<swizzle::gfx::FrameBuffer> mImGuiFbo;
     common::Resource<swizzle::gfx::Material> mImGuiMat;
@@ -273,8 +273,8 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
     bd->mFontMaterial = dev->createMaterial(bd->mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
     bd->mFontMaterial->setDescriptorTextureResource(0, bd->mFontTexture);
 
-    bd->mVertexBuffer = dev->createBuffer(swizzle::gfx::BufferType::Vertex);
-    bd->mIndexBuffer = dev->createBuffer(swizzle::gfx::BufferType::Index);
+    bd->mVertexBuffer = dev->createBuffer(swizzle::gfx::GfxBufferType::Vertex);
+    bd->mIndexBuffer = dev->createBuffer(swizzle::gfx::GfxBufferType::Index);
 
     io.Fonts->SetTexID((ImTextureID)&bd->mFontMaterial);
 

@@ -33,23 +33,23 @@ namespace vk
         virtual void enableStencilTest(SwBool enable) override;
         virtual void setStencilReference(U8 reference) override;
 
-        virtual void bindVertexBuffer(common::Resource<swizzle::gfx::Buffer> buffer) override;
-        virtual void bindIndexBuffer(common::Resource<swizzle::gfx::Buffer> buffer, SwBool bitSize16) override;
+        virtual void bindVertexBuffer(common::Resource<swizzle::gfx::GfxBuffer> buffer) override;
+        virtual void bindIndexBuffer(common::Resource<swizzle::gfx::GfxBuffer> buffer, SwBool bitSize16) override;
 
-        virtual void draw(common::Resource<swizzle::gfx::Buffer> buffer) override;
-        virtual void drawIndexed(common::Resource<swizzle::gfx::Buffer> buffer,
-                                 common::Resource<swizzle::gfx::Buffer> index) override;
+        virtual void draw(common::Resource<swizzle::gfx::GfxBuffer> buffer) override;
+        virtual void drawIndexed(common::Resource<swizzle::gfx::GfxBuffer> buffer,
+                                 common::Resource<swizzle::gfx::GfxBuffer> index) override;
 
-        virtual void drawInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
-                                   common::Resource<swizzle::gfx::Buffer> instanceData) override;
-        virtual void drawIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
-                                          common::Resource<swizzle::gfx::Buffer> index,
-                                          common::Resource<swizzle::gfx::Buffer> instanceData) override;
+        virtual void drawInstanced(common::Resource<swizzle::gfx::GfxBuffer> buffer,
+                                   common::Resource<swizzle::gfx::GfxBuffer> instanceData) override;
+        virtual void drawIndexedInstanced(common::Resource<swizzle::gfx::GfxBuffer> buffer,
+                                          common::Resource<swizzle::gfx::GfxBuffer> index,
+                                          common::Resource<swizzle::gfx::GfxBuffer> instanceData) override;
 
-        virtual void drawMultiBufferIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
-                                                     common::Resource<swizzle::gfx::Buffer> buffer2,
-                                                     common::Resource<swizzle::gfx::Buffer> index,
-                                                     common::Resource<swizzle::gfx::Buffer> instanceData) override;
+        virtual void drawMultiBufferIndexedInstanced(common::Resource<swizzle::gfx::GfxBuffer> buffer,
+                                                     common::Resource<swizzle::gfx::GfxBuffer> buffer2,
+                                                     common::Resource<swizzle::gfx::GfxBuffer> index,
+                                                     common::Resource<swizzle::gfx::GfxBuffer> instanceData) override;
 
         virtual void drawMeshlet(U32 meshletCount) override;
 

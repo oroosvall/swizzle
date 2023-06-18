@@ -101,7 +101,7 @@ namespace vk
         vkCmdSetStencilReference(mCommandBuffer, VkStencilFaceFlagBits::VK_STENCIL_FRONT_AND_BACK, reference);
     }
 
-    void VDrawCommandTransaction::bindVertexBuffer(common::Resource<swizzle::gfx::Buffer> buffer)
+    void VDrawCommandTransaction::bindVertexBuffer(common::Resource<swizzle::gfx::GfxBuffer> buffer)
     {
         SWIZZLE_PROFILE_EVENT("CmdBuffer::bindVertexBuffer");
         DBuffer* buff = (DBuffer*)buffer.get();
@@ -115,7 +115,7 @@ namespace vk
         vkCmdBindVertexBuffers(mCommandBuffer, 0u, 1u, &vkBuf, &offset);
     }
 
-    void VDrawCommandTransaction::bindIndexBuffer(common::Resource<swizzle::gfx::Buffer> buffer, SwBool bitSize16)
+    void VDrawCommandTransaction::bindIndexBuffer(common::Resource<swizzle::gfx::GfxBuffer> buffer, SwBool bitSize16)
     {
         SWIZZLE_PROFILE_EVENT("CmdBuffer::bindIndexBuffer");
         DBuffer* buff = (DBuffer*)buffer.get();
@@ -131,7 +131,7 @@ namespace vk
         vkCmdBindIndexBuffer(mCommandBuffer, idxBuf, offset, size[bitSize16]);
     }
 
-    void VDrawCommandTransaction::draw(common::Resource<swizzle::gfx::Buffer> buffer)
+    void VDrawCommandTransaction::draw(common::Resource<swizzle::gfx::GfxBuffer> buffer)
     {
         SWIZZLE_PROFILE_EVENT("CmdBuffer::draw");
         // @TODO: Track draw count
@@ -149,8 +149,8 @@ namespace vk
         vkCmdDraw(mCommandBuffer, buff->getCount(), 1u, 0u, 0u);
     }
 
-    void VDrawCommandTransaction::drawIndexed(common::Resource<swizzle::gfx::Buffer> buffer,
-                                              common::Resource<swizzle::gfx::Buffer> index)
+    void VDrawCommandTransaction::drawIndexed(common::Resource<swizzle::gfx::GfxBuffer> buffer,
+                                              common::Resource<swizzle::gfx::GfxBuffer> index)
     {
         SWIZZLE_PROFILE_EVENT("CmdBuffer::drawIndexed");
         // @TODO: Track draw count
@@ -175,8 +175,8 @@ namespace vk
         vkCmdDrawIndexed(mCommandBuffer, idxBuff->getCount() * 3u, 1u, 0u, 0u, 0u);
     }
 
-    void VDrawCommandTransaction::drawInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
-                                                common::Resource<swizzle::gfx::Buffer> instanceData)
+    void VDrawCommandTransaction::drawInstanced(common::Resource<swizzle::gfx::GfxBuffer> buffer,
+                                                common::Resource<swizzle::gfx::GfxBuffer> instanceData)
     {
 
         SWIZZLE_PROFILE_EVENT("CmdBuffer::drawInstanced");
@@ -198,9 +198,9 @@ namespace vk
         vkCmdDraw(mCommandBuffer, vertex->getCount(), instance->getCount(), 0u, 0u);
     }
 
-    void VDrawCommandTransaction::drawIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
-                                                       common::Resource<swizzle::gfx::Buffer> index,
-                                                       common::Resource<swizzle::gfx::Buffer> instanceData)
+    void VDrawCommandTransaction::drawIndexedInstanced(common::Resource<swizzle::gfx::GfxBuffer> buffer,
+                                                       common::Resource<swizzle::gfx::GfxBuffer> index,
+                                                       common::Resource<swizzle::gfx::GfxBuffer> instanceData)
     {
         SWIZZLE_PROFILE_EVENT("CmdBuffer::drawIndexed");
         // TODO: Track draw count
@@ -227,10 +227,10 @@ namespace vk
         vkCmdDrawIndexed(mCommandBuffer, idx->getCount() * 3u, instance->getCount(), 0u, 0u, 0u);
     }
 
-    void VDrawCommandTransaction::drawMultiBufferIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
-                                                                  common::Resource<swizzle::gfx::Buffer> buffer2,
-                                                                  common::Resource<swizzle::gfx::Buffer> index,
-                                                                  common::Resource<swizzle::gfx::Buffer> instanceData)
+    void VDrawCommandTransaction::drawMultiBufferIndexedInstanced(common::Resource<swizzle::gfx::GfxBuffer> buffer,
+                                                                  common::Resource<swizzle::gfx::GfxBuffer> buffer2,
+                                                                  common::Resource<swizzle::gfx::GfxBuffer> index,
+                                                                  common::Resource<swizzle::gfx::GfxBuffer> instanceData)
     {
         SWIZZLE_PROFILE_EVENT("CmdBuffer::drawMultiBufferIndexedInstanced");
 

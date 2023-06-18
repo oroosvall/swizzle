@@ -25,8 +25,8 @@ namespace vk
         VCommandTransaction(VkCommandBuffer commandBuffer, const common::Resource<LifetimeToken> token);
         virtual ~VCommandTransaction();
 
-        virtual void copyBuffer(common::Resource<swizzle::gfx::Buffer> to,
-                                common::Resource<swizzle::gfx::Buffer> from) override;
+        virtual void copyBuffer(common::Resource<swizzle::gfx::GfxBuffer> to,
+                                common::Resource<swizzle::gfx::GfxBuffer> from) override;
 
         virtual void bindComputeShader(common::Resource<swizzle::gfx::Shader> shader,
                                        common::Resource<swizzle::gfx::Material> mat, U8* constants,

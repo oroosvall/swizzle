@@ -18,14 +18,14 @@
 class Sky : public Renderable
 {
 public:
-    Sky(common::Resource<swizzle::gfx::Buffer> mesh, common::Resource<swizzle::gfx::Texture> texture,
+    Sky(common::Resource<swizzle::gfx::GfxBuffer> mesh, common::Resource<swizzle::gfx::Texture> texture,
         common::Resource<swizzle::gfx::Material> material, common::Resource<swizzle::gfx::Shader> shader);
 
     virtual void update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans) override;
     virtual void render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam) override;
 
 private:
-    common::Resource<swizzle::gfx::Buffer> mMesh;
+    common::Resource<swizzle::gfx::GfxBuffer> mMesh;
     common::Resource<swizzle::gfx::Texture> mTexture;
     common::Resource<swizzle::gfx::Material> mMaterial;
     common::Resource<swizzle::gfx::Shader> mShader;

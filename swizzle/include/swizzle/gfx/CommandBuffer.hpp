@@ -5,7 +5,7 @@
 
 #include <common/Common.hpp>
 
-#include <swizzle/gfx/Buffer.hpp>
+#include <swizzle/gfx/GfxBuffer.hpp>
 #include <swizzle/gfx/FrameBuffer.hpp>
 #include <swizzle/gfx/Material.hpp>
 #include <swizzle/gfx/Swapchain.hpp>
@@ -45,20 +45,20 @@ namespace swizzle::gfx
         virtual void enableStencilTest(SwBool enable) = 0;
         virtual void setStencilReference(U8 reference) = 0;
 
-        virtual void bindVertexBuffer(common::Resource<Buffer> buffer) = 0;
-        virtual void bindIndexBuffer(common::Resource<Buffer> buffer, SwBool bitSize16) = 0;
+        virtual void bindVertexBuffer(common::Resource<GfxBuffer> buffer) = 0;
+        virtual void bindIndexBuffer(common::Resource<GfxBuffer> buffer, SwBool bitSize16) = 0;
 
-        virtual void draw(common::Resource<Buffer> buffer) = 0;
-        virtual void drawIndexed(common::Resource<Buffer> buffer, common::Resource<Buffer> index) = 0;
+        virtual void draw(common::Resource<GfxBuffer> buffer) = 0;
+        virtual void drawIndexed(common::Resource<GfxBuffer> buffer, common::Resource<GfxBuffer> index) = 0;
 
-        virtual void drawInstanced(common::Resource<Buffer> buffer, common::Resource<Buffer> instanceData) = 0;
-        virtual void drawIndexedInstanced(common::Resource<Buffer> buffer, common::Resource<Buffer> index,
-                                          common::Resource<Buffer> instanceData) = 0;
+        virtual void drawInstanced(common::Resource<GfxBuffer> buffer, common::Resource<GfxBuffer> instanceData) = 0;
+        virtual void drawIndexedInstanced(common::Resource<GfxBuffer> buffer, common::Resource<GfxBuffer> index,
+                                          common::Resource<GfxBuffer> instanceData) = 0;
 
-        virtual void drawMultiBufferIndexedInstanced(common::Resource<swizzle::gfx::Buffer> buffer,
-                                                     common::Resource<swizzle::gfx::Buffer> buffer2,
-                                                     common::Resource<swizzle::gfx::Buffer> index,
-                                                     common::Resource<swizzle::gfx::Buffer> instanceData) = 0;
+        virtual void drawMultiBufferIndexedInstanced(common::Resource<swizzle::gfx::GfxBuffer> buffer,
+                                                     common::Resource<swizzle::gfx::GfxBuffer> buffer2,
+                                                     common::Resource<swizzle::gfx::GfxBuffer> index,
+                                                     common::Resource<swizzle::gfx::GfxBuffer> instanceData) = 0;
 
         virtual void drawMeshlet(U32 meshletCount) = 0;
 
@@ -81,7 +81,7 @@ namespace swizzle::gfx
         /// </summary>
         /// <param name="to">Destination buffer to copy data to</param>
         /// <param name="from">Source buffer to copy data from</param>
-        virtual void copyBuffer(common::Resource<Buffer> to, common::Resource<Buffer> from) = 0;
+        virtual void copyBuffer(common::Resource<GfxBuffer> to, common::Resource<GfxBuffer> from) = 0;
 
         /// <summary>
         /// Bind a shader for compute operations

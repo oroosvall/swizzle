@@ -93,7 +93,7 @@ namespace swizzle::gfx
         return stats;
     }
 
-    common::Resource<Buffer> VkGfxDevice::createBuffer(BufferType type)
+    common::Resource<GfxBuffer> VkGfxDevice::createBuffer(GfxBufferType type)
     {
         return common::CreateRef<vk::DBuffer>(mVkDevice, type);
     }

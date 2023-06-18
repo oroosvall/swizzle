@@ -43,7 +43,7 @@ namespace swizzle::gfx
         virtual common::Resource<swizzle::core::StatisticsIterator<swizzle::gfx::GfxStatsType>>
             getStatisticsIterator() override;
 
-        virtual common::Resource<Buffer> createBuffer(BufferType type) override;
+        virtual common::Resource<GfxBuffer> createBuffer(GfxBufferType type) override;
         virtual common::Resource<CommandBuffer> createCommandBuffer(U32 swapCount) override;
         virtual common::Resource<Swapchain> createSwapchain(common::Resource<core::SwWindow> window,
                                                             U32 swapCount) override;

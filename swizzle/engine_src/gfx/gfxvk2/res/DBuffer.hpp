@@ -3,7 +3,7 @@
 
 /* Include files */
 
-#include <swizzle/gfx/Buffer.hpp>
+#include <swizzle/gfx/GfxBuffer.hpp>
 
 #include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
@@ -27,10 +27,10 @@
 
 namespace vk
 {
-    class DBuffer : public swizzle::gfx::Buffer
+    class DBuffer : public swizzle::gfx::GfxBuffer
     {
     public:
-        DBuffer(common::Resource<Device> device, swizzle::gfx::BufferType type);
+        DBuffer(common::Resource<Device> device, swizzle::gfx::GfxBufferType type);
         virtual ~DBuffer();
 
         virtual void setBufferData(void* data, U64 size, U32 stride) override;
@@ -47,14 +47,14 @@ namespace vk
 
         U32 getCount();
 
-        swizzle::gfx::BufferType getType();
+        swizzle::gfx::GfxBufferType getType();
 
     private:
 
         void createOrResize(U64 newSize);
 
         common::Resource<Device> mDevice;
-        swizzle::gfx::BufferType mType;
+        swizzle::gfx::GfxBufferType mType;
 
         common::Resource<VkResource<VkBuffer>> mBuffer;
         common::Resource<DeviceMemory> mMemory;
@@ -70,7 +70,7 @@ namespace vk
 
 namespace vk
 {
-    common::Resource<DBuffer> GetBufferAsDBuffer(common::Resource<swizzle::gfx::Buffer> buffer);
+    common::Resource<DBuffer> GetBufferAsDBuffer(common::Resource<swizzle::gfx::GfxBuffer> buffer);
 }
 
 #endif

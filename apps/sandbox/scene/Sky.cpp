@@ -22,7 +22,7 @@
 
 /* Class Public Function Definition */
 
-Sky::Sky(common::Resource<swizzle::gfx::Buffer> mesh, common::Resource<swizzle::gfx::Texture> texture,
+Sky::Sky(common::Resource<swizzle::gfx::GfxBuffer> mesh, common::Resource<swizzle::gfx::Texture> texture,
          common::Resource<swizzle::gfx::Material> material, common::Resource<swizzle::gfx::Shader> shader)
     : mMesh(mesh)
     , mTexture(texture)

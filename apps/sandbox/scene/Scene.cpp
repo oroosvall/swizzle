@@ -120,7 +120,7 @@ void Scene::loadSky()
 
     auto mesh2 = swizzle::asset2::LoadMesh("meshes/inverted_sphere.obj", ldi);
 
-    auto vertexBuffer = mDevice->createBuffer(swizzle::gfx::BufferType::Vertex);
+    auto vertexBuffer = mDevice->createBuffer(swizzle::gfx::GfxBufferType::Vertex);
     vertexBuffer->setBufferData((U8*)mesh2->getVertexDataPtr(), mesh2->getVertexDataSize(),
                                 sizeof(float) * (3 + 3 + 2));
 
@@ -142,14 +142,14 @@ void Scene::loadAnimMesh()
 
     auto mesh2 = swizzle::asset2::LoadMesh("meshes/test.swm", ldi);
 
-    common::Resource<sgfx::Buffer> verts = mDevice->createBuffer(sgfx::BufferType::Vertex);
-    common::Resource<sgfx::Buffer> idx = mDevice->createBuffer(sgfx::BufferType::Index);
+    common::Resource<sgfx::GfxBuffer> verts = mDevice->createBuffer(sgfx::GfxBufferType::Vertex);
+    common::Resource<sgfx::GfxBuffer> idx = mDevice->createBuffer(sgfx::GfxBufferType::Index);
 
     verts->setBufferData((U8*)mesh2->getVertexDataPtr(), mesh2->getVertexDataSize(),
                          sizeof(float) * (3u + 3u + 2u + 4u + 4u));
     idx->setBufferData((U8*)mesh2->getIndexDataPtr(), mesh2->getIndexDataSize(), sizeof(U32) * 3u);
 
-    common::Resource<sgfx::Buffer> instBuffer = mDevice->createBuffer(sgfx::BufferType::Vertex);
+    common::Resource<sgfx::GfxBuffer> instBuffer = mDevice->createBuffer(sgfx::GfxBufferType::Vertex);
 
     std::vector<glm::mat4> positions;
 

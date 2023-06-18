@@ -23,7 +23,7 @@
 
 namespace vk
 {
-    common::Resource<DBuffer> GetBufferAsDBuffer(common::Resource<swizzle::gfx::Buffer> buffer)
+    common::Resource<DBuffer> GetBufferAsDBuffer(common::Resource<swizzle::gfx::GfxBuffer> buffer)
     {
         return std::dynamic_pointer_cast<DBuffer>(buffer);
     }
@@ -34,7 +34,7 @@ namespace vk
 namespace vk
 {
 
-    DBuffer::DBuffer(common::Resource<Device> device, swizzle::gfx::BufferType type)
+    DBuffer::DBuffer(common::Resource<Device> device, swizzle::gfx::GfxBufferType type)
         : mDevice(device)
         , mType(type)
         , mBuffer()
@@ -133,7 +133,7 @@ namespace vk
         return mVertCount;
     }
 
-    swizzle::gfx::BufferType DBuffer::getType()
+    swizzle::gfx::GfxBufferType DBuffer::getType()
     {
         return mType;
     }
@@ -164,16 +164,16 @@ namespace vk
         VkBufferUsageFlags usage = 0;
         switch (mType)
         {
-        case swizzle::gfx::BufferType::Vertex :
+        case swizzle::gfx::GfxBufferType::Vertex :
             usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             break;
-        case swizzle::gfx::BufferType::Index:
+        case swizzle::gfx::GfxBufferType::Index:
             usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
             break;
-        case swizzle::gfx::BufferType::UniformBuffer:
+        case swizzle::gfx::GfxBufferType::UniformBuffer:
             usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
             break;
-        case swizzle::gfx::BufferType::StorageBuffer:
+        case swizzle::gfx::GfxBufferType::StorageBuffer:
             usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             break;
         default:

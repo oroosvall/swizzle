@@ -4,7 +4,7 @@
 #include <common/Common.hpp>
 
 #include <swizzle/gfx/Descriptor.hpp>
-#include <swizzle/gfx/Buffer.hpp>
+#include <swizzle/gfx/GfxBuffer.hpp>
 #include <swizzle/gfx/Texture.hpp>
 
 namespace swizzle::gfx
@@ -28,7 +28,7 @@ namespace swizzle::gfx
         virtual DescriptorType getDescriptorType(U32 index) = 0;
         virtual void useMipLevels(SwBool enable, SwBool forceLowest) = 0;
 
-        virtual void setDescriptorBufferResource(U32 index, common::Resource<Buffer> buffer, U64 size) = 0;
+        virtual void setDescriptorBufferResource(U32 index, common::Resource<GfxBuffer> buffer, U64 size) = 0;
         virtual void setDescriptorTextureResource(U32 index, common::Resource<Texture> texture, SwBool copy = true) = 0;
         virtual void setDescriptorComputeImageResource(U32 index, common::Resource<swizzle::gfx::Texture> texture) = 0;
 

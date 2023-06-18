@@ -7,7 +7,7 @@
 #include <swizzle/Api.hpp>
 #include <swizzle/core/Window.hpp>
 
-#include <swizzle/gfx/Buffer.hpp>
+#include <swizzle/gfx/GfxBuffer.hpp>
 #include <swizzle/gfx/CommandBuffer.hpp>
 #include <swizzle/gfx/FrameBuffer.hpp>
 #include <swizzle/gfx/Swapchain.hpp>

@@ -35,8 +35,8 @@ namespace vk
 
     VCommandTransaction::~VCommandTransaction() {}
 
-    void VCommandTransaction::copyBuffer(common::Resource<swizzle::gfx::Buffer> to,
-                                         common::Resource<swizzle::gfx::Buffer> from)
+    void VCommandTransaction::copyBuffer(common::Resource<swizzle::gfx::GfxBuffer> to,
+                                         common::Resource<swizzle::gfx::GfxBuffer> from)
     {
         DBuffer* source = (DBuffer*)from.get();
         DBuffer* destination = (DBuffer*)to.get();

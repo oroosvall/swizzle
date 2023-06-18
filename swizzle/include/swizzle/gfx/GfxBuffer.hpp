@@ -6,7 +6,7 @@
 namespace swizzle::gfx
 {
 
-    enum class BufferType
+    enum class GfxBufferType
     {
         Vertex,
         Index,
@@ -14,7 +14,7 @@ namespace swizzle::gfx
         StorageBuffer,
     };
 
-    class Buffer
+    class GfxBuffer
     {
     public:
 
@@ -29,7 +29,7 @@ namespace swizzle::gfx
         virtual void unmapMemory() = 0;
 
     protected:
-        virtual ~Buffer() {}
+        virtual ~GfxBuffer() {}
 
     };
 }

@@ -25,7 +25,7 @@
 /* Class Public Function Definition */
 
 Animated::Animated(common::Resource<swizzle::gfx::GfxDevice> dev, common::Resource<swizzle::asset2::IMeshAsset> asset,
-                   common::Resource<swizzle::gfx::Buffer> inst, common::Resource<swizzle::gfx::Texture> texture,
+                   common::Resource<swizzle::gfx::GfxBuffer> inst, common::Resource<swizzle::gfx::Texture> texture,
                    common::Resource<swizzle::gfx::Shader> shader)
     : mAsset(asset)
     , mMesh(nullptr)
@@ -39,9 +39,9 @@ Animated::Animated(common::Resource<swizzle::gfx::GfxDevice> dev, common::Resour
     , mCurAnim(0u)
     , mFrameIndex(0u)
 {
-    mMesh = dev->createBuffer(swizzle::gfx::BufferType::Vertex);
-    mIndex = dev->createBuffer(swizzle::gfx::BufferType::Index);
-    mBone = dev->createBuffer(swizzle::gfx::BufferType::UniformBuffer);
+    mMesh = dev->createBuffer(swizzle::gfx::GfxBufferType::Vertex);
+    mIndex = dev->createBuffer(swizzle::gfx::GfxBufferType::Index);
+    mBone = dev->createBuffer(swizzle::gfx::GfxBufferType::UniformBuffer);
 
     mMesh->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(),
                          sizeof(float) * (3u + 3u + 2u + 4u + 4u));
