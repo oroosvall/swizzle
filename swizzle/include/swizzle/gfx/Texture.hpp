@@ -1,7 +1,18 @@
-#ifndef TEXTURE_HPP
-#define TEXTURE_HPP
+
+#pragma once
+
+/* Include files */
 
 #include <common/Common.hpp>
+#include <swizzle/gfx/GfxTypes.hpp>
+
+/* Defines */
+
+/* Typedefs/enums */
+
+/* Forward Declared Structs/Classes */
+
+/* Struct/Class Declaration */
 
 namespace swizzle::gfx
 {
@@ -11,11 +22,11 @@ namespace swizzle::gfx
         virtual ~Texture() {}
 
         virtual void setData(U32 width, U32 height, U32 channels, const U8* pixelData) = 0;
-        virtual void getTextureSize(U32& w, U32& h) = 0;
+        virtual TextureDimensions getSize() const = 0;
 
         virtual void upload() = 0;
         virtual bool isDepth() = 0;
     };
-}
+} // namespace swizzle::gfx
 
-#endif
+/* Function Declaration */

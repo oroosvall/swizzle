@@ -106,10 +106,9 @@ namespace vk
 
     void TextureCube::upload() {}
 
-    void TextureCube::getTextureSize(U32& w, U32& h)
+    swizzle::gfx::TextureDimensions TextureCube::getSize() const
     {
-        w = mWidth;
-        h = mHeight;
+        return { mWidth, mHeight, 1u };
     }
 
     SwBool TextureCube::isUploaded() const

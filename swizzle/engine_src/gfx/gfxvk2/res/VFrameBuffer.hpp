@@ -49,27 +49,30 @@ namespace vk
         VkImageView mImageView;
         SwBool mDepth;
 
-        virtual SwBool isUploaded() const
+        virtual SwBool isUploaded() const override
         {
             return false;
         }
-        virtual void uploadImage(VkCommandBuffer) {}
-        virtual common::Resource<VkResource<VkImage>> getImg()
+        virtual void uploadImage(VkCommandBuffer) override {}
+        virtual common::Resource<VkResource<VkImage>> getImg() override
         {
             return mImage;
         }
-        virtual VkImageView getView()
+        virtual VkImageView getView() override
         {
             return mImageView;
         }
-        virtual bool isDepth()
+        virtual bool isDepth() override
         {
             return mDepth;
         }
-        virtual void setData(U32, U32, U32, const U8*) {}
-        virtual void getTextureSize(U32&, U32&) {}
+        virtual void setData(U32, U32, U32, const U8*) override {}
+        virtual swizzle::gfx::TextureDimensions getSize() const override
+        {
+            return {1u, 1u, 1u};
+        }
 
-        virtual void upload() {}
+        virtual void upload() override {}
 
         virtual void transferImageToCompute(VkCommandBuffer){};
         virtual void transferImageToRender(VkCommandBuffer){};

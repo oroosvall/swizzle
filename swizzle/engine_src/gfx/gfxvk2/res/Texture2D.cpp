@@ -119,10 +119,9 @@ namespace vk
         mUploaded = false;
     }
 
-    void Texture2D::getTextureSize(U32& w, U32& h)
+    swizzle::gfx::TextureDimensions Texture2D::getSize() const
     {
-        w = mWidth;
-        h = mHeight;
+        return { mWidth, mHeight, 1u };
     }
 
     void Texture2D::upload() {}
