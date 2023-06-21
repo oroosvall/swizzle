@@ -72,8 +72,6 @@ namespace vk
             return {1u, 1u, 1u};
         }
 
-        virtual void upload() override {}
-
         virtual void transferImageToCompute(VkCommandBuffer){};
         virtual void transferImageToRender(VkCommandBuffer){};
     };

@@ -124,8 +124,6 @@ namespace vk
         return { mWidth, mHeight, 1u };
     }
 
-    void Texture2D::upload() {}
-
     SwBool Texture2D::isUploaded() const
     {
         return mUploaded;

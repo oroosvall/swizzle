@@ -104,8 +104,6 @@ namespace vk
         mUploaded = false;
     }
 
-    void TextureCube::upload() {}
-
     swizzle::gfx::TextureDimensions TextureCube::getSize() const
     {
         return { mWidth, mHeight, 1u };

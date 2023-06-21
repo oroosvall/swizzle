@@ -30,7 +30,6 @@ namespace vk
         virtual ~Texture2D();
 
         virtual void setData(U32 width, U32 height, U32 channels, const U8* pixelData) override;
-        virtual void upload() override;
         virtual swizzle::gfx::TextureDimensions getSize() const override;
 
         virtual SwBool isUploaded() const override;
