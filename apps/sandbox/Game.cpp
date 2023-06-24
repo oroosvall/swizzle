@@ -6,8 +6,6 @@
 
 #include <swizzle/core/Input.hpp>
 
-#include <swizzle/asset/TextureLoader.hpp>
-
 #include <utils/StringUtils.hpp>
 
 #include <imgui/imgui.h>

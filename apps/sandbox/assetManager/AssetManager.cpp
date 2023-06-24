@@ -3,7 +3,7 @@
 
 #include "AssetManager.hpp"
 
-#include <swizzle/asset/TextureLoader.hpp>
+#include <swizzle/asset2/Assets.hpp>
 
 /* Defines */
 
@@ -24,13 +24,9 @@
 AssetManager::AssetManager(common::Resource<swizzle::gfx::GfxDevice> device)
     : mDevice(device)
 {
-
 }
 
-AssetManager::~AssetManager()
-{
-
-}
+AssetManager::~AssetManager() {}
 
 void AssetManager::clear()
 {
@@ -58,12 +54,17 @@ common::Resource<swizzle::asset2::IMeshAsset> AssetManager::loadAnimMesh(const S
 
 common::Resource<swizzle::gfx::Texture> AssetManager::loadTexture(const SwChar* filePath)
 {
-    return swizzle::asset::LoadTexture2D(mDevice, filePath);
+    auto data = swizzle::asset2::LoadTexture(filePath);
+    return mDevice->createTexture(data->getWidth(), data->getHeight(), data->getChannels(), false, data->getData()->data());
 }
 
-common::Resource<swizzle::gfx::Texture> AssetManager::loadCubeTexture(const SwChar* right, const SwChar* left, const SwChar* top, const SwChar* bottom, const SwChar* front, const SwChar* back)
+common::Resource<swizzle::gfx::Texture> AssetManager::loadCubeTexture(const SwChar* right, const SwChar* left,
+                                                                      const SwChar* top, const SwChar* bottom,
+                                                                      const SwChar* front, const SwChar* back)
 {
-    return swizzle::asset::LoadTextureCubeMap(mDevice, right, left, top, bottom, front, back);
+    auto data = swizzle::asset2::LoadCubeTexture(right, left, top, bottom, front, back);
+    return mDevice->createCubeMapTexture(data->getWidth(), data->getHeight(), data->getChannels(),
+                                         data->getData()->data());
 }
 
 /* Class Protected Function Definition */

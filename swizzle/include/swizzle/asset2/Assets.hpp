@@ -92,6 +92,9 @@ namespace swizzle::asset2
 {
     common::Resource<IMeshAsset> SWIZZLE_API LoadMesh(const SwChar* fileName, MeshAssetLoaderDescription& loadInfo);
     common::Resource<ITextureAsset> SWIZZLE_API LoadTexture(const SwChar* fileName);
-}
+    common::Resource<ITextureAsset> SWIZZLE_API LoadCubeTexture(const SwChar* rightFile, const SwChar* leftFile,
+                                                                const SwChar* topFile, const SwChar* bottomFile,
+                                                                const SwChar* frontFile, const SwChar* backFile);
+} // namespace swizzle::asset2
 
 #endif
