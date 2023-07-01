@@ -53,6 +53,7 @@ namespace vk
         {
             return false;
         }
+        virtual void resize(U32, U32, U32) override {}
         virtual void uploadImage(VkCommandBuffer) override {}
         virtual common::Resource<VkResource<VkImage>> getImg() override
         {
@@ -69,7 +70,7 @@ namespace vk
         virtual void setData(U32, U32, U32, const U8*) override {}
         virtual swizzle::gfx::TextureDimensions getSize() const override
         {
-            return {1u, 1u, 1u};
+            return {1u, 1u, 1u, 1u};
         }
 
         virtual void transferImageToCompute(VkCommandBuffer){};

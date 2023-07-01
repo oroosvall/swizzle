@@ -3,11 +3,11 @@
 
 #include <swizzle/profiler/Profiler.hpp>
 
-#include "CommandTransaction.hpp"
 #include "../DBuffer.hpp"
 #include "../ShaderPipeline.hpp"
 #include "../TextureBase.hpp"
 #include "../VMaterial.hpp"
+#include "CommandTransaction.hpp"
 
 /* Defines */
 
@@ -57,6 +57,27 @@ namespace vk
         const U32 regionCount = 1u;
 
         vkCmdCopyBuffer(mCommandBuffer, srcBuf, dstBuf, regionCount, &bufferCopy);
+    }
+
+    void VCommandTransaction::copyBufferToTexture(common::Resource<swizzle::gfx::Texture> to,
+                                                  common::Resource<swizzle::gfx::GfxBuffer> from,
+                                                  const swizzle::gfx::TextureDimensions& size)
+    {
+        DBuffer* source = (DBuffer*)from.get();
+        TextureBase* destination = (TextureBase*)to.get();
+
+        destination->resize(size.mHeight, size.mWidth, 4u);
+
+        auto& resSrc = source->getBuffer();
+        auto resDst = destination->getImg();
+
+        resSrc->addUser(mLifetimeToken, mLifetimeToken->getCheckpoint());
+        resDst->addUser(mLifetimeToken, mLifetimeToken->getCheckpoint());
+
+        VkBuffer srcBuf = resSrc->getVkHandle();
+        VkImage dstImg = resDst->getVkHandle();
+
+        vk::uploadTexture(mCommandBuffer, srcBuf, dstImg, size);
     }
 
     void VCommandTransaction::bindComputeShader(common::Resource<swizzle::gfx::Shader> shader,

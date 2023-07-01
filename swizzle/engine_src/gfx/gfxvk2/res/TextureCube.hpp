@@ -30,6 +30,7 @@ namespace vk
 
         virtual void setData(U32 width, U32 height, U32 channels, const U8* pixelData) override;
         virtual swizzle::gfx::TextureDimensions getSize() const override;
+        void resize(U32 height, U32 width, U32 channels) override;
 
         virtual SwBool isUploaded() const override;
         virtual void uploadImage(VkCommandBuffer cmdBuffer) override;

@@ -27,6 +27,9 @@ namespace vk
 
         virtual void copyBuffer(common::Resource<swizzle::gfx::GfxBuffer> to,
                                 common::Resource<swizzle::gfx::GfxBuffer> from) override;
+        virtual void copyBufferToTexture(common::Resource<swizzle::gfx::Texture> to,
+                                         common::Resource<swizzle::gfx::GfxBuffer> from,
+                                         const swizzle::gfx::TextureDimensions& size) override;
 
         virtual void bindComputeShader(common::Resource<swizzle::gfx::Shader> shader,
                                        common::Resource<swizzle::gfx::Material> mat, U8* constants,

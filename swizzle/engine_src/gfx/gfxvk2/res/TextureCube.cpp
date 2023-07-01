@@ -106,7 +106,20 @@ namespace vk
 
     swizzle::gfx::TextureDimensions TextureCube::getSize() const
     {
-        return { mWidth, mHeight, 1u };
+        return {mWidth, mHeight, 1u, 1u};
+    }
+
+    void TextureCube::resize(U32 height, U32 width, U32 channels)
+    {
+        if (((width != mWidth) || (height != mHeight) || (channels != mChannels)) &&
+            ((width != 0U) && (height != 0U) && (channels != 0)))
+        {
+            destroyResources();
+            mWidth = width;
+            mHeight = height;
+            mChannels = channels;
+            createResources();
+        }
     }
 
     SwBool TextureCube::isUploaded() const

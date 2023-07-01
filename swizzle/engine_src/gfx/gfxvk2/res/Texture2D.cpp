@@ -121,7 +121,21 @@ namespace vk
 
     swizzle::gfx::TextureDimensions Texture2D::getSize() const
     {
-        return { mWidth, mHeight, 1u };
+        return {mWidth, mHeight, 1u, mMipLevels};
+    }
+
+    void Texture2D::resize(U32 height, U32 width, U32 channels)
+    {
+        if (((width != mWidth) || (height != mHeight) || (channels != mChannels)) &&
+            ((width != 0U) && (height != 0U) && (channels != 0)))
+        {
+            destroyResources();
+            mWidth = width;
+            mHeight = height;
+            mChannels = channels;
+            mMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(mWidth, mHeight)))) + 1;
+            createResources();
+        }
     }
 
     SwBool Texture2D::isUploaded() const
@@ -179,13 +193,66 @@ namespace vk
         mUploaded = true;
     }
 
+    void Texture2D::uploadImage2(VkCommandBuffer cmdBuffer, common::Resource<VkResource<VkBuffer>> data)
+    {
+        VkImageMemoryBarrier imgBarrier = {};
+        imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        imgBarrier.pNext = VK_NULL_HANDLE;
+        imgBarrier.srcAccessMask = 0;
+        imgBarrier.dstAccessMask = 0;
+        imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
+        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imgBarrier.image = mImage->getVkHandle();
+        imgBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imgBarrier.subresourceRange.baseMipLevel = 0u;
+        imgBarrier.subresourceRange.levelCount = mMipLevels;
+        imgBarrier.subresourceRange.baseArrayLayer = 0u;
+        imgBarrier.subresourceRange.layerCount = 1u;
+
+        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
+                             VK_NULL_HANDLE, 1u, &imgBarrier);
+
+        VkBufferImageCopy region = {};
+        region.bufferOffset = 0u;
+        region.bufferRowLength = mWidth;
+        region.bufferImageHeight = mHeight;
+
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0u;
+        region.imageSubresource.baseArrayLayer = 0u;
+        region.imageSubresource.layerCount = 1u;
+
+        region.imageOffset = {0, 0, 0};
+        region.imageExtent = {mWidth, mHeight, 1u};
+
+        // TODO: should check that buffer is having enough data before copy
+
+        vkCmdCopyBufferToImage(cmdBuffer, data->getVkHandle(), mImage->getVkHandle(),
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1U, &region);
+
+        imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
+                             VK_NULL_HANDLE, 1u, &imgBarrier);
+
+        generateMipMaps(cmdBuffer);
+
+        mUploaded = true;
+    }
+
     void Texture2D::transferImageToCompute(VkCommandBuffer cmdBuffer)
     {
         VkImageMemoryBarrier imgBarrier = {};
         imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         imgBarrier.pNext = VK_NULL_HANDLE;
         imgBarrier.srcAccessMask = 0u;
-        imgBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_SHADER_WRITE_BIT | VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT;
+        imgBarrier.dstAccessMask =
+            VkAccessFlagBits::VK_ACCESS_SHADER_WRITE_BIT | VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT;
         imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
         imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -207,7 +274,8 @@ namespace vk
         VkImageMemoryBarrier imgBarrier = {};
         imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         imgBarrier.pNext = VK_NULL_HANDLE;
-        imgBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_SHADER_WRITE_BIT | VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT;
+        imgBarrier.srcAccessMask =
+            VkAccessFlagBits::VK_ACCESS_SHADER_WRITE_BIT | VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT;
         imgBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT;
         imgBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
         imgBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

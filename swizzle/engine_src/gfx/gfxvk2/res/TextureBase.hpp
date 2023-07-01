@@ -7,8 +7,8 @@
 
 #include "_fwDecl.hpp"
 
-#include "VkResource.hpp"
 #include "../backend/Vk.hpp"
+#include "VkResource.hpp"
 
 /* Defines */
 
@@ -27,6 +27,8 @@ namespace vk
     public:
         virtual ~TextureBase(){};
 
+        virtual void resize(U32 height, U32 width, U32 channels) = 0;
+
         virtual SwBool isUploaded() const = 0;
         virtual void uploadImage(VkCommandBuffer cmdBuffer) = 0;
 
@@ -37,9 +39,15 @@ namespace vk
         virtual void transferImageToCompute(VkCommandBuffer cmdBuffer) = 0;
         virtual void transferImageToRender(VkCommandBuffer cmdBuffer) = 0;
     };
-}
+} // namespace vk
 
 /* Function Declaration */
 
+namespace vk
+{
+    void uploadTexture(VkCommandBuffer cmdBuffer, VkBuffer data, VkImage image,
+                       const swizzle::gfx::TextureDimensions& info);
+    void generateMipMaps(VkCommandBuffer cmdBuffer, VkImage image, const swizzle::gfx::TextureDimensions& info);
+} // namespace vk
 
 #endif

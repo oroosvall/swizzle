@@ -23,7 +23,8 @@ namespace swizzle::gfx
         U32 mWidth;
         U32 mHeight;
         U32 mLayers;
+        U32 mMipLevels;
     };
-}
+} // namespace swizzle::gfx
 
 /* Function Declaration */

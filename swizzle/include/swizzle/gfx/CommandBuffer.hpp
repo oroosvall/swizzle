@@ -5,8 +5,8 @@
 
 #include <common/Common.hpp>
 
-#include <swizzle/gfx/GfxBuffer.hpp>
 #include <swizzle/gfx/FrameBuffer.hpp>
+#include <swizzle/gfx/GfxBuffer.hpp>
 #include <swizzle/gfx/Material.hpp>
 #include <swizzle/gfx/Swapchain.hpp>
 #include <swizzle/gfx/Texture.hpp>
@@ -82,6 +82,17 @@ namespace swizzle::gfx
         /// <param name="to">Destination buffer to copy data to</param>
         /// <param name="from">Source buffer to copy data from</param>
         virtual void copyBuffer(common::Resource<GfxBuffer> to, common::Resource<GfxBuffer> from) = 0;
+
+        /// <summary>
+        /// Performs a copy transfer operation from a data buffer to a texture.
+        /// The texture will be resized if required.
+        /// </summary>
+        /// <param name="to">Destination texture to copy to</param>
+        /// <param name="from">Source buffer to copy from</param>
+        /// <param name="size">Size of the texture</param>
+        virtual void copyBufferToTexture(common::Resource<swizzle::gfx::Texture> to,
+                                         common::Resource<swizzle::gfx::GfxBuffer> from,
+                                         const swizzle::gfx::TextureDimensions& size) = 0;
 
         /// <summary>
         /// Bind a shader for compute operations
