@@ -25,18 +25,12 @@ namespace vk
     class Texture2D : public TextureBase
     {
     public:
-        Texture2D(common::Resource<Device> device, U32 width, U32 height, U32 channels, SwBool f32,
-                  const U8* pixelData);
+        Texture2D(common::Resource<Device> device, U32 width, U32 height, U32 channels, SwBool f32);
         virtual ~Texture2D();
 
-        virtual void setData(U32 width, U32 height, U32 channels, const U8* pixelData) override;
         virtual swizzle::gfx::TextureDimensions getSize() const override;
 
         virtual void resize(U32 height, U32 width, U32 channels) override;
-
-        virtual SwBool isUploaded() const override;
-        virtual void uploadImage(VkCommandBuffer cmdBuffer) override;
-        void uploadImage2(VkCommandBuffer cmdBuffer, common::Resource<VkResource<VkBuffer>> data);
 
         virtual void transferImageToCompute(VkCommandBuffer cmdBuffer) override;
         virtual void transferImageToRender(VkCommandBuffer cmdBuffer) override;
@@ -61,11 +55,6 @@ namespace vk
         common::Resource<DeviceMemory> mImageMemory;
 
         VkImageView mImageView;
-
-        SwBool mUploaded;
-
-        common::Resource<VkResource<VkBuffer>> mStageBuffer;
-        common::Resource<DeviceMemory> mStageMemory;
 
         U32 mWidth;
         U32 mHeight;

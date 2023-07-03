@@ -61,11 +61,6 @@ void Game::userSetup()
 
     mFsqMat = mGfxDevice->createMaterial(mFsq, sw::gfx::SamplerMode::SamplerModeClamp);
     ImGui_ImplSwizzle_SetMaterial(mFsqMat);
-
-    sw::gfx::ShaderAttributeList attribCompute = {};
-
-    mComputeShader = mGfxDevice->createShader(mSwapchain, sw::gfx::ShaderType::ShaderType_Compute, attribCompute);
-    mComputeShader->load("shaders/compute.shader");
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -198,9 +193,6 @@ void Game::updateMainWindow(F32 dt)
     mScene->update(dt, trans);
 
     imGuiRender(trans);
-
-    trans->bindComputeShader(mComputeShader, nullptr, nullptr, 0);
-    trans->dispatchCompute(10, 10, 10);
 
     auto dTrans = mCmdBuffer->beginRenderPass(mSwapchain, std::move(trans));
 

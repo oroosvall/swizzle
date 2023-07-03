@@ -24,89 +24,27 @@
 
 namespace vk
 {
-    TextureCube::TextureCube(common::Resource<Device> device, U32 width, U32 height, U32 channels, const U8* pixelData)
+    TextureCube::TextureCube(common::Resource<Device> device, U32 width, U32 height, U32 channels)
         : mDevice(device)
         , mImage()
         , mImageMemory()
         , mImageView(VK_NULL_HANDLE)
-        , mUploaded(true)
-        , mStageBuffer()
-        , mStageMemory()
         , mWidth(width)
         , mHeight(height)
         , mChannels(channels)
         , mLayers(6u)
     {
         createResources();
-
-        if (pixelData)
-        {
-            setData(width, height, channels, pixelData);
-        }
     }
 
     TextureCube::~TextureCube()
     {
         destroyResources();
-
-        if (mStageBuffer)
-        {
-            common::Resource<IVkResource> res = mStageBuffer;
-            mDevice->destroyResource(res);
-            mDevice->freeMemory(mStageMemory);
-
-            mStageBuffer.reset();
-            mStageMemory.reset();
-        }
-    }
-
-    void TextureCube::setData(U32 width, U32 height, U32 channels, const U8* pixelData)
-    {
-        mChannels = channels;
-        // check to recreate the texture
-        if (((width != mWidth) || (height != mHeight)) &&
-            ((width != 0u) && (height != 0u)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
-        {
-            destroyResources();
-            mWidth = width;
-            mHeight = height;
-            createResources();
-        }
-
-        if (mStageBuffer)
-        {
-            common::Resource<IVkResource> res = mStageBuffer;
-            mDevice->destroyResource(res);
-            mDevice->freeMemory(mStageMemory);
-
-            mStageBuffer.reset();
-            mStageMemory.reset();
-        }
-
-        VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * (U64)channels * (U64)mLayers;
-
-        mStageBuffer = mDevice->createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-
-        VkMemoryRequirements req;
-        vkGetBufferMemoryRequirements(mDevice->getDeviceHandle(), mStageBuffer->getVkHandle(), &req);
-
-        mStageMemory =
-            mDevice->allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, req);
-
-        mStageMemory->bind(mDevice, mStageBuffer);
-
-        void* dataPtr = nullptr;
-        vkMapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory, mStageMemory->mAlignOffset, imageSize, 0,
-                    &dataPtr);
-        memcpy(dataPtr, pixelData, static_cast<size_t>(imageSize));
-        vkUnmapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory);
-
-        mUploaded = false;
     }
 
     swizzle::gfx::TextureDimensions TextureCube::getSize() const
     {
-        return {mWidth, mHeight, 1u, 1u};
+        return {mWidth, mHeight, 6u, 1u};
     }
 
     void TextureCube::resize(U32 height, U32 width, U32 channels)
@@ -120,59 +58,6 @@ namespace vk
             mChannels = channels;
             createResources();
         }
-    }
-
-    SwBool TextureCube::isUploaded() const
-    {
-        return mUploaded;
-    }
-
-    void TextureCube::uploadImage(VkCommandBuffer cmdBuffer)
-    {
-        VkImageMemoryBarrier imgBarrier = {};
-        imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        imgBarrier.pNext = VK_NULL_HANDLE;
-        imgBarrier.srcAccessMask = 0u;
-        imgBarrier.dstAccessMask = 0u;
-        imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
-        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        imgBarrier.image = mImage->getVkHandle();
-        imgBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imgBarrier.subresourceRange.baseMipLevel = 0u;
-        imgBarrier.subresourceRange.levelCount = 1u;
-        imgBarrier.subresourceRange.baseArrayLayer = 0u;
-        imgBarrier.subresourceRange.layerCount = mLayers;
-
-        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
-                             VK_NULL_HANDLE, 1u, &imgBarrier);
-
-        VkBufferImageCopy region = {};
-        region.bufferOffset = 0u;
-        region.bufferRowLength = mWidth;
-        region.bufferImageHeight = mHeight;
-
-        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.imageSubresource.mipLevel = 0u;
-        region.imageSubresource.baseArrayLayer = 0u;
-        region.imageSubresource.layerCount = mLayers;
-
-        region.imageOffset = {0, 0, 0};
-        region.imageExtent = {mWidth, mHeight, 1u};
-
-        vkCmdCopyBufferToImage(cmdBuffer, mStageBuffer->getVkHandle(), mImage->getVkHandle(),
-                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1u, &region);
-
-        imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
-                             VK_NULL_HANDLE, 1u, &imgBarrier);
-
-        mUploaded = true;
     }
 
     void TextureCube::transferImageToCompute(VkCommandBuffer cmdBuffer)

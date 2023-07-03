@@ -26,15 +26,11 @@
 
 namespace vk
 {
-    Texture2D::Texture2D(common::Resource<Device> device, U32 width, U32 height, U32 channels, SwBool f32,
-                         const U8* pixelData)
+    Texture2D::Texture2D(common::Resource<Device> device, U32 width, U32 height, U32 channels, SwBool f32)
         : mDevice(device)
         , mImage()
         , mImageMemory()
         , mImageView(VK_NULL_HANDLE)
-        , mUploaded(true)
-        , mStageBuffer()
-        , mStageMemory()
         , mWidth(width)
         , mHeight(height)
         , mChannels(channels)
@@ -48,75 +44,11 @@ namespace vk
         }
         createResources();
 
-        if (pixelData)
-        {
-            setData(width, height, channels, pixelData);
-        }
     }
 
     Texture2D::~Texture2D()
     {
         destroyResources();
-
-        if (mStageBuffer)
-        {
-            common::Resource<IVkResource> res = mStageBuffer;
-            mDevice->destroyResource(res);
-            mDevice->freeMemory(mStageMemory);
-
-            mStageBuffer.reset();
-            mStageMemory.reset();
-        }
-    }
-
-    void Texture2D::setData(U32 width, U32 height, U32 channels, const U8* pixelData)
-    {
-        mChannels = channels;
-        // check to recreate the texture
-        if (((width != mWidth) || (height != mHeight)) &&
-            ((width != 0U) && (height != 0U)) /*&& mVkObjects.stageCmdBuffer->readyToSubmit()*/)
-        {
-            destroyResources();
-            mWidth = width;
-            mHeight = height;
-            mMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(mWidth, mHeight)))) + 1;
-            createResources();
-        }
-
-        if (mStageBuffer)
-        {
-            common::Resource<IVkResource> res = mStageBuffer;
-            mDevice->destroyResource(res);
-            mDevice->freeMemory(mStageMemory);
-
-            mStageBuffer.reset();
-            mStageMemory.reset();
-        }
-
-        VkDeviceSize imageSize = (U64)mWidth * (U64)mHeight * (U64)channels;
-        if (mFloat)
-        {
-            imageSize *= 4ull;
-            mMipLevels = 1u;
-        }
-
-        mStageBuffer = mDevice->createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-
-        VkMemoryRequirements req;
-        vkGetBufferMemoryRequirements(mDevice->getDeviceHandle(), mStageBuffer->getVkHandle(), &req);
-
-        mStageMemory =
-            mDevice->allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, req);
-
-        mStageMemory->bind(mDevice, mStageBuffer);
-
-        void* dataPtr = nullptr;
-        vkMapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory, mStageMemory->mAlignOffset, imageSize, 0,
-                    &dataPtr);
-        memcpy(dataPtr, pixelData, static_cast<size_t>(imageSize));
-        vkUnmapMemory(mDevice->getDeviceHandle(), mStageMemory->mMemory);
-
-        mUploaded = false;
     }
 
     swizzle::gfx::TextureDimensions Texture2D::getSize() const
@@ -136,113 +68,6 @@ namespace vk
             mMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(mWidth, mHeight)))) + 1;
             createResources();
         }
-    }
-
-    SwBool Texture2D::isUploaded() const
-    {
-        return mUploaded;
-    }
-
-    void Texture2D::uploadImage(VkCommandBuffer cmdBuffer)
-    {
-        VkImageMemoryBarrier imgBarrier = {};
-        imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        imgBarrier.pNext = VK_NULL_HANDLE;
-        imgBarrier.srcAccessMask = 0;
-        imgBarrier.dstAccessMask = 0;
-        imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
-        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        imgBarrier.image = mImage->getVkHandle();
-        imgBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imgBarrier.subresourceRange.baseMipLevel = 0U;
-        imgBarrier.subresourceRange.levelCount = mMipLevels;
-        imgBarrier.subresourceRange.baseArrayLayer = 0U;
-        imgBarrier.subresourceRange.layerCount = 1U;
-
-        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0U, VK_NULL_HANDLE, 0U,
-                             VK_NULL_HANDLE, 1U, &imgBarrier);
-
-        VkBufferImageCopy region = {};
-        region.bufferOffset = 0u;
-        region.bufferRowLength = mWidth;
-        region.bufferImageHeight = mHeight;
-
-        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.imageSubresource.mipLevel = 0U;
-        region.imageSubresource.baseArrayLayer = 0U;
-        region.imageSubresource.layerCount = 1U;
-
-        region.imageOffset = {0, 0, 0};
-        region.imageExtent = {mWidth, mHeight, 1};
-
-        vkCmdCopyBufferToImage(cmdBuffer, mStageBuffer->getVkHandle(), mImage->getVkHandle(),
-                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1U, &region);
-
-        imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-
-        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0U, VK_NULL_HANDLE, 0U,
-                             VK_NULL_HANDLE, 1U, &imgBarrier);
-
-        generateMipMaps(cmdBuffer);
-
-        mUploaded = true;
-    }
-
-    void Texture2D::uploadImage2(VkCommandBuffer cmdBuffer, common::Resource<VkResource<VkBuffer>> data)
-    {
-        VkImageMemoryBarrier imgBarrier = {};
-        imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        imgBarrier.pNext = VK_NULL_HANDLE;
-        imgBarrier.srcAccessMask = 0;
-        imgBarrier.dstAccessMask = 0;
-        imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
-        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        imgBarrier.image = mImage->getVkHandle();
-        imgBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imgBarrier.subresourceRange.baseMipLevel = 0u;
-        imgBarrier.subresourceRange.levelCount = mMipLevels;
-        imgBarrier.subresourceRange.baseArrayLayer = 0u;
-        imgBarrier.subresourceRange.layerCount = 1u;
-
-        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
-                             VK_NULL_HANDLE, 1u, &imgBarrier);
-
-        VkBufferImageCopy region = {};
-        region.bufferOffset = 0u;
-        region.bufferRowLength = mWidth;
-        region.bufferImageHeight = mHeight;
-
-        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.imageSubresource.mipLevel = 0u;
-        region.imageSubresource.baseArrayLayer = 0u;
-        region.imageSubresource.layerCount = 1u;
-
-        region.imageOffset = {0, 0, 0};
-        region.imageExtent = {mWidth, mHeight, 1u};
-
-        // TODO: should check that buffer is having enough data before copy
-
-        vkCmdCopyBufferToImage(cmdBuffer, data->getVkHandle(), mImage->getVkHandle(),
-                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1U, &region);
-
-        imgBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        imgBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-
-        vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
-                             VK_NULL_HANDLE, 1u, &imgBarrier);
-
-        generateMipMaps(cmdBuffer);
-
-        mUploaded = true;
     }
 
     void Texture2D::transferImageToCompute(VkCommandBuffer cmdBuffer)

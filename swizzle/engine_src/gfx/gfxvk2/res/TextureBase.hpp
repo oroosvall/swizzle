@@ -29,9 +29,6 @@ namespace vk
 
         virtual void resize(U32 height, U32 width, U32 channels) = 0;
 
-        virtual SwBool isUploaded() const = 0;
-        virtual void uploadImage(VkCommandBuffer cmdBuffer) = 0;
-
         virtual common::Resource<VkResource<VkImage>> getImg() = 0;
         virtual bool isDepth() = 0;
         virtual VkImageView getView() = 0;

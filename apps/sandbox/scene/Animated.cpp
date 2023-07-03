@@ -39,9 +39,9 @@ Animated::Animated(common::Resource<swizzle::gfx::GfxDevice> dev, common::Resour
     , mCurAnim(0u)
     , mFrameIndex(0u)
 {
-    mMesh = dev->createBuffer(swizzle::gfx::GfxBufferType::Vertex);
-    mIndex = dev->createBuffer(swizzle::gfx::GfxBufferType::Index);
-    mBone = dev->createBuffer(swizzle::gfx::GfxBufferType::UniformBuffer);
+    mMesh = dev->createBuffer(swizzle::gfx::GfxBufferType::Vertex, swizzle::gfx::GfxMemoryArea::DeviceLocalHostVisible);
+    mIndex = dev->createBuffer(swizzle::gfx::GfxBufferType::Index, swizzle::gfx::GfxMemoryArea::DeviceLocalHostVisible);
+    mBone = dev->createBuffer(swizzle::gfx::GfxBufferType::UniformBuffer, swizzle::gfx::GfxMemoryArea::DeviceLocalHostVisible);
 
     mMesh->setBufferData((U8*)mAsset->getVertexDataPtr(), mAsset->getVertexDataSize(),
                          sizeof(float) * (3u + 3u + 2u + 4u + 4u));
@@ -62,7 +62,8 @@ void Animated::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransact
     SwBool wasChanged = false;
 
     UNUSED_ARG(dt);
-    trans->uploadTexture(mTexture);
+    UNUSED_ARG(trans);
+    //trans->uploadTexture(mTexture);
 
     if (mAsset && mAsset->hasAnimations())
     {

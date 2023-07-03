@@ -67,6 +67,7 @@ namespace vk
         TextureBase* destination = (TextureBase*)to.get();
 
         destination->resize(size.mHeight, size.mWidth, 4u);
+        const auto size2 = destination->getSize();
 
         auto& resSrc = source->getBuffer();
         auto resDst = destination->getImg();
@@ -77,7 +78,7 @@ namespace vk
         VkBuffer srcBuf = resSrc->getVkHandle();
         VkImage dstImg = resDst->getVkHandle();
 
-        vk::uploadTexture(mCommandBuffer, srcBuf, dstImg, size);
+        vk::uploadTexture(mCommandBuffer, srcBuf, dstImg, size2);
     }
 
     void VCommandTransaction::bindComputeShader(common::Resource<swizzle::gfx::Shader> shader,
@@ -112,16 +113,6 @@ namespace vk
     void VCommandTransaction::dispatchCompute(U32 groupX, U32 groupY, U32 groupZ)
     {
         vkCmdDispatch(mCommandBuffer, groupX, groupY, groupZ);
-    }
-
-    void VCommandTransaction::uploadTexture(common::Resource<swizzle::gfx::Texture> texture)
-    {
-        SWIZZLE_PROFILE_EVENT("CmdBuffer::uploadTexture");
-        TextureBase* tex = (TextureBase*)(texture.get());
-        if (!tex->isUploaded())
-        {
-            tex->uploadImage(mCommandBuffer);
-        }
     }
 
     void VCommandTransaction::changeImageLayoutCompute(common::Resource<swizzle::gfx::Texture> texture)

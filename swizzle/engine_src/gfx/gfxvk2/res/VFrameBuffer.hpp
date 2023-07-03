@@ -49,12 +49,7 @@ namespace vk
         VkImageView mImageView;
         SwBool mDepth;
 
-        virtual SwBool isUploaded() const override
-        {
-            return false;
-        }
         virtual void resize(U32, U32, U32) override {}
-        virtual void uploadImage(VkCommandBuffer) override {}
         virtual common::Resource<VkResource<VkImage>> getImg() override
         {
             return mImage;
@@ -67,7 +62,7 @@ namespace vk
         {
             return mDepth;
         }
-        virtual void setData(U32, U32, U32, const U8*) override {}
+        virtual void setData(U32, U32, U32, const U8*) {}
         virtual swizzle::gfx::TextureDimensions getSize() const override
         {
             return {1u, 1u, 1u, 1u};

@@ -46,8 +46,6 @@ private:
     common::Resource<AssetManager> mAssetManager;
     common::Resource<Compositor> mCompositor;
     common::Resource<Scene> mScene;
-
-    common::Resource<sw::gfx::Shader> mComputeShader;
 };
 
 #endif

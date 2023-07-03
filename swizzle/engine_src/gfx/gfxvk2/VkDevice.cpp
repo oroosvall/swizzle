@@ -93,8 +93,9 @@ namespace swizzle::gfx
         return stats;
     }
 
-    common::Resource<GfxBuffer> VkGfxDevice::createBuffer(GfxBufferType type)
+    common::Resource<GfxBuffer> VkGfxDevice::createBuffer(GfxBufferType type, GfxMemoryArea memArea)
     {
+        UNUSED_ARG(memArea);
         return common::CreateRef<vk::DBuffer>(mVkDevice, type);
     }
 
@@ -109,15 +110,14 @@ namespace swizzle::gfx
         return common::CreateRef<vk::VSwapchain>(mVkInstance, mVkDevice, window);
     }
 
-    common::Resource<Texture> VkGfxDevice::createTexture(U32 width, U32 height, U32 channels, SwBool f32,
-                                                         const U8* data)
+    common::Resource<Texture> VkGfxDevice::createTexture(U32 width, U32 height, U32 channels, SwBool f32)
     {
-        return common::CreateRef<vk::Texture2D>(mVkDevice, width, height, channels, f32, data);
+        return common::CreateRef<vk::Texture2D>(mVkDevice, width, height, channels, f32);
     }
 
-    common::Resource<Texture> VkGfxDevice::createCubeMapTexture(U32 width, U32 height, U32 channels, const U8* data)
+    common::Resource<Texture> VkGfxDevice::createCubeMapTexture(U32 width, U32 height, U32 channels)
     {
-        return common::CreateRef<vk::TextureCube>(mVkDevice, width, height, channels, data);
+        return common::CreateRef<vk::TextureCube>(mVkDevice, width, height, channels);
     }
 
     common::Resource<FrameBuffer> VkGfxDevice::createFramebuffer(const FrameBufferCreateInfo& fboInfo)

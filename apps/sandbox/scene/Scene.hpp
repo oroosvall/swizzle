@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <string>
+#include <functional>
 
 #include "Compositor.hpp"
 #include "Renderable.hpp"
@@ -60,6 +61,10 @@ private:
     SceneState mSceneState;
 
     std::vector<common::Resource<Renderable>> mRenderables;
+
+
+    std::vector<std::function<void(common::Unique<swizzle::gfx::CommandTransaction>& trans)>> mTextureUpload;
+
 };
 
 /* Function Declaration */

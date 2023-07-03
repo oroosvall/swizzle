@@ -104,12 +104,30 @@ void Scene::loadSky()
     skyShader = mCompositor->createShader(0u, attribsSky);
     skyShader->load("shaders/sky.shader");
 
-    skyMaterial = mDevice->createMaterial(skyShader, swizzle::gfx  ::SamplerMode::SamplerModeClamp);
+    skyMaterial = mDevice->createMaterial(skyShader, swizzle::gfx ::SamplerMode::SamplerModeClamp);
 
-    skyTexture = mAssetManager->loadCubeTexture("texture/right.png", "texture/left.png", "texture/top.png",
-                                                "texture/bottom.png", "texture/front.png", "texture/back.png");
+    auto skyData = mAssetManager->loadCubeTexture("texture/right.png", "texture/left.png", "texture/top.png",
+                                                  "texture/bottom.png", "texture/front.png", "texture/back.png");
 
+    skyTexture = mDevice->createCubeMapTexture(skyData->getWidth(), skyData->getHeight(), 4u);
     skyMaterial->setDescriptorTextureResource(0, skyTexture);
+
+    std::function<void(common::Unique<swizzle::gfx::CommandTransaction> & trans)> doStuff =
+        [this, skyData, skyTexture](common::Unique<swizzle::gfx::CommandTransaction>& trans) {
+            auto buffer =
+                mDevice->createBuffer(swizzle::gfx::GfxBufferType::UniformBuffer, swizzle::gfx::GfxMemoryArea::Host);
+            buffer->setBufferData(skyData->getData()->data(), skyData->getData()->size(), 4u);
+
+            swizzle::gfx::TextureDimensions size{};
+            size.mHeight = skyData->getHeight();
+            size.mWidth = skyData->getWidth();
+            size.mLayers = 6u;
+            size.mMipLevels = 1u;
+
+            trans->copyBufferToTexture(skyTexture, buffer, size);
+        };
+
+    mTextureUpload.push_back(doStuff);
 
     swizzle::asset2::MeshAssetLoaderDescription ldi = {};
     ldi.mLoadPossitions = {
@@ -120,7 +138,8 @@ void Scene::loadSky()
 
     auto mesh2 = swizzle::asset2::LoadMesh("meshes/inverted_sphere.obj", ldi);
 
-    auto vertexBuffer = mDevice->createBuffer(swizzle::gfx::GfxBufferType::Vertex);
+    auto vertexBuffer =
+        mDevice->createBuffer(swizzle::gfx::GfxBufferType::Vertex, swizzle::gfx::GfxMemoryArea::DeviceLocalHostVisible);
     vertexBuffer->setBufferData((U8*)mesh2->getVertexDataPtr(), mesh2->getVertexDataSize(),
                                 sizeof(float) * (3 + 3 + 2));
 
@@ -142,14 +161,14 @@ void Scene::loadAnimMesh()
 
     auto mesh2 = swizzle::asset2::LoadMesh("meshes/test.swm", ldi);
 
-    common::Resource<sgfx::GfxBuffer> verts = mDevice->createBuffer(sgfx::GfxBufferType::Vertex);
-    common::Resource<sgfx::GfxBuffer> idx = mDevice->createBuffer(sgfx::GfxBufferType::Index);
+    common::Resource<sgfx::GfxBuffer> verts = mDevice->createBuffer(sgfx::GfxBufferType::Vertex, sgfx::GfxMemoryArea::DeviceLocalHostVisible);
+    common::Resource<sgfx::GfxBuffer> idx = mDevice->createBuffer(sgfx::GfxBufferType::Index, sgfx::GfxMemoryArea::DeviceLocalHostVisible);
 
     verts->setBufferData((U8*)mesh2->getVertexDataPtr(), mesh2->getVertexDataSize(),
                          sizeof(float) * (3u + 3u + 2u + 4u + 4u));
     idx->setBufferData((U8*)mesh2->getIndexDataPtr(), mesh2->getIndexDataSize(), sizeof(U32) * 3u);
 
-    common::Resource<sgfx::GfxBuffer> instBuffer = mDevice->createBuffer(sgfx::GfxBufferType::Vertex);
+    common::Resource<sgfx::GfxBuffer> instBuffer = mDevice->createBuffer(sgfx::GfxBufferType::Vertex, sgfx::GfxMemoryArea::DeviceLocalHostVisible);
 
     std::vector<glm::mat4> positions;
 
@@ -193,7 +212,26 @@ void Scene::loadAnimMesh()
     attribsAnim.mEnableBlending = false;
     attribsAnim.mPrimitiveType = sgfx::PrimitiveType::triangle;
 
-    texture = mAssetManager->loadTexture("texture/lightGray.png");
+    auto textureData = mAssetManager->loadTexture("texture/lightGray.png");
+
+    texture = mDevice->createTexture(textureData->getWidth(), textureData->getHeight(), 4u, false);
+
+    std::function<void(common::Unique<swizzle::gfx::CommandTransaction>& trans)> doStuff =
+        [this, textureData, texture](common::Unique<swizzle::gfx::CommandTransaction>& trans) {
+        auto buffer =
+            mDevice->createBuffer(swizzle::gfx::GfxBufferType::UniformBuffer, swizzle::gfx::GfxMemoryArea::Host);
+        buffer->setBufferData(textureData->getData()->data(), textureData->getData()->size(), 4u);
+
+        swizzle::gfx::TextureDimensions size{};
+        size.mHeight = textureData->getHeight();
+        size.mWidth = textureData->getWidth();
+        size.mLayers = 1u;
+        size.mMipLevels = 1u;
+
+        trans->copyBufferToTexture(texture, buffer, size);
+    };
+
+    mTextureUpload.push_back(doStuff);
 
     shader = mCompositor->createShader(0u, attribsAnim);
     shader->load("shaders/animated_inst.shader");
@@ -203,6 +241,13 @@ void Scene::loadAnimMesh()
 
 SceneState Scene::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
+    for (auto& it : mTextureUpload)
+    {
+        it(trans);
+    }
+
+    mTextureUpload.clear();
+
     for (auto& it : mRenderables)
     {
         it->update(dt, trans);

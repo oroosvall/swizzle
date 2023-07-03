@@ -108,11 +108,6 @@ namespace swizzle::gfx
         /// <param name="groupZ"></param>
         virtual void dispatchCompute(U32 groupX, U32 groupY, U32 groupZ) = 0;
 
-        /// <summary>
-        /// Perform transfer of texture data from CPU visible to device memory
-        /// </summary>
-        /// <param name="texture">Texture to upload to GPU</param>
-        virtual void uploadTexture(common::Resource<Texture> texture) = 0;
 
         virtual void changeImageLayoutCompute(common::Resource<swizzle::gfx::Texture> texture) = 0;
         virtual void changeImageLayoutRender(common::Resource<swizzle::gfx::Texture> texture) = 0;

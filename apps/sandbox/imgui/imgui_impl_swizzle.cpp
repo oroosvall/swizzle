@@ -19,8 +19,11 @@
 
 struct ImGui_ImplSwizzle_Data
 {
+    common::Resource<swizzle::gfx::GfxDevice> mDevice;
+
     common::Resource<swizzle::gfx::Shader> mShader;
     common::Resource<swizzle::gfx::Texture> mFontTexture;
+    SwBool mFontUploaded;
     common::Resource<swizzle::gfx::Material> mFontMaterial;
 
     common::Resource<swizzle::gfx::GfxBuffer> mVertexBuffer;
@@ -238,6 +241,8 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
     info.mColorAttachFormats = {swizzle::gfx::FrameBufferAttachmentType::Default};
     window->getSize(info.mWidth, info.mHeight);
 
+    bd->mDevice = dev;
+
     bd->mImGuiFbo = dev->createFramebuffer(info);
     bd->mImGuiFbo->setColorAttachmentClearColor(0u, {0.0f, 0.0f, 0.0f, 0.0f});
 
@@ -269,12 +274,13 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
     int width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    bd->mFontTexture = dev->createTexture(width, height, 4, false, pixels);
+    bd->mFontTexture = dev->createTexture(width, height, 4, false);
+    bd->mFontUploaded = false;
     bd->mFontMaterial = dev->createMaterial(bd->mShader, swizzle::gfx::SamplerMode::SamplerModeClamp);
     bd->mFontMaterial->setDescriptorTextureResource(0, bd->mFontTexture);
 
-    bd->mVertexBuffer = dev->createBuffer(swizzle::gfx::GfxBufferType::Vertex);
-    bd->mIndexBuffer = dev->createBuffer(swizzle::gfx::GfxBufferType::Index);
+    bd->mVertexBuffer = dev->createBuffer(swizzle::gfx::GfxBufferType::Vertex, swizzle::gfx::GfxMemoryArea::DeviceLocalHostVisible);
+    bd->mIndexBuffer = dev->createBuffer(swizzle::gfx::GfxBufferType::Index, swizzle::gfx::GfxMemoryArea::DeviceLocalHostVisible);
 
     io.Fonts->SetTexID((ImTextureID)&bd->mFontMaterial);
 
@@ -471,7 +477,26 @@ void ImGui_ImplSwizzle_RenderDrawData(ImDrawData* draw_data,
 void ImGui_ImplSwizzle_UploadFontTexture(common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     ImGui_ImplSwizzle_Data* bd = ImGui_ImplSwizzle_GetBackendData();
-    trans->uploadTexture(bd->mFontTexture);
+    if (!bd->mFontUploaded)
+    {
+        auto data = bd->mDevice->createBuffer(swizzle::gfx::GfxBufferType::UniformBuffer, swizzle::gfx::GfxMemoryArea::Host);
+
+        unsigned char* pixels;
+        int width, height;
+        ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+        U64 size = U64(width) * U64(height) * 4ull;
+        data->setBufferData(pixels, size, 4ull);
+
+        swizzle::gfx::TextureDimensions dims{};
+        dims.mHeight = height;
+        dims.mWidth = width;
+        dims.mMipLevels = 1u;
+        dims.mLayers = 1u;
+
+        trans->copyBufferToTexture(bd->mFontTexture, data, dims);
+        bd->mFontUploaded = true;
+    }
 }
 
 /* Class Protected Function Definition */

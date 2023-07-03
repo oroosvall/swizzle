@@ -1,6 +1,8 @@
 
 /* Include files */
 
+#include "../backend/Vk.hpp"
+
 #include "TextureBase.hpp"
 
 /* Defines */
@@ -36,7 +38,7 @@ namespace vk
         imgBarrier.subresourceRange.baseMipLevel = 0u;
         imgBarrier.subresourceRange.levelCount = info.mMipLevels;
         imgBarrier.subresourceRange.baseArrayLayer = 0u;
-        imgBarrier.subresourceRange.layerCount = 1u;
+        imgBarrier.subresourceRange.layerCount = info.mLayers;
 
         vkCmdPipelineBarrier(cmdBuffer, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
                              VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
@@ -50,7 +52,7 @@ namespace vk
         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         region.imageSubresource.mipLevel = 0u;
         region.imageSubresource.baseArrayLayer = 0u;
-        region.imageSubresource.layerCount = 1u;
+        region.imageSubresource.layerCount = info.mLayers;
 
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {info.mWidth, info.mHeight, 1u};
@@ -66,7 +68,30 @@ namespace vk
                              VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0u, VK_NULL_HANDLE, 0u,
                              VK_NULL_HANDLE, 1u, &imgBarrier);
 
-        generateMipMaps(cmdBuffer, image, info);
+        if (info.mMipLevels == 1)
+        {
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = image;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = info.mLayers;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseMipLevel = 0u;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
+                                 nullptr, 0, nullptr, 1, &barrier);
+        }
+        else
+        {
+            generateMipMaps(cmdBuffer, image, info);
+        }
     }
 
     void generateMipMaps(VkCommandBuffer cmdBuffer, VkImage image, const swizzle::gfx::TextureDimensions& info)

@@ -34,7 +34,8 @@ Sky::Sky(common::Resource<swizzle::gfx::GfxBuffer> mesh, common::Resource<swizzl
 void Sky::update(DeltaTime dt, common::Unique<swizzle::gfx::CommandTransaction>& trans)
 {
     UNUSED_ARG(dt);
-    trans->uploadTexture(mTexture);
+    UNUSED_ARG(trans);
+    //trans->uploadTexture(mTexture);
 }
 
 void Sky::render(common::Unique<swizzle::gfx::DrawCommandTransaction>& trans, PerspectiveCamera& cam)

@@ -25,6 +25,16 @@ namespace swizzle::gfx
         U32 mLayers;
         U32 mMipLevels;
     };
+
+    /// <summary>
+    /// Preferred location to store a reasource
+    /// </summary>
+    enum class GfxMemoryArea
+    {
+        DeviceLocalHostVisible,
+        DeviceLocal,
+        Host
+    };
 } // namespace swizzle::gfx
 
 /* Function Declaration */

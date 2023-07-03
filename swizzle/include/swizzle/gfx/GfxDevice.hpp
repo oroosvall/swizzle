@@ -38,13 +38,11 @@ namespace swizzle::gfx
         virtual GfxStatistics getStatistics() = 0;
         virtual common::Resource<swizzle::core::StatisticsIterator<gfx::GfxStatsType>> getStatisticsIterator() = 0;
 
-        virtual common::Resource<GfxBuffer> createBuffer(GfxBufferType type) = 0;
+        virtual common::Resource<GfxBuffer> createBuffer(GfxBufferType type, GfxMemoryArea prefferedMemoryArea) = 0;
         virtual common::Resource<CommandBuffer> createCommandBuffer(U32 swapCount) = 0;
         virtual common::Resource<Swapchain> createSwapchain(common::Resource<core::SwWindow> window, U32 swapCount) = 0;
-        virtual common::Resource<Texture> createTexture(U32 width, U32 height, U32 channels, SwBool f32,
-                                                        const U8* data = nullptr) = 0;
-        virtual common::Resource<Texture> createCubeMapTexture(U32 width, U32 height, U32 channels,
-                                                               const U8* data = nullptr) = 0;
+        virtual common::Resource<Texture> createTexture(U32 width, U32 height, U32 channels, SwBool f32) = 0;
+        virtual common::Resource<Texture> createCubeMapTexture(U32 width, U32 height, U32 channels) = 0;
 
         virtual common::Resource<FrameBuffer> createFramebuffer(const FrameBufferCreateInfo& fboInfo) = 0;
 
