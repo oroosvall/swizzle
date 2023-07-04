@@ -95,8 +95,7 @@ namespace swizzle::gfx
 
     common::Resource<GfxBuffer> VkGfxDevice::createBuffer(GfxBufferType type, GfxMemoryArea memArea)
     {
-        UNUSED_ARG(memArea);
-        return common::CreateRef<vk::DBuffer>(mVkDevice, type);
+        return common::CreateRef<vk::DBuffer>(mVkDevice, type, memArea);
     }
 
     common::Resource<CommandBuffer> VkGfxDevice::createCommandBuffer(U32 swapCount)

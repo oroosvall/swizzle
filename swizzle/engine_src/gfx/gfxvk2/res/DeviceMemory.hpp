@@ -83,6 +83,7 @@ namespace vk
 
         VkDeviceSize getTotal() const;
         VkDeviceSize getUsed() const;
+        SwBool empty() const;
     private:
 
         VkDeviceSize calculateAlignmentOffset(VkDeviceSize currentOffset, VkDeviceSize requiredAlignment) const;

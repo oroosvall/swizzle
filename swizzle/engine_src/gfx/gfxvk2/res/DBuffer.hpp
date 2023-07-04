@@ -5,15 +5,15 @@
 
 #include <swizzle/gfx/GfxBuffer.hpp>
 
-#include "_fwDecl.hpp"
 #include "../backend/Vk.hpp"
+#include "_fwDecl.hpp"
 
-#include "VkResource.hpp"
 #include "DeviceMemory.hpp"
+#include "VkResource.hpp"
 
 #include <memory>
-#include <vector>
 #include <set>
+#include <vector>
 
 /* Defines */
 
@@ -30,7 +30,7 @@ namespace vk
     class DBuffer : public swizzle::gfx::GfxBuffer
     {
     public:
-        DBuffer(common::Resource<Device> device, swizzle::gfx::GfxBufferType type);
+        DBuffer(common::Resource<Device> device, swizzle::gfx::GfxBufferType type, swizzle::gfx::GfxMemoryArea memArea);
         virtual ~DBuffer();
 
         virtual void setBufferData(void* data, U64 size, U32 stride) override;
@@ -50,11 +50,12 @@ namespace vk
         swizzle::gfx::GfxBufferType getType();
 
     private:
-
         void createOrResize(U64 newSize);
+        common::Resource<DeviceMemory> tryAllocatePreferredMemory(VkMemoryRequirements req);
 
         common::Resource<Device> mDevice;
         swizzle::gfx::GfxBufferType mType;
+        swizzle::gfx::GfxMemoryArea mMemArea;
 
         common::Resource<VkResource<VkBuffer>> mBuffer;
         common::Resource<DeviceMemory> mMemory;
@@ -64,7 +65,7 @@ namespace vk
         U64 mUsedSize;
         U64 mBufferSize;
     };
-}
+} // namespace vk
 
 /* Function Declaration */
 

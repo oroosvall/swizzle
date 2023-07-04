@@ -5,8 +5,8 @@
 
 #include "DeviceMemory.hpp"
 
-#include "VkResource.hpp"
 #include "Device.hpp"
+#include "VkResource.hpp"
 
 #include <algorithm>
 #include <assert.h>
@@ -83,7 +83,8 @@ namespace vk
     MemoryChunk
     */
 
-    MemoryChunk::MemoryChunk(common::Resource<Device> device, VkDeviceMemory memory, U32 memoryTypeIndex, VkDeviceSize size)
+    MemoryChunk::MemoryChunk(common::Resource<Device> device, VkDeviceMemory memory, U32 memoryTypeIndex,
+                             VkDeviceSize size)
         : mDevice(device)
         , mMemory(memory)
         , mTotalSize(size)
@@ -150,11 +151,12 @@ namespace vk
         return mMemory == memory->mMemory;
     }
 
-    common::Resource<DeviceMemory> MemoryChunk::allocate(VkMemoryRequirements reqs, common::Resource<DeviceMemoryPool> pool)
+    common::Resource<DeviceMemory> MemoryChunk::allocate(VkMemoryRequirements reqs,
+                                                         common::Resource<DeviceMemoryPool> pool)
     {
         common::Resource<DeviceMemory> mem = nullptr;
 
-        Fragment frag1 {};
+        Fragment frag1{};
 
         for (auto& frag : mFreeFragments)
         {
@@ -201,12 +203,9 @@ namespace vk
             }
         }
 
-        mFreeFragments.erase(
-            std::remove_if(
-                mFreeFragments.begin(),
-                mFreeFragments.end(),
-                [](const Fragment& f) { return f.mSize == 0; }),
-            mFreeFragments.end());
+        mFreeFragments.erase(std::remove_if(mFreeFragments.begin(), mFreeFragments.end(),
+                                            [](const Fragment& f) { return f.mSize == 0; }),
+                             mFreeFragments.end());
 
         if (frag1.mSize != 0ull)
         {
@@ -258,7 +257,7 @@ namespace vk
         // This is if we did not have any fragments adjacent to the chunk so create a new fragment
         if (checkOffset != ~0ull)
         {
-            mFreeFragments.emplace_back(Fragment{ memory->mAlignOffset, memory->mSize });
+            mFreeFragments.emplace_back(Fragment{memory->mAlignOffset, memory->mSize});
             mUsedSize -= memory->mSize;
             mVAllocCount--;
             memory->mFreed = true;
@@ -275,11 +274,17 @@ namespace vk
         return mUsedSize;
     }
 
+    SwBool MemoryChunk::empty() const
+    {
+        return getUsed() == 0ull;
+    }
+
     /*
     DeviceMemoryPool
     */
 
-    DeviceMemoryPool::DeviceMemoryPool(common::Resource<Device> device, VkDeviceSize chunkSize, std::string memoryPoolName)
+    DeviceMemoryPool::DeviceMemoryPool(common::Resource<Device> device, VkDeviceSize chunkSize,
+                                       std::string memoryPoolName)
         : std::enable_shared_from_this<DeviceMemoryPool>()
         , mDevice(device)
         , mMemoryChunks()
@@ -294,10 +299,10 @@ namespace vk
 
     DeviceMemoryPool::~DeviceMemoryPool()
     {
-        //for (auto& ch : mMemoryChunks)
+        // for (auto& ch : mMemoryChunks)
         //{
-        //    vkFreeMemory(mDevice->getDeviceHandle(), ch.mMemory, mDevice->getAllocCallbacks());
-        //}
+        //     vkFreeMemory(mDevice->getDeviceHandle(), ch.mMemory, mDevice->getAllocCallbacks());
+        // }
         mMemoryChunks.clear();
     }
 
@@ -318,7 +323,7 @@ namespace vk
         VkDeviceSize used = 0ull;
         for (const auto& ch : mMemoryChunks)
         {
-            used +=ch->getUsed();
+            used += ch->getUsed();
         }
         return used;
     }
@@ -379,6 +384,8 @@ namespace vk
                 ch->free(memory);
             }
         }
+        mMemoryChunks.erase(std::remove_if(mMemoryChunks.begin(), mMemoryChunks.end(),
+                                           [](const auto& chunk) { return chunk->empty(); }), mMemoryChunks.end());
     }
 
     swizzle::gfx::MemoryStatistics* DeviceMemoryPool::getMemoryStats()
@@ -392,7 +399,7 @@ namespace vk
 
         return &mStatistics;
     }
-}
+} // namespace vk
 
 /* Class Protected Function Definition */
 
@@ -473,4 +480,4 @@ namespace vk
             mChunkSize = maxChunkSize;
         }
     }
-}
+} // namespace vk
