@@ -1,5 +1,5 @@
-#ifndef IMGUI_IMPL_SWIZZLE_HPP
-#define IMGUI_IMPL_SWIZZLE_HPP
+
+#pragma once
 
 /* Include files */
 
@@ -18,7 +18,6 @@
 
 /* Function Declaration */
 
-// Called by user code
 IMGUI_IMPL_API bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
                                            common::Resource<swizzle::core::SwWindow> window);
 IMGUI_IMPL_API void ImGui_ImplSwizzle_Shutdown();
@@ -31,5 +30,3 @@ IMGUI_IMPL_API common::Resource<swizzle::gfx::Texture> ImGui_ImplSwizzle_GetFram
 IMGUI_IMPL_API void ImGui_ImplSwizzle_RenderDrawData(ImDrawData* draw_data,
                                                      common::Unique<swizzle::gfx::DrawCommandTransaction>& dTrans);
 IMGUI_IMPL_API void ImGui_ImplSwizzle_UploadFontTexture(common::Unique<swizzle::gfx::CommandTransaction>& trans);
-
-#endif

@@ -99,6 +99,13 @@
                 "glm"
             ]
         },
+        "imgui_impl": {
+            "source": "swizzle/imgui_impl/imgui_impl.json",
+            "group": "libs",
+            "dependencies": [
+                "imgui"
+            ]
+        },
         "swizzle": {
             "source": "swizzle/swizzle.json",
             "group": "engine",
@@ -149,6 +156,7 @@
             "dependencies": [
                 "swizzle",
                 "imgui",
+                "imgui_impl",
                 "utils",
                 "glm",
                 "soloud",

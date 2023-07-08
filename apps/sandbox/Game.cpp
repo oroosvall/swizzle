@@ -9,7 +9,7 @@
 #include <utils/StringUtils.hpp>
 
 #include <imgui/imgui.h>
-#include <imgui/imgui_impl_swizzle.hpp>
+#include <ImGuiSwzzle.hpp>
 
 #include <scene/Scene.hpp>
 

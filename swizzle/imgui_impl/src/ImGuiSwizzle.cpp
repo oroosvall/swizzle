@@ -3,7 +3,7 @@
 
 #include <swizzle/profiler/Profiler.hpp>
 
-#include "imgui_impl_swizzle.hpp"
+#include "ImGuiSwzzle.hpp"
 #include "ImGuiTranslateKey.hpp"
 
 #include <swizzle/core/Event.hpp>
@@ -100,7 +100,7 @@ static uint32_t __glsl_shader_vert_spv[] = {
     0x0004003d, 0x00000008, 0x00000026, 0x00000025, 0x00050081, 0x00000008, 0x00000027, 0x00000024, 0x00000026,
     0x00050051, 0x00000006, 0x0000002a, 0x00000027, 0x00000000, 0x00050051, 0x00000006, 0x0000002b, 0x00000027,
     0x00000001, 0x00070050, 0x00000007, 0x0000002c, 0x0000002a, 0x0000002b, 0x00000028, 0x00000029, 0x00050041,
-    0x00000011, 0x0000002d, 0x0000001b, 0x0000000d, 0x0003003e, 0x0000002d, 0x0000002c, 0x000100fd, 0x00010038};
+    0x00000011, 0x0000002d, 0x0000001b, 0x0000000d, 0x0003003e, 0x0000002d, 0x0000002c, 0x000100fd, 0x00010038 };
 
 // glsl_shader.frag, compiled with:
 // # glslangValidator -V -x -o glsl_shader.frag.u32 glsl_shader.frag
@@ -136,7 +136,7 @@ static uint32_t __glsl_shader_frag_spv[] = {
     0x00000007, 0x00000012, 0x00000011, 0x0004003d, 0x00000014, 0x00000017, 0x00000016, 0x00050041, 0x00000019,
     0x0000001a, 0x0000000d, 0x00000018, 0x0004003d, 0x0000000a, 0x0000001b, 0x0000001a, 0x00050057, 0x00000007,
     0x0000001c, 0x00000017, 0x0000001b, 0x00050085, 0x00000007, 0x0000001d, 0x00000012, 0x0000001c, 0x0003003e,
-    0x00000009, 0x0000001d, 0x000100fd, 0x00010038};
+    0x00000009, 0x0000001d, 0x000100fd, 0x00010038 };
 
 //    color_attachment[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 //    color_attachment[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -177,7 +177,8 @@ void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
     auto evtType = evt.getEventType();
     switch (evtType)
     {
-    case swizzle::core::WindowEventType::CharacterTypeEvent: {
+    case swizzle::core::WindowEventType::CharacterTypeEvent:
+    {
         swizzle::core::CharacterEvent& e = (swizzle::core::CharacterEvent&)evt;
         if (e.mCodePoint > 0 && e.mCodePoint < 0x10000)
         {
@@ -185,7 +186,8 @@ void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
         }
         break;
     }
-    case swizzle::core::WindowEventType::KeyboardInputEvent: {
+    case swizzle::core::WindowEventType::KeyboardInputEvent:
+    {
         swizzle::core::InputEvent& e = (swizzle::core::InputEvent&)evt;
         if (e.mFromKeyboard)
         {
@@ -197,17 +199,20 @@ void ImGuiInputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
         }
         break;
     }
-    case swizzle::core::WindowEventType::MouseMoveEvent: {
+    case swizzle::core::WindowEventType::MouseMoveEvent:
+    {
         swizzle::core::MouseMoveEvent& e = (swizzle::core::MouseMoveEvent&)evt;
         io.AddMousePosEvent((float)e.mX, (float)e.mY);
         break;
     }
-    case swizzle::core::WindowEventType::MouseScrollEvent: {
+    case swizzle::core::WindowEventType::MouseScrollEvent:
+    {
         swizzle::core::MouseScrollEvent& e = (swizzle::core::MouseScrollEvent&)evt;
         io.AddMouseWheelEvent((float)e.mScrollX, (float)e.mScrollY);
         break;
     }
-    case swizzle::core::WindowEventType::ResizeEvent: {
+    case swizzle::core::WindowEventType::ResizeEvent:
+    {
         swizzle::core::WindowResizeEvent& e = (swizzle::core::WindowResizeEvent&)evt;
         bd->mImGuiFbo->resize(e.mWidth, e.mHeight);
         if (bd->mImGuiMat)
@@ -231,20 +236,20 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
     io.BackendRendererUserData = (void*)bd;
     io.BackendRendererName = "imgui_impl_vulkan";
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset; // We can honor the ImDrawCmd::VtxOffset field, allowing
-                                                               // for large meshes.
+    // for large meshes.
 
     IM_ASSERT(dev != nullptr);
 
     swizzle::gfx::FrameBufferCreateInfo info{};
     info.mDepthType = swizzle::gfx::FrameBufferDepthType::DepthNone;
     info.mSwapCount = 3u;
-    info.mColorAttachFormats = {swizzle::gfx::FrameBufferAttachmentType::Default};
+    info.mColorAttachFormats = { swizzle::gfx::FrameBufferAttachmentType::Default };
     window->getSize(info.mWidth, info.mHeight);
 
     bd->mDevice = dev;
 
     bd->mImGuiFbo = dev->createFramebuffer(info);
-    bd->mImGuiFbo->setColorAttachmentClearColor(0u, {0.0f, 0.0f, 0.0f, 0.0f});
+    bd->mImGuiFbo->setColorAttachmentClearColor(0u, { 0.0f, 0.0f, 0.0f, 0.0f });
 
     swizzle::gfx::ShaderAttributeList attributeList = {};
 
@@ -254,7 +259,7 @@ bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
         {0u, swizzle::gfx::ShaderAttributeDataType::r8b8g8a8_unorm, IM_OFFSETOF(ImDrawVert, col)},
     };
 
-    attributeList.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(ImDrawVert)}};
+    attributeList.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(ImDrawVert)} };
     attributeList.mDescriptors = {
         {swizzle::gfx::DescriptorType::TextureSampler,
          swizzle::gfx::Count(1u),

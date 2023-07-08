@@ -1,5 +1,5 @@
-#ifndef IM_GUI_TRANSLATE_KEY_HPP
-#define IM_GUI_TRANSLATE_KEY_HPP
+
+#pragma once
 
 /* Include files */
 
@@ -19,5 +19,3 @@
 /* Function Declaration */
 
 ImGuiKey fromScanCode(S32 scanCode);
-
-#endif
