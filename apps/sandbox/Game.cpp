@@ -182,7 +182,10 @@ void Game::updateMainWindow(F32 dt)
     mWindow->getSize(x, y);
 
     cam.changeAspect((F32)x, (F32)y);
-    mController.update(dt);
+    if (!(ImGui::GetIO().WantCaptureKeyboard || ImGui::GetIO().WantCaptureMouse))
+    {
+        mController.update(dt);
+    }
 
     mSwapchain->setClearColor({0, 0, 0, 1});
 
