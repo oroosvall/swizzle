@@ -21,7 +21,7 @@
 IMGUI_IMPL_API bool ImGui_ImplSwizzle_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
                                            common::Resource<swizzle::core::SwWindow> window);
 IMGUI_IMPL_API void ImGui_ImplSwizzle_Shutdown();
-IMGUI_IMPL_API void ImGui_ImplSwizzle_NewFrame(common::Resource<swizzle::core::SwWindow> window);
+IMGUI_IMPL_API void ImGui_ImplSwizzle_NewFrame(common::Resource<swizzle::core::SwWindow> window, DeltaTime dt);
 
 IMGUI_IMPL_API common::Resource<swizzle::gfx::FrameBuffer> ImGui_ImplSwizzle_GetFramebuffer();
 IMGUI_IMPL_API void ImGui_ImplSwizzle_SetMaterial(common::Resource<swizzle::gfx::Material> mat);
