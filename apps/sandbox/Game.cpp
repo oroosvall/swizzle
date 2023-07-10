@@ -142,7 +142,7 @@ SwBool Game::userUpdate(F32 dt)
     title += "Vertex count: " + std::to_string(mCmdBuffer->getVertCount()) + "\n";
     title += "Triangle count: " + std::to_string(mCmdBuffer->getTriCount()) + "\n";
 
-    ImGui_ImplSwizzle_NewFrame(mWindow);
+    ImGui_ImplSwizzle_NewFrame(mWindow, dt);
     ImGui::NewFrame();
 
     ImGui::Begin("Blah");
