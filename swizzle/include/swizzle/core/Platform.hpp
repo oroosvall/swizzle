@@ -4,6 +4,7 @@
 #include <swizzle/Api.hpp>
 #include <common/Common.hpp>
 #include <swizzle/core/Input.hpp>
+#include <swizzle/core/File.hpp>
 
 #include "Window.hpp"
 
@@ -32,6 +33,8 @@ namespace swizzle::core
     void SWIZZLE_API ShowCriticalMessage(const SwChar* text);
     void SWIZZLE_API ShowCriticalMessageW(const SwWChar* text);
 
+    common::Resource<IFile> SWIZZLE_API OpenFile(const SwChar* path);
+    common::Resource<IFile> SWIZZLE_API OpenFileW(const SwWChar* path);
 }
 
 #endif

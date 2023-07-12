@@ -79,5 +79,14 @@ namespace swizzle::core
         platform::PlatformShowCriticalMessageW(text);
     }
 
+    common::Resource<IFile> OpenFile(const SwChar* path)
+    {
+        return platform::OpenFile(path);
+    }
+
+    common::Resource<IFile> OpenFileW(const SwWChar* path)
+    {
+        return platform::OpenFileW(path);
+    }
 
 }

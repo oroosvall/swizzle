@@ -5,6 +5,7 @@
 
 #include "Windows/Win32Window.hpp"
 #include "Windows/Win32Input.hpp"
+#include "Windows/Win32File.hpp"
 
 #include <cstdlib>
 
@@ -260,6 +261,17 @@ namespace swizzle::core
             MessageBoxW(NULL, text, L"Error", MB_ICONERROR | MB_OK);
             terminate();
         }
+
+        common::Resource<IFile> OpenFile(const SwChar* path)
+        {
+            return common::CreateRef<Win32File>(path);
+        }
+
+        common::Resource<IFile> OpenFileW(const SwWChar* path)
+        {
+            return common::CreateRef<Win32File>(path);
+        }
+
 
     } // namespace platform
 

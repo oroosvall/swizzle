@@ -35,6 +35,8 @@ namespace swizzle::core
         void PlatformShowCriticalMessage(const SwChar* text);
         void PlatformShowCriticalMessageW(const SwWChar* text);
 
+        common::Resource<IFile> OpenFile(const SwChar* path);
+        common::Resource<IFile> OpenFileW(const SwWChar* path);
     }
 
 } // namespace swizzle
