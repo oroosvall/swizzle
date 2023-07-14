@@ -23,9 +23,12 @@ namespace swizzle::asset2
     struct VFSHeader
     {
         SwChar mMagic[4];
-        U32 mVersion;
+        U16 mHeaderSize;
+        U16 mVersion;
         U32 mFileCount;
+        U32 mFreeCount;
         U64 mFileTableOffset;
+        U64 mFreeTableOffset;
     };
 #pragma pack(pop)
 
@@ -35,6 +38,11 @@ namespace swizzle::asset2
         std::string mSourcePath;
         U64 mOffset;
         U64 mFileSize;
+    };
+    struct FreeInfo
+    {
+        U64 mOffset;
+        U64 mSize;
     };
 }
 
@@ -54,19 +62,29 @@ namespace swizzle::asset2
 
         virtual void addFile(const SwChar* logicalPath, const SwChar* physicalPath) override;
 
+        virtual common::Resource<IBuffer> readFile(const SwChar* file) override;
+
         virtual void pack() override;
 
     private:
 
         void readHeader();
+        void readTable();
+
         void createHeader();
         void writeHeader();
+        void writeTable();
+
         common::Resource<IBuffer> fileInfoAsBuffer(const FileInfo& fi);
+        common::Resource<IBuffer> freeInfoAsbuffer(const FreeInfo& fi);
+
+        FileInfo findFile(const SwChar* path);
+        void updateFile(const FileInfo& fi);
 
         common::Resource<core::IFile> mVfsFile;
         VFSHeader mHeader;
         std::vector<FileInfo> mFiles;
-
+        std::vector<FreeInfo> mFreeInfos;
     };
 } // namespace swizzle::asset2
 

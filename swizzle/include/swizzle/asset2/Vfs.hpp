@@ -19,8 +19,9 @@ namespace swizzle::asset2
     struct VfsInfo
     {
         U32 mFileCount;
+        U64 mSize;
     };
-}
+} // namespace swizzle::asset2
 
 /* Class Declaration */
 
@@ -36,11 +37,18 @@ namespace swizzle::asset2
         virtual VfsInfo vfsInfo() = 0;
 
         /// <summary>
-        /// Register that a file should be added to the VFS.
+        /// Add a file to the VFS
         /// </summary>
         /// <param name="logicalPath">The internal VFS path that the resource can be found by</param>
         /// <param name="physicalPath">Location of the file on disk</param>
         virtual void addFile(const SwChar* logicalPath, const SwChar* physicalPath) = 0;
+
+        /// <summary>
+        /// Read file content from Vfs
+        /// </summary>
+        /// <param name="file">Path to the file in the VFS</param>
+        /// <returns>Buffer with file data, empty resource if file does not exist</returns>
+        virtual common::Resource<IBuffer> readFile(const SwChar* file) = 0;
 
         /// <summary>
         /// Start packing files to the VFS
