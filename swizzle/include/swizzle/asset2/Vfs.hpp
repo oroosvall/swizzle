@@ -51,6 +51,12 @@ namespace swizzle::asset2
         virtual common::Resource<IBuffer> readFile(const SwChar* file) = 0;
 
         /// <summary>
+        /// Remove a file from Vfs
+        /// </summary>
+        /// <param name="path">Path to file in vfs</param>
+        virtual void removeFile(const SwChar* path) = 0;
+
+        /// <summary>
         /// Start packing files to the VFS
         /// </summary>
         virtual void pack() = 0;

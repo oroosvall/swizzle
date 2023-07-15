@@ -64,6 +64,8 @@ namespace swizzle::asset2
 
         virtual common::Resource<IBuffer> readFile(const SwChar* file) override;
 
+        virtual void removeFile(const SwChar* path) override;
+
         virtual void pack() override;
 
     private:
@@ -80,6 +82,7 @@ namespace swizzle::asset2
 
         FileInfo findFile(const SwChar* path);
         void updateFile(const FileInfo& fi);
+        void removeFile(const FileInfo& fi);
 
         common::Resource<core::IFile> mVfsFile;
         VFSHeader mHeader;

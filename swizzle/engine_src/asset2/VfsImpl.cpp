@@ -174,6 +174,31 @@ namespace swizzle::asset2
         return data;
     }
 
+    void VfsImpl::removeFile(const SwChar* path)
+    {
+        FileInfo found = findFile(path);
+
+        if (found.mOffset != 0ull)
+        {
+            mVfsFile->setFilePointer(found.mOffset, core::FilePtrMoveType::Begin);
+            auto zeroBuf = common::CreateRef<BufferImpl>(found.mFileSize);
+            memset(zeroBuf->data(), 0u, zeroBuf->size());
+            mVfsFile->write(zeroBuf);
+
+            FreeInfo fi{};
+            fi.mOffset = found.mOffset;
+            fi.mSize = found.mFileSize;
+
+            mHeader.mFileCount--;
+            removeFile(found);
+
+            mFreeInfos.push_back(fi);
+
+            writeTable();
+            writeHeader();
+        }
+    }
+
     void VfsImpl::pack()
     {
         mVfsFile->setFilePointer(0ull, core::FilePtrMoveType::Begin);
@@ -377,6 +402,20 @@ namespace swizzle::asset2
                 break;
             }
         }
+    }
+
+    void VfsImpl::removeFile(const FileInfo& fi)
+    {
+        std::vector<FileInfo>::iterator toDel;
+        for (auto it = mFiles.begin() ; it != mFiles.end(); it++)
+        {
+            if (it->mFileName == fi.mFileName)
+            {
+                toDel = it;
+                break;
+            }
+        }
+        mFiles.erase(toDel);
     }
 
 } // namespace swizzle::asset2
