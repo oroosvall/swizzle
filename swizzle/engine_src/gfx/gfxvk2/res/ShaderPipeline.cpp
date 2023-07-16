@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include <swizzle/core/Platform.hpp>
+#include "core/FileUtils.hpp"
 
 /* Defines */
 
@@ -24,25 +25,7 @@
 
 /* Static Function Declaration */
 
-namespace vk
-{
-    // @ TODO: move to File handling api
-    static std::string getPathFromFileName(const std::string& fileName);
-
-} // namespace vk
-
 /* Static Function Definition */
-
-namespace vk
-{
-    // @ TODO: move to File handling api
-    static std::string getPathFromFileName(const std::string& fileName)
-    {
-        std::size_t found = fileName.find_last_of("/\\");
-        return fileName.substr(0, found + 1);
-    }
-
-} // namespace vk
 
 /* Function Definition */
 
@@ -205,7 +188,7 @@ namespace vk
                     std::string path = "";
 
                     shader::ReadShaderInfo(line, shaderType, path);
-                    path.insert(0, getPathFromFileName(file));
+                    path.insert(0, swizzle::core::getPathFromFileName(file));
                     shader::ShaderModuleType type = shader::ShaderModuleType::ShaderModuleType_Vertex;
                     ok = shader::GetShaderType(shaderType.c_str(), type);
                     if (ok)

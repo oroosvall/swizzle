@@ -32,13 +32,15 @@ namespace swizzle::asset2
     };
 #pragma pack(pop)
 
-    struct FileInfo
+    struct Entry
     {
-        std::string mFileName;
-        std::string mSourcePath;
+        std::string mName;
+        SwBool mIsFile;
         U64 mOffset;
-        U64 mFileSize;
+        U64 mSize;
+        std::vector<Entry> mChildren;
     };
+
     struct FreeInfo
     {
         U64 mOffset;
@@ -66,27 +68,37 @@ namespace swizzle::asset2
 
         virtual void removeFile(const SwChar* path) override;
 
-        virtual void pack() override;
-
     private:
 
         void readHeader();
         void readTable();
+        void readTable(Entry& e, common::Resource<IBuffer> data, U64& offset);
 
         void createHeader();
         void writeHeader();
         void writeTable();
+        U64 writeTable(const Entry& e);
 
-        common::Resource<IBuffer> fileInfoAsBuffer(const FileInfo& fi);
+        void writeZero(U64 offset, U64 size);
+
+        /// <summary>
+        /// This create a buffer without the children in it
+        /// </summary>
+        /// <param name="e">Entry to be converted to buffer</param>
+        /// <returns></returns>
+        common::Resource<IBuffer> entryAsBuffer(const Entry& e);
         common::Resource<IBuffer> freeInfoAsbuffer(const FreeInfo& fi);
 
-        FileInfo findFile(const SwChar* path);
-        void updateFile(const FileInfo& fi);
-        void removeFile(const FileInfo& fi);
+        //void updateFile(const FileInfo& fi);
+        //void removeFile(const FileInfo& fi);
+
+        Entry& createOrGetEntry(const SwChar* path, SwBool createAsFile);
+        SwBool isFile(const Entry& entry) const;
+        SwBool exists(const SwChar* path);
 
         common::Resource<core::IFile> mVfsFile;
         VFSHeader mHeader;
-        std::vector<FileInfo> mFiles;
+        Entry mRoot;
         std::vector<FreeInfo> mFreeInfos;
     };
 } // namespace swizzle::asset2

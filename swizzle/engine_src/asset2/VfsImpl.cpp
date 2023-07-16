@@ -3,6 +3,7 @@
 
 #include "VfsImpl.hpp"
 #include "core/BufferImpl.hpp"
+#include "core/FileUtils.hpp"
 #include <swizzle/core/Platform.hpp>
 
 /* Defines */
@@ -39,7 +40,7 @@ namespace swizzle::asset2
     VfsImpl::VfsImpl()
         : mVfsFile(nullptr)
         , mHeader()
-        , mFiles()
+        , mRoot()
         , mFreeInfos()
     {
     }
@@ -74,148 +75,112 @@ namespace swizzle::asset2
 
     void VfsImpl::addFile(const SwChar* logicalPath, const SwChar* physicalPath)
     {
-        FileInfo found = findFile(logicalPath);
+        Entry& e = createOrGetEntry(logicalPath, true);
         // Use offset to determine if file already exists in vfs since a file could technically be 0 bytes
-        if (found.mOffset == 0ull)
-        {
-            mVfsFile->setFilePointer(mHeader.mFileTableOffset, core::FilePtrMoveType::Begin);
-            FileInfo info{};
 
-            common::Resource<core::IFile> srcFile = core::OpenFile(physicalPath);
-
-            info.mFileName = logicalPath;
-            info.mSourcePath = physicalPath;
-            info.mOffset = mHeader.mFileTableOffset;
-            info.mFileSize = srcFile->size();
-
-            mHeader.mFileCount++;
-            mHeader.mFileTableOffset += info.mFileSize;
-
-            mFiles.push_back(info);
-
-            common::Resource<IBuffer> readBuf = srcFile->read(info.mFileSize);
-            mVfsFile->write(readBuf);
-
-            writeTable();
-            writeHeader();
-        }
-        else
+        if (isFile(e))
         {
             common::Resource<core::IFile> srcFile = core::OpenFile(physicalPath);
-            FreeInfo freeInfo{};
-            freeInfo.mOffset = found.mOffset;
-            freeInfo.mSize = found.mFileSize;
+            const U64 fileSize = srcFile->size();
 
-            // file is larger so replace it
-            if (srcFile->size() > found.mFileSize)
+            if (e.mOffset == 0ull)
             {
-                mVfsFile->setFilePointer(found.mOffset, core::FilePtrMoveType::Begin);
-                auto zeroBuf = common::CreateRef<BufferImpl>(found.mFileSize);
-                memset(zeroBuf->data(), 0u, zeroBuf->size());
-                mVfsFile->write(zeroBuf);
-                zeroBuf.reset();
+                e.mOffset = mHeader.mFileTableOffset;
+                e.mSize = fileSize;
 
-                found.mSourcePath = physicalPath;
-                found.mOffset = mHeader.mFileTableOffset;
-                found.mFileSize = srcFile->size();
+                mHeader.mFileCount++;
 
                 mVfsFile->setFilePointer(mHeader.mFileTableOffset, core::FilePtrMoveType::Begin);
-
-                common::Resource<IBuffer> readBuf = srcFile->read(found.mFileSize);
+                common::Resource<IBuffer> readBuf = srcFile->read(fileSize);
                 mVfsFile->write(readBuf);
 
-                mHeader.mFileTableOffset += found.mFileSize;
-
-                updateFile(found);
+                mHeader.mFileTableOffset += fileSize;
             }
-            // Same size or smaller
             else
             {
-                mVfsFile->setFilePointer(found.mOffset, core::FilePtrMoveType::Begin);
-                auto zeroBuf = common::CreateRef<BufferImpl>(found.mFileSize);
-                memset(zeroBuf->data(), 0u, zeroBuf->size());
-                mVfsFile->write(zeroBuf);
-                zeroBuf.reset();
+                FreeInfo freeInfo{};
+                freeInfo.mOffset = e.mOffset;
+                freeInfo.mSize = e.mSize;
 
-                found.mSourcePath = physicalPath;
-                found.mFileSize = srcFile->size();
+                // zero out old file
+                writeZero(e.mOffset, e.mSize);
 
-                mVfsFile->setFilePointer(found.mOffset, core::FilePtrMoveType::Begin);
-                common::Resource<IBuffer> readBuf = srcFile->read(found.mFileSize);
-                mVfsFile->write(readBuf);
+                // file is larger so replace it
+                if (fileSize > e.mSize)
+                {
+                    e.mOffset = mHeader.mFileTableOffset;
+                    e.mSize = fileSize;
 
-                freeInfo.mSize -= found.mFileSize;
+                    mVfsFile->setFilePointer(mHeader.mFileTableOffset, core::FilePtrMoveType::Begin);
+                    common::Resource<IBuffer> readBuf = srcFile->read(fileSize);
+                    mVfsFile->write(readBuf);
+
+                    mHeader.mFileTableOffset += fileSize;
+                }
+                else
+                {
+                    e.mSize = fileSize;
+
+                    mVfsFile->setFilePointer(e.mOffset, core::FilePtrMoveType::Begin);
+                    common::Resource<IBuffer> readBuf = srcFile->read(fileSize);
+                    mVfsFile->write(readBuf);
+
+                    freeInfo.mSize -= fileSize;
+                    if (freeInfo.mSize != 0ull)
+                    {
+                        freeInfo.mOffset = e.mOffset + e.mSize;
+                    }
+                }
+
                 if (freeInfo.mSize != 0ull)
                 {
-                    freeInfo.mOffset = found.mOffset + found.mFileSize;
+                    mFreeInfos.push_back(freeInfo);
                 }
             }
 
-            if (freeInfo.mSize != 0ull)
-            {
-                mFreeInfos.push_back(freeInfo);
-            }
-
             writeTable();
             writeHeader();
         }
+
     }
 
     common::Resource<IBuffer> VfsImpl::readFile(const SwChar* file)
     {
-        FileInfo found = findFile(file);
         common::Resource<IBuffer> data = nullptr;
-        if (found.mOffset != 0)
+        if (exists(file))
         {
-            mVfsFile->setFilePointer(found.mOffset, core::FilePtrMoveType::Begin);
-            data = mVfsFile->read(found.mFileSize);
+            Entry e = createOrGetEntry(file, false);
+            if (e.mOffset != 0)
+            {
+                mVfsFile->setFilePointer(e.mOffset, core::FilePtrMoveType::Begin);
+                data = mVfsFile->read(e.mSize);
+            }
         }
-
         return data;
     }
 
     void VfsImpl::removeFile(const SwChar* path)
     {
-        FileInfo found = findFile(path);
+        Entry e = createOrGetEntry(path, false);
 
-        if (found.mOffset != 0ull)
+        if (e.mOffset != 0ull)
         {
-            mVfsFile->setFilePointer(found.mOffset, core::FilePtrMoveType::Begin);
-            auto zeroBuf = common::CreateRef<BufferImpl>(found.mFileSize);
+            mVfsFile->setFilePointer(e.mOffset, core::FilePtrMoveType::Begin);
+            auto zeroBuf = common::CreateRef<BufferImpl>(e.mSize);
             memset(zeroBuf->data(), 0u, zeroBuf->size());
             mVfsFile->write(zeroBuf);
 
             FreeInfo fi{};
-            fi.mOffset = found.mOffset;
-            fi.mSize = found.mFileSize;
+            fi.mOffset = e.mOffset;
+            fi.mSize = e.mSize;
 
             mHeader.mFileCount--;
-            removeFile(found);
+            //removeFile(found);
 
             mFreeInfos.push_back(fi);
 
             writeTable();
             writeHeader();
-        }
-    }
-
-    void VfsImpl::pack()
-    {
-        mVfsFile->setFilePointer(0ull, core::FilePtrMoveType::Begin);
-        writeHeader();
-        std::vector<common::Resource<IBuffer>> buffers;
-        for (const auto& f : mFiles)
-        {
-            common::Resource<core::IFile> srcFile = core::OpenFile(f.mSourcePath.c_str());
-            common::Resource<IBuffer> read = srcFile->read(f.mFileSize);
-            mVfsFile->write(read);
-
-            buffers.push_back(fileInfoAsBuffer(f));
-        }
-
-        for (const auto& b : buffers)
-        {
-            mVfsFile->write(b);
         }
     }
 
@@ -241,37 +206,45 @@ namespace swizzle::asset2
         mVfsFile->setFilePointer(mHeader.mFileTableOffset, core::FilePtrMoveType::Begin);
         common::Resource<IBuffer> readBuf = mVfsFile->read(mHeader.mFreeTableOffset - mHeader.mFileTableOffset);
 
-        U8* data = readBuf->data();
         U64 offset = 0ull;
-        for (U32 i = 0ull; i < mHeader.mFileCount; ++i)
+        if(readBuf->size() > 0)
         {
-            FileInfo fi{};
+            readTable(mRoot, readBuf, offset);
+        }
+    }
 
-            // Read fileName
-            U32 nameLength = 0ul;
-            memcpy(&nameLength, &data[offset], sizeof(nameLength));
-            offset += sizeof(nameLength);
-            fi.mFileName.resize(nameLength);
-            memcpy(fi.mFileName.data(), &data[offset], nameLength);
-            offset += nameLength;
+    void VfsImpl::readTable(Entry& e, common::Resource<IBuffer> data, U64& offset)
+    {
+        U8* dataPtr = data->data();
 
-            // Read source filePath
-            nameLength = 0ul;
-            memcpy(&nameLength, &data[offset], sizeof(nameLength));
-            offset += sizeof(nameLength);
-            fi.mSourcePath.resize(nameLength);
-            memcpy(fi.mSourcePath.data(), &data[offset], nameLength);
-            offset += nameLength;
+        // Read the name
+        U32 nameLength = 0ull;
+        memcpy(&nameLength, &dataPtr[offset], sizeof(nameLength));
+        offset += sizeof(nameLength);
+        e.mName.resize(nameLength);
+        memcpy(e.mName.data(), &dataPtr[offset], nameLength);
+        offset += nameLength;
 
-            // Read offset
-            memcpy(&fi.mOffset, &data[offset], sizeof(fi.mOffset));
-            offset += sizeof(fi.mOffset);
+        // Read isFile
+        memcpy(&e.mIsFile, &dataPtr[offset], sizeof(e.mIsFile));
+        offset += sizeof(e.mIsFile);
 
-            // Read size
-            memcpy(&fi.mFileSize, &data[offset], sizeof(fi.mFileSize));
-            offset += sizeof(fi.mFileSize);
+        // Read offset
+        memcpy(&e.mOffset, &dataPtr[offset], sizeof(e.mOffset));
+        offset += sizeof(e.mOffset);
 
-            mFiles.push_back(fi);
+        // Read size
+        memcpy(&e.mSize, &dataPtr[offset], sizeof(e.mSize));
+        offset += sizeof(e.mSize);
+
+        U32 childCount = 0ull;
+        memcpy(&childCount, &dataPtr[offset], sizeof(childCount));
+        offset += sizeof(childCount);
+
+        e.mChildren.resize(childCount);
+        for (U32 i = 0; i < childCount; i++)
+        {
+            readTable(e.mChildren[i], data, offset);
         }
     }
 
@@ -306,12 +279,9 @@ namespace swizzle::asset2
     {
         mVfsFile->setFilePointer(mHeader.mFileTableOffset, core::FilePtrMoveType::Begin);
         mHeader.mFreeTableOffset = mHeader.mFileTableOffset;
-        for (const auto& f : mFiles)
-        {
-            common::Resource<IBuffer> buf = fileInfoAsBuffer(f);
-            mHeader.mFreeTableOffset += buf->size();
-            mVfsFile->write(buf);
-        }
+
+        U64 tableSize = writeTable(mRoot);
+        mHeader.mFreeTableOffset += tableSize;
 
         for (const auto& f : mFreeInfos)
         {
@@ -320,38 +290,63 @@ namespace swizzle::asset2
         }
     }
 
-    common::Resource<IBuffer> VfsImpl::fileInfoAsBuffer(const FileInfo& fi)
+    U64 VfsImpl::writeTable(const Entry& e)
     {
-        U64 size = sizeof(fi.mFileSize) + sizeof(fi.mOffset);
-        size += sizeof(U32) + sizeof(U32);
-        size += fi.mFileName.size() + fi.mSourcePath.size();
+        U64 size = 0ull;
+
+        common::Resource<IBuffer> buf = entryAsBuffer(e);
+        size += buf->size();
+        mVfsFile->write(buf);
+
+        for (const auto& child : e.mChildren)
+        {
+            size += writeTable(child);
+        }
+
+        return size;
+    }
+
+    void VfsImpl::writeZero(U64 offset, U64 size)
+    {
+        mVfsFile->setFilePointer(offset, core::FilePtrMoveType::Begin);
+        auto zeroBuf = common::CreateRef<BufferImpl>(size);
+        memset(zeroBuf->data(), 0u, zeroBuf->size());
+        mVfsFile->write(zeroBuf);
+    }
+
+    common::Resource<IBuffer> VfsImpl::entryAsBuffer(const Entry& e)
+    {
+        U64 size = sizeof(U32) + e.mName.size();
+        size += sizeof(e.mIsFile) + sizeof(e.mOffset) + sizeof(e.mSize);
+        size += sizeof(static_cast<U32>(e.mChildren.size()));
 
         common::Resource<IBuffer> buf = common::CreateRef<BufferImpl>(size);
 
         U8* dataPtr = buf->data();
         U64 offset = 0ull;
 
-        // Write local file name
-        U32 nameSize = static_cast<U32>(fi.mFileName.size());
+        // Write entry name
+        U32 nameSize = static_cast<U32>(e.mName.size());
         memcpy(&dataPtr[offset], &nameSize, sizeof(nameSize));
         offset += sizeof(nameSize);
-        memcpy(&dataPtr[offset], fi.mFileName.data(), nameSize);
+        memcpy(&dataPtr[offset], e.mName.data(), nameSize);
         offset += nameSize;
 
-        // Write source file name
-        nameSize = static_cast<U32>(fi.mSourcePath.size());
-        memcpy(&dataPtr[offset], &nameSize, sizeof(nameSize));
-        offset += sizeof(nameSize);
-        memcpy(&dataPtr[offset], fi.mSourcePath.data(), nameSize);
-        offset += nameSize;
+        // Write isFile
+        memcpy(&dataPtr[offset], &e.mIsFile, sizeof(e.mIsFile));
+        offset += sizeof(e.mIsFile);
 
-        // Write file offset
-        memcpy(&dataPtr[offset], &fi.mOffset, sizeof(fi.mOffset));
-        offset += sizeof(fi.mOffset);
+        // Write offset
+        memcpy(&dataPtr[offset], &e.mOffset, sizeof(e.mOffset));
+        offset += sizeof(e.mOffset);
 
-        // Write file size
-        memcpy(&dataPtr[offset], &fi.mFileSize, sizeof(fi.mFileSize));
-        offset += sizeof(fi.mFileSize);
+        // Write size
+        memcpy(&dataPtr[offset], &e.mSize, sizeof(e.mSize));
+        offset += sizeof(e.mSize);
+
+        // Write number of children
+        U32 childCount = static_cast<U32>(e.mChildren.size());
+        memcpy(&dataPtr[offset], &childCount, sizeof(childCount));
 
         return buf;
     }
@@ -375,24 +370,24 @@ namespace swizzle::asset2
         return buf;
     }
 
-    FileInfo VfsImpl::findFile(const SwChar* path)
-    {
-        FileInfo fi{};
-        std::string toFind = path;
+    //FileInfo VfsImpl::findFile(const SwChar* path)
+    //{
+    //    FileInfo fi{};
+    //    std::string toFind = path;
 
-        for (const auto& f : mFiles)
-        {
-            if (f.mFileName == toFind)
-            {
-                fi = f;
-                break;
-            }
-        }
+    //    for (const auto& f : mFiles)
+    //    {
+    //        if (f.mFileName == toFind)
+    //        {
+    //            fi = f;
+    //            break;
+    //        }
+    //    }
 
-        return fi;
-    }
+    //    return fi;
+    //}
 
-    void VfsImpl::updateFile(const FileInfo& fi)
+    /*void VfsImpl::updateFile(const FileInfo& fi)
     {
         for (auto& f : mFiles)
         {
@@ -407,7 +402,7 @@ namespace swizzle::asset2
     void VfsImpl::removeFile(const FileInfo& fi)
     {
         std::vector<FileInfo>::iterator toDel;
-        for (auto it = mFiles.begin() ; it != mFiles.end(); it++)
+        for (auto it = mFiles.begin(); it != mFiles.end(); it++)
         {
             if (it->mFileName == fi.mFileName)
             {
@@ -416,6 +411,75 @@ namespace swizzle::asset2
             }
         }
         mFiles.erase(toDel);
+    }*/
+
+    Entry& VfsImpl::createOrGetEntry(const SwChar* path, SwBool createAsFile)
+    {
+        std::string strPath = path;
+        std::vector<std::string> paths = core::getPaths(strPath);
+
+        Entry* entryPtr = &mRoot;
+        for (const auto& p : paths)
+        {
+            SwBool createNode = true;
+
+            for (size_t i = 0ull; i < entryPtr->mChildren.size(); ++i)
+            {
+                if (entryPtr->mChildren[i].mName == p)
+                {
+                    createNode = false;
+                    entryPtr = &entryPtr->mChildren[i];
+                    break;
+                }
+            }
+
+            if (createNode)
+            {
+                Entry newNode{};
+                newNode.mName = p;
+                entryPtr->mChildren.push_back(newNode);
+                entryPtr = &entryPtr->mChildren.back();
+            }
+        }
+
+        if (createAsFile && (entryPtr->mChildren.empty()) && (!entryPtr->mIsFile))
+        {
+            entryPtr->mIsFile = true;
+        }
+
+        return *entryPtr;
+    }
+
+    SwBool VfsImpl::isFile(const Entry& entry) const
+    {
+        return entry.mIsFile;
+    }
+
+    SwBool VfsImpl::exists(const SwChar* path)
+    {
+        SwBool exists = false;
+        std::string strPath = path;
+        std::vector<std::string> paths = core::getPaths(strPath);
+
+        Entry* entryPtr = &mRoot;
+        for (const auto& p : paths)
+        {
+            for (size_t i = 0ull; i < entryPtr->mChildren.size(); ++i)
+            {
+                if (entryPtr->mChildren[i].mName == p)
+                {
+                    entryPtr = &entryPtr->mChildren[i];
+                    break;
+                }
+            }
+        }
+
+        if (entryPtr->mName == paths.back())
+        {
+            exists = true;
+        }
+
+        return exists;
     }
 
 } // namespace swizzle::asset2

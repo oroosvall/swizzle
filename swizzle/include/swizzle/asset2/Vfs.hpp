@@ -55,11 +55,6 @@ namespace swizzle::asset2
         /// </summary>
         /// <param name="path">Path to file in vfs</param>
         virtual void removeFile(const SwChar* path) = 0;
-
-        /// <summary>
-        /// Start packing files to the VFS
-        /// </summary>
-        virtual void pack() = 0;
     };
 } // namespace swizzle::asset2
 
