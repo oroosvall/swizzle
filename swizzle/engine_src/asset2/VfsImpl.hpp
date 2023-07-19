@@ -62,11 +62,13 @@ namespace swizzle::asset2
 
         virtual VfsInfo vfsInfo() override;
 
-        virtual void addFile(const SwChar* logicalPath, const SwChar* physicalPath) override;
+        virtual VfsReturnCode addFile(const SwChar* logicalPath, const SwChar* physicalPath) override;
 
         virtual common::Resource<IBuffer> readFile(const SwChar* file) override;
 
-        virtual void removeFile(const SwChar* path) override;
+        virtual VfsReturnCode removeFile(const SwChar* path) override;
+
+        virtual SwBool exists(const SwChar* path) override;
 
     private:
 
@@ -93,7 +95,7 @@ namespace swizzle::asset2
 
         Entry& createOrGetEntry(const SwChar* path, SwBool createAsFile);
         SwBool isFile(const Entry& entry) const;
-        SwBool exists(const SwChar* path);
+        SwBool existsInternal(const SwChar* path);
 
         common::Resource<core::IFile> mVfsFile;
         VFSHeader mHeader;

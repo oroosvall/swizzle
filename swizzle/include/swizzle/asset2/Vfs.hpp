@@ -10,6 +10,17 @@
 
 /* Typedefs/enums */
 
+namespace swizzle::asset2
+{
+    enum class VfsReturnCode
+    {
+        Ok,
+        ErrFileNotFound,
+        ErrHostFileNotFound,
+        ErrHostPermissionDenied
+    };
+}
+
 /* Forward Declared Structs/Classes */
 
 /* Struct Declaration */
@@ -32,8 +43,19 @@ namespace swizzle::asset2
     public:
         virtual ~Vfs() {}
 
+        /// <summary>
+        /// Open a file to use as vfs
+        /// </summary>
+        /// <param name="path">Path to the vfs</param>
+        /// <returns>VfsReturnCode::Ok, if the file contains a valid vfs, or a 0 byte file
+        /// <para>VfsReturnCode::ErrFileNotFound,</para>
+        /// </returns>
         virtual SwBool openStorage(const SwChar* path) = 0;
 
+        /// <summary>
+        /// Returns statistics about the vfs
+        /// </summary>
+        /// <returns>Struct containing statistics information</returns>
         virtual VfsInfo vfsInfo() = 0;
 
         /// <summary>
@@ -41,7 +63,10 @@ namespace swizzle::asset2
         /// </summary>
         /// <param name="logicalPath">The internal VFS path that the resource can be found by</param>
         /// <param name="physicalPath">Location of the file on disk</param>
-        virtual void addFile(const SwChar* logicalPath, const SwChar* physicalPath) = 0;
+        /// <returns>VfsReturnCode::Ok, if the file was successfully added
+        /// <para>VfsReturnCode::ErrFileNotFound, if the file was not present in the vfs</para>
+        /// </returns>
+        virtual VfsReturnCode addFile(const SwChar* logicalPath, const SwChar* physicalPath) = 0;
 
         /// <summary>
         /// Read file content from Vfs
@@ -54,7 +79,17 @@ namespace swizzle::asset2
         /// Remove a file from Vfs
         /// </summary>
         /// <param name="path">Path to file in vfs</param>
-        virtual void removeFile(const SwChar* path) = 0;
+        /// <returns>VfsReturnCode::Ok, if the file was successfully removed
+        /// <para>VfsReturnCode::ErrHostFileNotFound, if the file could not be found on the system</para>
+        /// </returns>
+        virtual VfsReturnCode removeFile(const SwChar* path) = 0;
+
+        /// <summary>
+        /// Check if a file exists in the vfs
+        /// </summary>
+        /// <param name="path">Path to a file in the vfs</param>
+        /// <returns>true if the file exists</returns>
+        virtual SwBool exists(const SwChar* path) = 0;
     };
 } // namespace swizzle::asset2
 
