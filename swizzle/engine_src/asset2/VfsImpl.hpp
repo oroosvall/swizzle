@@ -82,15 +82,14 @@ namespace swizzle::asset2
         void writeZero(U64 offset, U64 size);
 
         /// <summary>
-        /// This create a buffer without the children in it
+        /// This creates a buffer without the children in it
         /// </summary>
         /// <param name="e">Entry to be converted to buffer</param>
         /// <returns></returns>
         common::Resource<IBuffer> entryAsBuffer(const Entry& e);
         common::Resource<IBuffer> freeInfoAsbuffer(const FreeInfo& fi);
 
-        //void updateFile(const FileInfo& fi);
-        //void removeFile(const FileInfo& fi);
+        void removeFileInternal(const SwChar* path);
 
         Entry& createOrGetEntry(const SwChar* path, SwBool createAsFile);
         SwBool isFile(const Entry& entry) const;

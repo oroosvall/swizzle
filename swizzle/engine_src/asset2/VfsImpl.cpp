@@ -76,7 +76,6 @@ namespace swizzle::asset2
     void VfsImpl::addFile(const SwChar* logicalPath, const SwChar* physicalPath)
     {
         Entry& e = createOrGetEntry(logicalPath, true);
-        // Use offset to determine if file already exists in vfs since a file could technically be 0 bytes
 
         if (isFile(e))
         {
@@ -163,7 +162,7 @@ namespace swizzle::asset2
     {
         Entry e = createOrGetEntry(path, false);
 
-        if (e.mOffset != 0ull)
+        if (isFile(e))
         {
             mVfsFile->setFilePointer(e.mOffset, core::FilePtrMoveType::Begin);
             auto zeroBuf = common::CreateRef<BufferImpl>(e.mSize);
@@ -175,10 +174,22 @@ namespace swizzle::asset2
             fi.mSize = e.mSize;
 
             mHeader.mFileCount--;
-            //removeFile(found);
+            removeFileInternal(path);
 
             mFreeInfos.push_back(fi);
 
+            writeTable();
+            writeHeader();
+        }
+        else
+        {
+            for (const auto& child: e.mChildren)
+            {
+                std::string p = path;
+                p += "/" + child.mName;
+                removeFile(p.c_str());
+            }
+            removeFileInternal(path);
             writeTable();
             writeHeader();
         }
@@ -370,48 +381,40 @@ namespace swizzle::asset2
         return buf;
     }
 
-    //FileInfo VfsImpl::findFile(const SwChar* path)
-    //{
-    //    FileInfo fi{};
-    //    std::string toFind = path;
-
-    //    for (const auto& f : mFiles)
-    //    {
-    //        if (f.mFileName == toFind)
-    //        {
-    //            fi = f;
-    //            break;
-    //        }
-    //    }
-
-    //    return fi;
-    //}
-
-    /*void VfsImpl::updateFile(const FileInfo& fi)
+    // TODO: remove all children
+    void VfsImpl::removeFileInternal(const SwChar* path)
     {
-        for (auto& f : mFiles)
+        std::string strPath = path;
+        std::vector<std::string> paths = core::getPaths(strPath);
+        std::string name = paths.back();
+        paths.pop_back();
+
+        Entry* entryPtr = &mRoot;
+        for (const auto& p : paths)
         {
-            if (f.mFileName == fi.mFileName)
+
+            for (size_t i = 0ull; i < entryPtr->mChildren.size(); ++i)
             {
-                f = fi;
-                break;
+                if (entryPtr->mChildren[i].mName == p)
+                {
+                    entryPtr = &entryPtr->mChildren[i];
+                    break;
+                }
             }
         }
-    }
 
-    void VfsImpl::removeFile(const FileInfo& fi)
-    {
-        std::vector<FileInfo>::iterator toDel;
-        for (auto it = mFiles.begin(); it != mFiles.end(); it++)
+        std::vector<Entry>::iterator toDel;
+        for (auto it = entryPtr->mChildren.begin(); it != entryPtr->mChildren.end(); it++)
         {
-            if (it->mFileName == fi.mFileName)
+            if (it->mName == name)
             {
                 toDel = it;
                 break;
             }
         }
-        mFiles.erase(toDel);
-    }*/
+        entryPtr->mChildren.erase(toDel);
+
+    }
 
     Entry& VfsImpl::createOrGetEntry(const SwChar* path, SwBool createAsFile)
     {
