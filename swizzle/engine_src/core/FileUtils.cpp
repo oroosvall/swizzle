@@ -43,8 +43,11 @@ namespace swizzle::core
                 res.push_back(token);
             }
         }
-
-        res.push_back(s.substr(startPos));
+        std::string newS = s.substr(startPos);
+        if (!newS.empty())
+        {
+            res.push_back(newS);
+        }
         return res;
     }
 } // namespace swizzle::core

@@ -70,6 +70,15 @@ namespace swizzle::asset2
 
         virtual SwBool exists(const SwChar* path) override;
 
+        virtual common::Resource<core::IFile> openRo(const SwChar* file) override;
+
+        virtual SwBool isDirectory(const SwChar* path) override;
+        virtual const SwChar* getDirectory(const SwChar* path) override;
+
+        virtual U32 getDirectoryItems(const SwChar* path) override;
+        virtual const SwChar* getDirectoryItemName(const SwChar* path, U32 index) override;
+
+        virtual VfsReturnCode createDirectory(const SwChar* path) override;
     private:
 
         void readHeader();

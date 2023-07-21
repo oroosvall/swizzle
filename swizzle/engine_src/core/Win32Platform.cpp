@@ -262,14 +262,14 @@ namespace swizzle::core
             terminate();
         }
 
-        common::Resource<IFile> OpenFile(const SwChar* path)
+        common::Resource<IFile> OpenFile(const SwChar* path, FileMode mode)
         {
-            return common::CreateRef<Win32File>(path);
+            return common::CreateRef<Win32File>(path, mode);
         }
 
-        common::Resource<IFile> OpenFileW(const SwWChar* path)
+        common::Resource<IFile> OpenFileW(const SwWChar* path, FileMode mode)
         {
-            return common::CreateRef<Win32File>(path);
+            return common::CreateRef<Win32File>(path, mode);
         }
 
 

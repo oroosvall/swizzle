@@ -18,6 +18,13 @@ namespace swizzle::core
         Current = 1,
         End = 2
     };
+
+    enum class FileMode
+    {
+        Read,
+        Write,
+        ReadWrite
+    };
 }
 
 /* Forward Declared Structs/Classes */
@@ -64,9 +71,8 @@ namespace swizzle::core
         virtual void setFilePointer(U64 offset, FilePtrMoveType move) = 0;
 
         virtual common::Resource<IBuffer> read(U64 count) = 0;
+        virtual common::Resource<IBuffer> read(U64 offset, U64 count) = 0;
         virtual void write(common::Resource<IBuffer> data) = 0;
-
-        virtual common::Resource<IFileMap> mapFile(U64 size) = 0;
     };
 
 } // namespace swizzle::core

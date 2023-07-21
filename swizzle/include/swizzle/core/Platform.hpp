@@ -33,8 +33,8 @@ namespace swizzle::core
     void SWIZZLE_API ShowCriticalMessage(const SwChar* text);
     void SWIZZLE_API ShowCriticalMessageW(const SwWChar* text);
 
-    common::Resource<IFile> SWIZZLE_API OpenFile(const SwChar* path);
-    common::Resource<IFile> SWIZZLE_API OpenFileW(const SwWChar* path);
+    common::Resource<IFile> SWIZZLE_API OpenFile(const SwChar* path, FileMode mode);
+    common::Resource<IFile> SWIZZLE_API OpenFileW(const SwWChar* path, FileMode mode);
 }
 
 #endif

@@ -12,6 +12,32 @@
 
 /* Structs/Classes */
 
+namespace swizzle::asset2
+{
+    class VfsFile : public core::IFile
+    {
+    public:
+        VfsFile(common::Resource<IFile> file, U64 offset, U64 size);
+        virtual ~VfsFile();
+
+        virtual U64 size() const override;
+
+        virtual U64 getFilePointer() const override;
+        virtual void setFilePointer(U64 offset, core::FilePtrMoveType move) override;
+
+        virtual common::Resource<IBuffer> read(U64 count) override;
+        virtual common::Resource<IBuffer> read(U64 offset, U64 count) override;
+        virtual void write(common::Resource<IBuffer> data) override;
+
+    private:
+        common::Resource<core::IFile> mFile;
+
+        U64 mBase;
+        U64 mOffset;
+        U64 mSize;
+    };
+} // namespace swizzle::asset2
+
 /* Static Variables */
 
 /* Static Function Declaration */
@@ -54,7 +80,7 @@ namespace swizzle::asset2
 
     SwBool VfsImpl::openStorage(const SwChar* path)
     {
-        mVfsFile = core::OpenFile(path);
+        mVfsFile = core::OpenFile(path, core::FileMode::ReadWrite);
         if (mVfsFile->size() != 0)
         {
             readHeader();
@@ -77,7 +103,7 @@ namespace swizzle::asset2
     {
         VfsReturnCode ret = VfsReturnCode::Ok;
 
-        common::Resource<core::IFile> srcFile = core::OpenFile(physicalPath);
+        common::Resource<core::IFile> srcFile = core::OpenFile(physicalPath, core::FileMode::Read);
 
         if (srcFile)
         {
@@ -222,6 +248,99 @@ namespace swizzle::asset2
         return existsInternal(path);
     }
 
+    common::Resource<core::IFile> VfsImpl::openRo(const SwChar* file)
+    {
+        common::Resource<core::IFile> f = nullptr;
+        if (existsInternal(file))
+        {
+            Entry e = createOrGetEntry(file, false);
+            if (isFile(e))
+            {
+                f = common::CreateRef<VfsFile>(mVfsFile, e.mOffset, e.mSize);
+            }
+        }
+
+        return f;
+    }
+
+    SwBool VfsImpl::isDirectory(const SwChar* path)
+    {
+        SwBool isDir = false;
+        if (existsInternal(path))
+        {
+            Entry e = createOrGetEntry(path, false);
+            isDir = !isFile(e);
+        }
+
+        return isDir;
+    }
+
+    const SwChar* VfsImpl::getDirectory(const SwChar* path)
+    {
+        static std::string n;
+        const SwChar* name = nullptr;
+
+        if (existsInternal(path))
+        {
+            n = core::getPathFromFileName(path);
+            name = n.c_str();
+        }
+
+        return name;
+    }
+
+    U32 VfsImpl::getDirectoryItems(const SwChar* path)
+    {
+        U32 itemCount = 0u;
+        if (existsInternal(path))
+        {
+            Entry e = createOrGetEntry(path, false);
+            itemCount = static_cast<U32>(e.mChildren.size());
+        }
+
+        return itemCount;
+    }
+
+    const SwChar* VfsImpl::getDirectoryItemName(const SwChar* path, U32 index)
+    {
+        const SwChar* name = nullptr;
+
+        if (existsInternal(path))
+        {
+            Entry& e = createOrGetEntry(path, false);
+
+            if (index < e.mChildren.size())
+            {
+                name = e.mChildren[index].mName.c_str();
+            }
+        }
+
+        return name;
+    }
+
+    VfsReturnCode VfsImpl::createDirectory(const SwChar* path)
+    {
+        VfsReturnCode ret = VfsReturnCode::Ok;
+
+        if (!existsInternal(path))
+        {
+            (void)createOrGetEntry(path, false);
+            writeTable();
+            writeHeader();
+        }
+        else
+        {
+            ret = VfsReturnCode::ErrAlreadyExists;
+            Entry e = createOrGetEntry(path, false);
+            if (e.mIsFile)
+            {
+                ret = VfsReturnCode::ErrInvalidPath;
+            }
+        }
+
+        return ret;
+    }
+
 } // namespace swizzle::asset2
 
 /* Class Protected Function Definition */
@@ -245,7 +364,7 @@ namespace swizzle::asset2
         common::Resource<IBuffer> readBuf = mVfsFile->read(mHeader.mFreeTableOffset - mHeader.mFileTableOffset);
 
         U64 offset = 0ull;
-        if(readBuf->size() > 0)
+        if (readBuf->size() > 0)
         {
             readTable(mRoot, readBuf, offset);
         }
@@ -440,7 +559,6 @@ namespace swizzle::asset2
             }
         }
         entryPtr->mChildren.erase(toDel);
-
     }
 
     Entry& VfsImpl::createOrGetEntry(const SwChar* path, SwBool createAsFile)
@@ -491,25 +609,109 @@ namespace swizzle::asset2
         std::string strPath = path;
         std::vector<std::string> paths = core::getPaths(strPath);
 
-        Entry* entryPtr = &mRoot;
-        for (const auto& p : paths)
-        {
-            for (size_t i = 0ull; i < entryPtr->mChildren.size(); ++i)
-            {
-                if (entryPtr->mChildren[i].mName == p)
-                {
-                    entryPtr = &entryPtr->mChildren[i];
-                    break;
-                }
-            }
-        }
-
-        if (entryPtr->mName == paths.back())
+        if (paths.empty())
         {
             exists = true;
         }
+        else
+        {
+            Entry* entryPtr = &mRoot;
+            for (const auto& p : paths)
+            {
+                for (size_t i = 0ull; i < entryPtr->mChildren.size(); ++i)
+                {
+                    if (entryPtr->mChildren[i].mName == p)
+                    {
+                        entryPtr = &entryPtr->mChildren[i];
+                        break;
+                    }
+                }
+            }
+
+            if (entryPtr->mName == paths.back())
+            {
+                exists = true;
+            }
+        }
 
         return exists;
+    }
+
+    ///
+    /// VfsFile
+    ///
+
+    VfsFile::VfsFile(common::Resource<IFile> file, U64 offset, U64 size)
+        : mFile(file)
+        , mBase(offset)
+        , mOffset(0ull)
+        , mSize(size)
+    {
+    }
+
+    VfsFile::~VfsFile() {}
+
+    U64 VfsFile::size() const
+    {
+        return mSize;
+    }
+
+    U64 VfsFile::getFilePointer() const
+    {
+        return mOffset;
+    }
+
+    void VfsFile::setFilePointer(U64 offset, core::FilePtrMoveType move)
+    {
+        switch (move)
+        {
+        case swizzle::core::FilePtrMoveType::Begin:
+            mOffset = offset;
+            break;
+        case swizzle::core::FilePtrMoveType::Current:
+            mOffset += offset;
+            break;
+        case swizzle::core::FilePtrMoveType::End:
+            mOffset = (mBase - mSize - offset);
+            break;
+        default:
+            break;
+        }
+    }
+
+    common::Resource<IBuffer> VfsFile::read(U64 count)
+    {
+        U64 toRead = count;
+        if (mOffset + count > mSize)
+        {
+            toRead = mSize - mOffset;
+        }
+
+        common::Resource<IBuffer> buf = mFile->read(mBase + mOffset, toRead);
+        mOffset += buf->size();
+
+        return buf;
+    }
+
+    common::Resource<IBuffer> VfsFile::read(U64 offset, U64 count)
+    {
+        setFilePointer(offset, core::FilePtrMoveType::Begin);
+
+        U64 toRead = count;
+        if (mOffset + count > mSize)
+        {
+            toRead = mSize - mOffset;
+        }
+
+        common::Resource<IBuffer> buf = mFile->read(mBase + mOffset, count);
+        mOffset += buf->size();
+
+        return buf;
+    }
+
+    void VfsFile::write(common::Resource<IBuffer> data)
+    {
+        UNUSED_ARG(data);
     }
 
 } // namespace swizzle::asset2

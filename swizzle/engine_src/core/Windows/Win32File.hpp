@@ -8,6 +8,8 @@
 #include <swizzle/core/File.hpp>
 #include <Windows.h>
 
+#include <mutex>
+
 /* Defines */
 
 /* Typedefs/enums */
@@ -23,8 +25,8 @@ namespace swizzle::core
     class Win32File : public IFile
     {
     public:
-        Win32File(const SwChar* path);
-        Win32File(const SwWChar* path);
+        Win32File(const SwChar* path, FileMode mode);
+        Win32File(const SwWChar* path, FileMode mode);
         virtual ~Win32File();
 
         virtual U64 size() const override;
@@ -33,16 +35,13 @@ namespace swizzle::core
         virtual void setFilePointer(U64 offset, FilePtrMoveType move) override;
 
         virtual common::Resource<IBuffer> read(U64 count) override;
+        virtual common::Resource<IBuffer> read(U64 offset, U64 count) override;
         virtual void write(common::Resource<IBuffer> data) override;
-
-        virtual common::Resource<IFileMap> mapFile(U64 size) override
-        {
-            UNUSED_ARG(size);
-            return nullptr;
-        }
 
     private:
         HANDLE mFileHandle;
+
+        mutable std::recursive_mutex mFilePtrLock;
     };
 }
 

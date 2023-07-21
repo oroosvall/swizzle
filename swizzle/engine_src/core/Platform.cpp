@@ -1,5 +1,5 @@
-#include <swizzle/core/Platform.hpp>
 #include "PlatformLayer.hpp"
+#include <swizzle/core/Platform.hpp>
 
 namespace swizzle::core
 {
@@ -79,14 +79,14 @@ namespace swizzle::core
         platform::PlatformShowCriticalMessageW(text);
     }
 
-    common::Resource<IFile> OpenFile(const SwChar* path)
+    common::Resource<IFile> OpenFile(const SwChar* path, FileMode mode)
     {
-        return platform::OpenFile(path);
+        return platform::OpenFile(path, mode);
     }
 
-    common::Resource<IFile> OpenFileW(const SwWChar* path)
+    common::Resource<IFile> OpenFileW(const SwWChar* path, FileMode mode)
     {
-        return platform::OpenFileW(path);
+        return platform::OpenFileW(path, mode);
     }
 
-}
+} // namespace swizzle::core

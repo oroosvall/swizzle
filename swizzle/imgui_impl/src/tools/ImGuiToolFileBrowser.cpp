@@ -32,6 +32,7 @@ namespace imext
     struct FileBrowserCache
     {
         int mSelectedIndex = -1;
+        bool mCacheInvalid = true;
         std::string mFileName;
         std::string mWorkingPath;
         std::string mLastPath;
@@ -270,7 +271,7 @@ namespace imext
     {
         auto rootPath = fsInfo->getRootPath(path);
         auto withoutRoot = fsInfo->getWihtoutRootPath(path);
-        if (cache.mWorkingPath == "")
+        if (cache.mWorkingPath == "");
         {
             cache.mWorkingPath = withoutRoot;
         }
@@ -299,6 +300,7 @@ namespace imext
         if (cd == 0)
         {
             fsInfo->createDir(rootPath + cache.mWorkingPath);
+            withoutRoot = cache.mWorkingPath;
         }
         else if (cd == 1)
         {
@@ -429,8 +431,7 @@ namespace imext
         }
 
         // Update cache
-
-        if (fsInfo->exists(path) && cache.mLastPath != path)
+        if (fsInfo->exists(path) && (cache.mLastPath != path || cache.mCacheInvalid))
         {
             cache.mItems.clear();
             bool dirOnly = (mode == FileBrowserMode::OpenDirectory) || (mode == FileBrowserMode::SaveDirectory);
@@ -438,6 +439,7 @@ namespace imext
             cache.mItems = fsInfo->getDirectoryItems(path, dirOnly);
 
             cache.mLastPath = path;
+            cache.mCacheInvalid = false;
         }
 
         // Render table from cache
@@ -486,6 +488,13 @@ namespace imext
                 returnCode = FileBrowserStatus::None;
                 ImGui::OpenPopup("Not Found");
             }
+
+            // Save confirm overwrite
+            if ((mode == FileBrowserMode::SaveFile) && fsInfo->exists(tmpFilePath))
+            {
+                returnCode = FileBrowserStatus::None;
+                ImGui::OpenPopup("Confirm Overwrite");
+            }
         }
 
         ImGui::PushStyleVar(ImGuiStyleVar_::ImGuiStyleVar_WindowMinSize, ImVec2{200.0f, 100.0f});
@@ -494,13 +503,6 @@ namespace imext
         ConfirmModalPopup("Not Found", ImGuiWindowFlags_::ImGuiWindowFlags_NoMove,
                           "Ensure that the selected\nitem exists!", {"Ok"});
         ImGui::PopStyleVar();
-
-        // Save confirm overwrite
-        if ((returnCode == FileBrowserStatus::Selected) && (mode == FileBrowserMode::SaveFile))
-        {
-            returnCode = FileBrowserStatus::None;
-            ImGui::OpenPopup("Confirm Overwrite");
-        }
 
         ImGui::PushStyleVar(ImGuiStyleVar_::ImGuiStyleVar_WindowMinSize, ImVec2{200.0f, 100.0f});
         ImGui::SetNextWindowSize({200.0f, 100.0f});
@@ -525,11 +527,13 @@ namespace imext
         {
             path = cache.mOrigPath;
             cache.mOrigPath = "";
+            cache.mWorkingPath = "";
         }
         if (returnCode == FileBrowserStatus::Selected)
         {
             path = fsInfo->traverseTo(path, cache.mFileName);
             cache.mOrigPath = "";
+            cache.mWorkingPath = "";
         }
         if (open)
         {
@@ -537,6 +541,7 @@ namespace imext
             {
                 path = cache.mOrigPath;
                 cache.mOrigPath = "";
+                cache.mWorkingPath = "";
             }
         }
 
