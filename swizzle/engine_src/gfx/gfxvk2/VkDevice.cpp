@@ -48,6 +48,8 @@ namespace swizzle::gfx
 
     VkGfxDevice::~VkGfxDevice()
     {
+        mVkDevice->shutdown();
+
         mFences.clear();
         mCmdPool.reset();
         mVkDevice.reset();

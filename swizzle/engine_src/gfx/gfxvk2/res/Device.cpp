@@ -74,12 +74,18 @@ namespace vk
 
     Device::~Device()
     {
+        vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool_TEMP, mInstance->getAllocCallbacks());
+        vkDestroyDevice(mLogicalDevice, mInstance->getAllocCallbacks());
+    }
+
+    void Device::shutdown()
+    {
+        mCleanup->stop();
+        delete mCleanup;
+
         mTimingQuery.reset();
         mStatisticsQuery.reset();
-        vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool_TEMP, mInstance->getAllocCallbacks());
-        mCleanup->stop();
         deinitMemoryPools();
-        vkDestroyDevice(mLogicalDevice, mInstance->getAllocCallbacks());
     }
 
     void Device::initAfterConstruction()

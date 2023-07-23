@@ -45,6 +45,8 @@ namespace vk
         Device(common::Resource<Instance> inst, VkPhysicalDevice physDev, VkDevice logDev);
         virtual ~Device();
 
+        void shutdown();
+
         void initAfterConstruction();
 
         void waitDeviceIdle();
