@@ -30,10 +30,10 @@ workspace(ws_cfg.name)
     debugdir("data/")
     configurations
     {
-        "Asan",
         "Debug",
         "RelWDbgInfo",
-        "Release"
+        "Release",
+        "Asan"
     }
     flags { "MultiProcessorCompile" }
     startproject(ws_cfg.startup_project)
