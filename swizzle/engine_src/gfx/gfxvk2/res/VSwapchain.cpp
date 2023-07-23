@@ -133,7 +133,7 @@ namespace vk
         SWIZZLE_PROFILE_EVENT("VSwapchain::prepare");
         VkResult result = vkAcquireNextImageKHR(mDevice->getDeviceHandle(), mSwapchain, UINT64_MAX,
                                                 mImageAvailableSemaphore[mCurrentFrame], VK_NULL_HANDLE, &mImageIndex);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR)
+        if ((result == VK_ERROR_OUT_OF_DATE_KHR) || (result == VK_SUBOPTIMAL_KHR))
         {
             LOG_INFO("Recrating swapchain: %s", vk::VkResultToString(result));
             recreateSwapchain();
@@ -204,12 +204,12 @@ namespace vk
 
     VkSemaphore VSwapchain::getSemaphoreToSignal() const
     {
-        return mRenderingFinishedSemaphore[mImageIndex];
+        return mRenderingFinishedSemaphore[mCurrentFrame];
     }
 
     VkSemaphore VSwapchain::getWaitForSemaphore() const
     {
-        return mImageAvailableSemaphore[mImageIndex];
+        return mImageAvailableSemaphore[mCurrentFrame];
     }
 
     VkFence VSwapchain::getWaitFence() const
