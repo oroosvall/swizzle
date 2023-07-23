@@ -44,9 +44,6 @@ namespace swizzle::gfx
 {
     VkGfxContext::VkGfxContext(const GfxContextCreateInfo& createInfo)
         : mVkInstance(nullptr)
-        , mVkDevice(nullptr)
-        , mCmdPool(nullptr)
-        , mQueue(VK_NULL_HANDLE)
         , mFrameAllocator(sizeof(void*) * 128u)
         , mMeshShaderSupported(false)
     {
@@ -55,7 +52,6 @@ namespace swizzle::gfx
 
     VkGfxContext::~VkGfxContext()
     {
-        mFences.clear();
         mVkInstance.reset();
     }
 
@@ -68,16 +64,6 @@ namespace swizzle::gfx
     {
         SWIZZLE_PROFILE_EVENT("VkGfxContext::getDeviceName");
         return mVkInstance->getDeviceName(deviceIndex);
-    }
-
-    const SwChar* VkGfxContext::getSelectedDeviceName()
-    {
-        const SwChar* name = "";
-        if (mVkDevice)
-        {
-            name = mVkDevice->getDeviceName();
-        }
-        return name;
     }
 
     SwBool VkGfxContext::isDiscreteGpu(U32 deviceIndex)
@@ -103,9 +89,9 @@ namespace swizzle::gfx
         }
 
         LOG_INFO("Initializing Vulkan Device: %s", getDeviceName(createInfo.mDeviceIndex));
-        mVkDevice = mVkInstance->initializeDevice(createInfo, extensions);
+        common::Resource<vk::Device> dev = mVkInstance->initializeDevice(createInfo, extensions);
 
-        auto device = common::CreateRef<VkGfxDevice>(mVkInstance, mVkDevice);
+        auto device = common::CreateRef<VkGfxDevice>(mVkInstance, dev);
 
         return device;
     }

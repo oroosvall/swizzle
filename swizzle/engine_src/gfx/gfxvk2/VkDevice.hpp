@@ -39,6 +39,8 @@ namespace swizzle::gfx
 
         virtual void waitIdle() override;
 
+        virtual const SwChar* getDeviceName() override;
+
         virtual GfxStatistics getStatistics() override;
         virtual common::Resource<swizzle::core::StatisticsIterator<swizzle::gfx::GfxStatsType>>
             getStatisticsIterator() override;

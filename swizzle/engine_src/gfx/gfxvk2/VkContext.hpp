@@ -37,7 +37,6 @@ namespace swizzle::gfx
 
         virtual U32 getDeviceCount() override;
         virtual const SwChar* getDeviceName(U32 deviceIndex) override;
-        virtual const SwChar* getSelectedDeviceName() override;
         virtual SwBool isDiscreteGpu(U32 deviceIndex) override;
         virtual common::Resource<GfxDevice> initializeDevice(const GfxContextInitializeInfo& createInfo) override;
 
@@ -46,13 +45,8 @@ namespace swizzle::gfx
                                       const std::vector<std::string>& availableExtensions, const char* extensionName);
 
         common::Resource<vk::Instance> mVkInstance;
-        common::Resource<vk::Device> mVkDevice;
-        common::Resource<vk::CmdPool> mCmdPool;
-
-        VkQueue mQueue;
 
         utils::FrameAllocator mFrameAllocator;
-        std::vector<common::Resource<vk::Fence>> mFences;
 
         SwBool mMeshShaderSupported;
     };

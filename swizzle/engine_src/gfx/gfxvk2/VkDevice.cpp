@@ -69,6 +69,11 @@ namespace swizzle::gfx
         }
     }
 
+    const SwChar* VkGfxDevice::getDeviceName()
+    {
+        return mVkDevice->getDeviceName();
+    }
+
     GfxStatistics VkGfxDevice::getStatistics()
     {
         SWIZZLE_PROFILE_EVENT("VkGfxDevice::getStatistics()");

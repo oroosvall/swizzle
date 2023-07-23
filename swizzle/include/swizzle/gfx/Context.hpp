@@ -55,7 +55,6 @@ namespace swizzle::gfx
 
         virtual U32 getDeviceCount() = 0;
         virtual const SwChar* getDeviceName(U32 deviceIndex) = 0;
-        virtual const SwChar* getSelectedDeviceName() = 0;
         virtual SwBool isDiscreteGpu(U32 deviceIndex) = 0;
         virtual common::Resource<GfxDevice> initializeDevice(const GfxContextInitializeInfo& createInfo) = 0;
     };
