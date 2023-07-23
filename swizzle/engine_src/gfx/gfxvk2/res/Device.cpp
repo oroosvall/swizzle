@@ -300,7 +300,14 @@ namespace vk
             }
         }
 
-        return mMemoryPools[heapIndex]->allocateMemory(req, memoryTypeIndex);
+        common::Resource<DeviceMemory> mem = nullptr;
+
+        if ((heapIndex != ~0u) && (memoryTypeIndex != ~0u))
+        {
+            mem = mMemoryPools[heapIndex]->allocateMemory(req, memoryTypeIndex);
+        }
+
+        return mem;
     }
 
     void Device::freeMemory(common::Resource<DeviceMemory> memory)
