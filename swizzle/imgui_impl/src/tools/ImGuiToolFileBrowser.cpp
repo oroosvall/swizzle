@@ -8,6 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -123,6 +124,11 @@ namespace imext
 
             DWORD attribs = GetFileAttributesW(p.wstring().c_str());
             if ((attribs & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN)
+            {
+                visible = false;
+            }
+#else
+            if (path[0] == '.')
             {
                 visible = false;
             }
@@ -248,7 +254,7 @@ namespace imext
     {
         auto rootName = fsInfo->getRootPath(path);
         auto logicalDrives = fsInfo->getLogicalDrives();
-        auto textSize = ImGui::CalcTextSize(rootName.c_str());
+        //auto textSize = ImGui::CalcTextSize(rootName.c_str());
         ImGui::SetNextItemWidth(45.0f);
         if (ImGui::BeginCombo("##Drive", rootName.c_str()))
         {
@@ -256,7 +262,7 @@ namespace imext
             {
                 const auto& driveName = logicalDrives[i];
                 ImGui::PushID((int)i);
-                if (ImGui::Selectable(driveName.c_str(), _strcmpi(rootName.c_str(), driveName.c_str()) == 0))
+                if (ImGui::Selectable(driveName.c_str(), rootName == driveName))
                 {
                     path = driveName + "/";
                 }
@@ -271,13 +277,13 @@ namespace imext
     {
         auto rootPath = fsInfo->getRootPath(path);
         auto withoutRoot = fsInfo->getWihtoutRootPath(path);
-        if (cache.mWorkingPath == "");
+        if (cache.mWorkingPath == "")
         {
             cache.mWorkingPath = withoutRoot;
         }
 
         auto size = ImGui::GetWindowSize();
-        ImGui::Text(rootPath.c_str());
+        ImGui::Text("%s", rootPath.c_str());
         auto pos = ImGui::GetCursorPos();
         ImGui::SameLine();
         ImGui::SetNextItemWidth(size.x - pos.x);
@@ -350,7 +356,7 @@ namespace imext
                 }
                 ImGui::PopID();
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(GetDirectoryTypeAsString(DirectoryType::Directory).c_str());
+                ImGui::Text("%s", GetDirectoryTypeAsString(DirectoryType::Directory).c_str());
             }
 
             for (const auto& itm : cache.mItems)
@@ -383,7 +389,7 @@ namespace imext
                 }
                 ImGui::PopID();
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(GetDirectoryTypeAsString(itm.mType).c_str());
+                ImGui::Text("%s", GetDirectoryTypeAsString(itm.mType).c_str());
             }
 
             if (clearFileName)

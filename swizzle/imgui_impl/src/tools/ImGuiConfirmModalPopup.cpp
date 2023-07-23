@@ -25,7 +25,7 @@ namespace imext
         int ret = -1;
         if (ImGui::BeginPopupModal(label, 0, flags))
         {
-            ImGui::Text(description.c_str());
+            ImGui::Text("%s", description.c_str());
 
             int ctr = 0;
             for (const auto& opt : options)
