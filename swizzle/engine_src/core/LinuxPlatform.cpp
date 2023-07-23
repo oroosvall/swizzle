@@ -3,6 +3,8 @@
 #include <swizzle/core/Logging.hpp>
 #include "PlatformLayer.hpp"
 
+#include "Linux/LinuxFile.hpp"
+
 #if defined(SW_LINUX_XLIB)
 #include "Linux/x/X11Window.hpp"
 #include "Linux/x/X11Input.hpp"
@@ -124,6 +126,16 @@ namespace swizzle::core
         void PlatformShowCriticalMessageW(const SwWChar* text)
         {
             UNUSED_ARG(text);
+        }
+
+        common::Resource<IFile> OpenFile(const SwChar* path, FileMode mode)
+        {
+            return common::CreateRef<LinuxFile>(path, mode);
+        }
+
+        common::Resource<IFile> OpenFileW(const SwWChar* path, FileMode mode)
+        {
+            return common::CreateRef<LinuxFile>(path, mode);
         }
 
     } // namespace platform

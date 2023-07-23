@@ -703,7 +703,7 @@ namespace swizzle::asset2
             toRead = mSize - mOffset;
         }
 
-        common::Resource<IBuffer> buf = mFile->read(mBase + mOffset, count);
+        common::Resource<IBuffer> buf = mFile->read(mBase + mOffset, toRead);
         mOffset += buf->size();
 
         return buf;
