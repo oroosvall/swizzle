@@ -94,8 +94,29 @@ xcb_gcontext_t foreground;
 
     void XcbWindow::setSize(const U32 width, const U32 height)
     {
-        UNUSED_ARG(width);
-        UNUSED_ARG(height);
+        const uint32_t values[] = { width, height };
+        xcb_configure_window(mDisplayConnection, mWindow, XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
+    }
+
+    void XcbWindow::setWindowPos(const U32 xPos, const U32 yPos)
+    {
+        const uint32_t values[] = { xPos, yPos };
+        xcb_configure_window(mDisplayConnection, mWindow, XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y, values);
+    }
+
+    void XcbWindow::getWindowPos(U32& xPos, U32& yPos)
+    {
+        xcb_get_geometry_cookie_t cookie;
+        xcb_get_geometry_reply_t* reply;
+
+        cookie = xcb_get_geometry(mDisplayConnection, mWindow);
+        /* ... do other work here if possible ... */
+        if ((reply = xcb_get_geometry_reply(mDisplayConnection, cookie, NULL)))
+        {
+            xPos = reply->x;
+            yPos = reply->y;;
+        }
+        free(reply);
     }
 
     bool XcbWindow::isVisible() const

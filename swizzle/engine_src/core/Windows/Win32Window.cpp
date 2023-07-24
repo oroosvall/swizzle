@@ -226,6 +226,19 @@ namespace swizzle::core
         SetWindowPos(mWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
     }
 
+    void Win32Window::setWindowPos(const U32 xPos, const U32 yPos)
+    {
+        SetWindowPos(mWnd, NULL, xPos, yPos, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    }
+
+    void Win32Window::getWindowPos(U32& xPos, U32& yPos)
+    {
+        RECT r{};
+        GetWindowRect(mWnd, &r);
+        xPos = r.left;
+        yPos = r.top;
+    }
+
     bool Win32Window::isVisible() const
     {
         LONG_PTR style = GetWindowLongPtr(mWnd, GWL_STYLE);

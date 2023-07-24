@@ -36,6 +36,9 @@ namespace swizzle::core
 
         virtual void setSize(const U32 width, const U32 height) override;
 
+        virtual void setWindowPos(const U32 xPos, const U32 yPos) override;
+        virtual void getWindowPos(U32& xPos, U32& yPos) override;
+
         virtual bool isVisible() const override;
 
         virtual void setBorderless(bool borderless) override;
