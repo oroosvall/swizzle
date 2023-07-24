@@ -3,17 +3,19 @@
     "language": "c++",
     "sources":[
         {
-            "files": "include/**.h"
+            "files": "imgui/*.h",
+            "vpath": "include"
         },
         {
-            "files": "src/*.cpp"
+            "files": "imgui/*.cpp",
+            "vpath": "src"
         }
     ],
     "pub_inc_dirs":[
-        "include/"
+        "./"
     ],
     "inc_dirs":[
-        "include/imgui/"
+        "imgui/"
     ]
 
 }

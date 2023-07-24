@@ -9,3 +9,6 @@
 [submodule "vendor/soloud/soloud"]
 	path = vendor/soloud/soloud
 	url = https://github.com/jarikomppa/soloud.git
+[submodule "vendor/imgui/imgui"]
+	path = vendor/imgui/imgui
+	url = https://github.com/ocornut/imgui.git
