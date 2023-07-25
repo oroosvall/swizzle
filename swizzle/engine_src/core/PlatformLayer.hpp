@@ -16,10 +16,14 @@ namespace swizzle::core
         const SwChar* getPlatformTempDirectory();
         const SwChar* getPlatformAppCacheDirectory();
 
+        U32 getMonitorCount();
+        MonitorInfo getMonitorInfo(U32 index);
+
+        // TODO: remove?
         U32 getPlatformDisplayCount();
         U32 getPlatformDisplayResolutionCount(U32 displayIndex);
         void getPlatformDisplayResolutions(U32 displayIndex, Resolution* resolutions, U32 size);
-
+        // TODO END
 
         U64 getPlatformTimeStampMs();
         U64 getPlatformTimeStampUs();

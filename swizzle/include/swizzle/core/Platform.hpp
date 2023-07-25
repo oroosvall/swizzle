@@ -11,9 +11,14 @@
 namespace swizzle::core
 {
 
+    U32 SWIZZLE_API GetMonitorCount();
+    MonitorInfo SWIZZLE_API GetMonitorInfo(U32 index);
+
+    // TODO: remove?
     U32 SWIZZLE_API GetNumberOfDisplays();
     U32 SWIZZLE_API GetDisplayResolutionCount(U32 displayIndex);
     void SWIZZLE_API GetDisplayResolutions(U32 displayIndex, Resolution* resolutions, U32 size);
+    // TODO END
 
     const SwChar SWIZZLE_API * GetSaveGameDirectory();
     const SwChar SWIZZLE_API * GetTempDirectory();

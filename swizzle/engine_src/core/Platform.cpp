@@ -3,7 +3,17 @@
 
 namespace swizzle::core
 {
+    U32 GetMonitorCount()
+    {
+        return platform::getMonitorCount();
+    }
 
+    MonitorInfo GetMonitorInfo(U32 index)
+    {
+        return platform::getMonitorInfo(index);
+    }
+
+    // TODO: remove?
     U32 GetNumberOfDisplays()
     {
         return platform::getPlatformDisplayCount();
@@ -18,6 +28,8 @@ namespace swizzle::core
     {
         platform::getPlatformDisplayResolutions(displayIndex, resolutions, size);
     }
+
+    // TODO END
 
     const SwChar* GetSaveGameDirectory()
     {

@@ -16,6 +16,14 @@ namespace swizzle::core
         U32 mFrequency;
     };
 
+    struct MonitorInfo
+    {
+        U32 mXPos;
+        U32 mYPos;
+        U32 mWidth;
+        U32 mHeight;
+    };
+
     class SwWindow
     {
     public:

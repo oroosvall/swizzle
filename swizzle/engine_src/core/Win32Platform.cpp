@@ -156,6 +156,31 @@ namespace swizzle::core
             return TRUE;
         }
 
+        U32 getMonitorCount()
+        {
+            U32 count = 0U;
+            EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)&count);
+            return count;
+        }
+
+        MonitorInfo getMonitorInfo(U32 index)
+        {
+            UNUSED_ARG(index);
+
+            DEVMODE devmode = {};
+            devmode.dmSize = sizeof(DEVMODE);
+
+            EnumDisplaySettingsExW(NULL, ENUM_CURRENT_SETTINGS, &devmode, EDS_RAWMODE);
+
+            MonitorInfo res{};
+            res.mHeight = devmode.dmPelsHeight;
+            res.mWidth = devmode.dmPelsWidth;
+            res.mXPos = devmode.dmPosition.x;
+            res.mYPos = devmode.dmPosition.y;
+
+            return res;
+        }
+
         U32 getPlatformDisplayCount()
         {
             U32 count = 0U;
