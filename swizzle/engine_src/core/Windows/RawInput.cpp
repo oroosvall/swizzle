@@ -12,6 +12,7 @@
 #define RAW_INPUT_CASE(caseName, key, down)                                                                            \
     case caseName: {                                                                                                   \
         swizzle::core::InputEvent evt;                                                                                 \
+        evt.mWindow = window;                                                                                             \
         evt.mFromKeyboard = false;                                                                                     \
         evt.mKey = key;                                                                                                \
         evt.mModKeys = window->modKeys;                                                                                \
@@ -30,12 +31,12 @@ namespace win32
 {
     static void mouseMoveEvent(swizzle::core::Win32Window* window,
                                swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler);
-    static void mouseMoveDeltaEvent(swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
+    static void mouseMoveDeltaEvent(swizzle::core::Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                     RAWMOUSE& mouseEvents);
     static void mouseButtonEvent(swizzle::core::Win32Window* window,
                                  swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                  RAWMOUSE& mouseEvents);
-    static void mouseScrollEvent(swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
+    static void mouseScrollEvent(swizzle::core::Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                  RAWMOUSE& mouseEvents);
 
     static void keyboardModifierKeys(swizzle::core::Win32Window* window, RAWKEYBOARD& keyboardEvents);
@@ -56,6 +57,7 @@ namespace win32
         if (ScreenToClient((HWND)window->getNativeWindowHandle(), &pt))
         {
             swizzle::core::MouseMoveEvent moveEvt;
+            moveEvt.mWindow = window;
             moveEvt.mX = pt.x;
             moveEvt.mY = pt.y;
 
@@ -66,10 +68,11 @@ namespace win32
         }
     }
 
-    static void mouseMoveDeltaEvent(swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
+    static void mouseMoveDeltaEvent(swizzle::core::Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                     RAWMOUSE& mouseEvents)
     {
         swizzle::core::MouseMoveDelta moveEvt;
+        moveEvt.mWindow = window;
         moveEvt.dX = mouseEvents.lLastX;
         moveEvt.dY = mouseEvents.lLastY;
 
@@ -101,7 +104,7 @@ namespace win32
         }
     }
 
-    static void mouseScrollEvent(swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
+    static void mouseScrollEvent(swizzle::core::Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                  RAWMOUSE& mouseEvents)
     {
         short scrollX = 0;
@@ -117,6 +120,7 @@ namespace win32
         }
 
         swizzle::core::MouseScrollEvent evt;
+        evt.mWindow = window;
         evt.mScrollX = scrollX;
         evt.mScrollY = scrollY;
         evtHandler.publishEvent(evt);
@@ -238,9 +242,9 @@ namespace win32
                                swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler, RAWMOUSE& mouseEvents)
     {
         mouseMoveEvent(window, evtHandler);
-        mouseMoveDeltaEvent(evtHandler, mouseEvents);
+        mouseMoveDeltaEvent(window, evtHandler, mouseEvents);
         mouseButtonEvent(window, evtHandler, mouseEvents);
-        mouseScrollEvent(evtHandler, mouseEvents);
+        mouseScrollEvent(window, evtHandler, mouseEvents);
     }
 
     void processRawKeyboardEvents(swizzle::core::Win32Window* window,
@@ -252,6 +256,7 @@ namespace win32
         SwBool pressed = keyboardEvents.Message == WM_KEYDOWN;
 
         swizzle::core::InputEvent in;
+        in.mWindow = window;
         in.mFromKeyboard = true;
         in.mKey = correctScanCode(keyboardEvents.MakeCode, keyboardEvents.VKey, keyboardEvents.Flags);
         in.mPressed = pressed;

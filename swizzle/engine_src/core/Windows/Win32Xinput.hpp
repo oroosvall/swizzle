@@ -26,7 +26,7 @@
 
 namespace win32
 {
-    void ProcessXInput(swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler);
+    void ProcessXInput(swizzle::core::Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler);
 }
 
 #endif

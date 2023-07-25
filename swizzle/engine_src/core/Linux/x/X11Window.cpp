@@ -165,6 +165,7 @@ namespace swizzle::core
             case ConfigureNotify:
             {
                 WindowResizeEvent e{};
+                e.mWindow = this;
                 e.mHeight = evt.xconfigure.height;
                 e.mWidth = evt.xconfigure.width;
                 mEventHandlers.publishEvent(e);
@@ -173,6 +174,7 @@ namespace swizzle::core
             case EnterNotify:
             {
                 WindowFocusEvent e{};
+                e.mWindow = this;
                 e.mFocused = true;
                 mEventHandlers.publishEvent(e);
                 break;
@@ -180,6 +182,7 @@ namespace swizzle::core
             case LeaveNotify:
             {
                 WindowFocusEvent e{};
+                e.mWindow = this;
                 e.mFocused = false;
                 mEventHandlers.publishEvent(e);
                 break;
@@ -187,11 +190,13 @@ namespace swizzle::core
             case MotionNotify:
             {
                 MouseMoveEvent eMove {};
+                eMove.mWindow = this;
                 eMove.mX = evt.xmotion.x;
                 eMove.mY = evt.xmotion.y;
                 mEventHandlers.publishEvent(eMove);
 
                 MouseMoveDelta eDelta{};
+                eDelta.mWindow = this;
                 eDelta.dX = evt.xmotion.x - mXLast;
                 eDelta.dY = evt.xmotion.y - mYLast;
 
@@ -204,6 +209,7 @@ namespace swizzle::core
             case ButtonPress:
             {
                 InputEvent e;
+                e.mWindow = this;
                 e.mPressed = true;
                 e.mFromKeyboard = false;
                 e.mModKeys = 0;
@@ -214,6 +220,7 @@ namespace swizzle::core
             case ButtonRelease:
             {
                 InputEvent e;
+                e.mWindow = this;
                 e.mPressed = false;
                 e.mFromKeyboard = false;
                 e.mModKeys = 0;
@@ -224,6 +231,7 @@ namespace swizzle::core
             case KeyPress:
             {
                 InputEvent e;
+                e.mWindow = this;
                 e.mPressed = true;
                 e.mFromKeyboard = true;
                 e.mModKeys = 0;
@@ -234,6 +242,7 @@ namespace swizzle::core
             case KeyRelease:
             {
                 InputEvent e;
+                e.mWindow = this;
                 e.mPressed = false;
                 e.mFromKeyboard = true;
                 e.mModKeys = 0;

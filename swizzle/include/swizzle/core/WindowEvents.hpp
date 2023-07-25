@@ -20,6 +20,7 @@ namespace swizzle::core
     enum class WindowEventType
     {
         ResizeEvent,
+        MoveEvent,
         FocusEvent,
         CloseEvent,
         KeyboardInputEvent,
@@ -62,6 +63,11 @@ namespace swizzle::core
 
 /* Forward Declared Structs/Classes */
 
+namespace swizzle::core
+{
+    class SwWindow;
+}
+
 /* Struct Declaration */
 
 /* Class Declaration */
@@ -82,8 +88,21 @@ namespace swizzle::core
         {
             return WindowEventType::ResizeEvent;
         }
+        swizzle::core::SwWindow* mWindow;
         S32 mWidth;
         S32 mHeight;
+    };
+
+    class WindowMoveEvent : public WindowEvent
+    {
+    public:
+        virtual WindowEventType getEventType() const override
+        {
+            return WindowEventType::MoveEvent;
+        }
+        swizzle::core::SwWindow* mWindow;
+        S32 mXPos;
+        S32 mYPos;
     };
 
     class WindowFocusEvent : public WindowEvent
@@ -93,6 +112,7 @@ namespace swizzle::core
         {
             return WindowEventType::FocusEvent;
         }
+        swizzle::core::SwWindow* mWindow;
         SwBool mFocused;
     };
 
@@ -103,6 +123,7 @@ namespace swizzle::core
         {
             return WindowEventType::CloseEvent;
         }
+        swizzle::core::SwWindow* mWindow;
     };
 
     class InputEvent : public WindowEvent
@@ -112,7 +133,7 @@ namespace swizzle::core
         {
             return WindowEventType::KeyboardInputEvent;
         }
-
+        swizzle::core::SwWindow* mWindow;
         SwBool mFromKeyboard;
         S32 mKey;
         S32 mModKeys;
@@ -126,6 +147,7 @@ namespace swizzle::core
         {
             return WindowEventType::CharacterTypeEvent;
         }
+        swizzle::core::SwWindow* mWindow;
         U32 mCodePoint;
     };
 
@@ -137,6 +159,7 @@ namespace swizzle::core
             return WindowEventType::MouseMoveEvent;
         }
 
+        swizzle::core::SwWindow* mWindow;
         S32 mX;
         S32 mY;
     };
@@ -149,6 +172,7 @@ namespace swizzle::core
             return WindowEventType::MouseMoveDeltaEvent;
         }
 
+        swizzle::core::SwWindow* mWindow;
         S32 dX;
         S32 dY;
     };
@@ -161,6 +185,7 @@ namespace swizzle::core
             return WindowEventType::MouseScrollEvent;
         }
 
+        swizzle::core::SwWindow* mWindow;
         S32 mScrollX;
         S32 mScrollY;
     };
@@ -173,6 +198,7 @@ namespace swizzle::core
             return WindowEventType::GamepadAxisEvent;
         }
 
+        swizzle::core::SwWindow* mWindow;
         GamePadAxis mAxis;
         F32 mAxisValue;
     };
@@ -185,6 +211,7 @@ namespace swizzle::core
             return WindowEventType::GamepadButtonEvent;
         }
 
+        swizzle::core::SwWindow* mWindow;
         GamePadButton mButton;
         SwBool mButtonPressed;
     };

@@ -202,6 +202,7 @@ xcb_gcontext_t foreground;
             {
                 xcb_configure_notify_event_t* ev = (xcb_configure_notify_event_t*)event;
                 WindowResizeEvent e;
+                e.mWindow = this;
                 e.mWidth = ev->width;
                 e.mHeight = ev->height;
                 mEventHandlers.publishEvent(e);

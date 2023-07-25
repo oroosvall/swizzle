@@ -68,6 +68,7 @@ namespace swizzle::core
                 if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
                 {
                     WindowFocusEvent evt;
+                    evt.mWindow = wnd;
                     evt.mFocused = true;
                     eventHandler.publishEvent(evt);
                     XInputEnable(true);
@@ -75,6 +76,7 @@ namespace swizzle::core
                 else
                 {
                     WindowFocusEvent evt;
+                    evt.mWindow = wnd;
                     evt.mFocused = false;
                     eventHandler.publishEvent(evt);
                     XInputEnable(false);
@@ -84,6 +86,7 @@ namespace swizzle::core
             }
             case WM_SETFOCUS: {
                 WindowFocusEvent evt;
+                evt.mWindow = wnd;
                 evt.mFocused = true;
                 eventHandler.publishEvent(evt);
                 XInputEnable(true);
@@ -92,6 +95,7 @@ namespace swizzle::core
             }
             case WM_KILLFOCUS: {
                 WindowFocusEvent evt;
+                evt.mWindow = wnd;
                 evt.mFocused = false;
                 eventHandler.publishEvent(evt);
                 XInputEnable(false);
@@ -115,11 +119,24 @@ namespace swizzle::core
                 }
                 break;
             }
+            case WM_MOVE:
+            {
+                int xPos = (int)(short)LOWORD(lParam);   // horizontal position
+                int yPos = (int)(short)HIWORD(lParam);   // vertical position
+
+                WindowMoveEvent evt;
+                evt.mWindow = wnd;
+                evt.mXPos = xPos;
+                evt.mYPos = yPos;
+                eventHandler.publishEvent(evt);
+                break;
+            }
             case WM_SIZE: {
                 int width = LOWORD(lParam);
                 int height = HIWORD(lParam);
 
                 WindowResizeEvent evt;
+                evt.mWindow = wnd;
                 evt.mHeight = height;
                 evt.mWidth = width;
                 eventHandler.publishEvent(evt);
@@ -147,6 +164,7 @@ namespace swizzle::core
                 }
 
                 CharacterEvent evt;
+                evt.mWindow = wnd;
                 evt.mCodePoint = codePoint;
                 if (wnd->hasFocus())
                 {
@@ -315,7 +333,7 @@ namespace swizzle::core
         SWIZZLE_PROFILE_EVENT();
         MSG msg;
 
-        win32::ProcessXInput(mEventHandlers);
+        win32::ProcessXInput(this, mEventHandlers);
 
         while (PeekMessage(&msg, mWnd, NULL, NULL, PM_REMOVE))
         {
