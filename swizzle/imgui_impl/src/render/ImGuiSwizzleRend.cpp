@@ -26,6 +26,9 @@ struct ImGui_ImplSwizzle_RenderViewportData
     }
 
     WindowRenderBuffers mRenderBuffers;
+    common::Resource<swizzle::gfx::Swapchain> mSwapchain;
+    common::Resource<swizzle::gfx::CommandBuffer> mCmdBuffer;
+    common::Resource<swizzle::gfx::Shader> mShader;
 };
 
 struct MainResources
@@ -41,6 +44,7 @@ struct ImGui_ImplSwizzle_RendData
 {
     common::Resource<swizzle::gfx::GfxDevice> mDevice;
     common::Resource<ImGuiSwizzleRenderTarget> mRenderTarget;
+    common::Resource<swizzle::core::SwWindow>(*mPfnGetWindow)(ImGuiViewport*);
 
     MainResources mMainResources;
 };
@@ -50,12 +54,21 @@ struct ImGui_ImplSwizzle_RendData
 static void ImGui_ImplSwizzle_CreateRendererObjects();
 static void ImGui_ImplSwizzle_DestroyRendererObjects();
 
-static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data,
-                                              common::Resource<swizzle::gfx::Shader> shad,
+static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, common::Resource<swizzle::gfx::Shader> shad,
                                               common::Unique<swizzle::gfx::DrawCommandTransaction>& dTrans,
                                               WindowRenderBuffers* rb, int fb_width, int fb_height);
 
 static void ImGui_ImplSwizzle_Rend_CreateRenderBuffers(ImGuiViewport* viewport);
+
+static void ImGui_ImplSwizzle_InitInterfaces();
+static void ImGui_ImplSwizzle_ShutdownInterfaces();
+
+// Platform ifc functions
+static void ImGui_ImplSwizzle_CreateWindow(ImGuiViewport* viewport);
+static void ImGui_ImplSwizzle_DestroyWindow(ImGuiViewport* viewport);
+static void ImGui_ImplSwizzle_SetWindowSize(ImGuiViewport* viewport, ImVec2 size);
+static void ImGui_ImplSwizzle_RenderWindow(ImGuiViewport* viewport, void* renderArg);
+static void ImGui_ImplSwizzle_SwapBuffers(ImGuiViewport* viewport, void* renderArg);
 
 /* Static Function Definition */
 
@@ -80,7 +93,7 @@ static void ImGui_ImplSwizzle_CreateRendererObjects()
         {0u, swizzle::gfx::ShaderAttributeDataType::r8b8g8a8_unorm, IM_OFFSETOF(ImDrawVert, col)},
     };
 
-    attributeList.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(ImDrawVert)} };
+    attributeList.mBufferInput = {{swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(ImDrawVert)}};
     attributeList.mDescriptors = {
         {swizzle::gfx::DescriptorType::TextureSampler,
          swizzle::gfx::Count(1u),
@@ -122,7 +135,7 @@ static void ImGui_ImplSwizzle_DestroyRendererObjects()
     for (int n = 0; n < platformIo.Viewports.Size; n++)
     {
         if (ImGui_ImplSwizzle_RenderViewportData* vd =
-            (ImGui_ImplSwizzle_RenderViewportData*)platformIo.Viewports[n]->RendererUserData)
+                (ImGui_ImplSwizzle_RenderViewportData*)platformIo.Viewports[n]->RendererUserData)
         {
             vd->mRenderBuffers.mVertexBuffer.reset();
             vd->mRenderBuffers.mIndexBuffer.reset();
@@ -141,8 +154,7 @@ static void ImGui_ImplSwizzle_DestroyRendererObjects()
     io.Fonts->SetTexID(0);
 }
 
-void ImGui_ImplVulkan_SetupRenderState(ImDrawData* drawData,
-                                       common::Resource<swizzle::gfx::Shader> shad,
+void ImGui_ImplVulkan_SetupRenderState(ImDrawData* drawData, common::Resource<swizzle::gfx::Shader> shad,
                                        common::Unique<swizzle::gfx::DrawCommandTransaction>& dTrans,
                                        WindowRenderBuffers* rb, int fbWidth, int fbHeight)
 {
@@ -179,30 +191,141 @@ static void ImGui_ImplSwizzle_Rend_CreateRenderBuffers(ImGuiViewport* viewport)
                                                                 swizzle::gfx::GfxMemoryArea::DeviceLocalHostVisible);
 }
 
+static void ImGui_ImplSwizzle_InitInterfaces()
+{
+    ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+    platform_io.Renderer_CreateWindow = ImGui_ImplSwizzle_CreateWindow;
+    platform_io.Renderer_DestroyWindow = ImGui_ImplSwizzle_DestroyWindow;
+    platform_io.Renderer_SetWindowSize = ImGui_ImplSwizzle_SetWindowSize;
+    platform_io.Renderer_RenderWindow = ImGui_ImplSwizzle_RenderWindow;
+    platform_io.Renderer_SwapBuffers = ImGui_ImplSwizzle_SwapBuffers;
+}
+
+static void ImGui_ImplSwizzle_ShutdownInterfaces()
+{
+    ImGui::DestroyPlatformWindows();
+}
+
+static void ImGui_ImplSwizzle_CreateWindow(ImGuiViewport* viewport)
+{
+    ImGui_ImplSwizzle_RendData* bd = ImGui_ImplSwizzle_GetRendBackendData();
+    ImGui_ImplSwizzle_RenderViewportData* vd = IM_NEW(ImGui_ImplSwizzle_RenderViewportData)();
+    viewport->RendererUserData = vd;
+
+    // Shader attributes
+    swizzle::gfx::ShaderAttributeList attributeList = {};
+
+    attributeList.mAttributes = {
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec2f, IM_OFFSETOF(ImDrawVert, pos)},
+        {0u, swizzle::gfx::ShaderAttributeDataType::vec2f, IM_OFFSETOF(ImDrawVert, uv)},
+        {0u, swizzle::gfx::ShaderAttributeDataType::r8b8g8a8_unorm, IM_OFFSETOF(ImDrawVert, col)},
+    };
+
+    attributeList.mBufferInput = { {swizzle::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(ImDrawVert)} };
+    attributeList.mDescriptors = {
+        {swizzle::gfx::DescriptorType::TextureSampler,
+         swizzle::gfx::Count(1u),
+         {swizzle::gfx::StageType::fragmentStage}},
+    };
+    attributeList.mPushConstantSize = sizeof(float) * 4u;
+    attributeList.mEnableDepthTest = false;
+    attributeList.mEnableDepthWrite = false;
+    attributeList.mEnableBlending = true;
+    attributeList.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
+
+    vd->mCmdBuffer = bd->mDevice->createCommandBuffer(2u);
+    vd->mSwapchain = bd->mDevice->createSwapchain(bd->mPfnGetWindow(viewport), 2u);
+    vd->mShader = bd->mDevice->createShader(vd->mSwapchain, swizzle::gfx::ShaderType::ShaderType_Graphics, attributeList);
+
+    uint32_t vertSize = 0u;
+    uint32_t* vert = GetImguiVertexShader(vertSize);
+    uint32_t fragSize = 0u;
+    uint32_t* frag = GetImguiFragmentShader(fragSize);
+    vd->mShader->loadVertFragMemory(vert, vertSize, frag, fragSize, GetShaderProperties());
+
+    ImGui_ImplSwizzle_Rend_CreateRenderBuffers(viewport);
+
+}
+
+static void ImGui_ImplSwizzle_DestroyWindow(ImGuiViewport* viewport)
+{
+    if (ImGui_ImplSwizzle_RenderViewportData* vd = (ImGui_ImplSwizzle_RenderViewportData*)viewport->RendererUserData)
+    {
+        vd->mRenderBuffers.mIndexBuffer.reset();
+        vd->mRenderBuffers.mVertexBuffer.reset();
+
+        vd->mCmdBuffer.reset();
+
+        vd->mSwapchain.reset();
+        vd->mShader.reset();
+        IM_DELETE(vd);
+    }
+    viewport->RendererUserData = nullptr;
+}
+
+static void ImGui_ImplSwizzle_SetWindowSize(ImGuiViewport* viewport, ImVec2 size)
+{
+    UNUSED_ARG(size);
+    if (ImGui_ImplSwizzle_RenderViewportData* vd = (ImGui_ImplSwizzle_RenderViewportData*)viewport->RendererUserData)
+    {
+        vd->mSwapchain->resize();
+    }
+}
+
+static void ImGui_ImplSwizzle_RenderWindow(ImGuiViewport* viewport, void* renderArg)
+{
+    UNUSED_ARG(renderArg);
+    ImGui_ImplSwizzle_RendData* bd = ImGui_ImplSwizzle_GetRendBackendData();
+    ImGui_ImplSwizzle_RenderViewportData* vd = (ImGui_ImplSwizzle_RenderViewportData*)viewport->RendererUserData;
+
+    vd->mSwapchain->prepare();
+    common::Unique<swizzle::gfx::CommandTransaction> trans = vd->mCmdBuffer->begin();
+    common::Unique<swizzle::gfx::DrawCommandTransaction>  dTrans = vd->mCmdBuffer->beginRenderPass(vd->mSwapchain, std::move(trans));
+
+    ImGui_ImplSwizzle_Rend_DrawData(viewport->DrawData, dTrans);
+
+    trans = vd->mCmdBuffer->endRenderPass(std::move(dTrans));
+    vd->mCmdBuffer->end(std::move(trans));
+
+    bd->mDevice->submit(&vd->mCmdBuffer, 1, vd->mSwapchain);
+}
+
+static void ImGui_ImplSwizzle_SwapBuffers(ImGuiViewport* viewport, void* renderArg)
+{
+    UNUSED_ARG(renderArg);
+
+    if (ImGui_ImplSwizzle_RenderViewportData* vd = (ImGui_ImplSwizzle_RenderViewportData*)viewport->RendererUserData)
+    {
+        vd->mSwapchain->present();
+    }
+}
+
+
 /* Function Definition */
 
 bool ImGui_ImplSwizzle_Rend_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
-                                  common::Resource<ImGuiSwizzleRenderTarget> renderTarget,
-                                  common::Resource<swizzle::core::SwWindow>(pfnGetWindow)(ImGuiViewport*))
+                                 common::Resource<ImGuiSwizzleRenderTarget> renderTarget,
+                                 common::Resource<swizzle::core::SwWindow>(pfnGetWindow)(ImGuiViewport*))
 {
     UNUSED_ARG(pfnGetWindow);
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(io.BackendRendererUserData == nullptr && "Already initialized a renderer backend!");
     IM_ASSERT(dev != nullptr && "Invalid device");
     IM_ASSERT(renderTarget != nullptr && "Must provide valid rendertarget");
-    //IM_ASSERT(pfnGetWindow != nullptr && "Must provide function to get viewport window");
 
     // Setup rendering backend
     ImGui_ImplSwizzle_RendData* bd = IM_NEW(ImGui_ImplSwizzle_RendData)();
     bd->mDevice = dev;
     bd->mRenderTarget = renderTarget;
-    //bd->mPfnGetWindow = pfnGetWindow;
+    bd->mPfnGetWindow = pfnGetWindow;
     io.BackendRendererUserData = (void*)bd;
     io.BackendRendererName = "imgui_swizzle_renderer";
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset; // We can honor the ImDrawCmd::VtxOffset field, allowing
-    // for large meshes.
-    //io.BackendFlags |=
-    //    ImGuiBackendFlags_RendererHasViewports; // We can create multi-viewports on the Renderer side (optional)
+                                                               // for large meshes.
+    if (pfnGetWindow)
+    {
+        io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;// We can create multi-viewports on the Renderer side (optional)
+    }
 
     ImGui_ImplSwizzle_CreateRendererObjects();
 
@@ -210,8 +333,10 @@ bool ImGui_ImplSwizzle_Rend_Init(common::Resource<swizzle::gfx::GfxDevice> dev,
     mainViewport->RendererUserData = IM_NEW(ImGui_ImplSwizzle_RenderViewportData)();
     ImGui_ImplSwizzle_Rend_CreateRenderBuffers(mainViewport);
 
-    //if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    //    ImGui_ImplSwizzle_Rend_InitInterface();
+    if (io.BackendFlags & ImGuiBackendFlags_RendererHasViewports)
+    {
+        ImGui_ImplSwizzle_InitInterfaces();
+    }
 
     return true;
 }
@@ -227,16 +352,21 @@ void ImGui_ImplSwizzle_Rend_Shutdown()
 
     ImGuiViewport* mainViewport = ImGui::GetMainViewport();
     if (ImGui_ImplSwizzle_RenderViewportData* vd =
-        (ImGui_ImplSwizzle_RenderViewportData*)mainViewport->RendererUserData)
+            (ImGui_ImplSwizzle_RenderViewportData*)mainViewport->RendererUserData)
     {
         IM_DELETE(vd);
     }
     mainViewport->RendererUserData = nullptr;
 
-    //ImGui_ImplSwizzle_Rend_ShudownInterface();
+    ImGui_ImplSwizzle_ShutdownInterfaces();
 
     bd->mDevice.reset();
     bd->mRenderTarget.reset();
+
+    bd->mMainResources.mFontMaterial.reset();
+    bd->mMainResources.mFontTexture.reset();
+    bd->mMainResources.mShader.reset();
+    bd->mMainResources.mFontUploaded = false;
 
     io.BackendRendererName = nullptr;
     io.BackendRendererUserData = nullptr;
@@ -270,8 +400,7 @@ void ImGui_ImplSwizzle_Rend_UploadFontTexture(common::Unique<swizzle::gfx::Comma
     }
 }
 
-void ImGui_ImplSwizzle_Rend_DrawData(ImDrawData* drawData,
-                                      common::Unique<swizzle::gfx::DrawCommandTransaction>& dTrans)
+void ImGui_ImplSwizzle_Rend_DrawData(ImDrawData* drawData, common::Unique<swizzle::gfx::DrawCommandTransaction>& dTrans)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer
     // coordinates)
@@ -287,12 +416,11 @@ void ImGui_ImplSwizzle_Rend_DrawData(ImDrawData* drawData,
         (ImGui_ImplSwizzle_RenderViewportData*)drawData->OwnerViewport->RendererUserData;
     IM_ASSERT(rvd != nullptr);
 
-    common::Resource<swizzle::gfx::Shader> shad = nullptr; // rvd->mWindow.mShader;
+    common::Resource<swizzle::gfx::Shader> shad = rvd->mShader;
     if (!shad)
     {
         shad = bd->mMainResources.mShader;
     }
-
 
     WindowRenderBuffers* rb = &rvd->mRenderBuffers;
 
