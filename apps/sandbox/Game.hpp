@@ -14,6 +14,8 @@
 #include "assetManager/AssetManager.hpp"
 #include "scene/Scene.hpp"
 
+#include <ImGuiSwzzle.hpp>
+
 class Game : public sw::Application
 {
 public:
@@ -46,6 +48,11 @@ private:
     common::Resource<AssetManager> mAssetManager;
     common::Resource<Compositor> mCompositor;
     common::Resource<Scene> mScene;
+    common::Resource<ImGuiSwizzleRenderTarget> mImGuiRenderTarget;
+    common::Resource<sw::gfx::FrameBuffer> mImGuiFbo;
+
+    U32 mLastWidth;
+    U32 mLastHeight;
 };
 
 #endif

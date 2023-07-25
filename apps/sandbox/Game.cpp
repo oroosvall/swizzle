@@ -29,9 +29,24 @@ void Game::userSetup()
     cfgFile += "engine.cfg";
     mGameCfg.read(cfgFile.c_str());
 
+    swizzle::gfx::FrameBufferCreateInfo fboInfo{};
+    fboInfo.mDepthType = swizzle::gfx::FrameBufferDepthType::DepthNone;
+    fboInfo.mSwapCount = 3u;
+    fboInfo.mColorAttachFormats = { swizzle::gfx::FrameBufferAttachmentType::Default };
+    mWindow->getSize(fboInfo.mWidth, fboInfo.mHeight);
+    mLastWidth = fboInfo.mWidth;
+    mLastHeight = fboInfo.mHeight;
+
+    mImGuiFbo = mGfxDevice->createFramebuffer(fboInfo);
+
+    mImGuiRenderTarget = common::CreateRef<ImGuiSwizzleRenderTarget>(mImGuiFbo);
+
     ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
     ImGui::StyleColorsDark();
-    ImGui_ImplSwizzle_Init(mGfxDevice, mWindow);
+    ImGui_ImplSwizzle_Init(mWindow, mGfxDevice, mImGuiRenderTarget);
 
     mAssetManager = common::CreateRef<AssetManager>(mGfxDevice);
     mCompositor = common::CreateRef<Compositor>(mGfxDevice, mSwapchain);
@@ -60,7 +75,7 @@ void Game::userSetup()
     mFsq->load("shaders/fsq.shader");
 
     mFsqMat = mGfxDevice->createMaterial(mFsq, sw::gfx::SamplerMode::SamplerModeClamp);
-    ImGui_ImplSwizzle_SetMaterial(mFsqMat);
+    mFsqMat->setDescriptorTextureResource(0u, mImGuiRenderTarget->getTexture(), false);
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -142,7 +157,7 @@ SwBool Game::userUpdate(F32 dt)
     title += "Vertex count: " + std::to_string(mCmdBuffer->getVertCount()) + "\n";
     title += "Triangle count: " + std::to_string(mCmdBuffer->getTriCount()) + "\n";
 
-    ImGui_ImplSwizzle_NewFrame(mWindow, dt);
+    ImGui_ImplSwizzle_NewFrame(dt);
     ImGui::NewFrame();
 
     ImGui::Begin("Blah");
@@ -157,11 +172,27 @@ SwBool Game::userUpdate(F32 dt)
 
     updateMainWindow(dt);
 
+    // Update and Render additional Platform Windows
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
+
     return mWindow->isVisible();
 }
 
 void Game::userCleanup()
 {
+    ImGui_ImplSwizzle_Shutdown();
+    ImGui::DestroyContext();
+
+    mImGuiFbo.reset();
+    mImGuiRenderTarget.reset();
+
+    mFsq.reset();
+    mFsqMat.reset();
+
     mScene.reset();
     mAssetManager.reset();
 
@@ -185,6 +216,14 @@ void Game::updateMainWindow(F32 dt)
     if (!(ImGui::GetIO().WantCaptureKeyboard || ImGui::GetIO().WantCaptureMouse))
     {
         mController.update(dt);
+    }
+
+    if (mLastWidth != x || mLastHeight != y)
+    {
+        mImGuiFbo->resize(x, y);
+        mLastWidth = x;
+        mLastHeight = y;
+        mFsqMat->setDescriptorTextureResource(0u, mImGuiRenderTarget->getTexture(), false);
     }
 
     mSwapchain->setClearColor({0, 0, 0, 1});
@@ -217,8 +256,8 @@ void Game::imGuiRender(common::Unique<sw::gfx::CommandTransaction>& trans)
 {
     ImGui_ImplSwizzle_UploadFontTexture(trans);
 
-    auto dTrans = mCmdBuffer->beginRenderPass(ImGui_ImplSwizzle_GetFramebuffer(), std::move(trans));
+    auto dTrans = mImGuiRenderTarget->beginRenderPass(mCmdBuffer, std::move(trans));
     ImGui::Render();
-    ImGui_ImplSwizzle_RenderDrawData(ImGui::GetDrawData(), dTrans);
+    ImGui_ImplSwizzle_DrawData(ImGui::GetDrawData(), dTrans);
     trans = mCmdBuffer->endRenderPass(std::move(dTrans));
 }
