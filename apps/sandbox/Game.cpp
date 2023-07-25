@@ -76,7 +76,7 @@ SwBool Game::userUpdate(F32 dt)
     title += "Frames: " + std::to_string(mSwapchain->getFrameCounter()) + "\n";
     title += "FPS: " + std::to_string(mFpsCounter.getFps()) + "\n\n";
 
-    title += std::string(mGfxContext->getSelectedDeviceName()) + "\n";
+    title += std::string(mGfxDevice->getDeviceName()) + "\n";
 
     auto iter = mGfxDevice->getStatisticsIterator();
 
