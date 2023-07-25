@@ -57,7 +57,9 @@ namespace vk
     VMaterial::~VMaterial()
     {
         vkDestroySampler(mDevice->getDeviceHandle(), mSampler, mDevice->getAllocCallbacks());
+        vkDestroySampler(mDevice->getDeviceHandle(), mSampler2, mDevice->getAllocCallbacks());
         mSampler = VK_NULL_HANDLE;
+        mSampler2 = VK_NULL_HANDLE;
         mDevice->scheduleResourceDestruction(mDescriptorSet);
     }
 
