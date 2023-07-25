@@ -124,6 +124,22 @@ xcb_gcontext_t foreground;
         return true;
     }
 
+    bool XcbWindow::hasFocus() const
+    {
+        bool focus = false;
+        xcb_get_input_focus_cookie_t cookie;
+        xcb_get_input_focus_reply_t* reply;
+
+        cookie = xcb_get_input_focus(mDisplayConnection);
+        if ((reply = xcb_get_input_focus_reply(mDisplayConnection, cookie, NULL)))
+        {
+            focus = (mWindow == reply->focus);
+        }
+        free(reply);
+
+        return focus;
+    }
+
     void XcbWindow::setBorderless(bool borderless)
     {
         UNUSED_ARG(borderless);

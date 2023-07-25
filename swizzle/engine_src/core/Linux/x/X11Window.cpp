@@ -110,6 +110,14 @@ namespace swizzle::core
         return mVisible;
     }
 
+    bool XlibWindow::hasFocus() const
+    {
+        Window w;
+        int revertTo;
+        XGetInputFocus(mDisplay, &w, &revertTo);
+        return w == mWindow;
+    }
+
     void XlibWindow::setBorderless(bool borderless)
     {
         UNUSED_ARG(borderless);

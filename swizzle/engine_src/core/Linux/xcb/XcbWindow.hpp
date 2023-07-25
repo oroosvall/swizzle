@@ -35,6 +35,7 @@ namespace swizzle::core
         virtual void getWindowPos(U32& xPos, U32& yPos) override;
 
         virtual bool isVisible() const override;
+        virtual bool hasFocus() const override;
 
         virtual void setBorderless(bool borderless) override;
         virtual void setFullscreen(bool fullscreen) override;

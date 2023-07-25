@@ -41,6 +41,8 @@ namespace swizzle::core
 
         virtual bool isVisible() const override;
 
+        virtual bool hasFocus() const override;
+
         virtual void setBorderless(bool borderless) override;
         virtual void setFullscreen(bool fullscreen) override;
 

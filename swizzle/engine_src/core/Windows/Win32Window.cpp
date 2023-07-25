@@ -148,13 +148,19 @@ namespace swizzle::core
 
                 CharacterEvent evt;
                 evt.mCodePoint = codePoint;
-                eventHandler.publishEvent(evt);
+                if (wnd->hasFocus())
+                {
+                    eventHandler.publishEvent(evt);
+                }
 
                 return 0;
                 break;
             }
             case WM_INPUT: {
-                inputCallback(wnd, eventHandler, lParam);
+                if (wnd->hasFocus())
+                {
+                    inputCallback(wnd, eventHandler, lParam);
+                }
                 break;
             }
             default:
@@ -250,6 +256,11 @@ namespace swizzle::core
         }
 
         return visible;
+    }
+
+    bool Win32Window::hasFocus() const
+    {
+        return (mWnd == GetFocus());
     }
 
     void Win32Window::setBorderless(bool borderless)
