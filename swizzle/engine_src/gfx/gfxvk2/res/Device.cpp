@@ -82,6 +82,7 @@ namespace vk
     {
         mCleanup->stop();
         delete mCleanup;
+        mCleanup = nullptr;
 
         mTimingQuery.reset();
         mStatisticsQuery.reset();
