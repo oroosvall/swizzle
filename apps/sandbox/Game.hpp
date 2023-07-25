@@ -34,8 +34,6 @@ private:
 
     common::Resource<sw::gfx::CommandBuffer> mCmdBuffer;
 
-    common::Resource<sw::gfx::FrameBuffer> mFrameBuffer;
-
     PerspectiveCamera cam;
     CameraController mController;
 

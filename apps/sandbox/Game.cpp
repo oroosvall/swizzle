@@ -204,8 +204,6 @@ void Game::userCleanup()
     mGameCfg.write(cfgFile.c_str());
 
     mCmdBuffer.reset();
-
-    mFrameBuffer.reset();
 }
 
 void Game::updateMainWindow(F32 dt)
