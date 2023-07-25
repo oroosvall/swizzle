@@ -19,8 +19,8 @@
 class Game : public sw::Application
 {
 public:
-    Game();
-    ~Game();
+    Game(const SwChar* appName);
+    virtual ~Game();
 
     virtual void userSetup() override;
 

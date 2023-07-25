@@ -34,7 +34,7 @@ int main(int argv, char* argc[])
     sw::core::AddLogger(&logger);
 
     {
-        Game game;
+        Game game ("Swizzle-sandbox");
         game.initialize("Swizzle-sandbox");
         game.run();
     }

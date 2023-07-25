@@ -13,8 +13,10 @@
 
 #include <scene/Scene.hpp>
 
-Game::Game()
-    : cam(glm::radians(45.0F), 1280, 720)
+
+Game::Game(const SwChar* appName)
+    : Application(appName)
+    , cam(glm::radians(45.0F), 1280, 720)
     , mController(cam)
 {
 }
@@ -195,6 +197,7 @@ void Game::userCleanup()
 
     mScene.reset();
     mAssetManager.reset();
+    mCompositor.reset();
 
     std::string cfgFile = sw::core::GetAppCacheDirectory();
     cfgFile += "engine.cfg";

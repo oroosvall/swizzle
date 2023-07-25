@@ -35,10 +35,19 @@ namespace swizzle
     class Application
     {
     public:
-        void initialize(const SwChar* appName = "Template")
+
+        Application(const SwChar* appName = "Template")
         {
             SwInitialize(appName);
+        }
 
+        virtual ~Application()
+        {
+            SwCleanup();
+        }
+
+        void initialize(const SwChar* appName = "Template")
+        {
             mWindow = core::CreateSwWindow(1920, 1080, appName);
             mWindow->show();
 
@@ -112,8 +121,6 @@ namespace swizzle
 
             mGfxDevice.reset();
             mGfxContext.reset();
-
-            SwCleanup();
         }
 
     protected:
