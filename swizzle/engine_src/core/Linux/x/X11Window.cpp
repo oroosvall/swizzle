@@ -130,8 +130,18 @@ namespace swizzle::core
 
     void XlibWindow::getCursorPos(U32& xPos, U32& yPos) const
     {
-        xPos = 0u;
-        yPos = 0u;
+        Window root;
+        Window child;
+
+        int rx = 0, ry = 0; 
+        int x = 0, y = 0;
+
+        unsigned int mods = 0;
+
+        XQueryPointer(mDisplay, mWindow, &root, &child, &rx, &ry, &x, &y, &mods);
+
+        xPos = x;
+        yPos = y;
     }
 
     void XlibWindow::getSize(U32& width, U32& height) const
