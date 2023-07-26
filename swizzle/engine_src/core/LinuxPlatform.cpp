@@ -56,18 +56,6 @@ namespace swizzle::core
             return "";
         }
 
-        U32 getMonitorCount()
-        {
-            return 0u;
-        }
-
-        MonitorInfo getMonitorInfo(U32 index)
-        {
-            UNUSED_ARG(index);
-            MonitorInfo res{};
-            return res;
-        }
-
         U32 getPlatformDisplayCount()
         {
             return 0u;
