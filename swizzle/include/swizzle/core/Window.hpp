@@ -18,8 +18,8 @@ namespace swizzle::core
 
     struct MonitorInfo
     {
-        U32 mXPos;
-        U32 mYPos;
+        S32 mXPos;
+        S32 mYPos;
         U32 mWidth;
         U32 mHeight;
     };
@@ -40,8 +40,8 @@ namespace swizzle::core
 
         virtual void setSize(const U32 width, const U32 height) = 0;
 
-        virtual void setWindowPos(const U32 xPos, const U32 yPos) = 0;
-        virtual void getWindowPos(U32& xPos, U32& yPos) = 0;
+        virtual void setWindowPos(const S32 xPos, const S32 yPos) = 0;
+        virtual void getWindowPos(S32& xPos, S32& yPos) = 0;
 
         virtual bool isVisible() const = 0;
 

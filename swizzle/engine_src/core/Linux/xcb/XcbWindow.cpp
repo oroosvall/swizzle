@@ -98,13 +98,13 @@ xcb_gcontext_t foreground;
         xcb_configure_window(mDisplayConnection, mWindow, XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
     }
 
-    void XcbWindow::setWindowPos(const U32 xPos, const U32 yPos)
+    void XcbWindow::setWindowPos(const S32 xPos, const S32 yPos)
     {
-        const uint32_t values[] = { xPos, yPos };
+        const int32_t values[] = { xPos, yPos };
         xcb_configure_window(mDisplayConnection, mWindow, XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y, values);
     }
 
-    void XcbWindow::getWindowPos(U32& xPos, U32& yPos)
+    void XcbWindow::getWindowPos(S32& xPos, S32& yPos)
     {
         xcb_get_geometry_cookie_t cookie;
         xcb_get_geometry_reply_t* reply;
@@ -114,7 +114,7 @@ xcb_gcontext_t foreground;
         if ((reply = xcb_get_geometry_reply(mDisplayConnection, cookie, NULL)))
         {
             xPos = reply->x;
-            yPos = reply->y;;
+            yPos = reply->y;
         }
         free(reply);
     }

@@ -250,12 +250,12 @@ namespace swizzle::core
         SetWindowPos(mWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
     }
 
-    void Win32Window::setWindowPos(const U32 xPos, const U32 yPos)
+    void Win32Window::setWindowPos(const S32 xPos, const S32 yPos)
     {
         SetWindowPos(mWnd, NULL, xPos, yPos, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
     }
 
-    void Win32Window::getWindowPos(U32& xPos, U32& yPos)
+    void Win32Window::getWindowPos(S32& xPos, S32& yPos)
     {
         RECT r{};
         GetWindowRect(mWnd, &r);

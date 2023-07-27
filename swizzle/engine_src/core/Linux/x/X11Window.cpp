@@ -92,17 +92,17 @@ namespace swizzle::core
         XResizeWindow(mDisplay, mWindow, width, height);
     }
 
-    void XlibWindow::setWindowPos(const U32 xPos, const U32 yPos)
+    void XlibWindow::setWindowPos(const S32 xPos, const S32 yPos)
     {
-        XMoveWindow(mDisplay, mWindow, static_cast<int>(xPos), static_cast<int>(yPos));
+        XMoveWindow(mDisplay, mWindow, xPos, yPos);
     }
 
-    void XlibWindow::getWindowPos(U32& xPos, U32& yPos)
+    void XlibWindow::getWindowPos(S32& xPos, S32& yPos)
     {
         XWindowAttributes xwa{};
         XGetWindowAttributes(mDisplay, mWindow, &xwa);
-        xPos = static_cast<U32>(xwa.x);
-        yPos = static_cast<U32>(xwa.y);
+        xPos = xwa.x;
+        yPos = xwa.y;
     }
 
     bool XlibWindow::isVisible() const

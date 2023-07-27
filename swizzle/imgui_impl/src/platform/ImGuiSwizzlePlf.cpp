@@ -88,7 +88,7 @@ static void ImGui_ImplSwizzle_UpdateMouseData()
             wnd->getCursorPos(mouseX, mouseY);
             if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
             {
-                U32 winX, winY;
+                S32 winX, winY;
                 wnd->getWindowPos(winX, winY);
                 mouseX += winX;
                 mouseY += winY;
@@ -230,7 +230,7 @@ void InputCallback::publishEvent(const swizzle::core::WindowEvent& evt)
 
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
-            U32 winX, winY;
+            S32 winX, winY;
             e.mWindow->getWindowPos(winX, winY);
             x += winX;
             y += winY;
