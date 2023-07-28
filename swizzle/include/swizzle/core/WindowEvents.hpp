@@ -30,6 +30,7 @@ namespace swizzle::core
         MouseScrollEvent,
         GamepadAxisEvent,
         GamepadButtonEvent,
+        MouseEnterEvent,
     };
 
     enum class GamePadAxis
@@ -103,6 +104,17 @@ namespace swizzle::core
         swizzle::core::SwWindow* mWindow;
         S32 mXPos;
         S32 mYPos;
+    };
+
+    class MouseEnterEvent : public WindowEvent
+    {
+    public:
+        virtual WindowEventType getEventType() const override
+        {
+            return WindowEventType::MouseEnterEvent;
+        }
+        swizzle::core::SwWindow* mWindow;
+        SwBool mEnter;
     };
 
     class WindowFocusEvent : public WindowEvent
