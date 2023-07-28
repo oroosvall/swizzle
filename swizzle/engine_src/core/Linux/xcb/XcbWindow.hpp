@@ -40,7 +40,7 @@ namespace swizzle::core
         virtual void setBorderless(bool borderless) override;
         virtual void setFullscreen(bool fullscreen) override;
 
-        virtual void setCursorPos(const S32& xPos, const S32 yPos) override
+        virtual void setCursorPos(const S32 xPos, const S32 yPos) override;
         virtual void getCursorPos(S32& xPos, S32& yPos) const override;
         virtual void getSize(U32& width, U32& height) const override;
         virtual void* getNativeWindowHandle() const override;

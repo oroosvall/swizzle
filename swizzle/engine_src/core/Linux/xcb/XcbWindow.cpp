@@ -150,13 +150,13 @@ xcb_gcontext_t foreground;
         UNUSED_ARG(fullscreen);
     }
 
-    void XcbWindow::setCursorPos(const S32& xPos, const S32 yPos)
+    void XcbWindow::setCursorPos(const S32 xPos, const S32 yPos)
     {
         UNUSED_ARG(xPos);
         UNUSED_ARG(yPos);
     }
 
-    void XcbWindow::getCursorPos(U32& xPos, U32& yPos) const
+    void XcbWindow::getCursorPos(S32& xPos, S32& yPos) const
     {
         xPos = 0u;
         yPos = 0u;
