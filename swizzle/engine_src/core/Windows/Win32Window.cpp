@@ -293,7 +293,15 @@ namespace swizzle::core
         changeScreenMode();
     }
 
-    void Win32Window::getCursorPos(U32& xPos, U32& yPos) const
+    void Win32Window::setCursorPos(const S32 xPos, const S32 yPos)
+    {
+        POINT p = {xPos, yPos};
+
+        ClientToScreen(mWnd, &p);
+        SetCursorPos(p.x, p.y);
+    }
+
+    void Win32Window::getCursorPos(S32& xPos, S32& yPos) const
     {
         xPos = yPos = 0;
 

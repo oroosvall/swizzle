@@ -84,7 +84,7 @@ static void ImGui_ImplSwizzle_UpdateMouseData()
                 // wnd->setCursorPos();
             }
 
-            U32 mouseX, mouseY;
+            S32 mouseX, mouseY;
             wnd->getCursorPos(mouseX, mouseY);
             if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
             {

@@ -128,7 +128,13 @@ namespace swizzle::core
         UNUSED_ARG(fullscreen);
     }
 
-    void XlibWindow::getCursorPos(U32& xPos, U32& yPos) const
+    void XlibWindow::setCursorPos(const S32 xPos, const S32 yPos) 
+    {
+        XWarpPointer(mDisplay, None, mWindow, 0, 0, 0u, 0u, xPos, yPos);
+        XFlush(mDisplay);
+    }
+
+    void XlibWindow::getCursorPos(S32& xPos, S32& yPos) const
     {
         Window root;
         Window child;
@@ -169,29 +175,79 @@ namespace swizzle::core
         while (XPending(mDisplay) > 0)
         {
             XNextEvent(mDisplay, &evt);
+            processEvents(evt);
+        }
+    }
 
+    void XlibWindow::setCursorVisible(bool visible)
+    {
+        UNUSED_ARG(visible);
+    }
+
+    bool XlibWindow::isCursorVisible() const
+    {
+        return true;
+    }
+
+    EventHandlerList<WindowEvent>& XlibWindow::getEventHandler()
+    {
+        return mEventHandlers;
+    }
+}
+
+/* Class Protected Function Definition */
+
+/* Class Private Function Definition */
+
+namespace swizzle::core
+{
+    void XlibWindow::processEvents(XEvent& evt)
+    {
             switch (evt.type)
             {
             case ConfigureNotify:
             {
-                WindowResizeEvent e{};
+            WindowResizeEvent e{};
                 e.mWindow = this;
                 e.mHeight = evt.xconfigure.height;
                 e.mWidth = evt.xconfigure.width;
                 mEventHandlers.publishEvent(e);
+
+            WindowMoveEvent eMove{};
+            eMove.mWindow = this;
+            eMove.mXPos = evt.xconfigure.x;
+            eMove.mYPos = evt.xconfigure.y;
+            mEventHandlers.publishEvent(eMove);
+
                 break;
             }
             case EnterNotify:
             {
-                WindowFocusEvent e{};
+            MouseEnterEvent e{};
+            e.mWindow = this;
+            e.mEnter = true;
+            mEventHandlers.publishEvent(e);
+            break;
+        }
+        case LeaveNotify:
+        {
+            MouseEnterEvent e{};
+            e.mWindow = this;
+            e.mEnter = false;
+            mEventHandlers.publishEvent(e);
+            break;
+        }
+        case FocusIn:
+        {
+            WindowFocusEvent e{};
                 e.mWindow = this;
                 e.mFocused = true;
                 mEventHandlers.publishEvent(e);
                 break;
             }
-            case LeaveNotify:
+        case FocusOut:
             {
-                WindowFocusEvent e{};
+            WindowFocusEvent e{};
                 e.mWindow = this;
                 e.mFocused = false;
                 mEventHandlers.publishEvent(e);
@@ -199,13 +255,13 @@ namespace swizzle::core
             }
             case MotionNotify:
             {
-                MouseMoveEvent eMove {};
+            MouseMoveEvent eMove {};
                 eMove.mWindow = this;
                 eMove.mX = evt.xmotion.x;
                 eMove.mY = evt.xmotion.y;
                 mEventHandlers.publishEvent(eMove);
 
-                MouseMoveDelta eDelta{};
+            MouseMoveDelta eDelta{};
                 eDelta.mWindow = this;
                 eDelta.dX = evt.xmotion.x - mXLast;
                 eDelta.dY = evt.xmotion.y - mYLast;
@@ -218,7 +274,7 @@ namespace swizzle::core
             }
             case ButtonPress:
             {
-                InputEvent e;
+            InputEvent e;
                 e.mWindow = this;
                 e.mPressed = true;
                 e.mFromKeyboard = false;
@@ -229,7 +285,7 @@ namespace swizzle::core
             }
             case ButtonRelease:
             {
-                InputEvent e;
+            InputEvent e;
                 e.mWindow = this;
                 e.mPressed = false;
                 e.mFromKeyboard = false;
@@ -240,7 +296,7 @@ namespace swizzle::core
             }
             case KeyPress:
             {
-                InputEvent e;
+            InputEvent e;
                 e.mWindow = this;
                 e.mPressed = true;
                 e.mFromKeyboard = true;
@@ -251,7 +307,7 @@ namespace swizzle::core
             }
             case KeyRelease:
             {
-                InputEvent e;
+            InputEvent e;
                 e.mWindow = this;
                 e.mPressed = false;
                 e.mFromKeyboard = true;
@@ -272,24 +328,6 @@ namespace swizzle::core
                 break;
             }
         }
-
-    }
-
-    void XlibWindow::setCursorVisible(bool visible)
-    {
-        UNUSED_ARG(visible);
-    }
-
-    bool XlibWindow::isCursorVisible() const
-    {
-        return true;
-    }
-
-    EventHandlerList<WindowEvent>& XlibWindow::getEventHandler()
-    {
-        return mEventHandlers;
-    }
-
 }
 
 #endif
