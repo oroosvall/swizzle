@@ -40,7 +40,7 @@ namespace vk
     {
     public:
         VSwapchain(common::Resource<Instance> instance, common::Resource<Device> device,
-                   common::Resource<swizzle::core::SwWindow> window);
+                   common::Resource<swizzle::core::SwWindow> window, SwBool srgb);
         virtual ~VSwapchain();
 
         virtual SwBool isVsyncModeSupported(swizzle::gfx::VSyncTypes sync) const override;
@@ -81,6 +81,7 @@ namespace vk
         common::Resource<Instance> mInstance;
         common::Resource<Device> mDevice;
         common::Resource<swizzle::core::SwWindow> mWindow;
+        SwBool mSrgb;
         VkSurfaceKHR mSurface;
         VkSwapchainKHR mSwapchain;
 

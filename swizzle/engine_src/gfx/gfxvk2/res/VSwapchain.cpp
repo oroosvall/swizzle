@@ -30,10 +30,11 @@
 namespace vk
 {
     VSwapchain::VSwapchain(common::Resource<Instance> instance, common::Resource<Device> device,
-                           common::Resource<swizzle::core::SwWindow> window)
+                           common::Resource<swizzle::core::SwWindow> window, SwBool srgb)
         : mInstance(instance)
         , mDevice(device)
         , mWindow(window)
+        , mSrgb(srgb)
         , mSurface(VK_NULL_HANDLE)
         , mSwapchain(VK_NULL_HANDLE)
         , mAvailablePresentModes()
@@ -305,6 +306,11 @@ namespace vk
 
         VkFormat targetFormat = VK_FORMAT_B8G8R8A8_SRGB;
         VkColorSpaceKHR targetColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
+        if(!mSrgb)
+        {
+            targetFormat = VK_FORMAT_B8G8R8A8_UNORM;
+        }
 
         U32 surfaceFormatCount = 0u;
         vkGetPhysicalDeviceSurfaceFormatsKHR(mDevice->getPhysicalHandle(), mSurface, &surfaceFormatCount, nullptr);

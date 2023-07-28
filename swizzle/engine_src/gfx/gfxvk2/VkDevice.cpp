@@ -110,10 +110,10 @@ namespace swizzle::gfx
         return common::CreateRef<vk::CmdBuffer>(mVkDevice, mCmdPool, swapCount);
     }
 
-    common::Resource<Swapchain> VkGfxDevice::createSwapchain(common::Resource<core::SwWindow> window, U32 swapCount)
+    common::Resource<Swapchain> VkGfxDevice::createSwapchain(common::Resource<core::SwWindow> window, U32 swapCount, SwBool srgb)
     {
         UNUSED_ARG(swapCount);
-        return common::CreateRef<vk::VSwapchain>(mVkInstance, mVkDevice, window);
+        return common::CreateRef<vk::VSwapchain>(mVkInstance, mVkDevice, window, srgb);
     }
 
     common::Resource<Texture> VkGfxDevice::createTexture(U32 width, U32 height, U32 channels, SwBool f32)

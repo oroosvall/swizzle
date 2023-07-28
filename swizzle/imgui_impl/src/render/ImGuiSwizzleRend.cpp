@@ -234,7 +234,7 @@ static void ImGui_ImplSwizzle_CreateWindow(ImGuiViewport* viewport)
     attributeList.mPrimitiveType = swizzle::gfx::PrimitiveType::triangle;
 
     vd->mCmdBuffer = bd->mDevice->createCommandBuffer(2u);
-    vd->mSwapchain = bd->mDevice->createSwapchain(bd->mPfnGetWindow(viewport), 2u);
+    vd->mSwapchain = bd->mDevice->createSwapchain(bd->mPfnGetWindow(viewport), 2u, false);
     vd->mShader = bd->mDevice->createShader(vd->mSwapchain, swizzle::gfx::ShaderType::ShaderType_Graphics, attributeList);
 
     uint32_t vertSize = 0u;

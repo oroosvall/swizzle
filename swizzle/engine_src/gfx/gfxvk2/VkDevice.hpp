@@ -48,7 +48,7 @@ namespace swizzle::gfx
         virtual common::Resource<GfxBuffer> createBuffer(GfxBufferType type, GfxMemoryArea memArea) override;
         virtual common::Resource<CommandBuffer> createCommandBuffer(U32 swapCount) override;
         virtual common::Resource<Swapchain> createSwapchain(common::Resource<core::SwWindow> window,
-                                                            U32 swapCount) override;
+                                                            U32 swapCount, SwBool srgb = true) override;
         virtual common::Resource<Texture> createTexture(U32 width, U32 height, U32 channels, SwBool f32) override;
         virtual common::Resource<Texture> createCubeMapTexture(U32 width, U32 height, U32 channels) override;
 
