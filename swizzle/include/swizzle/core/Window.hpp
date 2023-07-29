@@ -1,6 +1,7 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
+#include <swizzle/Api.hpp>
 #include <common/Common.hpp>
 
 #include <swizzle/core/Event.hpp>
@@ -61,6 +62,35 @@ namespace swizzle::core
 
         virtual void pollEvents() = 0;
     };
+
+    /// <summary>
+    /// Get number of monitors in the system
+    /// </summary>
+    /// <returns>
+    /// Count of monitors to be used to enumerate MonitorInfo
+    /// </returns>
+    U32 SWIZZLE_API GetMonitorCount();
+
+    /// <summary>
+    /// Get info about a monitor
+    /// </summary>
+    /// <param name="index">Monitor index to get info about</param>
+    /// <returns>
+    /// MonitorInfo containing position and size of monitor.
+    /// </returns>
+    MonitorInfo SWIZZLE_API GetMonitorInfo(U32 index);
+
+    /// <summary>
+    /// Create a window
+    /// </summary>
+    /// <param name="width">Width of the window in pixels</param>
+    /// <param name="height">Height of the window in pixels</param>
+    /// <param name="title">Title for the window</param>
+    /// <returns>
+    /// Resource handle to a window
+    /// </returns>
+    common::Resource<SwWindow> SWIZZLE_API CreateSwWindow(const U32 width, const U32 height, const SwChar* title);
+
 } // namespace swizzle
 
 #endif

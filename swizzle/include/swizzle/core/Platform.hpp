@@ -6,14 +6,8 @@
 #include <swizzle/core/Input.hpp>
 #include <swizzle/core/File.hpp>
 
-#include "Window.hpp"
-
 namespace swizzle::core
 {
-
-    U32 SWIZZLE_API GetMonitorCount();
-    MonitorInfo SWIZZLE_API GetMonitorInfo(U32 index);
-
     // TODO: remove?
     U32 SWIZZLE_API GetNumberOfDisplays();
     U32 SWIZZLE_API GetDisplayResolutionCount(U32 displayIndex);
@@ -27,8 +21,6 @@ namespace swizzle::core
     U64 SWIZZLE_API GetCurrentTimeMs();
     U64 SWIZZLE_API GetCurrentTimeUs();
     U32 SWIZZLE_API GetCurrentThreadId();
-
-    common::Resource<SwWindow> SWIZZLE_API CreateSwWindow(const U32 width, const U32 height, const SwChar* title);
 
     const SwChar SWIZZLE_API * GetKeyText(S32 key);
     const SwWChar SWIZZLE_API * GetKeyTextW(S32 key);
