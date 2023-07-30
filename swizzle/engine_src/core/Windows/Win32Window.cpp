@@ -300,7 +300,7 @@ namespace swizzle::core
 
     void Win32Window::setSize(const U32 width, const U32 height)
     {
-        SetWindowPos(mWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+        SetWindowPos(mWnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
     }
 
     void Win32Window::setWindowPos(const S32 xPos, const S32 yPos)
@@ -308,7 +308,7 @@ namespace swizzle::core
         RECT r = {xPos, yPos, xPos, yPos};
         AdjustWindowRectEx(&r, GetWindowLongPtr(mWnd, GWL_STYLE),
                             FALSE, GetWindowLongPtr(mWnd, GWL_EXSTYLE));
-        SetWindowPos(mWnd, NULL, xPos, yPos, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        SetWindowPos(mWnd, HWND_TOP, xPos, yPos, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
     }
 
     void Win32Window::getWindowPos(S32& xPos, S32& yPos)
