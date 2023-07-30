@@ -91,6 +91,12 @@ namespace swizzle::core
     /// </returns>
     common::Resource<SwWindow> SWIZZLE_API CreateSwWindow(const U32 width, const U32 height, const SwChar* title);
 
+    /// <summary>
+    /// Function to poll for window events
+    /// This will enumerate all windows for the running program
+    /// </summary>
+    void SWIZZLE_API PollWindowEvents();
+
 } // namespace swizzle
 
 #endif

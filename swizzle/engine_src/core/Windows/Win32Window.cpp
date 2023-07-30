@@ -15,6 +15,22 @@
 
 #include <algorithm>
 
+namespace plf::window
+{
+    SwBool init()
+    {
+        return true;
+    }
+
+    void cleanup()
+    {
+    }
+
+    void pollWindowEvents()
+    {
+    }
+}
+
 namespace swizzle::core
 {
     void inputCallback(Win32Window* window, EventHandlerList<WindowEvent>& evtHandler, LPARAM lParam)

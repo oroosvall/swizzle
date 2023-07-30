@@ -80,7 +80,7 @@ namespace swizzle::core
             UNUSED_ARG(height);
             UNUSED_ARG(title);
             #if defined(SW_LINUX_XLIB)
-            return std::make_shared<x11::X11Window>(width, height, title);
+            return x11::createWindow(width, height, title);
             #elif defined(SW_LINUX_XCB)
             return std::make_shared<xcb::XcbWindow>(width, height, title);
             #endif

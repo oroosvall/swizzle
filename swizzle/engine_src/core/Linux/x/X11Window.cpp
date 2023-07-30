@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 
+#include <unordered_map>
+
 /* Defines */
 
 /* Typedefs */
@@ -17,11 +19,81 @@ namespace core = swizzle::core;
 
 /* Static Variables */
 
+namespace plf::window
+{
+    Display* gDisplayConnection = nullptr;
+    std::unordered_map<Window, x11::X11Window*> gEventMapping;
+}
+
 /* Static Function Declaration */
+
+namespace plf::window
+{
+    void registerWindow(Window wnd, x11::X11Window* target);
+    void unregisterWindow(Window wnd);
+    void mapEvent(XEvent& evt);
+}
 
 /* Static Function Definition */
 
+namespace plf::window
+{
+    void registerWindow(Window wnd, x11::X11Window* target)
+    {
+        gEventMapping[wnd] = target;
+    }
+
+    void unregisterWindow(Window wnd)
+    {
+        gEventMapping.erase(wnd);
+    }
+
+    void mapEvent(XEvent& evt)
+    {
+        Window wnd = evt.xany.window;
+        if(gEventMapping.count(wnd))
+        {
+            gEventMapping[wnd]->processEvents(evt);
+        }
+    }
+}
+
 /* Function Definition */
+
+namespace plf::window
+{
+    SwBool init()
+    {
+        XInitThreads();
+
+        gDisplayConnection = XOpenDisplay(nullptr);
+        return gDisplayConnection != nullptr;
+    }
+
+    void cleanup()
+    {
+        XCloseDisplay(gDisplayConnection);
+        gDisplayConnection = nullptr;
+    }
+
+    void pollWindowEvents()
+    {
+        XEvent evt;
+        while (XPending(gDisplayConnection) > 0)
+        {
+            XNextEvent(gDisplayConnection, &evt);
+            mapEvent(evt);
+        }
+    }
+}
+
+namespace x11
+{
+    common::Resource<X11Window> createWindow(const U32 width, const U32 height, const SwChar* title)
+    {
+        return std::make_shared<X11Window>(plf::window::gDisplayConnection, width, height, title);
+    }
+}
 
 /* Class Public Function Definition */
 
@@ -30,14 +102,11 @@ namespace x11
 
     S32 screen = 0;
 
-    X11Window::X11Window(const U32 width, const U32 height, const char* title)
-        : mDisplay(nullptr)
+    X11Window::X11Window(Display* disp, const U32 width, const U32 height, const char* title)
+        : mDisplay(disp)
         , mWindow()
     {
         UNUSED_ARG(title);
-        XInitThreads();
-
-        mDisplay = XOpenDisplay(NULL);
 
         long visualMask = VisualScreenMask;
         int numberOfVisuals;
@@ -60,6 +129,8 @@ namespace x11
             height, 0, visualInfo->depth, InputOutput, visualInfo->visual,
             CWBackPixel | CWBorderPixel | CWEventMask | CWColormap, &windowAttributes);
 
+        plf::window::registerWindow(mWindow, this);
+
         // XSelectInput(mDisplay, mWindow, KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask);
         XMapWindow(mDisplay, mWindow);
 
@@ -68,13 +139,13 @@ namespace x11
 
         XFlush(mDisplay);
         mVisible = true;
-        mXLast = mYLast = 0;
+        mLastCursorXPos = mLastCursorYPos = 0;
     }
 
     X11Window::~X11Window()
     {
+        plf::window::unregisterWindow(mWindow);
         XDestroyWindow(mDisplay, mWindow);
-        XCloseDisplay(mDisplay);
     }
 
     void X11Window::show()
@@ -121,10 +192,10 @@ namespace x11
 
     void X11Window::getWindowPos(S32& xPos, S32& yPos)
     {
-        XWindowAttributes xwa{};
-        XGetWindowAttributes(mDisplay, mWindow, &xwa);
-        xPos = xwa.x;
-        yPos = xwa.y;
+        Window w;
+        Window root = XDefaultRootWindow(mDisplay);
+
+        XTranslateCoordinates(mDisplay, mWindow, root, 0, 0, &xPos, &yPos, &w);
     }
 
     bool X11Window::isVisible() const
@@ -244,10 +315,23 @@ namespace x11
         }
         case EnterNotify:
         {
+            const int xPos = evt.xcrossing.x;
+            const int yPos = evt.xcrossing.y;
+
             core::MouseEnterEvent e{};
             e.mWindow = this;
             e.mEnter = true;
             mEventHandlers.publishEvent(e);
+
+            core::MouseMoveEvent eMove{};
+            eMove.mWindow = this;
+            eMove.mX = xPos;
+            eMove.mY = yPos;
+            mEventHandlers.publishEvent(e);
+
+            mLastCursorXPos = xPos;
+            mLastCursorYPos = yPos;
+
             break;
         }
         case LeaveNotify:
@@ -284,11 +368,11 @@ namespace x11
 
             core::MouseMoveDelta eDelta{};
             eDelta.mWindow = this;
-            eDelta.dX = evt.xmotion.x - mXLast;
-            eDelta.dY = evt.xmotion.y - mYLast;
+            eDelta.dX = evt.xmotion.x - mLastCursorXPos;
+            eDelta.dY = evt.xmotion.y - mLastCursorYPos;
 
-            mXLast = evt.xmotion.x;
-            mYLast = evt.xmotion.y;
+            mLastCursorXPos = evt.xmotion.x;
+            mLastCursorYPos = evt.xmotion.y;
             mEventHandlers.publishEvent(eDelta);
 
             break;
@@ -341,6 +425,10 @@ namespace x11
         {
             if ((Atom)evt.xclient.data.l[0] == mWmDeleteWindow)
             {
+                core::WindowCloseEvent e;
+                e.mWindow = this;
+                mEventHandlers.publishEvent(e);
+
                 mVisible = false;
             }
             break;

@@ -35,7 +35,7 @@ namespace x11
     class X11Window : public SwWindow
     {
     public:
-        X11Window(const U32 width, const U32 height, const char* title);
+        X11Window(Display* disp, const U32 width, const U32 height, const char* title);
         virtual ~X11Window();
 
         virtual void show() override;
@@ -73,9 +73,9 @@ namespace x11
 
         S32 modKeys;
 
+        void processEvents(XEvent& evt);
     private:
 
-        void processEvents(XEvent& evt);
         Display* mDisplay;
         Window mWindow;
         Atom mWmDeleteWindow;
@@ -83,15 +83,20 @@ namespace x11
         bool mCursorVisible;
         bool mVisible;
 
-        int mXLast;
-        int mYLast;
+        int mLastCursorXPos;
+        int mLastCursorYPos;
 
         EventHandlerList<WindowEvent> mEventHandlers;
     };
 
-} // namespace plf::window
+} // namespace x11
 
 /* Function Declaration */
+
+namespace x11
+{
+    common::Resource<X11Window> createWindow(const U32 width, const U32 height, const SwChar* title);
+}
 
 #endif
 

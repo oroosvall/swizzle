@@ -5,6 +5,22 @@
 
 namespace core = swizzle::core;
 
+namespace plf::window
+{
+    SwBool init()
+    {
+        return true;
+    }
+
+    void cleanup()
+    {
+    }
+
+    void pollWindowEvents()
+    {
+    }
+}
+
 namespace xcb
 {
 xcb_gcontext_t foreground;
