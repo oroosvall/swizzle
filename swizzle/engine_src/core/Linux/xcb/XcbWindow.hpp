@@ -11,7 +11,14 @@
 
 #include <xcb/xcb.h>
 
-namespace swizzle::core
+using SwWindow = swizzle::core::SwWindow;
+template<typename T>
+using EventHandler = swizzle::EventHandler<T>;
+template<typename T>
+using EventHandlerList = swizzle::EventHandlerList<T>;
+using WindowEvent = swizzle::core::WindowEvent;
+
+namespace xcb
 {
 
     class XcbWindow : public SwWindow

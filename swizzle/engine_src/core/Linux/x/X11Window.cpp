@@ -1,16 +1,36 @@
 #ifdef SW_LINUX_XLIB
 
+/* Include files */
+
 #include "X11Window.hpp"
 #include <X11/Xutil.h>
 
 #include <stdio.h>
 
-namespace swizzle::core
+/* Defines */
+
+/* Typedefs */
+
+namespace core = swizzle::core;
+
+/* Structs/Classes */
+
+/* Static Variables */
+
+/* Static Function Declaration */
+
+/* Static Function Definition */
+
+/* Function Definition */
+
+/* Class Public Function Definition */
+
+namespace x11
 {
 
     S32 screen = 0;
 
-    XlibWindow::XlibWindow(const U32 width, const U32 height, const char* title)
+    X11Window::X11Window(const U32 width, const U32 height, const char* title)
         : mDisplay(nullptr)
         , mWindow()
     {
@@ -34,7 +54,7 @@ namespace swizzle::core
         windowAttributes.colormap = colormap;
         windowAttributes.background_pixel = 0xFFFFFFFF;
         windowAttributes.border_pixel = 0;
-        windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | EnterWindowMask | LeaveWindowMask;
+        windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | EnterWindowMask | LeaveWindowMask | FocusChangeMask;
 
         mWindow = XCreateWindow(mDisplay, RootWindow(mDisplay, s), 0, 0, width,
             height, 0, visualInfo->depth, InputOutput, visualInfo->visual,
@@ -51,53 +71,55 @@ namespace swizzle::core
         mXLast = mYLast = 0;
     }
 
-    XlibWindow::~XlibWindow()
+    X11Window::~X11Window()
     {
         XDestroyWindow(mDisplay, mWindow);
         XCloseDisplay(mDisplay);
     }
 
-    void XlibWindow::show()
+    void X11Window::show()
     {
 
     }
 
-    void XlibWindow::hide()
+    void X11Window::hide()
     {
 
     }
 
-    void XlibWindow::addEventListener(EventHandler<WindowEvent>* listener)
+    void X11Window::addEventListener(EventHandler<WindowEvent>* listener)
     {
         mEventHandlers.addListener(listener);
     }
 
-    void XlibWindow::removeEventListener(EventHandler<WindowEvent>* listener)
+    void X11Window::removeEventListener(EventHandler<WindowEvent>* listener)
     {
         mEventHandlers.removeListener(listener);
     }
 
-    void XlibWindow::setTitle(const char* title)
+    void X11Window::setTitle(const char* title)
     {
         UNUSED_ARG(title);
     }
 
-    void XlibWindow::setTitle(const wchar_t* title)
+    void X11Window::setTitle(const wchar_t* title)
     {
         UNUSED_ARG(title);
     }
 
-    void XlibWindow::setSize(const U32 width, const U32 height)
+    void X11Window::setSize(const U32 width, const U32 height)
     {
         XResizeWindow(mDisplay, mWindow, width, height);
+        XFlush(mDisplay);
     }
 
-    void XlibWindow::setWindowPos(const S32 xPos, const S32 yPos)
+    void X11Window::setWindowPos(const S32 xPos, const S32 yPos)
     {
         XMoveWindow(mDisplay, mWindow, xPos, yPos);
+        XFlush(mDisplay);
     }
 
-    void XlibWindow::getWindowPos(S32& xPos, S32& yPos)
+    void X11Window::getWindowPos(S32& xPos, S32& yPos)
     {
         XWindowAttributes xwa{};
         XGetWindowAttributes(mDisplay, mWindow, &xwa);
@@ -105,12 +127,12 @@ namespace swizzle::core
         yPos = xwa.y;
     }
 
-    bool XlibWindow::isVisible() const
+    bool X11Window::isVisible() const
     {
         return mVisible;
     }
 
-    bool XlibWindow::hasFocus() const
+    bool X11Window::hasFocus() const
     {
         Window w;
         int revertTo;
@@ -118,23 +140,23 @@ namespace swizzle::core
         return w == mWindow;
     }
 
-    void XlibWindow::setBorderless(bool borderless)
+    void X11Window::setBorderless(bool borderless)
     {
         UNUSED_ARG(borderless);
     }
 
-    void XlibWindow::setFullscreen(bool fullscreen)
+    void X11Window::setFullscreen(bool fullscreen)
     {
         UNUSED_ARG(fullscreen);
     }
 
-    void XlibWindow::setCursorPos(const S32 xPos, const S32 yPos) 
+    void X11Window::setCursorPos(const S32 xPos, const S32 yPos) 
     {
         XWarpPointer(mDisplay, None, mWindow, 0, 0, 0u, 0u, xPos, yPos);
         XFlush(mDisplay);
     }
 
-    void XlibWindow::getCursorPos(S32& xPos, S32& yPos) const
+    void X11Window::getCursorPos(S32& xPos, S32& yPos) const
     {
         Window root;
         Window child;
@@ -150,7 +172,7 @@ namespace swizzle::core
         yPos = y;
     }
 
-    void XlibWindow::getSize(U32& width, U32& height) const
+    void X11Window::getSize(U32& width, U32& height) const
     {
         XWindowAttributes attribs;
         XGetWindowAttributes(mDisplay, mWindow, &attribs);
@@ -158,20 +180,19 @@ namespace swizzle::core
         height = attribs.height;
     }
 
-    void* XlibWindow::getNativeWindowHandle() const
+    void* X11Window::getNativeWindowHandle() const
     {
         return (void*)mWindow;
     }
 
-    void* XlibWindow::getNativeDisplayHandle() const
+    void* X11Window::getNativeDisplayHandle() const
     {
         return mDisplay;
     }
 
-    void XlibWindow::pollEvents()
+    void X11Window::pollEvents()
     {
         XEvent evt;
-
         while (XPending(mDisplay) > 0)
         {
             XNextEvent(mDisplay, &evt);
@@ -179,17 +200,17 @@ namespace swizzle::core
         }
     }
 
-    void XlibWindow::setCursorVisible(bool visible)
+    void X11Window::setCursorVisible(bool visible)
     {
         UNUSED_ARG(visible);
     }
 
-    bool XlibWindow::isCursorVisible() const
+    bool X11Window::isCursorVisible() const
     {
         return true;
     }
 
-    EventHandlerList<WindowEvent>& XlibWindow::getEventHandler()
+    EventHandlerList<WindowEvent>& X11Window::getEventHandler()
     {
         return mEventHandlers;
     }
@@ -199,31 +220,31 @@ namespace swizzle::core
 
 /* Class Private Function Definition */
 
-namespace swizzle::core
+namespace x11
 {
-    void XlibWindow::processEvents(XEvent& evt)
+    void X11Window::processEvents(XEvent& evt)
     {
-            switch (evt.type)
-            {
-            case ConfigureNotify:
-            {
-            WindowResizeEvent e{};
-                e.mWindow = this;
-                e.mHeight = evt.xconfigure.height;
-                e.mWidth = evt.xconfigure.width;
-                mEventHandlers.publishEvent(e);
+        switch (evt.type)
+        {
+        case ConfigureNotify:
+        {
+            core::WindowResizeEvent e{};
+            e.mWindow = this;
+            e.mHeight = evt.xconfigure.height;
+            e.mWidth = evt.xconfigure.width;
+            mEventHandlers.publishEvent(e);
 
-            WindowMoveEvent eMove{};
+            core::WindowMoveEvent eMove{};
             eMove.mWindow = this;
             eMove.mXPos = evt.xconfigure.x;
             eMove.mYPos = evt.xconfigure.y;
             mEventHandlers.publishEvent(eMove);
 
-                break;
-            }
-            case EnterNotify:
-            {
-            MouseEnterEvent e{};
+            break;
+        }
+        case EnterNotify:
+        {
+            core::MouseEnterEvent e{};
             e.mWindow = this;
             e.mEnter = true;
             mEventHandlers.publishEvent(e);
@@ -231,7 +252,7 @@ namespace swizzle::core
         }
         case LeaveNotify:
         {
-            MouseEnterEvent e{};
+            core::MouseEnterEvent e{};
             e.mWindow = this;
             e.mEnter = false;
             mEventHandlers.publishEvent(e);
@@ -239,95 +260,95 @@ namespace swizzle::core
         }
         case FocusIn:
         {
-            WindowFocusEvent e{};
-                e.mWindow = this;
-                e.mFocused = true;
-                mEventHandlers.publishEvent(e);
-                break;
-            }
-        case FocusOut:
-            {
-            WindowFocusEvent e{};
-                e.mWindow = this;
-                e.mFocused = false;
-                mEventHandlers.publishEvent(e);
-                break;
-            }
-            case MotionNotify:
-            {
-            MouseMoveEvent eMove {};
-                eMove.mWindow = this;
-                eMove.mX = evt.xmotion.x;
-                eMove.mY = evt.xmotion.y;
-                mEventHandlers.publishEvent(eMove);
-
-            MouseMoveDelta eDelta{};
-                eDelta.mWindow = this;
-                eDelta.dX = evt.xmotion.x - mXLast;
-                eDelta.dY = evt.xmotion.y - mYLast;
-
-                mXLast = evt.xmotion.x;
-                mYLast = evt.xmotion.y;
-                mEventHandlers.publishEvent(eDelta);
-
-                break;
-            }
-            case ButtonPress:
-            {
-            InputEvent e;
-                e.mWindow = this;
-                e.mPressed = true;
-                e.mFromKeyboard = false;
-                e.mModKeys = 0;
-                e.mKey = evt.xbutton.button;
-                mEventHandlers.publishEvent(e);
-                break;
-            }
-            case ButtonRelease:
-            {
-            InputEvent e;
-                e.mWindow = this;
-                e.mPressed = false;
-                e.mFromKeyboard = false;
-                e.mModKeys = 0;
-                e.mKey = evt.xbutton.button;
-                mEventHandlers.publishEvent(e);
-                break;
-            }
-            case KeyPress:
-            {
-            InputEvent e;
-                e.mWindow = this;
-                e.mPressed = true;
-                e.mFromKeyboard = true;
-                e.mModKeys = 0;
-                e.mKey = evt.xkey.keycode;
-                mEventHandlers.publishEvent(e);
-                break;
-            }
-            case KeyRelease:
-            {
-            InputEvent e;
-                e.mWindow = this;
-                e.mPressed = false;
-                e.mFromKeyboard = true;
-                e.mModKeys = 0;
-                e.mKey = evt.xkey.keycode;
-                mEventHandlers.publishEvent(e);
-                break;
-            }
-            case ClientMessage:
-            {
-                if ((Atom)evt.xclient.data.l[0] == mWmDeleteWindow)
-                {
-                    mVisible = false;
-                }
-                break;
-            }
-            default:
-                break;
-            }
+            core::WindowFocusEvent e{};
+            e.mWindow = this;
+            e.mFocused = true;
+            mEventHandlers.publishEvent(e);
+            break;
         }
+        case FocusOut:
+        {
+            core::WindowFocusEvent e{};
+            e.mWindow = this;
+            e.mFocused = false;
+            mEventHandlers.publishEvent(e);
+            break;
+        }
+        case MotionNotify:
+        {
+            core::MouseMoveEvent eMove {};
+            eMove.mWindow = this;
+            eMove.mX = evt.xmotion.x;
+            eMove.mY = evt.xmotion.y;
+            mEventHandlers.publishEvent(eMove);
+
+            core::MouseMoveDelta eDelta{};
+            eDelta.mWindow = this;
+            eDelta.dX = evt.xmotion.x - mXLast;
+            eDelta.dY = evt.xmotion.y - mYLast;
+
+            mXLast = evt.xmotion.x;
+            mYLast = evt.xmotion.y;
+            mEventHandlers.publishEvent(eDelta);
+
+            break;
+        }
+        case ButtonPress:
+        {
+            core::InputEvent e;
+            e.mWindow = this;
+            e.mPressed = true;
+            e.mFromKeyboard = false;
+            e.mModKeys = 0;
+            e.mKey = evt.xbutton.button;
+            mEventHandlers.publishEvent(e);
+            break;
+        }
+        case ButtonRelease:
+        {
+            core::InputEvent e;
+            e.mWindow = this;
+            e.mPressed = false;
+            e.mFromKeyboard = false;
+            e.mModKeys = 0;
+            e.mKey = evt.xbutton.button;
+            mEventHandlers.publishEvent(e);
+            break;
+        }
+        case KeyPress:
+        {
+            core::InputEvent e;
+            e.mWindow = this;
+            e.mPressed = true;
+            e.mFromKeyboard = true;
+            e.mModKeys = 0;
+            e.mKey = evt.xkey.keycode;
+            mEventHandlers.publishEvent(e);
+            break;
+        }
+        case KeyRelease:
+        {
+            core::InputEvent e;
+            e.mWindow = this;
+            e.mPressed = false;
+            e.mFromKeyboard = true;
+            e.mModKeys = 0;
+            e.mKey = evt.xkey.keycode;
+            mEventHandlers.publishEvent(e);
+            break;
+        }
+        case ClientMessage:
+        {
+            if ((Atom)evt.xclient.data.l[0] == mWmDeleteWindow)
+            {
+                mVisible = false;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
 }
 
 #endif

@@ -3,7 +3,9 @@
 #include <cstdlib>
 #include "XcbWindow.hpp"
 
-namespace swizzle::core
+namespace core = swizzle::core;
+
+namespace xcb
 {
 xcb_gcontext_t foreground;
     XcbWindow::XcbWindow(const U32 width, const U32 height, const char* title)
@@ -207,7 +209,7 @@ xcb_gcontext_t foreground;
             case XCB_CONFIGURE_NOTIFY:
             {
                 xcb_configure_notify_event_t* ev = (xcb_configure_notify_event_t*)event;
-                WindowResizeEvent e;
+                core::WindowResizeEvent e;
                 e.mWindow = this;
                 e.mWidth = ev->width;
                 e.mHeight = ev->height;

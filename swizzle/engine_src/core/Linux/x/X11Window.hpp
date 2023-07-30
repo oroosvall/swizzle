@@ -3,6 +3,8 @@
 
 #ifdef SW_LINUX_XLIB
 
+/* Include files */
+
 #include <common/Common.hpp>
 #include <swizzle/core/WindowEvents.hpp>
 #include <swizzle/core/Window.hpp>
@@ -11,14 +13,30 @@
 
 #include <X11/Xlib.h>
 
-namespace swizzle::core
-{
+/* Defines */
 
-    class XlibWindow : public SwWindow
+/* Typedefs/enums */
+
+using SwWindow = swizzle::core::SwWindow;
+template<typename T>
+using EventHandler = swizzle::EventHandler<T>;
+template<typename T>
+using EventHandlerList = swizzle::EventHandlerList<T>;
+using WindowEvent = swizzle::core::WindowEvent;
+
+/* Forward Declared Structs/Classes */
+
+/* Struct Declaration */
+
+/* Class Declaration */
+
+namespace x11
+{
+    class X11Window : public SwWindow
     {
     public:
-        XlibWindow(const U32 width, const U32 height, const char* title);
-        virtual ~XlibWindow();
+        X11Window(const U32 width, const U32 height, const char* title);
+        virtual ~X11Window();
 
         virtual void show() override;
         virtual void hide() override;
@@ -71,7 +89,9 @@ namespace swizzle::core
         EventHandlerList<WindowEvent> mEventHandlers;
     };
 
-} // namespace swizzle
+} // namespace plf::window
+
+/* Function Declaration */
 
 #endif
 
