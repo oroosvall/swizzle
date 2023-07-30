@@ -28,6 +28,13 @@ namespace plf::window
 
     void pollWindowEvents()
     {
+        MSG msg;
+
+        while (PeekMessage(&msg, NULL, NULL, NULL, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
     }
 }
 
@@ -268,15 +275,18 @@ namespace swizzle::core
 
     void Win32Window::setWindowPos(const S32 xPos, const S32 yPos)
     {
+        RECT r = {xPos, yPos, xPos, yPos};
+        AdjustWindowRectEx(&r, GetWindowLongPtr(mWnd, GWL_STYLE),
+                            FALSE, GetWindowLongPtr(mWnd, GWL_EXSTYLE));
         SetWindowPos(mWnd, NULL, xPos, yPos, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
     }
 
     void Win32Window::getWindowPos(S32& xPos, S32& yPos)
     {
-        RECT r{};
-        GetWindowRect(mWnd, &r);
-        xPos = r.left;
-        yPos = r.top;
+        POINT p{};
+        ClientToScreen(mWnd, &)
+        xPos = p.x;
+        yPos = p.y;
     }
 
     bool Win32Window::isVisible() const
