@@ -93,7 +93,7 @@ namespace swizzle::core
                     WindowFocusEvent evt;
                     evt.mWindow = wnd;
                     evt.mFocused = true;
-                    eventHandler.publishEvent(evt);
+                    // eventHandler.publishEvent(evt);
                     XInputEnable(true);
                 }
                 else
@@ -101,7 +101,7 @@ namespace swizzle::core
                     WindowFocusEvent evt;
                     evt.mWindow = wnd;
                     evt.mFocused = false;
-                    eventHandler.publishEvent(evt);
+                    // eventHandler.publishEvent(evt);
                     XInputEnable(false);
                     break;
                 }
@@ -167,6 +167,7 @@ namespace swizzle::core
             }
             case WM_CLOSE: {
                 WindowCloseEvent evt;
+                evt.mWindow = wnd;
                 eventHandler.publishEvent(evt);
                 break;
             }
