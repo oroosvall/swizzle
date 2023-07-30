@@ -51,7 +51,7 @@ namespace swizzle::core
         virtual void getSize(U32& width, U32& height) const override;
         virtual void* getNativeWindowHandle() const override;
         virtual void* getNativeDisplayHandle() const override;
-        virtual void pollEvents() override;
+        virtual void pollEvents();
 
         virtual void setCursorVisible(bool visible) override;
         virtual bool isCursorVisible() const override;

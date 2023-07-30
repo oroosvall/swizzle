@@ -97,7 +97,7 @@ namespace swizzle
                 F32 dt = highRes.secondsAsFloat(true);
 
                 swizzle::input::InputFrameReset();
-                mWindow->pollEvents();
+                swizzle::core::PollWindowEvents();
 
                 running = userUpdate(dt);
             }

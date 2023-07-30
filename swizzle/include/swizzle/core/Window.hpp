@@ -59,8 +59,6 @@ namespace swizzle::core
 
         virtual void setCursorVisible(SwBool visible) = 0;
         virtual bool isCursorVisible() const = 0;
-
-        virtual void pollEvents() = 0;
     };
 
     /// <summary>
