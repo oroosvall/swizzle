@@ -204,6 +204,34 @@ namespace swizzle::core
                 }
                 break;
             }
+            case WM_MOUSEMOVE: {
+
+                if(!wnd->mTrackCursor)
+                {
+                    TRACKMOUSEEVENT tme;
+                    ZeroMemory(&tme, sizeof(tme));
+                    tme.cbSize = sizeof(tme);
+                    tme.dwFlags = TME_LEAVE;
+                    tme.hwndTrack = hWnd;
+                    TrackMouseEvent(&tme);
+                    wnd->mTrackCursor = true;
+
+                    MouseEnterEvent evt{};
+                    evt.mWindow = wnd;
+                    evt.mEnter = true;
+                    eventHandler.publishEvent(evt);
+                }
+
+                return 0;
+            }
+            case WM_MOUSELEAVE: {
+                MouseEnterEvent evt{};
+                evt.mWindow = wnd;
+                evt.mEnter = false;
+                eventHandler.publishEvent(evt);
+                wnd->mTrackCursor = false;
+                return 0;
+            }
             default:
                 break;
             }
@@ -220,6 +248,7 @@ namespace swizzle::core
         , mWindowPlacementSet(false)
         , mEventHandlers()
         , modKeys(0)
+        , mTrackCursor(false)
         , mWindowPlacement({sizeof(mWindowPlacement)})
     {
 

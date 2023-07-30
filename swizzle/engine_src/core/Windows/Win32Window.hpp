@@ -60,6 +60,8 @@ namespace swizzle::core
 
         S32 modKeys;
 
+        bool mTrackCursor;
+
     private:
         void changeScreenMode();
 
