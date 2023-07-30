@@ -379,7 +379,7 @@ namespace swizzle::core
         GetClientRect(mWnd, &rect);
 
         width = rect.right;
-        height = ret.bottom;
+        height = rect.bottom;
     }
 
     void* Win32Window::getNativeWindowHandle() const
