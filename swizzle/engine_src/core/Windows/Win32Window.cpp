@@ -313,7 +313,7 @@ namespace swizzle::core
     void Win32Window::getWindowPos(S32& xPos, S32& yPos)
     {
         POINT p{};
-        ClientToScreen(mWnd, &)
+        ClientToScreen(mWnd, &p);
         xPos = p.x;
         yPos = p.y;
     }
