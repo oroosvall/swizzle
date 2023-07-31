@@ -41,6 +41,9 @@ struct ImGui_ImplSwizzle_PlfData
     ViewportInputCallback mViewportInput;
     ImVec2 mLastValidMousePos = ImVec2(-FLT_MAX, -FLT_MAX);
     Window* mMouseWindow = nullptr;
+
+    Window* mKeyOwnerWindow[ImGuiKey::ImGuiKey_COUNT];
+    Window* mMouseButtonOwnerWindow[ImGuiMouseButton_::ImGuiMouseButton_COUNT];
 };
 
 /* Static Variables */
@@ -153,6 +156,7 @@ static void ImGui_ImplSwizzle_UpdateMouseData()
 
 static void ImGui_ImplSwizzle_FocusCallback(Window* window, bool focused)
 {
+    UNUSED_ARG(window);
     ImGuiIO& io = ImGui::GetIO();
     io.AddFocusEvent(focused != 0);
 }
@@ -178,7 +182,6 @@ static void ImGui_ImplSwizzle_CursorEnterCallback(Window* window, bool entered)
 static void ImGui_ImplSwizzle_CursorPosCallback(Window* window, S32 xPos, S32 yPos)
 {
     ImGui_ImplSwizzle_PlfData* bd = ImGui_ImplSwizzle_GetPlfBackendData();
-
     ImGuiIO& io = ImGui::GetIO();
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
@@ -193,24 +196,34 @@ static void ImGui_ImplSwizzle_CursorPosCallback(Window* window, S32 xPos, S32 yP
 
 static void ImGui_ImplSwizzle_ScrollCallback(Window* window, S32 xPos, S32 yPos)
 {
+    UNUSED_ARG(window);
     ImGuiIO& io = ImGui::GetIO();
     io.AddMouseWheelEvent((float)xPos, (float)yPos);
 }
 
 static void ImGui_ImplSwizzle_KeyEventCallback(Window* window, ImGuiKey key, bool pressed)
 {
+    ImGui_ImplSwizzle_PlfData* bd = ImGui_ImplSwizzle_GetPlfBackendData();
     ImGuiIO& io = ImGui::GetIO();
+
+    bd->mKeyOwnerWindow[key] = window;
+
     io.AddKeyEvent(key, pressed);
 }
 
 static void ImGui_ImplSwizzle_MouseButtonCallback(Window* window, ImGuiMouseButton button, bool pressed)
 {
+    ImGui_ImplSwizzle_PlfData* bd = ImGui_ImplSwizzle_GetPlfBackendData();
     ImGuiIO& io = ImGui::GetIO();
+
+    bd->mMouseButtonOwnerWindow[button] = window;
+
     io.AddMouseButtonEvent(button, pressed);
 }
 
 static void ImGui_ImplSwizzle_CharCallback(Window* window, unsigned int ch)
 {
+    UNUSED_ARG(window);
     ImGuiIO& io = ImGui::GetIO();
     io.AddInputCharacter(ch);
 }
@@ -271,6 +284,23 @@ static void ImGui_ImplSwizzle_DestroyWindow(ImGuiViewport* viewport)
     ImGui_ImplSwizzle_PlfData* bd = ImGui_ImplSwizzle_GetPlfBackendData();
     if(ImGui_ImplSwizzle_PlfViewportData* vd = (ImGui_ImplSwizzle_PlfViewportData*)viewport->PlatformUserData)
     {
+
+        for (int i = 0; i < IM_ARRAYSIZE(bd->mKeyOwnerWindow); i++)
+        {
+            if (bd->mKeyOwnerWindow[i] == vd->mWindow.get())
+            {
+                ImGui_ImplSwizzle_KeyEventCallback(vd->mWindow.get(), static_cast<ImGuiKey>(i), false);
+            }
+        }
+        for (int i = 0; i < IM_ARRAYSIZE(bd->mMouseButtonOwnerWindow); i++)
+        {
+            if (bd->mMouseButtonOwnerWindow[i] == vd->mWindow.get())
+            {
+                ImGui_ImplSwizzle_MouseButtonCallback(vd->mWindow.get(), i, false);
+            }
+        }
+
+
         viewport->PlatformHandle = nullptr;
         vd->mWindow->removeEventListener(&bd->mViewportInput);
         vd->mWindow.reset();
@@ -349,7 +379,6 @@ bool ImGui_ImplSwizzle_Plf_Init(common::Resource<Window> window)
     bd->mWantUpdateMonitors = true;
     ImGui_ImplSwizzle_UpdateMonitors();
 
-    // TODO: init platform interfaces
     if (io.BackendFlags & ImGuiBackendFlags_PlatformHasViewports)
     {
         ImGui_ImplSwizzle_InitPlatformIfc();

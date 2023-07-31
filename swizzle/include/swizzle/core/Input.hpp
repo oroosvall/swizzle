@@ -62,6 +62,7 @@ namespace swizzle::input
         KeyNumPadMultiply,
         KeyNumPadDivide,
         KeyNumPadDelete,
+        COUNT
     };
 
     enum class Mouse
@@ -72,6 +73,7 @@ namespace swizzle::input
         MiddleClick,
         ExtButton4,
         ExtButton5,
+        COUNT
     };
 }
 
