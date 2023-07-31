@@ -249,10 +249,13 @@ static void ImGui_ImplSwizzle_CreateWindow(ImGuiViewport* viewport)
 
 static void ImGui_ImplSwizzle_DestroyWindow(ImGuiViewport* viewport)
 {
+    ImGui_ImplSwizzle_RendData* bd = ImGui_ImplSwizzle_GetRendBackendData();
     if (ImGui_ImplSwizzle_RenderViewportData* vd = (ImGui_ImplSwizzle_RenderViewportData*)viewport->RendererUserData)
     {
-        vd->mRenderBuffers.mIndexBuffer.reset();
+        bd->mDevice->waitIdle();
+
         vd->mRenderBuffers.mVertexBuffer.reset();
+        vd->mRenderBuffers.mIndexBuffer.reset();
 
         vd->mCmdBuffer.reset();
 
