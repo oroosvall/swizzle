@@ -223,7 +223,7 @@ namespace x11
             unsigned long flags;
             unsigned long functions;
             unsigned long decorations;
-        } hints = {0};
+        } hints{};
 
         hints.flags = MWM_HINTS_DECORATIONS;
         hints.decorations = !borderless ? MWM_DECOR_ALL : 0;
