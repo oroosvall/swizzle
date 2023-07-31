@@ -79,6 +79,7 @@ namespace x11
         Display* mDisplay;
         Window mWindow;
         Atom mWmDeleteWindow;
+        Atom mWmDecorations;
 
         bool mCursorVisible;
         bool mVisible;

@@ -11,6 +11,9 @@
 
 /* Defines */
 
+#define MWM_HINTS_DECORATIONS 2
+#define MWM_DECOR_ALL 1
+
 /* Typedefs */
 
 namespace core = swizzle::core;
@@ -137,6 +140,8 @@ namespace x11
         mWmDeleteWindow = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
         XSetWMProtocols(mDisplay, mWindow, &mWmDeleteWindow, 1);
 
+        mWmDecorations = XInternAtom(mDisplay, "_MOTIF_WM_HINTS", True);
+
         XFlush(mDisplay);
         mVisible = true;
         mLastCursorXPos = mLastCursorYPos = 0;
@@ -213,7 +218,18 @@ namespace x11
 
     void X11Window::setBorderless(bool borderless)
     {
+        
+        struct {
+            unsigned long flags;
+            unsigned long functions;
+            unsigned long decorations;
+        } hints = {0};
+
+        hints.flags = MWM_HINTS_DECORATIONS;
+        hints.decorations = !borderless ? MWM_DECOR_ALL : 0;
+
         UNUSED_ARG(borderless);
+        XChangeProperty(mDisplay, mWindow, mWmDecorations, mWmDecorations, 32, PropModeReplace, (unsigned char*)&hints, 3);
     }
 
     void X11Window::setFullscreen(bool fullscreen)
