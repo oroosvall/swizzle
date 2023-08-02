@@ -22,9 +22,7 @@ namespace plf::window
         return true;
     }
 
-    void cleanup()
-    {
-    }
+    void cleanup() {}
 
     void pollWindowEvents()
     {
@@ -36,7 +34,7 @@ namespace plf::window
             DispatchMessage(&msg);
         }
     }
-}
+} // namespace plf::window
 
 namespace swizzle::core
 {
@@ -142,10 +140,9 @@ namespace swizzle::core
                 }
                 break;
             }
-            case WM_MOVE:
-            {
-                int xPos = (int)(short)LOWORD(lParam);   // horizontal position
-                int yPos = (int)(short)HIWORD(lParam);   // vertical position
+            case WM_MOVE: {
+                int xPos = (int)(short)LOWORD(lParam); // horizontal position
+                int yPos = (int)(short)HIWORD(lParam); // vertical position
 
                 WindowMoveEvent evt;
                 evt.mWindow = wnd;
@@ -207,7 +204,7 @@ namespace swizzle::core
             }
             case WM_MOUSEMOVE: {
 
-                if(!wnd->mTrackCursor)
+                if (!wnd->mTrackCursor)
                 {
                     TRACKMOUSEEVENT tme;
                     ZeroMemory(&tme, sizeof(tme));
@@ -306,8 +303,9 @@ namespace swizzle::core
     void Win32Window::setWindowPos(const S32 xPos, const S32 yPos)
     {
         RECT r = {xPos, yPos, xPos, yPos};
-        AdjustWindowRectEx(&r, GetWindowLongPtr(mWnd, GWL_STYLE),
-                            FALSE, GetWindowLongPtr(mWnd, GWL_EXSTYLE));
+        const DWORD style = static_cast<DWORD>(GetWindowLongPtr(mWnd, GWL_STYLE));
+        const DWORD exStyle = static_cast<DWORD>(GetWindowLongPtr(mWnd, GWL_EXSTYLE));
+        AdjustWindowRectEx(&r, style, FALSE, exStyle);
         SetWindowPos(mWnd, HWND_TOP, xPos, yPos, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
     }
 
