@@ -12,6 +12,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 #include <swizzle/core/Platform.hpp>
 #include "core/FileUtils.hpp"
 
@@ -144,6 +145,7 @@ namespace vk
             while (true)
             {
                 std::getline(inFile, line);
+                line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
                 if (inFile.eof())
                 {
                     break;
