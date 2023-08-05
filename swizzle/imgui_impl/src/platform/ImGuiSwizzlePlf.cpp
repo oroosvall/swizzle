@@ -369,7 +369,7 @@ bool ImGui_ImplSwizzle_Plf_Init(common::Resource<Window> window)
 
     io.BackendPlatformUserData = (void*)bd;
     io.BackendPlatformName = "imgui_swizzle_platform";
-    // io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports; // TODO: Enable me when it actually works
+    io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
 
     ImGuiViewport* mainViewport = ImGui::GetMainViewport();
     // This bypasses the smart pointer, and is a potential use after free
