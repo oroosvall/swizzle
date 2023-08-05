@@ -219,7 +219,7 @@ void Game::updateMainWindow(F32 dt)
         mController.update(dt);
     }
 
-    if (mLastWidth != x || mLastHeight != y)
+    if ((mLastWidth != x || mLastHeight != y) && mWindow->isVisible())
     {
         mImGuiFbo->resize(x, y);
         mLastWidth = x;
