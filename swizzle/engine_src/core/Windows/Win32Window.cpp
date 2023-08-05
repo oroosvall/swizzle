@@ -12,6 +12,7 @@
 
 #pragma warning(disable : 4995)
 #include <Xinput.h>
+#include <windowsx.h>
 
 #include <algorithm>
 
@@ -202,7 +203,62 @@ namespace swizzle::core
                 }
                 break;
             }
+            case WM_LBUTTONDOWN:
+            case WM_MBUTTONDOWN:
+            case WM_RBUTTONDOWN:
+            case WM_XBUTTONDOWN:
+            {
+                InputEvent evt{};
+                evt.mWindow = wnd;
+                evt.mFromKeyboard = false;
+                evt.mPressed = true;
+                if (msg == WM_LBUTTONDOWN)
+                    evt.mKey = 1;
+                else if (msg == WM_MBUTTONDOWN)
+                    evt.mKey = 3;
+                else if (msg == WM_RBUTTONDOWN)
+                    evt.mKey = 2;
+                else if (msg == WM_XBUTTONDOWN)
+                {
+                    if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+                        evt.mKey = 4;
+                    else
+                        evt.mKey = 5;
+                }
+
+                eventHandler.publishEvent(evt);
+                break;
+            }
+            case WM_LBUTTONUP:
+            case WM_MBUTTONUP:
+            case WM_RBUTTONUP:
+            case WM_XBUTTONUP:
+            {
+                InputEvent evt{};
+                evt.mWindow = wnd;
+                evt.mFromKeyboard = false;
+                evt.mPressed = false;
+                if (msg == WM_LBUTTONUP)
+                    evt.mKey = 1;
+                else if (msg == WM_MBUTTONUP)
+                    evt.mKey = 3;
+                else if (msg == WM_RBUTTONUP)
+                    evt.mKey = 2;
+                else if (msg == WM_XBUTTONUP)
+                {
+                    if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+                        evt.mKey = 4;
+                    else
+                        evt.mKey = 5;
+                }
+
+                eventHandler.publishEvent(evt);
+                break;
+            }
             case WM_MOUSEMOVE: {
+
+                const int xPos = GET_X_LPARAM(lParam); // horizontal position
+                const int yPos = GET_Y_LPARAM(lParam); // vertical position
 
                 if (!wnd->mTrackCursor)
                 {
@@ -219,6 +275,12 @@ namespace swizzle::core
                     evt.mEnter = true;
                     eventHandler.publishEvent(evt);
                 }
+
+                MouseMoveEvent eMove{};
+                eMove.mWindow = wnd;
+                eMove.mX = xPos;
+                eMove.mY = yPos;
+                eventHandler.publishEvent(eMove);
 
                 return 0;
             }
