@@ -77,7 +77,7 @@ static ImVec2 ImGui_ImplSwizzle_GetWindowSize(ImGuiViewport* viewport);
 static void ImGui_ImplSwizzle_SetWindowSize(ImGuiViewport* viewport, ImVec2 size);
 static void ImGui_ImplSwizzle_SetWindowTitle(ImGuiViewport* viewport, const char* title);
 static bool ImGui_ImplSwizzle_GetWindowFocus(ImGuiViewport* viewport);
-
+static bool ImGui_ImplSwizzle_GetWindowMinimized(ImGuiViewport* viewport);
 
 /* Static Function Definition */
 
@@ -241,6 +241,7 @@ static void ImGui_ImplSwizzle_InitPlatformIfc()
     platformIO.Platform_SetWindowSize = &ImGui_ImplSwizzle_SetWindowSize;
     platformIO.Platform_SetWindowTitle = &ImGui_ImplSwizzle_SetWindowTitle;
     platformIO.Platform_GetWindowFocus = &ImGui_ImplSwizzle_GetWindowFocus;
+    platformIO.Platform_GetWindowMinimized = &ImGui_ImplSwizzle_GetWindowMinimized;
 
     // TODO: SetFocus?
     // TODO: GetWindowMinimized
@@ -355,6 +356,12 @@ static bool ImGui_ImplSwizzle_GetWindowFocus(ImGuiViewport* viewport)
 {
     ImGui_ImplSwizzle_PlfViewportData* vd = (ImGui_ImplSwizzle_PlfViewportData*)viewport->PlatformUserData;
     return vd->mWindow->hasFocus();
+}
+
+static bool ImGui_ImplSwizzle_GetWindowMinimized(ImGuiViewport* viewport)
+{
+    ImGui_ImplSwizzle_PlfViewportData* vd = (ImGui_ImplSwizzle_PlfViewportData*)viewport->PlatformUserData;
+    return vd->mWindow->isMinimized();
 }
 
 /* Function Definition */

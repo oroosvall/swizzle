@@ -53,6 +53,7 @@ namespace x11
         virtual void getWindowPos(S32& xPos, S32& yPos) override;
 
         virtual bool isVisible() const override;
+        virtual bool isMinimized() const override;
 
         virtual bool hasFocus() const override;
 
@@ -80,6 +81,7 @@ namespace x11
         Window mWindow;
         Atom mWmDeleteWindow;
         Atom mWmDecorations;
+        Atom mWmState;
 
         bool mCursorVisible;
         bool mVisible;

@@ -142,6 +142,11 @@ xcb_gcontext_t foreground;
         return true;
     }
 
+    bool XcbWindow::isMinimized() const
+    {
+        return false;
+    }
+
     bool XcbWindow::hasFocus() const
     {
         bool focus = false;

@@ -141,6 +141,7 @@ namespace x11
         XSetWMProtocols(mDisplay, mWindow, &mWmDeleteWindow, 1);
 
         mWmDecorations = XInternAtom(mDisplay, "_MOTIF_WM_HINTS", True);
+        mWmState = XInternAtom(mDisplay, "WM_STATE", True);
 
         XFlush(mDisplay);
         mVisible = true;
@@ -208,6 +209,30 @@ namespace x11
         return mVisible;
     }
 
+    bool X11Window::isMinimized() const
+    {
+        bool minimized = false;
+        Atom actualType = 0;
+        int format = 0;
+        unsigned long count = 0;
+        unsigned long remaining = 0;
+        unsigned int* state = nullptr;
+
+        XGetWindowProperty(mDisplay, mWindow, mWmState, 0, 1, False,
+                           AnyPropertyType, &actualType, &format, &count, &remaining, (unsigned char**)&state);
+
+        if (state)
+        {
+            if (*state == IconicState)
+            {
+                minimized = true;
+            }
+            XFree(state);
+        }
+
+        return minimized;
+    }
+
     bool X11Window::hasFocus() const
     {
         Window w;
@@ -218,7 +243,6 @@ namespace x11
 
     void X11Window::setBorderless(bool borderless)
     {
-        
         struct {
             unsigned long flags;
             unsigned long functions;
@@ -237,7 +261,7 @@ namespace x11
         UNUSED_ARG(fullscreen);
     }
 
-    void X11Window::setCursorPos(const S32 xPos, const S32 yPos) 
+    void X11Window::setCursorPos(const S32 xPos, const S32 yPos)
     {
         XWarpPointer(mDisplay, None, mWindow, 0, 0, 0u, 0u, xPos, yPos);
         XFlush(mDisplay);
@@ -248,7 +272,7 @@ namespace x11
         Window root;
         Window child;
 
-        int rx = 0, ry = 0; 
+        int rx = 0, ry = 0;
         int x = 0, y = 0;
 
         unsigned int mods = 0;

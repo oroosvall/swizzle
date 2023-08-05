@@ -392,6 +392,11 @@ namespace swizzle::core
         return visible;
     }
 
+    bool Win32Window::isMinimized() const
+    {
+        return IsIconic(mWnd);
+    }
+
     bool Win32Window::hasFocus() const
     {
         return (mWnd == GetFocus());

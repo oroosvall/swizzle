@@ -45,6 +45,7 @@ namespace swizzle::core
         virtual void getWindowPos(S32& xPos, S32& yPos) = 0;
 
         virtual bool isVisible() const = 0;
+        virtual bool isMinimized() const = 0;
 
         virtual bool hasFocus() const = 0;
 
