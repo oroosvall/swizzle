@@ -274,6 +274,7 @@ static void ImGui_ImplSwizzle_CreateWindow(ImGuiViewport* viewport)
 
     vd->mWindow = swizzle::core::CreateSwWindow(width, height, "No Title Yet!");
     vd->mWindow->setWindowPos(xPos, yPos);
+    vd->mWindow->setBorderless(true);
     viewport->PlatformHandle = (void*)vd->mWindow.get();
 
     vd->mWindow->addEventListener(&bd->mViewportInput);
