@@ -25,6 +25,7 @@ function ProjectConfig:new(o)
 end
 
 function ProjectConfig:load_from_json(file)
+    file = _WORKING_DIR .. "/" .. file
     configFilePath = path.getdirectory(file) .. "/"
     config = json.decode(io.readfile(file))
 
