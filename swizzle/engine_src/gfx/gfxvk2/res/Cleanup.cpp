@@ -45,6 +45,9 @@ namespace vk
 
     CleanupRunnable::~CleanupRunnable()
     {
+        // run cleanup twice to ensure that the ListContainer is empty
+        doCleanup();
+        doCleanup();
     }
 
     void CleanupRunnable::run()
