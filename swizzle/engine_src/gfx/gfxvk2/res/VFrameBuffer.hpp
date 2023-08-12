@@ -68,8 +68,8 @@ namespace vk
             return {1u, 1u, 1u, 1u};
         }
 
-        virtual void transferImageToCompute(VkCommandBuffer){};
-        virtual void transferImageToRender(VkCommandBuffer){};
+        virtual void transferImageToCompute(VkCommandBuffer) override{};
+        virtual void transferImageToRender(VkCommandBuffer) override{};
     };
 
     class VFrameBuffer : public BaseFrameBuffer
