@@ -99,7 +99,14 @@ namespace swizzle
                 swizzle::input::InputFrameReset();
                 swizzle::core::PollWindowEvents();
 
-                running = userUpdate(dt);
+                if (mWindow->isVisible())
+                {
+                    running = userUpdate(dt);
+                }
+                else
+                {
+                    running = false;
+                }
             }
 
             cleanup();
