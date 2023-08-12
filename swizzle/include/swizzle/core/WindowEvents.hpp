@@ -79,12 +79,14 @@ namespace swizzle::core
     class WindowEvent
     {
     public:
+        virtual ~WindowEvent() {}
         virtual WindowEventType getEventType() const = 0;
     };
 
     class WindowResizeEvent : public WindowEvent
     {
     public:
+        virtual ~WindowResizeEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::ResizeEvent;
@@ -97,6 +99,7 @@ namespace swizzle::core
     class WindowMoveEvent : public WindowEvent
     {
     public:
+        virtual ~WindowMoveEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::MoveEvent;
@@ -109,6 +112,7 @@ namespace swizzle::core
     class MouseEnterEvent : public WindowEvent
     {
     public:
+        virtual ~MouseEnterEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::MouseEnterEvent;
@@ -120,6 +124,7 @@ namespace swizzle::core
     class WindowFocusEvent : public WindowEvent
     {
     public:
+        virtual ~WindowFocusEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::FocusEvent;
@@ -131,6 +136,7 @@ namespace swizzle::core
     class WindowCloseEvent : public WindowEvent
     {
     public:
+        virtual ~WindowCloseEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::CloseEvent;
@@ -141,6 +147,7 @@ namespace swizzle::core
     class InputEvent : public WindowEvent
     {
     public:
+        virtual ~InputEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::KeyboardInputEvent;
@@ -155,6 +162,7 @@ namespace swizzle::core
     class CharacterEvent : public WindowEvent
     {
     public:
+        virtual ~CharacterEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::CharacterTypeEvent;
@@ -166,6 +174,7 @@ namespace swizzle::core
     class MouseMoveEvent : public WindowEvent
     {
     public:
+        virtual ~MouseMoveEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::MouseMoveEvent;
@@ -179,6 +188,7 @@ namespace swizzle::core
     class MouseMoveDelta : public WindowEvent
     {
     public:
+        virtual ~MouseMoveDelta() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::MouseMoveDeltaEvent;
@@ -192,6 +202,7 @@ namespace swizzle::core
     class MouseScrollEvent : public WindowEvent
     {
     public:
+        virtual ~MouseScrollEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::MouseScrollEvent;
@@ -205,6 +216,7 @@ namespace swizzle::core
     class GamepadAxisEvent : public WindowEvent
     {
     public:
+        virtual ~GamepadAxisEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::GamepadAxisEvent;
@@ -218,6 +230,7 @@ namespace swizzle::core
     class GamepadButtonEvent : public WindowEvent
     {
     public:
+        virtual ~GamepadButtonEvent() {}
         virtual WindowEventType getEventType() const override
         {
             return WindowEventType::GamepadButtonEvent;
