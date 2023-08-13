@@ -39,7 +39,7 @@ namespace swizzle::core
             (void)memset(&cls, 0, sizeof(cls));
 
             cls.style = CS_HREDRAW | CS_VREDRAW;
-            cls.lpfnWndProc = WindowProc;
+            cls.lpfnWndProc = win32::WindowProc;
             cls.cbClsExtra = 0;
             cls.cbWndExtra = 0;
             cls.hInstance = GetModuleHandle(NULL);
@@ -47,7 +47,7 @@ namespace swizzle::core
             cls.hCursor = LoadCursor(NULL, IDC_ARROW);
             cls.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
             cls.lpszMenuName = NULL;
-            cls.lpszClassName = gWindowClass;
+            cls.lpszClassName = win32::gWindowClass;
 
             QueryPerformanceFrequency(&gFrequency);
 
@@ -125,7 +125,7 @@ namespace swizzle::core
             gTempDir = nullptr;
             gAppDataDir = nullptr;
 
-            if (UnregisterClass(gWindowClass, GetModuleHandle(NULL)) == 0)
+            if (UnregisterClass(win32::gWindowClass, GetModuleHandle(NULL)) == 0)
             {
                 LOG_ERROR("Failed to free window class");
             }
@@ -229,7 +229,7 @@ namespace swizzle::core
 
         common::Resource<SwWindow> createPlatformWindow(const U32 width, const U32 height, const SwChar* title)
         {
-            return std::make_shared<Win32Window>(width, height, title);
+            return std::make_shared<win32::Win32Window>(width, height, title);
         }
 
         U64 getPlatformTimeStampMs()

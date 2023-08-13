@@ -13,13 +13,13 @@
 #define NOMINMAX
 #include <Windows.h>
 
-namespace swizzle::core
+namespace win32
 {
 
-    const LPWSTR gWindowClass = L"SwizzleWindowClass";
+    const LPWSTR gWindowClass = (const LPWSTR)L"SwizzleWindowClass";
     LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-    class Win32Window : public SwWindow
+    class Win32Window : public swizzle::core::SwWindow
     {
     public:
         Win32Window(const U32 width, const U32 height, const char* title);
@@ -28,8 +28,8 @@ namespace swizzle::core
         virtual void show() override;
         virtual void hide() override;
 
-        virtual void addEventListener(EventHandler<WindowEvent>* listener) override;
-        virtual void removeEventListener(EventHandler<WindowEvent>* listener) override;
+        virtual void addEventListener(swizzle::EventHandler<swizzle::core::WindowEvent>* listener) override;
+        virtual void removeEventListener(swizzle::EventHandler<swizzle::core::WindowEvent>* listener) override;
 
         virtual void setTitle(const char* title) override;
         virtual void setTitle(const wchar_t* title) override;
@@ -57,7 +57,7 @@ namespace swizzle::core
         virtual void setCursorVisible(bool visible) override;
         virtual bool isCursorVisible() const override;
 
-        EventHandlerList<WindowEvent>& getEventHandler();
+        swizzle::EventHandlerList<swizzle::core::WindowEvent>& getEventHandler();
 
         S32 modKeys;
 
@@ -73,7 +73,7 @@ namespace swizzle::core
         SwBool mBorderless;
         SwBool mWindowPlacementSet;
 
-        EventHandlerList<WindowEvent> mEventHandlers;
+        swizzle::EventHandlerList<swizzle::core::WindowEvent> mEventHandlers;
 
         WINDOWPLACEMENT mWindowPlacement;
     };

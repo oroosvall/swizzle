@@ -37,9 +37,9 @@ namespace plf::window
     }
 } // namespace plf::window
 
-namespace swizzle::core
+namespace win32
 {
-    void inputCallback(Win32Window* window, EventHandlerList<WindowEvent>& evtHandler, LPARAM lParam)
+    void inputCallback(Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler, LPARAM lParam)
     {
         UINT dwSize = 0U;
 
@@ -64,11 +64,11 @@ namespace swizzle::core
 
         if (raw->header.dwType == RIM_TYPEKEYBOARD)
         {
-            win32::processRawKeyboardEvents(window, evtHandler, raw->data.keyboard);
+            ProcessRawKeyboardEvents(window, evtHandler, raw->data.keyboard);
         }
         else if (raw->header.dwType == RIM_TYPEMOUSE)
         {
-            win32::ProcessRawMouseEvents(window, evtHandler, raw->data.mouse);
+            ProcessRawMouseEvents(window, evtHandler, raw->data.mouse);
         }
         else
         {
@@ -89,7 +89,7 @@ namespace swizzle::core
             case WM_ACTIVATE: {
                 if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
                 {
-                    WindowFocusEvent evt;
+                    swizzle::core::WindowFocusEvent evt;
                     evt.mWindow = wnd;
                     evt.mFocused = true;
                     // eventHandler.publishEvent(evt);
@@ -97,7 +97,7 @@ namespace swizzle::core
                 }
                 else
                 {
-                    WindowFocusEvent evt;
+                    swizzle::core::WindowFocusEvent evt;
                     evt.mWindow = wnd;
                     evt.mFocused = false;
                     // eventHandler.publishEvent(evt);
@@ -107,7 +107,7 @@ namespace swizzle::core
                 break;
             }
             case WM_SETFOCUS: {
-                WindowFocusEvent evt;
+                swizzle::core::WindowFocusEvent evt;
                 evt.mWindow = wnd;
                 evt.mFocused = true;
                 eventHandler.publishEvent(evt);
@@ -116,7 +116,7 @@ namespace swizzle::core
                 break;
             }
             case WM_KILLFOCUS: {
-                WindowFocusEvent evt;
+                swizzle::core::WindowFocusEvent evt;
                 evt.mWindow = wnd;
                 evt.mFocused = false;
                 eventHandler.publishEvent(evt);
@@ -145,7 +145,7 @@ namespace swizzle::core
                 int xPos = (int)(short)LOWORD(lParam); // horizontal position
                 int yPos = (int)(short)HIWORD(lParam); // vertical position
 
-                WindowMoveEvent evt;
+                swizzle::core::WindowMoveEvent evt;
                 evt.mWindow = wnd;
                 evt.mXPos = xPos;
                 evt.mYPos = yPos;
@@ -156,7 +156,7 @@ namespace swizzle::core
                 int width = LOWORD(lParam);
                 int height = HIWORD(lParam);
 
-                WindowResizeEvent evt;
+                swizzle::core::WindowResizeEvent evt;
                 evt.mWindow = wnd;
                 evt.mHeight = height;
                 evt.mWidth = width;
@@ -164,7 +164,7 @@ namespace swizzle::core
                 break;
             }
             case WM_CLOSE: {
-                WindowCloseEvent evt;
+                swizzle::core::WindowCloseEvent evt;
                 evt.mWindow = wnd;
                 eventHandler.publishEvent(evt);
                 break;
@@ -185,7 +185,7 @@ namespace swizzle::core
                     return 0;
                 }
 
-                CharacterEvent evt;
+                swizzle::core::CharacterEvent evt;
                 evt.mWindow = wnd;
                 evt.mCodePoint = codePoint;
                 if (wnd->hasFocus())
@@ -208,7 +208,7 @@ namespace swizzle::core
             case WM_RBUTTONDOWN:
             case WM_XBUTTONDOWN:
             {
-                InputEvent evt{};
+                swizzle::core::InputEvent evt{};
                 evt.mWindow = wnd;
                 evt.mFromKeyboard = false;
                 evt.mPressed = true;
@@ -234,7 +234,7 @@ namespace swizzle::core
             case WM_RBUTTONUP:
             case WM_XBUTTONUP:
             {
-                InputEvent evt{};
+                swizzle::core::InputEvent evt{};
                 evt.mWindow = wnd;
                 evt.mFromKeyboard = false;
                 evt.mPressed = false;
@@ -270,13 +270,13 @@ namespace swizzle::core
                     TrackMouseEvent(&tme);
                     wnd->mTrackCursor = true;
 
-                    MouseEnterEvent evt{};
+                    swizzle::core::MouseEnterEvent evt{};
                     evt.mWindow = wnd;
                     evt.mEnter = true;
                     eventHandler.publishEvent(evt);
                 }
 
-                MouseMoveEvent eMove{};
+                swizzle::core::MouseMoveEvent eMove{};
                 eMove.mWindow = wnd;
                 eMove.mX = xPos;
                 eMove.mY = yPos;
@@ -285,7 +285,7 @@ namespace swizzle::core
                 return 0;
             }
             case WM_MOUSELEAVE: {
-                MouseEnterEvent evt{};
+                swizzle::core::MouseEnterEvent evt{};
                 evt.mWindow = wnd;
                 evt.mEnter = false;
                 eventHandler.publishEvent(evt);
@@ -337,12 +337,12 @@ namespace swizzle::core
         ShowWindow(mWnd, SW_HIDE);
     }
 
-    void Win32Window::addEventListener(EventHandler<WindowEvent>* listener)
+    void Win32Window::addEventListener(swizzle::EventHandler<swizzle::core::WindowEvent>* listener)
     {
         mEventHandlers.addListener(listener);
     }
 
-    void Win32Window::removeEventListener(EventHandler<WindowEvent>* listener)
+    void Win32Window::removeEventListener(swizzle::EventHandler<swizzle::core::WindowEvent>* listener)
     {
         mEventHandlers.removeListener(listener);
     }
@@ -462,7 +462,7 @@ namespace swizzle::core
         SWIZZLE_PROFILE_EVENT();
         MSG msg;
 
-        win32::ProcessXInput(this, mEventHandlers);
+        ProcessXInput(this, mEventHandlers);
 
         while (PeekMessage(&msg, mWnd, NULL, NULL, PM_REMOVE))
         {
@@ -481,7 +481,7 @@ namespace swizzle::core
         return mCursorVisible;
     }
 
-    EventHandlerList<WindowEvent>& Win32Window::getEventHandler()
+    swizzle::EventHandlerList<swizzle::core::WindowEvent>& Win32Window::getEventHandler()
     {
         return mEventHandlers;
     }

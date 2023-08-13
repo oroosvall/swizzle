@@ -26,10 +26,9 @@
 namespace win32
 {
     void SetupRID(HWND window);
-    void ProcessRawMouseEvents(swizzle::core::Win32Window* window,
-                               swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
+    void ProcessRawMouseEvents(Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                RAWMOUSE& mouseEvents);
-    void processRawKeyboardEvents(swizzle::core::Win32Window* window,
+    void ProcessRawKeyboardEvents(Win32Window* window,
                                   swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                   RAWKEYBOARD& keyboardEvents);
 

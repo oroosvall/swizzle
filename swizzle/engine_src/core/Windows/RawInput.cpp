@@ -29,17 +29,17 @@
 
 namespace win32
 {
-    static void mouseMoveEvent(swizzle::core::Win32Window* window,
+    static void mouseMoveEvent(Win32Window* window,
                                swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler);
-    static void mouseMoveDeltaEvent(swizzle::core::Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
+    static void mouseMoveDeltaEvent(Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                     RAWMOUSE& mouseEvents);
-    static void mouseButtonEvent(swizzle::core::Win32Window* window,
+    static void mouseButtonEvent(Win32Window* window,
                                  swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                  RAWMOUSE& mouseEvents);
-    static void mouseScrollEvent(swizzle::core::Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
+    static void mouseScrollEvent(Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                  RAWMOUSE& mouseEvents);
 
-    static void keyboardModifierKeys(swizzle::core::Win32Window* window, RAWKEYBOARD& keyboardEvents);
+    static void keyboardModifierKeys(Win32Window* window, RAWKEYBOARD& keyboardEvents);
     static S32 correctScanCode(U32 scanCode, U32 vKey, U16 flags);
 } // namespace win32
 
@@ -49,7 +49,7 @@ namespace win32
 
 namespace win32
 {
-    static void mouseMoveEvent(swizzle::core::Win32Window* window,
+    static void mouseMoveEvent(Win32Window* window,
                                swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler)
     {
         POINT pt;
@@ -68,7 +68,7 @@ namespace win32
         }
     }
 
-    static void mouseMoveDeltaEvent(swizzle::core::Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
+    static void mouseMoveDeltaEvent(Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                     RAWMOUSE& mouseEvents)
     {
         swizzle::core::MouseMoveDelta moveEvt;
@@ -79,7 +79,7 @@ namespace win32
         evtHandler.publishEvent(moveEvt);
     }
 
-    static void mouseButtonEvent(swizzle::core::Win32Window* window,
+    static void mouseButtonEvent(Win32Window* window,
                                  swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                  RAWMOUSE& mouseEvents)
     {
@@ -104,7 +104,7 @@ namespace win32
         }
     }
 
-    static void mouseScrollEvent(swizzle::core::Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
+    static void mouseScrollEvent(Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                  RAWMOUSE& mouseEvents)
     {
         short scrollX = 0;
@@ -126,7 +126,7 @@ namespace win32
         evtHandler.publishEvent(evt);
     }
 
-    static void keyboardModifierKeys(swizzle::core::Win32Window* window, RAWKEYBOARD& keyboardEvents)
+    static void keyboardModifierKeys(Win32Window* window, RAWKEYBOARD& keyboardEvents)
     {
         if (keyboardEvents.Flags == RI_KEY_MAKE)
         {
@@ -238,7 +238,7 @@ namespace win32
         }
     }
 
-    void ProcessRawMouseEvents(swizzle::core::Win32Window* window,
+    void ProcessRawMouseEvents(Win32Window* window,
                                swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler, RAWMOUSE& mouseEvents)
     {
         mouseMoveEvent(window, evtHandler);
@@ -247,7 +247,7 @@ namespace win32
         mouseScrollEvent(window, evtHandler, mouseEvents);
     }
 
-    void processRawKeyboardEvents(swizzle::core::Win32Window* window,
+    void ProcessRawKeyboardEvents(Win32Window* window,
                                   swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler,
                                   RAWKEYBOARD& keyboardEvents)
     {

@@ -20,14 +20,11 @@ namespace win32
 
 namespace win32
 {
-    static inline void sendAxisEvent(swizzle::core::Win32Window* window,
-                                     swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler, sCore::GamePadAxis ax,
-                                     S16 value);
-    static inline void sendTriggerEvent(swizzle::core::Win32Window* window,
-                                        swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
+    static inline void sendAxisEvent(Win32Window* window, swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
+                                     sCore::GamePadAxis ax, S16 value);
+    static inline void sendTriggerEvent(Win32Window* window, swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
                                         sCore::GamePadAxis ax, U8 value);
-    static inline void sendButtonEvent(swizzle::core::Win32Window* window,
-                                       swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
+    static inline void sendButtonEvent(Win32Window* window, swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
                                        sCore::GamePadButton btn, SwBool pressed);
 } // namespace win32
 
@@ -37,9 +34,8 @@ namespace win32
 
 namespace win32
 {
-    static inline void sendAxisEvent(swizzle::core::Win32Window* window,
-                                     swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler, sCore::GamePadAxis ax,
-                                     S16 value)
+    static inline void sendAxisEvent(Win32Window* window, swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
+                                     sCore::GamePadAxis ax, S16 value)
     {
         sCore::GamepadAxisEvent axEvt{};
         axEvt.mWindow = window;
@@ -57,8 +53,7 @@ namespace win32
         evtHandler.publishEvent(axEvt);
     }
 
-    static inline void sendTriggerEvent(swizzle::core::Win32Window* window,
-                                        swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
+    static inline void sendTriggerEvent(Win32Window* window, swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
                                         sCore::GamePadAxis ax, U8 value)
     {
         sCore::GamepadAxisEvent axEvt{};
@@ -68,8 +63,7 @@ namespace win32
         evtHandler.publishEvent(axEvt);
     }
 
-    static inline void sendButtonEvent(swizzle::core::Win32Window* window,
-                                       swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
+    static inline void sendButtonEvent(Win32Window* window, swizzle::EventHandlerList<sCore::WindowEvent>& evtHandler,
                                        sCore::GamePadButton btn, SwBool pressed)
     {
         sCore::GamepadButtonEvent btnEvt{};
@@ -84,8 +78,7 @@ namespace win32
 
 namespace win32
 {
-    void ProcessXInput(swizzle::core::Win32Window* window,
-                       swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler)
+    void ProcessXInput(Win32Window* window, swizzle::EventHandlerList<swizzle::core::WindowEvent>& evtHandler)
     {
         XINPUT_STATE state{};
         DWORD status = XInputGetState(0u, &state);
