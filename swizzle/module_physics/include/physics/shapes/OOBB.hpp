@@ -3,7 +3,7 @@
 
 /* Include files */
 
-#include <common/Common_new.hpp>
+#include <common/Common.hpp>
 #include <glm/glm.hpp>
 #if defined(_MSC_VER)
 #pragma warning(push)

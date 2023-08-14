@@ -99,6 +99,20 @@
                 "glm"
             ]
         },
+        "physics": {
+            "source": "swizzle/module_physics/physics.json",
+            "test_source": "swizzle/module_physics/physicsTests.json",
+            "group": "libs",
+            "dependencies": [
+                "utils",
+                "glm"
+            ],
+            "test_dependencies": [
+                "utils",
+                "google-test",
+                "glm"
+            ]
+        },
         "imgui_impl": {
             "source": "swizzle/imgui_impl/imgui_impl.json",
             "group": "libs",
@@ -159,6 +173,7 @@
                 "imgui_impl",
                 "utils",
                 "glm",
+                "physics",
                 "soloud",
                 {
                     "name": "optick",

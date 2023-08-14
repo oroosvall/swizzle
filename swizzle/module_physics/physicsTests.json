@@ -1,44 +1,38 @@
 {
     "kind": "ConsoleApp",
     "language": "c++",
-    "files": [
-        "test/**.hpp",
-        "test/**.cpp",
-        "include/**.hpp",
-        "src/**.hpp",
-        "src/**.cpp"
+    "sources": [
+        {
+            "files": "test/**.cpp",
+            "vpath": "test/*",
+            "filter": ""
+        },
+        {
+            "files": "test/**.hpp",
+            "vpath": "test/*",
+            "filter": ""
+        },
+        {
+            "files": "include/**.hpp",
+            "vpath": "include/*",
+            "filter": ""
+        },
+        {
+            "files": "src/**.cpp",
+            "vpath": "src/*",
+            "filter": ""
+        },
+        {
+            "files": "src/**.hpp",
+            "vpath": "src/*",
+            "filter": ""
+        }
     ],
     "pub_inc_dirs": [
         "../include/",
         "include/",
         "test/",
         "src/"
-    ],
-    "vpaths": [
-        {
-            "name": "test/*",
-            "value": "test/**.hpp"
-        },
-        {
-            "name": "test/*",
-            "value": "test/**.cpp"
-        },
-        {
-            "name": "physics/*",
-            "value": "src/**.hpp"
-        },
-        {
-            "name": "physics/*",
-            "value": "src/**.cpp"
-        },
-        {
-            "name": "include/*",
-            "value": "../include/**.hpp"
-        },
-        {
-            "name": "include/*",
-            "value": "include/**.hpp"
-        }
     ],
     "buildflags": {
         "rtti": "Off"

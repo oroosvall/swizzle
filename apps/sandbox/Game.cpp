@@ -8,7 +8,7 @@
 
 #include <utils/StringUtils.hpp>
 
-#include <imgui/imgui>
+#include <imgui/imgui.h>
 #include <ImGuiSwzzle.hpp>
 #include <ImGuiSwizzleStyle.hpp>
 
@@ -82,7 +82,7 @@ void Game::userSetup()
     mFsqMat = mGfxDevice->createMaterial(mFsq, sw::gfx::SamplerMode::SamplerModeClamp);
     mFsqMat->setDescriptorTextureResource(0u, mImGuiRenderTarget->getTexture(), false);
 
-    mPhysicsRenderer = common::CreateRef<PhysicsColliderRenderer>(mGfxContext, mSwapchain);
+    mPhysicsRenderer = common::CreateRef<PhysicsColliderRenderer>(mGfxDevice, mSwapchain);
     aabbPos = {0.0f, 0.0f, 1.0f};
 }
 

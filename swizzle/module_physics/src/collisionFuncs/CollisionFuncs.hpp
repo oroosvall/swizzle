@@ -3,7 +3,7 @@
 
 /* Include files */
 
-#include <common/Common_new.hpp>
+#include <common/Common.hpp>
 #include <physics/shapes/Sphere.hpp>
 #include <physics/shapes/AABB.hpp>
 #include <physics/shapes/OOBB.hpp>

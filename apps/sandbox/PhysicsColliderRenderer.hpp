@@ -4,6 +4,7 @@
 /* Include files */
 
 #include <swizzle/Swizzle.hpp>
+#include <swizzle/gfx/GfxDevice.hpp>
 #include <physics/Physics.hpp>
 
 #include <vector>
@@ -27,7 +28,7 @@ struct ColliderVertex
 class PhysicsColliderRenderer
 {
 public:
-    PhysicsColliderRenderer(common::Resource<sw::gfx::GfxContext> ctx, common::Resource<sw::gfx::Swapchain> swp);
+    PhysicsColliderRenderer(common::Resource<sw::gfx::GfxDevice> ctx, common::Resource<sw::gfx::Swapchain> swp);
 
     void reset();
     void addAABB(const physics::AABB& aabb, glm::vec3 color = {1.0f, 1.0f, 1.0f});
@@ -36,7 +37,7 @@ public:
     void flush();
 
     common::Resource<sw::gfx::Shader> getShader() const;
-    common::Resource<sw::gfx::Buffer> getVertexBuffer() const;
+    common::Resource<sw::gfx::GfxBuffer> getVertexBuffer() const;
 
 private:
 
@@ -44,7 +45,7 @@ private:
 
     std::vector<ColliderVertex> mBuildBuffer;
 
-    common::Resource<sw::gfx::Buffer> mVertexBuffer;
+    common::Resource<sw::gfx::GfxBuffer> mVertexBuffer;
     common::Resource<sw::gfx::Shader> mShader;
 };
 /* Function Declaration */

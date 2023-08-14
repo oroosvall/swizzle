@@ -3,7 +3,7 @@
 
 /* Include files */
 
-#include <common/Common_new.hpp>
+#include <common/Common.hpp>
 #include <physics/shapes/AABB.hpp>
 
 /* Defines */

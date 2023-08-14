@@ -20,13 +20,13 @@
 
 /* Class Public Function Definition */
 
-PhysicsColliderRenderer::PhysicsColliderRenderer(common::Resource<sw::gfx::GfxContext> ctx,
+PhysicsColliderRenderer::PhysicsColliderRenderer(common::Resource<sw::gfx::GfxDevice> ctx,
                                                  common::Resource<sw::gfx::Swapchain> swp)
     : mBuildBuffer()
     , mVertexBuffer(nullptr)
     , mShader(nullptr)
 {
-    mVertexBuffer = ctx->createBuffer(sw::gfx::BufferType::Vertex);
+    mVertexBuffer = ctx->createBuffer(sw::gfx::GfxBufferType::Vertex, sw::gfx::GfxMemoryArea::DeviceLocalHostVisible);
 
     sw::gfx::ShaderAttributeList attribs{};
     attribs.mBufferInput = {{sw::gfx::ShaderBufferInputRate::InputRate_Vertex, sizeof(float) * (3u + 3u)}};
@@ -128,7 +128,7 @@ common::Resource<sw::gfx::Shader> PhysicsColliderRenderer::getShader() const
     return mShader;
 }
 
-common::Resource<sw::gfx::Buffer> PhysicsColliderRenderer::getVertexBuffer() const
+common::Resource<sw::gfx::GfxBuffer> PhysicsColliderRenderer::getVertexBuffer() const
 {
     return mVertexBuffer;
 }
