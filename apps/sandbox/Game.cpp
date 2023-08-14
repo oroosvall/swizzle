@@ -10,6 +10,7 @@
 
 #include <imgui/imgui.h>
 #include <ImGuiSwzzle.hpp>
+#include <ImGuiSwizzleStyle.hpp>
 
 #include <scene/Scene.hpp>
 
@@ -47,7 +48,7 @@ void Game::userSetup()
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-    ImGui::StyleColorsDark();
+    ImGui_ImplSwizzle_SetTheme();
     ImGui_ImplSwizzle_Init(mWindow, mGfxDevice, mImGuiRenderTarget);
 
     mAssetManager = common::CreateRef<AssetManager>(mGfxDevice);
