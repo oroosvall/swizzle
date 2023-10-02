@@ -51,6 +51,7 @@ namespace swizzle::gfx
         U32 mSwapCount;
         FrameBufferDepthType mDepthType;
         common::IterType<FrameBufferAttachmentType> mColorAttachFormats;
+        SwBool mTransfer;
     };
 }
 

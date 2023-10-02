@@ -223,11 +223,18 @@ namespace vk
         {
             VkFormat imageFormat = getFormat(attachFormat);
 
-            common::Resource<VkResource<VkImage>> image = mDevice->createImage(
-                VkImageType::VK_IMAGE_TYPE_2D, imageFormat,
-                VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-                    VkImageUsageFlagBits::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                {mWidth, mHeight, 1u}, 1u, 1u);
+            VkImageUsageFlags flags = VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                      VkImageUsageFlagBits::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
+                                      VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT;
+
+            if (mCreateInfo.mTransfer)
+            {
+                flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+                flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+            }
+
+            common::Resource<VkResource<VkImage>> image =
+                mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, imageFormat, flags, {mWidth, mHeight, 1u}, 1u, 1u);
 
             VkMemoryRequirements memreq;
             vkGetImageMemoryRequirements(mDevice->getDeviceHandle(), image->getVkHandle(), &memreq);
@@ -276,11 +283,18 @@ namespace vk
         if (mHasDepthBuffer)
         {
 
+            VkImageUsageFlags flags = VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                      VkImageUsageFlagBits::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
+                                      VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT;
+
+            if (mCreateInfo.mTransfer)
+            {
+                flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+                flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+            }
+
             mDepthImage.mImage =
-                mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT,
-                                     VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-                                         VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT |
-                                         VkImageUsageFlagBits::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
+                mDevice->createImage(VkImageType::VK_IMAGE_TYPE_2D, VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT, flags,
                                      {mWidth, mHeight, 1u}, 1u, 1u);
 
             VkMemoryRequirements memreq;
