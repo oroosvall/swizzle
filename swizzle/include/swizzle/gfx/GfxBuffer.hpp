@@ -28,6 +28,7 @@ namespace swizzle::gfx
 
         virtual void* mapMemory(U64 size) = 0;
         virtual void unmapMemory() = 0;
+        virtual void invalidateMappedMemory() = 0;
 
     protected:
         virtual ~GfxBuffer() {}

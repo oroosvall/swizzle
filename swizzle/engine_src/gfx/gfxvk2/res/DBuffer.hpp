@@ -42,6 +42,7 @@ namespace vk
 
         virtual void* mapMemory(U64 size) override;
         virtual void unmapMemory() override;
+        virtual void invalidateMappedMemory() override;
 
         common::Resource<VkResource<VkBuffer>>& getBuffer();
 

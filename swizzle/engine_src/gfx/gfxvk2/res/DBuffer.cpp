@@ -126,6 +126,18 @@ namespace vk
         mVertCount = (U32)(mUsedSize / (U64)mStride);
     }
 
+    void DBuffer::invalidateMappedMemory()
+    {
+        VkMappedMemoryRange mmr{};
+        mmr.memory = mMemory->mMemory;
+        mmr.offset = mMemory->mAlignOffset;
+        mmr.size = mMemory->mSize;
+        mmr.pNext = nullptr;
+        mmr.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+
+        vkInvalidateMappedMemoryRanges(mDevice->getDeviceHandle(), 1u, &mmr);
+    }
+
     common::Resource<VkResource<VkBuffer>>& DBuffer::getBuffer()
     {
         return mBuffer;
