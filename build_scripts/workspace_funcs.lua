@@ -50,12 +50,13 @@ filter {"configurations:Asan", "system:windows", "action:vs2022"}
         "OTP_PROFILING",
     }
     symbols "On"
-    buildoptions { "/fsanitize=address", "/Zi" }
+    sanitize "address"
+    -- buildoptions { "/fsanitize=address", "/Zi" }
     editandcontinue "Off"
     flags { "NoIncrementalLink" }
     ignoredefaultlibraries { "LIBCMT" }
 
-    filter {"configurations:Asan", "system:linux"}
+filter {"configurations:Asan", "system:linux"}
     defines
     {
         "SW_DEBUG",
