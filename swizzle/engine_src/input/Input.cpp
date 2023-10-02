@@ -46,10 +46,25 @@ namespace swizzle::input
         std::unordered_map<core::GamePadAxis, F32> mGamepadAxisValues = {};
         std::unordered_map<core::GamePadButton, SwBool> mGamePadButtonValues = {};
 
+        std::unordered_map<const SwChar*, KeyAction> mKeyActions = {};
+
     } inputCtx;
-}
+} // namespace swizzle::input
 
 /* Static Function Declaration */
+
+namespace swizzle::input
+{
+    SwBool TestMods(Modifiers mods)
+    {
+        const SwBool ctrl = IsKeyPressed(Keys::KeyLCtrl) || IsKeyPressed(Keys::KeyRCtrl);
+        const SwBool shift = IsKeyPressed(Keys::KeyLShift) || IsKeyPressed(Keys::KeyRShift);
+        const SwBool alt = IsKeyPressed(Keys::KeyLAlt) || IsKeyPressed(Keys::KeyRAlt);
+        const SwBool special = IsKeyPressed(Keys::KeyLSpecial) || IsKeyPressed(Keys::KeyRSpecial);
+
+        return (ctrl == mods.mCtrl) && (shift == mods.mShift) && (alt == mods.mAlt) && (special == mods.mSpecial);
+    }
+} // namespace swizzle::input
 
 /* Static Variables */
 
@@ -71,12 +86,6 @@ namespace swizzle::input
         {
             window->addEventListener(&inputCtx.mCb);
         }
-    }
-
-    SwBool RegisterKeyAction(const KeyAction& action)
-    {
-        UNUSED_ARG(action);
-        return false;
     }
 
     void InputFrameReset()
@@ -102,6 +111,11 @@ namespace swizzle::input
         return pressed && inputCtx.mInputFocused;
     }
 
+    SwBool IsKeyPressedMods(const Keys key, const Modifiers mods)
+    {
+        return IsKeyPressed(key) && TestMods(mods);
+    }
+
     SwBool WasKeyPressedThisFrame(const Keys key)
     {
         SwBool pressed = false;
@@ -111,6 +125,11 @@ namespace swizzle::input
             pressed = inputCtx.mPressedKeysThisFrame[scanCode];
         }
         return pressed && inputCtx.mInputFocused;
+    }
+
+    SwBool WasKeyPressedThisFrameMods(const Keys key, const Modifiers mods)
+    {
+        return WasKeyPressedThisFrame(key) && TestMods(mods);
     }
 
     SwBool WasKeyReleasedThisFrame(const Keys key)
@@ -124,10 +143,9 @@ namespace swizzle::input
         return pressed && inputCtx.mInputFocused;
     }
 
-    SwBool IsActionPressed(const KeyAction& action)
+    SwBool WasKeyReleasedThisFrameMods(const Keys key, const Modifiers mods)
     {
-        UNUSED_ARG(action);
-        return false;
+        return WasKeyReleasedThisFrame(key) && TestMods(mods);
     }
 
     SwBool IsMouseButtonPressed(const Mouse key)
@@ -175,7 +193,7 @@ namespace swizzle::input
 
     void GetMousePosition(int32_t& xPos, int32_t& yPos)
     {
-        //if (inputCtx.mInputFocused)
+        // if (inputCtx.mInputFocused)
         {
             xPos = inputCtx.mX;
             yPos = inputCtx.mY;
@@ -200,7 +218,38 @@ namespace swizzle::input
         }
     }
 
-}
+    void RegisterKeyAction(const SwChar* actionName, KeyAction& action)
+    {
+        inputCtx.mKeyActions[actionName] = action;
+    }
+
+    const KeyAction& GetKeyAction(const SwChar* actionName)
+    {
+        return inputCtx.mKeyActions[actionName];
+    }
+
+    SwBool IsKeyActionPressed(const SwChar* actionName)
+    {
+        const KeyAction& action = inputCtx.mKeyActions[actionName];
+        return IsKeyPressedMods(action.mKey, action.mMainMods) ||
+               IsKeyPressedMods(action.mOptionalKey, action.mOptionalMods);
+    }
+
+    SwBool WasKeyActionPressedThisFrame(const SwChar* actionName)
+    {
+        const KeyAction& action = inputCtx.mKeyActions[actionName];
+        return WasKeyPressedThisFrameMods(action.mKey, action.mMainMods) ||
+               WasKeyPressedThisFrameMods(action.mOptionalKey, action.mOptionalMods);
+    }
+
+    SwBool WasKeyActionReleasedThisFrame(const SwChar* actionName)
+    {
+        const KeyAction& action = inputCtx.mKeyActions[actionName];
+        return WasKeyReleasedThisFrameMods(action.mKey, action.mMainMods) ||
+               WasKeyReleasedThisFrameMods(action.mOptionalKey, action.mOptionalMods);
+    }
+
+} // namespace swizzle::input
 
 /* Class Public Function Definition */
 
@@ -214,14 +263,12 @@ namespace swizzle::input
 
         switch (evtType)
         {
-        case core::WindowEventType::FocusEvent:
-        {
+        case core::WindowEventType::FocusEvent: {
             core::WindowFocusEvent& e = (core::WindowFocusEvent&)evt;
             inputCtx.mInputFocused = e.mFocused;
             break;
         }
-        case core::WindowEventType::KeyboardInputEvent:
-        {
+        case core::WindowEventType::KeyboardInputEvent: {
             core::InputEvent& e = (core::InputEvent&)evt;
 
             if (swizzle::core::KeyToScanCode(Keys::KeyNone) == e.mKey)
@@ -241,41 +288,35 @@ namespace swizzle::input
 
             break;
         }
-        case core::WindowEventType::CharacterTypeEvent:
-        {
+        case core::WindowEventType::CharacterTypeEvent: {
             core::CharacterEvent& e = (core::CharacterEvent&)evt;
             inputCtx.mCharacterEventValue = e.mCodePoint;
             inputCtx.mCharacterHadEventThisFrame = true;
             break;
         }
-        case core::WindowEventType::MouseMoveEvent:
-        {
+        case core::WindowEventType::MouseMoveEvent: {
             core::MouseMoveEvent& e = (core::MouseMoveEvent&)evt;
             inputCtx.mX = e.mX;
             inputCtx.mY = e.mY;
             break;
         }
-        case core::WindowEventType::MouseMoveDeltaEvent:
-        {
+        case core::WindowEventType::MouseMoveDeltaEvent: {
             core::MouseMoveDelta& e = (core::MouseMoveDelta&)evt;
             inputCtx.mDx += (float)e.dX;
             inputCtx.mDy += (float)e.dY;
             break;
         }
-        case core::WindowEventType::GamepadAxisEvent:
-        {
+        case core::WindowEventType::GamepadAxisEvent: {
             core::GamepadAxisEvent& e = (core::GamepadAxisEvent&)evt;
             inputCtx.mGamepadAxisValues[e.mAxis] = e.mAxisValue;
             break;
         }
-        case core::WindowEventType::GamepadButtonEvent:
-        {
+        case core::WindowEventType::GamepadButtonEvent: {
             core::GamepadButtonEvent& e = (core::GamepadButtonEvent&)evt;
             inputCtx.mGamePadButtonValues[e.mButton] = e.mButtonPressed;
             break;
         }
-        case core::WindowEventType::MouseScrollEvent:
-        {
+        case core::WindowEventType::MouseScrollEvent: {
             core::MouseScrollEvent& e = (core::MouseScrollEvent&)evt;
             inputCtx.mScrollDx += (float)e.mScrollX;
             inputCtx.mScrollDy += (float)e.mScrollY;
@@ -285,7 +326,6 @@ namespace swizzle::input
             break;
         }
     }
-}
+} // namespace swizzle::input
 
 /* Class Private Function Definition */
-

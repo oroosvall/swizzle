@@ -107,14 +107,14 @@ namespace swizzle::input
 {
     void SWIZZLE_API SetInputSource(common::Resource<core::SwWindow> window);
 
-    SwBool SWIZZLE_API RegisterKeyAction(const KeyAction& action);
-
     void SWIZZLE_API InputFrameReset();
 
     SwBool SWIZZLE_API IsKeyPressed(const Keys key);
-    SwBool SWIZZLE_API IsActionPressed(const KeyAction& action);
+    SwBool SWIZZLE_API IsKeyPressedMods(const Keys key, const Modifiers mods);
     SwBool SWIZZLE_API WasKeyPressedThisFrame(const Keys key);
+    SwBool SWIZZLE_API WasKeyPressedThisFrameMods(const Keys key, const Modifiers mods);
     SwBool SWIZZLE_API WasKeyReleasedThisFrame(const Keys key);
+    SwBool SWIZZLE_API WasKeyReleasedThisFrameMods(const Keys key, const Modifiers mods);
 
     SwBool SWIZZLE_API IsMouseButtonPressed(const Mouse key);
     SwBool SWIZZLE_API WasMousePressedThisFrame(const Mouse key);
@@ -127,6 +127,11 @@ namespace swizzle::input
     void SWIZZLE_API GetMouseDelta(float& x, float& y);
     void SWIZZLE_API GetMouseScrollDelta(float& x, float& y);
 
+    void SWIZZLE_API RegisterKeyAction(const SwChar* actionName, KeyAction& action);
+    const KeyAction SWIZZLE_API & GetKeyAction(const SwChar* actionName);
+    SwBool SWIZZLE_API IsKeyActionPressed(const SwChar* actionName);
+    SwBool SWIZZLE_API WasKeyActionPressedThisFrame(const SwChar* actionName);
+    SwBool SWIZZLE_API WasKeyActionReleasedThisFrame(const SwChar* actionName);
 }
 
 
