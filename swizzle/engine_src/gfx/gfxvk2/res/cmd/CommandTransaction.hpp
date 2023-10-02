@@ -30,6 +30,9 @@ namespace vk
         virtual void copyBufferToTexture(common::Resource<swizzle::gfx::Texture> to,
                                          common::Resource<swizzle::gfx::GfxBuffer> from,
                                          const swizzle::gfx::TextureDimensions& size) override;
+        virtual void copyTextureToBuffer(common::Resource<swizzle::gfx::GfxBuffer> to,
+                                         common::Resource<swizzle::gfx::Texture> from,
+                                         const swizzle::gfx::TextureDimensions& size) override;
 
         virtual void bindComputeShader(common::Resource<swizzle::gfx::Shader> shader,
                                        common::Resource<swizzle::gfx::Material> mat, U8* constants,
@@ -38,6 +41,8 @@ namespace vk
 
         virtual void changeImageLayoutCompute(common::Resource<swizzle::gfx::Texture> texture) override;
         virtual void changeImageLayoutRender(common::Resource<swizzle::gfx::Texture> texture) override;
+
+        virtual void hostBarrier() override;
 
         VkCommandBuffer getBuffer() const;
         const common::Resource<LifetimeToken> getToken() const;

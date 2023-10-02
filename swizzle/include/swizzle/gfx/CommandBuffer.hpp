@@ -95,6 +95,17 @@ namespace swizzle::gfx
                                          const swizzle::gfx::TextureDimensions& size) = 0;
 
         /// <summary>
+        /// Performs a copy transfor operation from a texture to a data buffer
+        /// Buffer will NOT be resized
+        /// </summary>
+        /// <param name="to">Destination buffer to copy to</param>
+        /// <param name="from">Source texture to copy from</param>
+        /// <param name="size">Size of the texture</param>
+        virtual void copyTextureToBuffer(common::Resource<swizzle::gfx::GfxBuffer> to,
+                                         common::Resource<swizzle::gfx::Texture> from,
+                                         const swizzle::gfx::TextureDimensions& size) = 0;
+
+        /// <summary>
         /// Bind a shader for compute operations
         /// </summary>
         /// <param name="shader">Compute shader to bind</param>
@@ -108,9 +119,10 @@ namespace swizzle::gfx
         /// <param name="groupZ"></param>
         virtual void dispatchCompute(U32 groupX, U32 groupY, U32 groupZ) = 0;
 
-
         virtual void changeImageLayoutCompute(common::Resource<swizzle::gfx::Texture> texture) = 0;
         virtual void changeImageLayoutRender(common::Resource<swizzle::gfx::Texture> texture) = 0;
+
+        virtual void hostBarrier() = 0;
     };
 
     class CommandBuffer : public std::enable_shared_from_this<CommandBuffer>
