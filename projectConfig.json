@@ -58,7 +58,10 @@
         },
         "glm": {
             "source": "vendor/glm/glm.json",
-            "group": "vendor"
+            "group": "vendor",
+            "enabled_defines": [
+                "GLM_FORCE_SILENT_WARNINGS"
+            ]
         },
         "soloud": {
             "source": "vendor/soloud/soloud.json",
