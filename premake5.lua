@@ -10,6 +10,23 @@ setup_workspace(project_config.workspace)
 
 projects = {}
 
+result, errorCode = os.outputof("git describe --always --dirty=-d")
+s = string.format(
+[[
+#include <swizzle/swizzle.hpp>
+
+namespace swizzle
+{
+    const SwChar* VersionString()
+    {
+        return "%s";
+    }
+}
+]], result)
+io.writefile("swizzle/engine_src/version.cpp", s)
+
+print(result)
+
 print("Loading projects")
 for prj_name, prj_cfg in pairs(project_config.projects) do
     prj = Project:new(nil)

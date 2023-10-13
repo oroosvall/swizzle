@@ -14,6 +14,7 @@
 
 namespace swizzle
 {
+    const SwChar SWIZZLE_API *VersionString();
     SwBool SWIZZLE_API SwInitialize(const SwChar* appName = nullptr);
     SwBool SWIZZLE_API SwCleanup();
 }

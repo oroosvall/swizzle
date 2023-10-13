@@ -44,3 +44,4 @@ trash/
 data/ProfileTest.prof
 *.log
 *.ini
+swizzle/engine_src/version.cpp
