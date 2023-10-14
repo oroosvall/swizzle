@@ -92,7 +92,7 @@ filter "configurations:Release"
 
 filter "system:windows"
     cppdialect "C++17"
-    staticruntime "On"
+    staticruntime "Off"
     systemversion "latest"
     
     if (platform == "vs2019" or platform == "vs2022") then

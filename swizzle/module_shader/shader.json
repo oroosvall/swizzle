@@ -1,0 +1,33 @@
+{
+    "kind": "StaticLib",
+    "language": "c++",
+    "sources": [
+        {
+            "files": "../include/common/**.hpp",
+            "vpath": "include/*",
+            "filter": ""
+        },
+        {
+            "files": "include/**.hpp",
+            "vpath": "include/*",
+            "filter": ""
+        },
+        {
+            "files": "src/**.hpp",
+            "vpath": "shader/*",
+            "filter": ""
+        },
+        {
+            "files": "src/**.cpp",
+            "vpath": "shader/*",
+            "filter": ""
+        }
+    ],
+    "pub_inc_dirs": [
+        "../include/",
+        "include/"
+    ],
+    "build_flags": {
+        "rtti": "Off"
+    }
+}

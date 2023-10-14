@@ -102,6 +102,22 @@
                 "glm"
             ]
         },
+        "shader": {
+            "source": "swizzle/module_shader/shader.json",
+            "group": "libs",
+            "external_include_dirs": ["vulkan"],
+            "external_lib_dirs": ["vulkan"],
+            "external_libs": [
+                {
+                    "name": "shaderc_sharedd",
+                    "filter": "configurations:Debug or configurations:Asan"
+                },
+                {
+                    "name": "shaderc_shared",
+                    "filter": "configurations:Release or configurations:RelWDbgInfo"
+                }
+            ]
+        },
         "imgui_impl": {
             "source": "swizzle/imgui_impl/imgui_impl.json",
             "group": "libs",
@@ -166,7 +182,8 @@
                 {
                     "name": "optick",
                     "filter": "not configurations:Release"
-                }
+                },
+                "shader"
             ],
             "defines": [
                 "SWIZZLE_DLL"
