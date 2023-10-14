@@ -239,6 +239,7 @@ void Game::updateMainWindow(F32 dt)
     imGuiRender(trans);
 
     auto dTrans = mCmdBuffer->beginRenderPass(mSwapchain, std::move(trans));
+    dTrans->enableStencilTest(false);
 
     mScene->render(dTrans, cam);
 
@@ -259,6 +260,7 @@ void Game::imGuiRender(common::Unique<sw::gfx::CommandTransaction>& trans)
     ImGui_ImplSwizzle_UploadFontTexture(trans);
 
     auto dTrans = mImGuiRenderTarget->beginRenderPass(mCmdBuffer, std::move(trans));
+    dTrans->enableStencilTest(false);
     ImGui::Render();
     ImGui_ImplSwizzle_DrawData(ImGui::GetDrawData(), dTrans);
     trans = mCmdBuffer->endRenderPass(std::move(dTrans));

@@ -284,6 +284,7 @@ static void ImGui_ImplSwizzle_RenderWindow(ImGuiViewport* viewport, void* render
     vd->mSwapchain->prepare();
     common::Unique<swizzle::gfx::CommandTransaction> trans = vd->mCmdBuffer->begin();
     common::Unique<swizzle::gfx::DrawCommandTransaction>  dTrans = vd->mCmdBuffer->beginRenderPass(vd->mSwapchain, std::move(trans));
+    dTrans->enableStencilTest(false);
 
     ImGui_ImplSwizzle_Rend_DrawData(viewport->DrawData, dTrans);
 
