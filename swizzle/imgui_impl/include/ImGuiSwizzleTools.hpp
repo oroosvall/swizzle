@@ -37,19 +37,57 @@ namespace imext
         Cancel
     };
 
+    enum class InputType
+    {
+        Float,
+        Vec2,
+        Vec3,
+        Vec4,
+        Color
+    };
+
 } // namespace imext
 
 /* Forward Declared Structs/Classes */
+
+namespace imext
+{
+    class ShaderNode;
+}
 
 /* Struct Declaration */
 
 namespace imext
 {
-
     struct DirectoryItem
     {
         std::string mPath;
         DirectoryType mType;
+    };
+
+    struct Input
+    {
+        std::string mText;
+        InputType mInputType;
+        float mInputData[4];
+        bool mPluggable;
+        ImVec2 mPos;
+        ImVec2 mSize;
+        std::weak_ptr<ShaderNode> mSource;
+        U32 mSourceIndex;
+    };
+
+    struct Output
+    {
+        std::string mText;
+        ImVec2 mPos;
+        ImVec2 mSize;
+    };
+
+    struct ShaderLink
+    {
+        ImVec2 mStartPos;
+        ImVec2 mEndPos;
     };
 
 } // namespace imext
@@ -79,6 +117,36 @@ namespace imext
         virtual void createDir(const std::string& path) = 0;
         virtual std::string traverseTo(const std::string& path, const std::string& dir) = 0;
     };
+
+    class ShaderNode
+    {
+    public:
+        virtual ~ShaderNode(){ }
+
+        virtual const ImVec2& getPos() = 0;
+        virtual void setPos(const ImVec2& pos) = 0;
+
+        virtual const ImVec2& getSize() = 0;
+        virtual void setSize(ImVec2& size) = 0;
+
+        virtual std::vector<Input>& getInputs() = 0;
+        virtual std::vector<Output>& getOutputs() = 0;
+    };
+
+    class NodeCollection
+    {
+    };
+
+    class ShaderGraphController
+    {
+    public:
+        virtual ~ShaderGraphController() {}
+
+        virtual std::vector<NodeCollection> getNodeCollection() = 0;
+
+        virtual std::vector<std::shared_ptr<ShaderNode>> getNodes() = 0;
+    };
+
 } // namespace imext
 
 /* Function Declaration */
@@ -89,6 +157,9 @@ namespace imext
                                                  FileBrowserMode mode = FileBrowserMode::OpenFile,
                                                  FileSystemInfo* fsInfo = nullptr);
     IMGUI_IMPL_API bool InputText(const char* label, std::string& str);
+    IMGUI_IMPL_API bool ColorPickerbutton4(const char* label, float* col, ImGuiColorEditFlags flags = 0);
     IMGUI_IMPL_API int ConfirmModalPopup(const char* label, ImGuiWindowFlags_ flags, const std::string& description,
                                          const std::vector<std::string>& options);
+
+    IMGUI_IMPL_API void ShaderGraph(const char* name, bool* open, ShaderGraphController* sgc);
 } // namespace imext

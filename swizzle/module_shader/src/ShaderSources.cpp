@@ -31,6 +31,11 @@ namespace sb
         size = static_cast<U32>(mText.size());
         return mText.c_str();
     }
+
+    const char* TextShaderSource::getName() const
+    {
+        return "Text Source";
+    }
 } // namespace sb
 
 /* Class Protected Function Definition */
