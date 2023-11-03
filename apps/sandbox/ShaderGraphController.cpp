@@ -1,22 +1,14 @@
 
 #include "ShaderGraphController.hpp"
 
-Node::Node(ImVec2 pos, ImVec2 size)
+Node::Node(ImVec2 pos, ImVec2 size, imext::InputType type)
     : mPos(pos)
     , mSize(size)
 {
     imext::Input in{};
     in.mText = "Value";
     in.mPluggable = true;
-    in.mInputType = imext::InputType::Float;
-    mInputs.push_back(in);
-    in.mInputType = imext::InputType::Vec2;
-    mInputs.push_back(in);
-    in.mInputType = imext::InputType::Vec3;
-    mInputs.push_back(in);
-    in.mInputType = imext::InputType::Vec4;
-    mInputs.push_back(in);
-    in.mInputType = imext::InputType::Color;
+    in.mInputType = type;
     mInputs.push_back(in);
 
     mOutputs.push_back({"value"});
@@ -58,7 +50,9 @@ std::vector<imext::Output>& Node::getOutputs()
 
 ShaderGraph::ShaderGraph()
 {
-    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}));
+    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::InputType::Float));
+    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::InputType::Vec3));
+    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::InputType::Color));
 }
 
 ShaderGraph::~ShaderGraph() {}
@@ -68,7 +62,7 @@ std::vector<imext::NodeCollection> ShaderGraph::getNodeCollection()
     return {};
 }
 
-std::vector<std::shared_ptr<imext::ShaderNode>> ShaderGraph::getNodes()
+std::vector<std::shared_ptr<imext::ShaderNode>>& ShaderGraph::getNodes()
 {
     return mNodes;
 }

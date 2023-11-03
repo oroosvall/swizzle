@@ -144,7 +144,7 @@ namespace imext
 
         virtual std::vector<NodeCollection> getNodeCollection() = 0;
 
-        virtual std::vector<std::shared_ptr<ShaderNode>> getNodes() = 0;
+        virtual std::vector<std::shared_ptr<ShaderNode>>& getNodes() = 0;
     };
 
 } // namespace imext

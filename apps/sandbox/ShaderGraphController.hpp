@@ -6,7 +6,7 @@
 class Node : public imext::ShaderNode
 {
 public:
-    Node(ImVec2 pos, ImVec2 size);
+    Node(ImVec2 pos, ImVec2 size, imext::InputType type);
     virtual ~Node();
 
     virtual const ImVec2& getPos() override;
@@ -33,7 +33,7 @@ public:
 
     virtual std::vector<imext::NodeCollection> getNodeCollection() override;
 
-    virtual std::vector<std::shared_ptr<imext::ShaderNode>> getNodes() override;
+    virtual std::vector<std::shared_ptr<imext::ShaderNode>>& getNodes() override;
 
 private:
     std::vector<std::shared_ptr<imext::ShaderNode>> mNodes;

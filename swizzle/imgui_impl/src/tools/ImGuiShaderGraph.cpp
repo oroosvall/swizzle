@@ -644,19 +644,25 @@ namespace imext
         }
 
         // Display links
-        draw_list->ChannelsSplit(2);
 
         // Display nodes
         std::vector<ShaderLink> links;
 
         std::vector<std::shared_ptr<ShaderNode>>& nodes = sgc->getNodes();
+        size_t channelCount = (2ull * nodes.size()) + 1ull;
+
+        draw_list->ChannelsSplit(channelCount);
+        bool newActive = false;
+        bool isHover = false;
+
         for (size_t i = 0; i < nodes.size(); ++i)
         {
-            std::shared_ptr<ShaderNode> node = nodes[i];
-            ImGui::PushID(i);
+            size_t idx = nodes.size() - i - 1ull;
+            std::shared_ptr<ShaderNode> node = nodes[idx];
+            ImGui::PushID(node.get());
             ImVec2 node_rect_min = offset + node->getPos();
 
-            draw_list->ChannelsSetCurrent(1); // Foreground
+            draw_list->ChannelsSetCurrent(idx*2ull + 1ull); // Foreground
             bool old_any_active = ImGui::IsAnyItemActive();
             ImGui::SetCursorScreenPos(node_rect_min + NODE_WINDOW_PADDING);
             // ImVec2 pPos = ImGui::GetCursorScreenPos();
@@ -724,7 +730,7 @@ namespace imext
                             else
                             {
                                 linkDragMode = INPUT_START_TYPE;
-                                linkNodeIndex = i;
+                                linkNodeIndex = idx;
                                 linkNodeLnkIndex = slot_idx;
                             }
                             inputs[slot_idx].mSource.reset();
@@ -734,10 +740,7 @@ namespace imext
                             str = "OUTPUT_LINK";
 
                         }
-                        //inputs[slot_idx].mSource.reset();
-                        //inputs[slot_idx].mSourceIndex = 0u;
 
-                        printf("In_begin %d, %d\n", i, slot_idx);
                         ImGui::SetDragDropPayload(str, nullptr, 0);
                         ImGui::EndDragDropSource();
                     }
@@ -745,7 +748,6 @@ namespace imext
                     {
                         if (ImGui::AcceptDragDropPayload("OUTPUT_LINK"))
                         {
-                            printf("Out_accept %d, %d\n", linkNodeIndex, linkNodeLnkIndex);
                             inputs[slot_idx].mSource = nodes[linkNodeIndex];
                             inputs[slot_idx].mSourceIndex = linkNodeLnkIndex;
                         }
@@ -790,9 +792,8 @@ namespace imext
                 if (ImGui::BeginDragDropSource())
                 {
                     linkDragMode = OUTPUT_START_TYPE;
-                    linkNodeIndex = i;
+                    linkNodeIndex = idx;
                     linkNodeLnkIndex = slot_idx;
-                    printf("Out_begin %d, %d\n", i, slot_idx);
                     ImGui::SetDragDropPayload("OUTPUT_LINK", nullptr, 0);
                     ImGui::EndDragDropSource();
                 }
@@ -800,7 +801,6 @@ namespace imext
                 {
                     if (ImGui::AcceptDragDropPayload("INPUT_LINK"))
                     {
-                        printf("In_accept %d, %d\n", linkNodeIndex, linkNodeLnkIndex);
                         auto& inputNode = nodes[linkNodeIndex];
                         auto& input = inputNode->getInputs()[linkNodeLnkIndex];
                         input.mSource = node;
@@ -813,22 +813,26 @@ namespace imext
             }
 
             // Display node box
-            draw_list->ChannelsSetCurrent(0); // Background
+            draw_list->ChannelsSetCurrent(idx*2); // Background
             ImGui::SetCursorScreenPos(node_rect_min);
             ImGui::InvisibleButton("node", node->getSize());
             ImGui::SetItemAllowOverlap();
-            if (ImGui::IsItemHovered())
+            if (ImGui::IsItemHovered() && !isHover)
             {
-                node_hovered_in_scene = i;
+                node_hovered_in_scene = idx;
+                isHover = true;
             }
 
             bool node_moving_active = ImGui::IsItemActive();
             if (node_widgets_active || node_moving_active)
-                selectedNode = i;
+            {
+                selectedNode = idx;
+                newActive = true;
+            }
             if (node_moving_active && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-                node->setPos(node->getPos() + io.MouseDelta);
+                nodes[idx]->setPos(nodes[idx]->getPos() + io.MouseDelta);
 
-            ImU32 node_bg_color = (node_hovered_in_scene == i || (selectedNode == i)) ? IM_COL32(75, 75, 75, 255)
+            ImU32 node_bg_color = (node_hovered_in_scene == idx || (selectedNode == idx)) ? IM_COL32(75, 75, 75, 255)
                                                                                       : IM_COL32(60, 60, 60, 255);
             draw_list->AddRectFilled(node_rect_min, node_rect_max, node_bg_color, 4.0f);
             draw_list->AddRect(node_rect_min, node_rect_max, IM_COL32(100, 100, 100, 255), 4.0f);
@@ -838,7 +842,6 @@ namespace imext
             {
                 draw_list->AddCircleFilled(pos, NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
             }
-
             ImGui::PopID();
         }
 
@@ -862,7 +865,7 @@ namespace imext
         else if (linkDragMode == OUTPUT_START_TYPE)
         {
             auto& node = nodes[linkNodeIndex];
-            auto& output = node->getInputs()[linkNodeLnkIndex];
+            auto& output = node->getOutputs()[linkNodeLnkIndex];
             ShaderLink lnk{};
             lnk.mStartPos = GetNodeOutputPos(node.get(), linkNodeLnkIndex);
             lnk.mStartPos.x += offset.x;
@@ -876,8 +879,15 @@ namespace imext
             // do nothing
         }
 
+        if (newActive)
+        {
+            nodes[selectedNode].swap(nodes.back());
+            selectedNode = nodes.size() - 1ull;
+            //selectedNode = 0;
+        }
+
         // render links
-        draw_list->ChannelsSetCurrent(0); // Background
+        draw_list->ChannelsSetCurrent(channelCount - 1ull); // Background
         for (auto& link : links)
         {
             ImVec2 startPos = link.mStartPos;
