@@ -42,7 +42,7 @@ static inline ImVec2 GetNodeOutputPos(imext::ShaderNode* node, size_t idx);
 static inline ImVec2 DrawShapeWithText(ImVec2 topLeft, PipelineShape shape, const char* text);
 static inline void RenderPipeline();
 
-static inline void DrawNodeInput(imext::Input& in, ImVec2 offset, std::vector<imext::ShaderLink>& links);
+static inline void DrawNodeInput(imext::Input& in);
 
 /* Static Function Definition */
 
@@ -60,7 +60,6 @@ static inline ImVec2 GetNodeInputPos(imext::ShaderNode* node, size_t idx)
 {
     ImVec2 pos = node->getPos();
     ImVec2 size = node->getSize();
-    size_t count = node->getInputs().size();
     ImVec2 inPos = node->getInputs()[idx].mPos;
     ImVec2 inSize = node->getInputs()[idx].mSize;
     return ImVec2(pos.x, inPos.y);
@@ -70,7 +69,6 @@ static inline ImVec2 GetNodeOutputPos(imext::ShaderNode* node, size_t idx)
 {
     ImVec2 pos = node->getPos();
     ImVec2 size = node->getSize();
-    size_t count = node->getOutputs().size();
     ImVec2 outPos = node->getOutputs()[idx].mPos;
     ImVec2 outSize = node->getOutputs()[idx].mSize;
     return ImVec2(pos.x + size.x, outPos.y);
@@ -196,7 +194,7 @@ static inline void RenderPipeline()
     ImGui::ItemSize(p - s);
 }
 
-static inline void DrawNodeInput(imext::Input& in, ImVec2 offset, std::vector<imext::ShaderLink>& links)
+static inline void DrawNodeInput(imext::Input& in)
 {
     ImGui::PushID(&in);
     in.mPos = ImGui::GetCursorScreenPos();
@@ -649,20 +647,20 @@ namespace imext
         std::vector<ShaderLink> links;
 
         std::vector<std::shared_ptr<ShaderNode>>& nodes = sgc->getNodes();
-        size_t channelCount = (2ull * nodes.size()) + 1ull;
+        int channelCount = (2 * static_cast<int>(nodes.size())) + 1;
 
         draw_list->ChannelsSplit(channelCount);
         bool newActive = false;
         bool isHover = false;
 
-        for (size_t i = 0; i < nodes.size(); ++i)
+        for (size_t i = 0ull; i < nodes.size(); ++i)
         {
             size_t idx = nodes.size() - i - 1ull;
             std::shared_ptr<ShaderNode> node = nodes[idx];
             ImGui::PushID(node.get());
             ImVec2 node_rect_min = offset + node->getPos();
 
-            draw_list->ChannelsSetCurrent(idx*2ull + 1ull); // Foreground
+            draw_list->ChannelsSetCurrent(static_cast<int>(idx)*2 + 1); // Foreground
             bool old_any_active = ImGui::IsAnyItemActive();
             ImGui::SetCursorScreenPos(node_rect_min + NODE_WINDOW_PADDING);
             // ImVec2 pPos = ImGui::GetCursorScreenPos();
@@ -672,7 +670,7 @@ namespace imext
             ImGui::BeginGroup();
             for (auto& in : node->getInputs())
             {
-                DrawNodeInput(in, offset, links);
+                DrawNodeInput(in);
             }
 
             ImGui::EndGroup();
@@ -691,7 +689,8 @@ namespace imext
 
             // Save the size of what we have emitted and whether any of the widgets are being used
             bool node_widgets_active = (!old_any_active && ImGui::IsAnyItemActive());
-            node->setSize(ImGui::GetItemRectSize() + NODE_WINDOW_PADDING + NODE_WINDOW_PADDING);
+            ImVec2 s = ImGui::GetItemRectSize() + NODE_WINDOW_PADDING + NODE_WINDOW_PADDING;
+            node->setSize(s);
             ImVec2 node_rect_max = node_rect_min + node->getSize();
 
             std::vector<ImVec2> nodeSlots; // contains positions of all node slots
@@ -722,7 +721,7 @@ namespace imext
                                     if (nodes[nIdx].get() == src.get())
                                     {
                                         linkDragMode = OUTPUT_START_TYPE;
-                                        linkNodeIndex = nIdx;
+                                        linkNodeIndex = static_cast<int>(nIdx);
                                         linkNodeLnkIndex = inputs[slot_idx].mSourceIndex;
                                     }
                                 }
@@ -730,7 +729,7 @@ namespace imext
                             else
                             {
                                 linkDragMode = INPUT_START_TYPE;
-                                linkNodeIndex = idx;
+                                linkNodeIndex = static_cast<int>(idx);
                                 linkNodeLnkIndex = slot_idx;
                             }
                             inputs[slot_idx].mSource.reset();
@@ -792,7 +791,7 @@ namespace imext
                 if (ImGui::BeginDragDropSource())
                 {
                     linkDragMode = OUTPUT_START_TYPE;
-                    linkNodeIndex = idx;
+                    linkNodeIndex = static_cast<int>(idx);
                     linkNodeLnkIndex = slot_idx;
                     ImGui::SetDragDropPayload("OUTPUT_LINK", nullptr, 0);
                     ImGui::EndDragDropSource();
@@ -813,20 +812,20 @@ namespace imext
             }
 
             // Display node box
-            draw_list->ChannelsSetCurrent(idx*2); // Background
+            draw_list->ChannelsSetCurrent(static_cast<int>(idx)*2); // Background
             ImGui::SetCursorScreenPos(node_rect_min);
             ImGui::InvisibleButton("node", node->getSize());
             ImGui::SetItemAllowOverlap();
             if (ImGui::IsItemHovered() && !isHover)
             {
-                node_hovered_in_scene = idx;
+                node_hovered_in_scene = static_cast<int>(idx);
                 isHover = true;
             }
 
             bool node_moving_active = ImGui::IsItemActive();
             if (node_widgets_active || node_moving_active)
             {
-                selectedNode = idx;
+                selectedNode = static_cast<int>(idx);
                 newActive = true;
             }
             if (node_moving_active && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
@@ -882,7 +881,7 @@ namespace imext
         if (newActive)
         {
             nodes[selectedNode].swap(nodes.back());
-            selectedNode = nodes.size() - 1ull;
+            selectedNode = static_cast<int>(nodes.size() - 1ull);
             //selectedNode = 0;
         }
 
