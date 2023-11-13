@@ -878,6 +878,27 @@ namespace imext
             // do nothing
         }
 
+        // show context menu when rightclick
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && !isHover)
+        {
+            ImGui::OpenPopup("nodeMenu");
+        }
+
+        // list available nodes
+        if (ImGui::BeginPopup("nodeMenu"))
+        {
+            auto& col = sgc->getNodeCollection();
+            for (auto& itm : col)
+            {
+                if (ImGui::BeginMenu(itm->getName().c_str()))
+                {
+                    ImGui::MenuItem("foo");
+                    ImGui::EndMenu();
+                }
+            }
+            ImGui::EndPopup();
+        }
+
         if (newActive)
         {
             nodes[selectedNode].swap(nodes.back());

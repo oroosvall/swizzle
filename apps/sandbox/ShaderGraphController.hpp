@@ -25,16 +25,29 @@ private:
     std::vector<imext::Output> mOutputs;
 };
 
+class NodeCollectionThing : public imext::NodeCollection
+{
+public:
+    NodeCollectionThing(std::string name);
+    virtual ~NodeCollectionThing();
+
+    virtual const std::string& getName() const override;
+
+private:
+    std::string mName;
+};
+
 class ShaderGraph : public imext::ShaderGraphController
 {
 public:
     ShaderGraph();
     virtual ~ShaderGraph();
 
-    virtual std::vector<imext::NodeCollection> getNodeCollection() override;
+    virtual std::vector<std::shared_ptr<imext::NodeCollection>>& getNodeCollection() override;
 
     virtual std::vector<std::shared_ptr<imext::ShaderNode>>& getNodes() override;
 
 private:
+    std::vector<std::shared_ptr<imext::NodeCollection>> mCollection;
     std::vector<std::shared_ptr<imext::ShaderNode>> mNodes;
 };

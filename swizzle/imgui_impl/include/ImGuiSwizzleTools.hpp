@@ -121,7 +121,7 @@ namespace imext
     class ShaderNode
     {
     public:
-        virtual ~ShaderNode(){ }
+        virtual ~ShaderNode() {}
 
         virtual const ImVec2& getPos() = 0;
         virtual void setPos(const ImVec2& pos) = 0;
@@ -135,6 +135,10 @@ namespace imext
 
     class NodeCollection
     {
+    public:
+        virtual ~NodeCollection() {}
+
+        virtual const std::string& getName() const = 0;
     };
 
     class ShaderGraphController
@@ -142,7 +146,7 @@ namespace imext
     public:
         virtual ~ShaderGraphController() {}
 
-        virtual std::vector<NodeCollection> getNodeCollection() = 0;
+        virtual std::vector<std::shared_ptr<NodeCollection>>& getNodeCollection() = 0;
 
         virtual std::vector<std::shared_ptr<ShaderNode>>& getNodes() = 0;
     };

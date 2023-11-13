@@ -48,8 +48,26 @@ std::vector<imext::Output>& Node::getOutputs()
     return mOutputs;
 }
 
+NodeCollectionThing::NodeCollectionThing(std::string name)
+    : mName(name)
+{
+}
+
+NodeCollectionThing::~NodeCollectionThing()
+{
+}
+
+const std::string& NodeCollectionThing::getName() const
+{
+    return mName;
+}
+
+
 ShaderGraph::ShaderGraph()
 {
+    mCollection.push_back(std::make_shared<NodeCollectionThing>("Inputs"));
+    mCollection.push_back(std::make_shared<NodeCollectionThing>("Outputs"));
+
     mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::InputType::Float));
     mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::InputType::Vec3));
     mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::InputType::Color));
@@ -57,9 +75,9 @@ ShaderGraph::ShaderGraph()
 
 ShaderGraph::~ShaderGraph() {}
 
-std::vector<imext::NodeCollection> ShaderGraph::getNodeCollection()
+std::vector<std::shared_ptr<imext::NodeCollection>>& ShaderGraph::getNodeCollection()
 {
-    return {};
+    return mCollection;
 }
 
 std::vector<std::shared_ptr<imext::ShaderNode>>& ShaderGraph::getNodes()
