@@ -723,6 +723,7 @@ namespace imext
                                         linkDragMode = OUTPUT_START_TYPE;
                                         linkNodeIndex = static_cast<int>(nIdx);
                                         linkNodeLnkIndex = inputs[slot_idx].mSourceIndex;
+                                        io.Ctx->DragDropPayload.SourceId = ImGui::GetID(src.get());
                                     }
                                 }
                             }
