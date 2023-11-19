@@ -37,7 +37,7 @@ namespace imext
         Cancel
     };
 
-    enum class InputType
+    enum class NodeType
     {
         Float,
         Vec2,
@@ -68,7 +68,7 @@ namespace imext
     struct Input
     {
         std::string mText;
-        InputType mInputType;
+        NodeType mType;
         float mInputData[4];
         bool mPluggable;
         ImVec2 mPos;
@@ -80,6 +80,7 @@ namespace imext
     struct Output
     {
         std::string mText;
+        NodeType mType;
         ImVec2 mPos;
         ImVec2 mSize;
     };

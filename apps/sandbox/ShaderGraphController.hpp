@@ -6,7 +6,7 @@
 class Node : public imext::ShaderNode
 {
 public:
-    Node(ImVec2 pos, ImVec2 size, imext::InputType type);
+    Node(ImVec2 pos, ImVec2 size, imext::NodeType type);
     virtual ~Node();
 
     virtual const ImVec2& getPos() override;

@@ -1,19 +1,19 @@
 
 #include "ShaderGraphController.hpp"
 
-Node::Node(ImVec2 pos, ImVec2 size, imext::InputType type)
+Node::Node(ImVec2 pos, ImVec2 size, imext::NodeType type)
     : mPos(pos)
     , mSize(size)
 {
     imext::Input in{};
     in.mText = "Value";
     in.mPluggable = true;
-    in.mInputType = type;
+    in.mType = type;
     mInputs.push_back(in);
 
-    mOutputs.push_back({"value"});
-    mOutputs.push_back({"test"});
-    mOutputs.push_back({"bar"});
+    mOutputs.push_back({"value", type});
+    mOutputs.push_back({"test", type});
+    mOutputs.push_back({"bar", type });
 }
 
 Node::~Node() {}
@@ -68,9 +68,9 @@ ShaderGraph::ShaderGraph()
     mCollection.push_back(std::make_shared<NodeCollectionThing>("Inputs"));
     mCollection.push_back(std::make_shared<NodeCollectionThing>("Outputs"));
 
-    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::InputType::Float));
-    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::InputType::Vec3));
-    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::InputType::Color));
+    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::NodeType::Float));
+    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::NodeType::Vec3));
+    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::NodeType::Color));
 }
 
 ShaderGraph::~ShaderGraph() {}
