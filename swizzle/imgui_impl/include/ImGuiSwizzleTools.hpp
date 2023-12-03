@@ -140,6 +140,12 @@ namespace imext
         virtual ~NodeCollection() {}
 
         virtual const std::string& getName() const = 0;
+
+        virtual U32 getNodeCount() const = 0;
+        virtual const std::string& getNodeName(U32 index) const = 0;
+
+        virtual std::shared_ptr<ShaderNode> constructNode(U32 index) = 0;
+
     };
 
     class ShaderGraphController

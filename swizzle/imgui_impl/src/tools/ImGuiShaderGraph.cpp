@@ -323,8 +323,11 @@ namespace imext
         const float NODE_SLOT_RADIUS = 4.0f;
         const ImVec2 NODE_WINDOW_PADDING(8.0f, 8.0f);
 
+        static ImVec2 mousePosInWindow = {};
+
         // Create our child canvas
         ImGui::Text("Hold middle mouse button to scroll (%.2f,%.2f)", scrolling.x, scrolling.y);
+        ImGui::Text("Mouse position (%.2f,%.2f)", mousePosInWindow.x, mousePosInWindow.y);
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1, 1));
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(60, 60, 70, 200));
@@ -332,6 +335,8 @@ namespace imext
                           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse);
         ImGui::PopStyleVar(); // WindowPadding
         ImGui::PushItemWidth(120.0f);
+
+        mousePosInWindow = (ImGui::GetMousePos() - scrolling) - ImGui::GetCursorScreenPos();
 
         const ImVec2 offset = ImGui::GetCursorScreenPos() + scrolling;
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -537,7 +542,9 @@ namespace imext
                 newActive = true;
             }
             if (node_moving_active && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+            {
                 nodes[idx]->setPos(nodes[idx]->getPos() + io.MouseDelta);
+            }
 
             ImU32 node_bg_color = (node_hovered_in_scene == idx || (selectedNode == idx)) ? IM_COL32(75, 75, 75, 255)
                                                                                           : IM_COL32(60, 60, 60, 255);
@@ -601,7 +608,15 @@ namespace imext
             {
                 if (ImGui::BeginMenu(itm->getName().c_str()))
                 {
-                    ImGui::MenuItem("foo");
+                    for (U32 i = 0ull; i < itm->getNodeCount(); i++)
+                    {
+                        if (ImGui::MenuItem(itm->getNodeName(i).c_str()))
+                        {
+                            auto n = itm->constructNode(i);
+                            n->setPos(mousePosInWindow);
+                            nodes.push_back(n);
+                        }
+                    }
                     ImGui::EndMenu();
                 }
             }

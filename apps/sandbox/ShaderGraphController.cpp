@@ -1,19 +1,25 @@
 
 #include "ShaderGraphController.hpp"
 
-Node::Node(ImVec2 pos, ImVec2 size, imext::NodeType type)
-    : mPos(pos)
-    , mSize(size)
+Node::Node(NodeTemplate tmplate)
+    : mPos(0.0f,0.f)
+    , mSize(0.0f,0.f)
 {
-    imext::Input in{};
-    in.mText = "Value";
-    in.mPluggable = true;
-    in.mType = type;
-    mInputs.push_back(in);
-
-    mOutputs.push_back({"value", type});
-    mOutputs.push_back({"test", type});
-    mOutputs.push_back({"bar", type });
+    for (auto& in : tmplate.mInputs)
+    {
+        imext::Input newIn{};
+        newIn.mText = in.mText;
+        newIn.mPluggable = in.mPluggable;
+        newIn.mType = in.mType;
+        mInputs.push_back(newIn);
+    }
+    for (auto& out : tmplate.mOutputs)
+    {
+        imext::Output newOut{};
+        newOut.mText = out.mText;
+        newOut.mType = out.mType;
+        mOutputs.push_back(newOut);
+    }
 }
 
 Node::~Node() {}
@@ -42,35 +48,65 @@ std::vector<imext::Input>& Node::getInputs()
 {
     return mInputs;
 }
-
 std::vector<imext::Output>& Node::getOutputs()
 {
     return mOutputs;
 }
 
-NodeCollectionThing::NodeCollectionThing(std::string name)
-    : mName(name)
-{
-}
+/// <summary>
+///  Input nodes
+/// </summary>
 
-NodeCollectionThing::~NodeCollectionThing()
+InputNodeCollection::InputNodeCollection()
+    : mName("Inputs")
+    , mInvalid("Invalid")
+    , mNodeTemplates()
 {
+    mNodeTemplates.emplace_back(NodeTemplate{"Value",
+                                             {InputTemplate{"value", imext::NodeType::Float, false}},
+                                             {OutputTemplate{"Output", imext::NodeType::Float}}});
+    mNodeTemplates.emplace_back(NodeTemplate{"Vector (2D)",
+                                             {InputTemplate{"value", imext::NodeType::Vec2, false}},
+                                             {OutputTemplate{"Output", imext::NodeType::Vec2}}});
+    mNodeTemplates.emplace_back(NodeTemplate{"Vector (3D)",
+                                             {InputTemplate{"value", imext::NodeType::Vec3, false}},
+                                             {OutputTemplate{"Output", imext::NodeType::Vec3}}});
+    mNodeTemplates.emplace_back(NodeTemplate{"Color",
+                                             {InputTemplate{"value", imext::NodeType::Color, false}},
+                                             {OutputTemplate{"Output", imext::NodeType::Color}}});
 }
+InputNodeCollection::~InputNodeCollection() {}
 
-const std::string& NodeCollectionThing::getName() const
+const std::string& InputNodeCollection::getName() const
 {
     return mName;
 }
 
+U32 InputNodeCollection::getNodeCount() const
+{
+    return static_cast<U32>(mNodeTemplates.size());
+}
+const std::string& InputNodeCollection::getNodeName(U32 index) const
+{
+    if (index > mNodeTemplates.size())
+    {
+        return mInvalid;
+    }
+    return mNodeTemplates[index].mName;
+}
+
+std::shared_ptr<imext::ShaderNode> InputNodeCollection::constructNode(U32 index)
+{
+    if (index > mNodeTemplates.size())
+    {
+        return nullptr;
+    }
+    return std::make_shared<Node>(mNodeTemplates[index]);
+}
 
 ShaderGraph::ShaderGraph()
 {
-    mCollection.push_back(std::make_shared<NodeCollectionThing>("Inputs"));
-    mCollection.push_back(std::make_shared<NodeCollectionThing>("Outputs"));
-
-    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::NodeType::Float));
-    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::NodeType::Vec3));
-    mNodes.push_back(std::make_shared<Node>(ImVec2{0.0f, 0.0f}, ImVec2{100.0f, 30.0f}, imext::NodeType::Color));
+    mCollection.push_back(std::make_shared<InputNodeCollection>());
 }
 
 ShaderGraph::~ShaderGraph() {}

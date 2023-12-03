@@ -3,10 +3,30 @@
 
 #include <ImGuiSwizzleTools.hpp>
 
+struct InputTemplate
+{
+    std::string mText;
+    imext::NodeType mType;
+    bool mPluggable;
+};
+
+struct OutputTemplate
+{
+    std::string mText;
+    imext::NodeType mType;
+};
+
+struct NodeTemplate
+{
+    std::string mName;
+    std::vector<InputTemplate> mInputs;
+    std::vector<OutputTemplate> mOutputs;
+};
+
 class Node : public imext::ShaderNode
 {
 public:
-    Node(ImVec2 pos, ImVec2 size, imext::NodeType type);
+    Node(NodeTemplate tmplate);
     virtual ~Node();
 
     virtual const ImVec2& getPos() override;
@@ -25,16 +45,23 @@ private:
     std::vector<imext::Output> mOutputs;
 };
 
-class NodeCollectionThing : public imext::NodeCollection
+class InputNodeCollection : public imext::NodeCollection
 {
 public:
-    NodeCollectionThing(std::string name);
-    virtual ~NodeCollectionThing();
+    InputNodeCollection();
+    virtual ~InputNodeCollection();
 
     virtual const std::string& getName() const override;
 
+    virtual U32 getNodeCount() const override;
+    virtual const std::string& getNodeName(U32 index) const override;
+
+    virtual std::shared_ptr<imext::ShaderNode> constructNode(U32 index) override;
+
 private:
     std::string mName;
+    std::string mInvalid;
+    std::vector<NodeTemplate> mNodeTemplates;
 };
 
 class ShaderGraph : public imext::ShaderGraphController
