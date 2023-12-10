@@ -29,6 +29,8 @@ public:
     Node(NodeTemplate tmplate);
     virtual ~Node();
 
+    virtual const char* getName() override;
+
     virtual const ImVec2& getPos() override;
     virtual void setPos(const ImVec2& pos) override;
 
@@ -41,6 +43,7 @@ public:
 private:
     ImVec2 mPos;
     ImVec2 mSize;
+    std::string mName;
     std::vector<imext::Input> mInputs;
     std::vector<imext::Output> mOutputs;
 };

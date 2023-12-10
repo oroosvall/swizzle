@@ -378,7 +378,7 @@ namespace imext
             ImGui::SetCursorScreenPos(node_rect_min + NODE_WINDOW_PADDING);
             // ImVec2 pPos = ImGui::GetCursorScreenPos();
             ImGui::BeginGroup(); // Lock horizontal position
-            ImGui::Text("%s", "test");
+            ImGui::Text("%s", node->getName());
             // Inputs
             ImGui::BeginGroup();
             for (auto& in : node->getInputs())

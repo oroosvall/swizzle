@@ -4,6 +4,7 @@
 Node::Node(NodeTemplate tmplate)
     : mPos(0.0f,0.f)
     , mSize(0.0f,0.f)
+    , mName(tmplate.mName)
 {
     for (auto& in : tmplate.mInputs)
     {
@@ -23,6 +24,11 @@ Node::Node(NodeTemplate tmplate)
 }
 
 Node::~Node() {}
+
+const char* Node::getName()
+{
+    return mName.c_str();
+}
 
 const ImVec2& Node::getPos()
 {

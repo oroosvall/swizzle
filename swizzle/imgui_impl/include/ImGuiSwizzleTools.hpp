@@ -124,6 +124,8 @@ namespace imext
     public:
         virtual ~ShaderNode() {}
 
+        virtual const char* getName() = 0;
+
         virtual const ImVec2& getPos() = 0;
         virtual void setPos(const ImVec2& pos) = 0;
 
