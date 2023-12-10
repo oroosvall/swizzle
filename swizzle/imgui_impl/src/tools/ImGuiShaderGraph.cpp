@@ -209,7 +209,11 @@ static inline void DrawNodeInput(imext::Input& in)
     {
         goto exit;
     }
-    if (in.mType == imext::NodeType::Float)
+    if (in.mType == imext::NodeType::Int)
+    {
+        ImGui::DragInt("##value", (int*)in.mInputData);
+    }
+    else if (in.mType == imext::NodeType::Float)
     {
         ImGui::DragFloat("##value", in.mInputData);
     }
@@ -258,6 +262,9 @@ static ImColor GetNodeTypeColor(imext::NodeType type)
     ImGuiCol c = IM_COL32(0, 0, 0, 0);
     switch (type)
     {
+    case imext::NodeType::Int:
+        c = IM_COL32(181, 181, 181, 255);
+        break;
     case imext::NodeType::Float:
         c = IM_COL32(181, 181, 181, 255);
         break;

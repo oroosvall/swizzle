@@ -2,8 +2,8 @@
 #include "ShaderGraphController.hpp"
 
 Node::Node(NodeTemplate tmplate)
-    : mPos(0.0f,0.f)
-    , mSize(0.0f,0.f)
+    : mPos(0.0f, 0.f)
+    , mSize(0.0f, 0.f)
     , mName(tmplate.mName)
 {
     for (auto& in : tmplate.mInputs)
@@ -81,6 +81,7 @@ InputNodeCollection::InputNodeCollection()
                                              {InputTemplate{"value", imext::NodeType::Color, false}},
                                              {OutputTemplate{"Output", imext::NodeType::Color}}});
 }
+
 InputNodeCollection::~InputNodeCollection() {}
 
 const std::string& InputNodeCollection::getName() const
@@ -92,6 +93,7 @@ U32 InputNodeCollection::getNodeCount() const
 {
     return static_cast<U32>(mNodeTemplates.size());
 }
+
 const std::string& InputNodeCollection::getNodeName(U32 index) const
 {
     if (index > mNodeTemplates.size())
@@ -110,9 +112,59 @@ std::shared_ptr<imext::ShaderNode> InputNodeCollection::constructNode(U32 index)
     return std::make_shared<Node>(mNodeTemplates[index]);
 }
 
+/// <summary>
+/// Output Nodes
+/// </summary>
+
+OutputNodeCollection::OutputNodeCollection()
+    : mName("Outputs")
+    , mInvalid("Invalid")
+    , mNodeTemplates()
+{
+    mNodeTemplates.emplace_back(NodeTemplate{
+        "Fragment",
+        {InputTemplate{"slot", imext::NodeType::Int, true}, InputTemplate{"value", imext::NodeType::Float, true}},
+        {}});
+}
+
+OutputNodeCollection::~OutputNodeCollection() {}
+
+const std::string& OutputNodeCollection::getName() const
+{
+    return mName;
+}
+
+U32 OutputNodeCollection::getNodeCount() const
+{
+    return static_cast<U32>(mNodeTemplates.size());
+}
+
+const std::string& OutputNodeCollection::getNodeName(U32 index) const
+{
+    if (index > mNodeTemplates.size())
+    {
+        return mInvalid;
+    }
+    return mNodeTemplates[index].mName;
+}
+
+std::shared_ptr<imext::ShaderNode> OutputNodeCollection::constructNode(U32 index)
+{
+    if (index > mNodeTemplates.size())
+    {
+        return nullptr;
+    }
+    return std::make_shared<Node>(mNodeTemplates[index]);
+}
+
+/// <summary>
+/// Shader Graph
+/// </summary>
+
 ShaderGraph::ShaderGraph()
 {
     mCollection.push_back(std::make_shared<InputNodeCollection>());
+    mCollection.push_back(std::make_shared<OutputNodeCollection>());
 }
 
 ShaderGraph::~ShaderGraph() {}

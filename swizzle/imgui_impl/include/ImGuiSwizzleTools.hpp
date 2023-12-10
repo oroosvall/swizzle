@@ -39,6 +39,7 @@ namespace imext
 
     enum class NodeType
     {
+        Int,
         Float,
         Vec2,
         Vec3,

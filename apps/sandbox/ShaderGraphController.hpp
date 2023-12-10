@@ -67,6 +67,25 @@ private:
     std::vector<NodeTemplate> mNodeTemplates;
 };
 
+class OutputNodeCollection : public imext::NodeCollection
+{
+public:
+    OutputNodeCollection();
+    virtual ~OutputNodeCollection();
+
+    virtual const std::string& getName() const override;
+
+    virtual U32 getNodeCount() const override;
+    virtual const std::string& getNodeName(U32 index) const override;
+
+    virtual std::shared_ptr<imext::ShaderNode> constructNode(U32 index) override;
+
+private:
+    std::string mName;
+    std::string mInvalid;
+    std::vector<NodeTemplate> mNodeTemplates;
+};
+
 class ShaderGraph : public imext::ShaderGraphController
 {
 public:
