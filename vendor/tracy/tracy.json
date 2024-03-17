@@ -1,0 +1,25 @@
+{
+    "kind": "SharedLib",
+    "language": "c++",
+    "sources":[
+        {
+            "files": "tracy/public/**.hpp",
+            "vpath": "tracy"
+        },
+        {
+            "files": "tracy/public/TracyClient.cpp",
+            "vpath": "tracy"
+        }
+    ],
+    "pub_inc_dirs":[
+        "tracy/public/"
+    ],
+    "inc_dirs":[
+        "tracy/public/"
+    ],
+    "defines":[
+        "TRACY_ENABLE",
+        "TRACY_EXPORTS"
+    ]
+
+}

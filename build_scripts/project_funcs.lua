@@ -64,6 +64,11 @@ function Project:load(name, prj, inc_dir, lib_dir)
         self.prj_test:set_name(self.name .. "-test")
         self.prj_test:set_group("test")
         self.prj_test:load_from_json(prj.test_source)
+        if prj.external_include_dirs ~= nil then
+            for i, inc in pairs(prj.external_include_dirs) do
+                self.prj_test:add_external_headers(resolve_dir(inc, inc_dir[inc]))
+            end
+        end
         self.prj_test:add_dependencies(name)
 
         if prj.test_dependencies ~= nil then

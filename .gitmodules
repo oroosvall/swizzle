@@ -12,3 +12,6 @@
 [submodule "vendor/imgui/imgui"]
 	path = vendor/imgui/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "vendor/tracy/tracy"]
+	path = vendor/tracy/tracy
+	url = https://github.com/wolfpld/tracy.git

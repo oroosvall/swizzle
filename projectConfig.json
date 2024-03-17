@@ -53,6 +53,14 @@
                 "OPTICK_ENABLED"
             ]
         },
+        "tracy-lib": {
+            "source": "vendor/tracy/tracy.json",
+            "group": "vendor",
+            "enabled_defines": [
+                "TRACY_ENABLE",
+                "TRACY_IMPORTS"
+            ]
+        },
         "stb": {
             "source": "vendor/stb/stb.json",
             "group": "vendor"
@@ -110,6 +118,35 @@
                 "imgui"
             ]
         },
+        "rend_vk": {
+            "source": "swizzle/rend_vk/rendVk.json",
+            "test_source": "swizzle/rend_vk/rendVkTests.json",
+            "group": "engine",
+            "dependencies": [
+                "utils",
+                "glm",
+                {
+                    "name": "tracy-lib",
+                    "filter": "not configurations:Release"
+                }
+            ],
+            "external_include_dirs": ["vulkan"],
+            "test_dependencies": [
+                "utils",
+                "google-test",
+                "glm"
+            ],
+            "defines": [
+                {
+                    "name": "SW_WINDOWS",
+                    "filter": "system:windows"
+                },
+                {
+                    "name": "SW_LINUX_XLIB",
+                    "filter": "system:linux"
+                }
+            ]
+        },
         "swizzle": {
             "source": "swizzle/swizzle.json",
             "group": "engine",
@@ -120,6 +157,7 @@
                     "name": "optick",
                     "filter": "not configurations:Release"
                 },
+                "rend_vk",
                 "imgui",
                 "stb",
                 "swm",
