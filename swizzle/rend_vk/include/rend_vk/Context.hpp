@@ -92,7 +92,7 @@ namespace rvk
         /// </summary>
         /// <param name="createInfo">spec to use when creating device</param>
         /// <returns>valid device or nullptr on failure</returns>
-        virtual std::shared_ptr<void> createDevice(const DeviceCreateInfo& createInfo) = 0;
+        virtual std::shared_ptr<int> createDevice(const DeviceCreateInfo& createInfo) = 0;
     };
 } // namespace rvk
 

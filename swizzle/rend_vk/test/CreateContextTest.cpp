@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 
-//#include "mocks/VkMock.hpp"
+#include "mock/VkInstanceMock.hpp"
 
 #include "rend_vk/RendVk.hpp"
 
@@ -23,8 +23,46 @@
 
 TEST(rvk_Context, createContext_nullptr)
 {
-    auto context = rvk::VkRendCreateContext(false);
+    VkInstanceMockInitialize(InstanceMockInit::InstanceInvalid);
 
+    auto context = rvk::VkRendCreateContext(false);
     EXPECT_EQ(context, nullptr);
+
+    VkInstanceMockCleanup();
 }
 
+TEST(rvk_Context, createContext_NoExtensions)
+{
+    VkInstanceMockInitialize(InstanceMockInit::InstanceInvalid_NoExtensions);
+
+    auto context = rvk::VkRendCreateContext(false);
+    EXPECT_EQ(context, nullptr);
+
+    VkInstanceMockCleanup();
+}
+
+TEST(rvk_Context, createContext_valid)
+{
+    VkInstanceMockInitialize(InstanceMockInit::InstanceValid_1Device);
+
+    auto context = rvk::VkRendCreateContext(false);
+    EXPECT_NE(context, nullptr);
+    EXPECT_EQ(context->getDeviceCount(), 1u);
+
+    context.reset();
+
+    VkInstanceMockCleanup();
+}
+
+TEST(rvk_Context, createContext_valid_debugCallbacks)
+{
+    VkInstanceMockInitialize(InstanceMockInit::InstanceValid_1Device);
+
+    auto context = rvk::VkRendCreateContext(true);
+    EXPECT_NE(context, nullptr);
+    EXPECT_EQ(context->getDeviceCount(), 1u);
+
+    context.reset();
+
+    VkInstanceMockCleanup();
+}
