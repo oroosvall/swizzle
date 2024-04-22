@@ -1,6 +1,7 @@
 
 /* Include files */
 
+#include <vulkan/vulkan.h>
 #include "VkInstanceMock.hpp"
 
 #include <math.h>
@@ -40,6 +41,7 @@ static void destroyDebugReportCallback(VkInstance instance,
 InstanceMockInit gMockInit        = InstanceMockInit::InstanceInvalid;
 VkResult gCreateInstanceResult    = VkResult::VK_ERROR_INITIALIZATION_FAILED;
 std::vector<Instance*> gInstances = {};
+std::vector<PhysicalDeviceMockInfo> gPhysicalDeviceMockInfos = {};
 
 std::vector<const char*> gAvailableExtensions;
 uint32_t gDebugCallbacksInit = 0;
@@ -119,7 +121,7 @@ VkResult vkCreateInstance(const VkInstanceCreateInfo* pCreateInfo,
         gCreateInstanceResult = VkResult::VK_ERROR_INITIALIZATION_FAILED;
         break;
     case InstanceMockInit::InstanceInvalid_NoExtensions:
-    case InstanceMockInit::InstanceValid_1Device: {
+    case InstanceMockInit::InstanceValid: {
         gCreateInstanceResult = VkResult::VK_SUCCESS;
         Instance* i           = nullptr;
 
@@ -179,16 +181,21 @@ VkResult vkEnumeratePhysicalDevices(VkInstance instance,
                                     uint32_t* pPhysicalDeviceCount,
                                     VkPhysicalDevice* pPhysicalDevices)
 {
-    Instance* i = (Instance*)instance;
-    if (i)
+    Instance* inst = (Instance*)instance;
+    if (inst)
     {
         if (pPhysicalDeviceCount && pPhysicalDevices == nullptr)
         {
-            *pPhysicalDeviceCount = i->numDevices;
+            *pPhysicalDeviceCount = inst->numDevices;
             return VK_SUCCESS;
         }
         else if (pPhysicalDeviceCount && *pPhysicalDeviceCount != 0 && pPhysicalDevices)
         {
+            for (uint32_t i = 0u; i < *pPhysicalDeviceCount; ++i)
+            {
+                pPhysicalDevices[i] = (VkPhysicalDevice) &gPhysicalDeviceMockInfos[i];
+            }
+            return VK_SUCCESS;
         }
     }
     else
@@ -202,11 +209,11 @@ VkResult vkEnumerateInstanceLayerProperties(uint32_t* pPropertyCount, VkLayerPro
     return gCreateInstanceResult;
 }
 
-void VkInstanceMockInitialize(InstanceMockInit init)
+void VkInstanceMockInitialize(InstanceMockInit init, std::vector<PhysicalDeviceMockInfo> infos)
 {
     switch (init)
     {
-    case InstanceMockInit::InstanceValid_1Device:
+    case InstanceMockInit::InstanceValid:
         gAvailableExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         gAvailableExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
         gAvailableExtensions.push_back("VK_KHR_win32_surface");
@@ -216,6 +223,8 @@ void VkInstanceMockInitialize(InstanceMockInit init)
     default:
         break;
     }
+
+    gPhysicalDeviceMockInfos = infos;
 
     gMockInit = init;
 }
@@ -241,6 +250,9 @@ void VkInstanceMockCleanup()
             }
         }
     }
+
+    gPhysicalDeviceMockInfos.clear();
+
     gInstances.clear();
     gAvailableExtensions.clear();
 

@@ -63,7 +63,7 @@ namespace rvk
         bool isDiscreteGpu(uint32_t devIdx) const;
         bool hasFeatureSupport(uint32_t devIdx, const Features& f) const;
 
-        std::shared_ptr<int> createDevice(const DeviceCreateInfo& createInfo);
+        std::shared_ptr<Device> createDevice(const DeviceCreateInfo& createInfo);
 
         VkAllocationCallbacks* getAllocCallbacks() const;
 

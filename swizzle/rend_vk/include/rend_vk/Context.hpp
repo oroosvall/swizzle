@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include <rend_vk/GfxDevice.hpp>
+
 /* Defines */
 
 /* Typedefs/enums */
@@ -92,7 +94,7 @@ namespace rvk
         /// </summary>
         /// <param name="createInfo">spec to use when creating device</param>
         /// <returns>valid device or nullptr on failure</returns>
-        virtual std::shared_ptr<int> createDevice(const DeviceCreateInfo& createInfo) = 0;
+        virtual std::shared_ptr<GfxDevice> createDevice(const DeviceCreateInfo& createInfo) = 0;
     };
 } // namespace rvk
 

@@ -34,7 +34,7 @@ namespace rvk
         virtual std::string getDeviceName(uint32_t deviceIndex) const override;
         virtual bool isDiscreteGpu(uint32_t deviceIndex) const override;
         virtual bool hasFeatureSupport(uint32_t devIdx, const Features& features) const override;
-        virtual std::shared_ptr<int> createDevice(const DeviceCreateInfo& createInfo) override;
+        virtual std::shared_ptr<GfxDevice> createDevice(const DeviceCreateInfo& createInfo) override;
 
         bool isValid() const;
 

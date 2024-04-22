@@ -1,6 +1,7 @@
 /* Include files */
 
 #include "Ctx.hpp"
+#include "Dev.hpp"
 
 /* Defines */
 
@@ -51,14 +52,18 @@ namespace rvk
         return mVkInstance->hasFeatureSupport(devIdx, features);
     }
 
-    std::shared_ptr<int> Ctx::createDevice(const DeviceCreateInfo& createInfo)
+    std::shared_ptr<GfxDevice> Ctx::createDevice(const DeviceCreateInfo& createInfo)
     {
-        std::shared_ptr<int> dev = mVkInstance->createDevice(createInfo);
+        std::shared_ptr<Device> dev = mVkInstance->createDevice(createInfo);
 
-        // auto device = common::CreateRef<VkGfxDevice>(mVkInstance, dev);
+        std::shared_ptr<GfxDevice> device = nullptr;
 
-        // return device;
-        return dev;
+        if (dev)
+        {
+            device = std::make_shared<Dev>(dev);
+        }
+
+        return device;
     }
 
     bool Ctx::isValid() const

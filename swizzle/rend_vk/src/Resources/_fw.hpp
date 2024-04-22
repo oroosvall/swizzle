@@ -16,6 +16,8 @@ namespace rvk
 
     // Classes
     class Instance;
+    class Device;
+    class Extensions;
 
 } // namespace vk
 

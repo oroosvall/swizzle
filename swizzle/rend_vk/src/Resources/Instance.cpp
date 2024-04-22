@@ -5,12 +5,14 @@
 #include "Debug.hpp"
 #include "Extension.hpp"
 #include "Surface.hpp"
+#include "Device.hpp"
 
 #include "../Log.hpp"
 
 #include <algorithm>
 #include <numeric>
 #include <optional>
+
 
 /* Defines */
 
@@ -86,7 +88,6 @@ namespace rvk
 #if _DEBUG
         // extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         addLayerIfExists(instanceLayers, layers, "VK_LAYER_KHRONOS_validation");
-        addLayerIfExists(instanceLayers, layers, "VK_LAYER_RENDERDOC_Capture");
 #endif
         return instanceLayers;
     }
@@ -318,9 +319,9 @@ namespace rvk
         return features;
     }
 
-    std::shared_ptr<int> Instance::createDevice(const DeviceCreateInfo& createInfo)
+    std::shared_ptr<Device> Instance::createDevice(const DeviceCreateInfo& createInfo)
     {
-        std::shared_ptr<int> outDevice = nullptr;
+        std::shared_ptr<Device> outDevice = nullptr;
         VkPhysicalDevice phys          = getDevice(createInfo.mDeviceIndex);
         if (phys)
         {
@@ -441,7 +442,8 @@ namespace rvk
 
             if (dev)
             {
-                outDevice = std::make_shared<int>(1);
+                outDevice = std::make_shared<Device>(shared_from_this(), phys, dev, exts);
+                //outDevice = std::make_shared<int>(1);
                 /*outDevice = common::CreateRef<Device>(shared_from_this(), phys, dev);
                 outDevice->initAfterConstruction();*/
             }
@@ -474,7 +476,6 @@ namespace rvk
 
         U32 deviceCount = 0u;
         VkResult res    = vkEnumeratePhysicalDevices(mInstance, &deviceCount, VK_NULL_HANDLE);
-        LogVulkanError(res, "getDevice::vkEnumeratePhysicalDevices");
         LogVulkanError(res, "getDevice::vkEnumeratePhysicalDevices");
         if (deviceCount != 0u)
         {
