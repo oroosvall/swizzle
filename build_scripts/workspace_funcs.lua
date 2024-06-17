@@ -5,6 +5,7 @@ function default_workspace_config()
     config["buildDir"] = "build/"
     config["disableTests"] = false
     config["disableApps"] = false
+    config["workingDir"] = "data"
 
     return config
 end
@@ -27,7 +28,8 @@ workspace(ws_cfg.name)
     buildDir = _WORKING_DIR .. "/" .. ws_cfg.build_dir
     architecture "x64"
     location(buildDir .. platform)
-    debugdir("data/")
+    debugdir(_WORKING_DIR .. "/" .. ws_cfg.wokring_dir)
+    print(_WORKING_DIR .. "/" .. ws_cfg.wokring_dir)
     configurations
     {
         "Debug",
