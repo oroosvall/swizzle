@@ -2,7 +2,8 @@
     "workspace": {
         "name": "Swizzle",
         "startup_project": "sandbox",
-        "build_dir": "build/"
+        "build_dir": "build/",
+        "wokring_dir": "./data"
     },
     "inc_dirs": {
         "vulkan": {
