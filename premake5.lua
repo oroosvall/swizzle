@@ -13,7 +13,7 @@ projects = {}
 result, errorCode = os.outputof("git describe --tags --always --dirty=-d")
 s = string.format(
 [[
-#include <swizzle/swizzle.hpp>
+#include <swizzle/Swizzle.hpp>
 
 namespace swizzle
 {
@@ -23,7 +23,7 @@ namespace swizzle
     }
 }
 ]], result)
-io.writefile("swizzle/engine_src/version.cpp", s)
+io.writefile("swizzle/engine_src/Version.cpp", s)
 
 print(result)
 
