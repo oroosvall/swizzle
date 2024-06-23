@@ -78,7 +78,7 @@ void Game::userSetup()
     mFsq->load("shaders/fsq.shader");
 
     mFsqMat = mGfxDevice->createMaterial(mFsq, sw::gfx::SamplerMode::SamplerModeClamp);
-    mFsqMat->setDescriptorTextureResource(0u, mImGuiRenderTarget->getTexture(), false);
+    mFsqMat->setDescriptorTextureResource(0u, mImGuiRenderTarget->getTexture());
 }
 
 SwBool Game::userUpdate(F32 dt)
@@ -225,7 +225,7 @@ void Game::updateMainWindow(F32 dt)
         mImGuiFbo->resize(x, y);
         mLastWidth = x;
         mLastHeight = y;
-        mFsqMat->setDescriptorTextureResource(0u, mImGuiRenderTarget->getTexture(), false);
+        mFsqMat->setDescriptorTextureResource(0u, mImGuiRenderTarget->getTexture());
     }
 
     mSwapchain->setClearColor({0, 0, 0, 1});

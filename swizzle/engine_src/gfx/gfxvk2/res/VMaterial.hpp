@@ -35,7 +35,7 @@ namespace vk
 
         virtual void setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::GfxBuffer> buffer,
             U64 size) override;
-        virtual void setDescriptorTextureResource(U32 index, common::Resource<swizzle::gfx::Texture> texture, SwBool copy) override;
+        virtual void setDescriptorTextureResource(U32 index, common::Resource<swizzle::gfx::Texture> texture) override;
         virtual void setDescriptorComputeImageResource(U32 index, common::Resource<swizzle::gfx::Texture> texture) override;
 
         common::Resource<VkResource<VkDescriptorSet>> getDescriptorSet();
@@ -43,7 +43,7 @@ namespace vk
 
     private:
 
-        void copyDescriptorIfDirty();
+        void copyDescriptorIfDirty(U32 idxToSkip);
         VkSampler createSampler(SwBool enableMips, SwBool forceLowestMip);
 
         common::Resource<Device> mDevice;

@@ -115,7 +115,7 @@ namespace vk
 
     void VMaterial::setDescriptorBufferResource(U32 index, common::Resource<swizzle::gfx::GfxBuffer> buffer, U64 size)
     {
-        copyDescriptorIfDirty();
+        copyDescriptorIfDirty(index);
 
         DBuffer* bfr = (DBuffer*)buffer.get();
 
@@ -145,16 +145,9 @@ namespace vk
         vkUpdateDescriptorSets(mDevice->getDeviceHandle(), 1U, &writeDesc, 0U, VK_NULL_HANDLE);
     }
 
-    void VMaterial::setDescriptorTextureResource(U32 index, common::Resource<swizzle::gfx::Texture> texture, SwBool copy)
+    void VMaterial::setDescriptorTextureResource(U32 index, common::Resource<swizzle::gfx::Texture> texture)
     {
-#if _DEBUG
-        if (copy)
-#else
-        UNUSED_ARG(copy);
-#endif
-        {
-            copyDescriptorIfDirty();
-        }
+        copyDescriptorIfDirty(index);
 
         TextureBase* tex = (TextureBase*)(texture.get());
 
@@ -191,7 +184,7 @@ namespace vk
 
     void VMaterial::setDescriptorComputeImageResource(U32 index, common::Resource<swizzle::gfx::Texture> texture)
     {
-        copyDescriptorIfDirty();
+        copyDescriptorIfDirty(index);
 
         TextureBase* tex = (TextureBase*)(texture.get());
 
@@ -240,7 +233,7 @@ namespace vk
 
 namespace vk
 {
-    void VMaterial::copyDescriptorIfDirty()
+    void VMaterial::copyDescriptorIfDirty(U32 idxToSkip)
     {
         if (mDirty)
         {
@@ -249,6 +242,8 @@ namespace vk
 
             for (U32 i = 0u; i < mDescrTypes.size(); ++i)
             {
+                if (i == idxToSkip)
+                    continue;
                 VkCopyDescriptorSet cpy = {};
                 cpy.sType = VkStructureType::VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
                 cpy.pNext = VK_NULL_HANDLE;
