@@ -443,9 +443,7 @@ namespace rvk
             if (dev)
             {
                 outDevice = std::make_shared<Device>(shared_from_this(), phys, dev, exts);
-                //outDevice = std::make_shared<int>(1);
-                /*outDevice = common::CreateRef<Device>(shared_from_this(), phys, dev);
-                outDevice->initAfterConstruction();*/
+                outDevice->initAfterConstruction();
             }
         }
 

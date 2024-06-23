@@ -33,7 +33,15 @@ namespace rvk
     class GfxDevice
     {
     public:
-        virtual void waitIKdle() const            = 0;
+        /// <summary>
+        /// Waits until Gfx device has finished processing task and become idle
+        /// </summary>
+        virtual void waitIdle() const = 0;
+
+        /// <summary>
+        /// Get name for the device
+        /// </summary>
+        /// <returns>String contaiing the device name</returns>
         virtual std::string getDeviceName() const = 0;
 
     protected:

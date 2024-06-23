@@ -18,6 +18,10 @@ namespace rvk
     class Instance;
     class Device;
     class Extensions;
+    class DeviceMemoryPool;
+    class DeviceMemory;
+    class IResource;
+
 
 } // namespace vk
 

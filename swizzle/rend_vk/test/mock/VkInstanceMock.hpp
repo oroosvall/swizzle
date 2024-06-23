@@ -35,6 +35,8 @@ struct PhysicalDeviceMockInfo
     VkPhysicalDeviceMeshShaderFeaturesEXT mMeshShaderFeatures;
     // sType and pNext does not need to be set, for mocking
     VkPhysicalDeviceRayTracingPipelineFeaturesKHR mRayTracingFeatures;
+
+    VkPhysicalDeviceMemoryProperties mMemoryProperites;
 };
 
 /* Class Declaration */

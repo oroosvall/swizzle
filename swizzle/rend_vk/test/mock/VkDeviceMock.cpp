@@ -43,6 +43,15 @@ void vkGetPhysicalDeviceQueueFamilyProperties(VkPhysicalDevice physicalDevice,
 {
 }
 
+void vkGetPhysicalDeviceMemoryProperties(VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties* pMemoryProperties)
+{
+    memset(pMemoryProperties, 0, sizeof(VkPhysicalDeviceMemoryProperties));
+    PhysicalDeviceMockInfo* pDev = (PhysicalDeviceMockInfo*)physicalDevice;
+    if (pDev)
+    {
+    }
+}
+
 void vkGetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures2* pFeatures)
 {
     PhysicalDeviceMockInfo* pDev = (PhysicalDeviceMockInfo*)physicalDevice;
@@ -92,14 +101,14 @@ VkResult vkCreateDevice(VkPhysicalDevice physicalDevice,
                                             sizeof(Device),
                                             8,
                                             VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
-        d = new (p)Device();
+        d       = new (p) Device();
     }
     else
     {
         d = new Device();
     }
     d->mAllocCb = pAllocator;
-    *pDevice = (VkDevice)d;
+    *pDevice    = (VkDevice)d;
 
     return VK_SUCCESS;
 }
@@ -144,6 +153,18 @@ VkResult vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice,
         }
     }
     return VK_SUCCESS;
+}
+
+VkResult vkAllocateMemory(VkDevice device,
+                          const VkMemoryAllocateInfo* pAllocateInfo,
+                          const VkAllocationCallbacks* pAllocator,
+                          VkDeviceMemory* pMemory)
+{
+    return VK_SUCCESS;
+}
+
+void vkFreeMemory(VkDevice device, VkDeviceMemory memory, const VkAllocationCallbacks* pAllocator)
+{
 }
 
 VkResult vkDeviceWaitIdle(VkDevice device)

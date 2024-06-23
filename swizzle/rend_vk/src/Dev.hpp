@@ -3,10 +3,10 @@
 
 /* Include files */
 
-//#include <cstdint>
-//#include <memory>
-//#include <string>
-//#include <vector>
+// #include <cstdint>
+// #include <memory>
+// #include <string>
+// #include <vector>
 
 #include <rend_vk/GfxDevice.hpp>
 
@@ -30,7 +30,7 @@ namespace rvk
         Dev(std::shared_ptr<Device> dev);
         virtual ~Dev();
 
-        virtual void waitIKdle() const override;
+        virtual void waitIdle() const override;
         virtual std::string getDeviceName() const override;
 
     private:

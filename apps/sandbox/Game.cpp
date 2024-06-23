@@ -11,6 +11,7 @@
 #include <imgui/imgui.h>
 #include <ImGuiSwzzle.hpp>
 #include <ImGuiSwizzleStyle.hpp>
+#include <ImGuiSwizzleTools.hpp>
 
 #include <scene/Scene.hpp>
 
@@ -171,9 +172,11 @@ SwBool Game::userUpdate(F32 dt)
 
     ImGui::End();
 
-    ImGui::EndFrame();
+    ImGui::ShowDemoWindow();
 
     updateMainWindow(dt);
+
+    ImGui::EndFrame();
 
     // Update and Render additional Platform Windows
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

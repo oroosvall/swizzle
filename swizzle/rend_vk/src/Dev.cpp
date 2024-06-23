@@ -29,7 +29,7 @@ namespace rvk
     {
     }
 
-    void Dev::waitIKdle() const
+    void Dev::waitIdle() const
     {
         return mDevice->waitIdle();
     }
