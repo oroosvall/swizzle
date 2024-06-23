@@ -10,7 +10,7 @@ setup_workspace(project_config.workspace)
 
 projects = {}
 
-result, errorCode = os.outputof("git describe --always --dirty=-d")
+result, errorCode = os.outputof("git describe --tags --always --dirty=-d")
 s = string.format(
 [[
 #include <swizzle/swizzle.hpp>
