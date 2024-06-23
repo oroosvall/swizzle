@@ -45,3 +45,5 @@ data/ProfileTest.prof
 *.log
 *.ini
 swizzle/engine_src/version.cpp
+/vendor/tracy/tracy/vcpkg/vcpkg
+/vendor/tracy/tracy/vcpkg_installed
