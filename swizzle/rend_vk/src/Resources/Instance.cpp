@@ -3,16 +3,15 @@
 
 #include "Instance.hpp"
 #include "Debug.hpp"
+#include "Device.hpp"
 #include "Extension.hpp"
 #include "Surface.hpp"
-#include "Device.hpp"
 
 #include "../Log.hpp"
 
 #include <algorithm>
 #include <numeric>
 #include <optional>
-
 
 /* Defines */
 
@@ -114,12 +113,15 @@ namespace rvk
         features.mMeshShaders.sType  = VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
         features.mRayTracing.sType =
             VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+        features.mDynamicRendering.sType =
+            VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
 
         features.mFeatures.pNext     = &features.mMaintenace13;
         features.mMaintenace13.pNext = &features.mMeshShaders;
         features.mMeshShaders.pNext  = &features.mRayTracing;
+        features.mRayTracing.pNext   = &features.mDynamicRendering;
 
-        features.mRayTracing.pNext = VK_NULL_HANDLE;
+        features.mDynamicRendering.pNext = VK_NULL_HANDLE;
     }
 
     static PhysicalDeviceFeatures getFeatures(VkPhysicalDevice dev)
@@ -162,6 +164,10 @@ namespace rvk
         ok &= setFeature(&ef.mFeatures.features.fillModeNonSolid,
                          &af.mFeatures.features.fillModeNonSolid,
                          FeatureState::Required);
+
+        ok &= setFeature(&ef.mDynamicRendering.dynamicRendering,
+                         &af.mDynamicRendering.dynamicRendering,
+                         FeatureState::Optional);
 
         ok &= setFeature(&ef.mMaintenace13.maintenance4, &af.mMaintenace13.maintenance4, FeatureState::Required);
 
@@ -322,7 +328,7 @@ namespace rvk
     std::shared_ptr<Device> Instance::createDevice(const DeviceCreateInfo& createInfo)
     {
         std::shared_ptr<Device> outDevice = nullptr;
-        VkPhysicalDevice phys          = getDevice(createInfo.mDeviceIndex);
+        VkPhysicalDevice phys             = getDevice(createInfo.mDeviceIndex);
         if (phys)
         {
             const std::vector<std::string> extensions = listAvailableExtensions(phys);

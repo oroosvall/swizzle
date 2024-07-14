@@ -29,6 +29,7 @@ namespace rvk
         VkPhysicalDeviceVulkan13Features mMaintenace13;
         VkPhysicalDeviceMeshShaderFeaturesEXT mMeshShaders;
         VkPhysicalDeviceRayTracingPipelineFeaturesKHR mRayTracing;
+        VkPhysicalDeviceDynamicRenderingFeatures mDynamicRendering;
     };
 
     struct FeatureEnable
