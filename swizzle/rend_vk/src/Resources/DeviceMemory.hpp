@@ -50,10 +50,11 @@ namespace rvk
             , mMemory(memory)
             , mAlignOffset(offset)
             , mSize(size)
-            , mResources()
+            , mUserCount(0ull)
             , mFreed(false)
         {
         }
+
         virtual ~DeviceMemory()
         {
         }
@@ -63,10 +64,11 @@ namespace rvk
         VkDeviceSize mAlignOffset;
         VkDeviceSize mSize;
 
-        std::vector<std::weak_ptr<IResource>> mResources;
+        uint32_t mUserCount;
         bool mFreed;
 
-        void bind(std::shared_ptr<Device> device, std::shared_ptr<IResource> resource);
+        void addUser();
+        void removeUser();
         uint32_t activeUserCount();
     };
 

@@ -30,51 +30,20 @@ namespace rvk
     ///
     /// Device Memory
     ///
-    void DeviceMemory::bind(std::shared_ptr<Device> device, std::shared_ptr<IResource> resource)
+
+    void DeviceMemory::addUser()
     {
-        bool added = false;
-        for (uint32_t i = 0u; i < mResources.size(); ++i)
-        {
-            if (mResources[i].expired())
-            {
-                mResources[i] = resource;
-                added         = true;
-                break;
-            }
-        }
+        mUserCount++;
+    }
 
-        if (!added)
-        {
-            mResources.push_back(resource);
-        }
-
-        // if (resource->getType() == ResourceType::BufferResource)
-        //{
-        //     VkResource<VkBuffer>* res = (VkResource<VkBuffer>*)resource.get();
-        //     vkBindBufferMemory(device->getDeviceHandle(), res->getVkHandle(), mMemory, mAlignOffset);
-        // }
-        // else if (resource->getType() == ResourceType::ImageResource)
-        //{
-        //     VkResource<VkImage>* res = (VkResource<VkImage>*)resource.get();
-        //     vkBindImageMemory(device->getDeviceHandle(), res->getVkHandle(), mMemory, mAlignOffset);
-        // }
-        // else
-        //{
-        //     LOG_ERROR("DeviceMemory::bind, undefined resource type, cannot bind memory");
-        // }
+    void DeviceMemory::removeUser()
+    {
+        mUserCount--;
     }
 
     uint32_t DeviceMemory::activeUserCount()
     {
-        uint32_t userCount = 0u;
-        for (auto& r : mResources)
-        {
-            if (!r.expired())
-            {
-                userCount++;
-            }
-        }
-        return userCount;
+        return mUserCount;
     }
 
     ///
@@ -297,6 +266,8 @@ namespace rvk
 
     void DeviceMemoryPool::updateBudget(VkDeviceSize budget, VkDeviceSize usage)
     {
+        RVK_UNUSED_ARG(budget);
+        RVK_UNUSED_ARG(usage);
     }
 
     std::shared_ptr<DeviceMemory> DeviceMemoryPool::allocateMemory(VkMemoryRequirements reqs, uint32_t memoryTypeIndex)
