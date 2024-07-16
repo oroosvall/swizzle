@@ -31,19 +31,22 @@
 *.out
 *.app
 
-#folders
+# Folders
 build/
-data/cache.dat
-data/test.dat
-data/test.nam
 .vs/
 .vscode/
 trash/
+/vendor/tracy/tracy/vcpkg/vcpkg
+/vendor/tracy/tracy/vcpkg_installed
+
+# Project files
+data/cache.dat
+data/test.dat
+data/test.nam
 *.ods
 *.pyc
 data/ProfileTest.prof
 *.log
 *.ini
-swizzle/engine_src/version.cpp
-/vendor/tracy/tracy/vcpkg/vcpkg
-/vendor/tracy/tracy/vcpkg_installed
+swizzle/engine_src/Version.cpp
+data/engine.cfg
