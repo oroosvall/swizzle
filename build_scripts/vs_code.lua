@@ -3,7 +3,8 @@ function generateVSCodeProjectSettings(projectTable, configFile)
     projectDefines = ""
     projectIncludes = [[
             "${workspaceFolder}/**",
-            "${VULKAN_SDK}/include/**"
+            "${VULKAN_SDK}/include/**",
+            "/usr/include/winpr2"
 ]]
 
     vscodeProjectConfig =
@@ -20,7 +21,8 @@ function generateVSCodeProjectSettings(projectTable, configFile)
         "compilerPath": "/usr/bin/gcc",
         "cStandard": "gnu17",
         "cppStandard": "gnu++17",
-        "intelliSenseMode": "linux-gcc-x64"
+        "intelliSenseMode": "linux-gcc-x64",
+        "compileCommands": ".vscode/compile_commands.json"
     }
     ],
     "version": 4

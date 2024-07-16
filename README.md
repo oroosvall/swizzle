@@ -19,6 +19,10 @@ run
 git submodule update --init --recursive
 ```
 
+# Optional tools
+
+* bear - used to generate compile_commands.json for vscode setup
+
 ## Windows
 Installing the vulkan sdk is enough to have the `VULKAN_SDK` environment variable set.
 `VULKAN_SDK` must be defined as environment variable.
@@ -34,17 +38,27 @@ run the `setup.bat`
 source the sdk setup-env
 On linux source the `setup-env.sh` before running the premake setup.
 
-```bash
-source 'path/to/vulkan_sdk/setup_env.sh'
-./vendor/premake/premake5 gmake2
-```
-
 ### Package manager provided sources
 The vulkan sdk headers and library files are usually installed into the /usr directoy
 
 ```bash
 export VULKAN_SDK=/usr
-./vendor/premake/premake5 gmake2
+```
+
+To compile the project run
+```bash
+make compile-debug
+```
+
+To run the debug build
+```bash
+make run-debug
+```
+
+release can be built using
+```bash
+make compile-debug
+make run-debug
 ```
 
 # Features
