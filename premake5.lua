@@ -1,6 +1,7 @@
 include "build_scripts/options.lua"
 include "build_scripts/workspace_funcs.lua"
 include "build_scripts/project_funcs.lua"
+include "build_scripts/vs_code.lua"
 
 proj_cfg_file = _OPTIONS["projectConfig"]
 project_config = load_workspace_config(_WORKING_DIR .. "/" .. proj_cfg_file)
@@ -54,4 +55,4 @@ if not os.isfile("projectConfig.json") then
 end
 
 os.mkdir(".vscode")
--- generateVSCodeProjectSettings(projects, ".vscode/c_cpp_properties.json")
+generateVSCodeProjectSettings(projects, ".vscode/c_cpp_properties.json")

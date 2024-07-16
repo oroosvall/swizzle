@@ -38,7 +38,8 @@
         "soloud/include"
     ],
     "build_flags": {
-        "removeflags": "FatalCompileWarnings"
+        "removeflags": "FatalCompileWarnings",
+        "warnings": "Off"
     },
     "defines": [
         "WITH_MINIAUDIO"

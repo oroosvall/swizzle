@@ -11,6 +11,8 @@
     ],
     "pub_inc_dirs":[
         "include/"
-    ]
-
+    ],
+    "build_flags": {
+        "removeflags": "FatalCompileWarnings"
+    }
 }

@@ -28,9 +28,22 @@ If the SDK is installed under `C:/VulkanSDK/x.x.x.x/` then the `VULKAN_SDK` shou
 run the `setup.bat`
 
 ## Linux
+`VULKAN_SDK` environment variable should point to the source directory of the vulkan headers and the library location.
+
+### Manual SDK source
+source the sdk setup-env
 On linux source the `setup-env.sh` before running the premake setup.
+
 ```bash
 source 'path/to/vulkan_sdk/setup_env.sh'
+./vendor/premake/premake5 gmake2
+```
+
+### Package manager provided sources
+The vulkan sdk headers and library files are usually installed into the /usr directoy
+
+```bash
+export VULKAN_SDK=/usr
 ./vendor/premake/premake5 gmake2
 ```
 
