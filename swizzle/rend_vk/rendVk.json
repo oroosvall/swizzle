@@ -28,6 +28,6 @@
         "include/"
     ],
     "build_flags": {
-        "rtti": "Off"
+        "rtti": "On"
     }
 }

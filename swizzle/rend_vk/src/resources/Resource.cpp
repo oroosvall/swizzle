@@ -24,6 +24,7 @@
 
 namespace rvk
 {
+    template<>
     void Resource<VkImage>::bindMemory(std::shared_ptr<Device> dev, DeviceMemory* mem)
     {
         mem->addUser();
@@ -31,6 +32,7 @@ namespace rvk
         rvk::LogVulkanError(res, "vkBindImageMemory");
     }
 
+    template<>
     void Resource<VkBuffer>::bindMemory(std::shared_ptr<Device> dev, DeviceMemory* mem)
     {
         mem->addUser();

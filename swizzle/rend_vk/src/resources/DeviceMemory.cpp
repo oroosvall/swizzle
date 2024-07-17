@@ -7,6 +7,7 @@
 #include "../Log.hpp"
 
 #include <assert.h>
+#include <algorithm>
 
 /* Defines */
 

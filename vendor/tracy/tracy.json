@@ -20,6 +20,9 @@
     "defines":[
         "TRACY_ENABLE",
         "TRACY_EXPORTS"
-    ]
+    ],
+    "build_flags": {
+        "warnings": "Off"
+    }
 
 }
