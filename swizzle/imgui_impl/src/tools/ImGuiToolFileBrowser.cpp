@@ -90,33 +90,33 @@ namespace imext
             return driveLetters;
         }
 
-        virtual std::string absolutePath(const std::string& path) override
+        virtual std::filesystem::path absolutePath(const std::filesystem::path& path) override
         {
-            return std::filesystem::absolute(path).u8string();
+            return std::filesystem::absolute(path);
         }
 
-        virtual std::string getRootPath(const std::string& path) override
+        virtual std::filesystem::path getRootPath(const std::filesystem::path& path) override
         {
-            return std::filesystem::absolute(path).root_path().u8string();
+            return std::filesystem::absolute(path).root_path();
         }
 
-        virtual std::string getWihtoutRootPath(const std::string& path) override
+        virtual std::filesystem::path getWihtoutRootPath(const std::filesystem::path& path) override
         {
-            return std::filesystem::absolute(path).relative_path().u8string();
+            return std::filesystem::absolute(path).relative_path();
         }
 
-        virtual std::string getDirectory(const std::string& path) override
+        virtual std::filesystem::path getDirectory(const std::filesystem::path& path) override
         {
-            std::string newPath = path;
+            std::filesystem::path newPath = path;
             auto dir = std::filesystem::directory_entry(path);
             if (dir.is_regular_file())
             {
-                newPath = dir.path().parent_path().u8string();
+                newPath = dir.path().parent_path();
             }
             return newPath;
         }
 
-        virtual bool visible(const std::string& path) override
+        virtual bool visible(const std::filesystem::path& path) override
         {
             bool visible = true;
 #if _WIN32
@@ -128,7 +128,7 @@ namespace imext
                 visible = false;
             }
 #else
-            if (path[0] == '.')
+            if (path.u8string()[0] == '.')
             {
                 visible = false;
             }
@@ -136,34 +136,34 @@ namespace imext
             return visible;
         }
 
-        virtual bool exists(const std::string& path) override
+        virtual bool exists(const std::filesystem::path& path) override
         {
             return std::filesystem::directory_entry(path).exists();
         }
 
-        virtual bool isRoot(const std::string& path) override
+        virtual bool isRoot(const std::filesystem::path& path) override
         {
             auto rootPath = std::filesystem::directory_entry(path).path().root_path().u8string();
             return rootPath == path;
         }
 
-        virtual bool isDirectory(const std::string& path) override
+        virtual bool isDirectory(const std::filesystem::path& path) override
         {
             return std::filesystem::directory_entry(path).is_directory();
         }
 
-        virtual std::vector<DirectoryItem> getDirectoryItems(const std::string& path, bool onlyDirectories) override
+        virtual std::vector<DirectoryItem> getDirectoryItems(const std::filesystem::path& path, bool onlyDirectories) override
         {
             std::vector<DirectoryItem> items;
             std::filesystem::directory_iterator dirIter(path);
 
             for (auto& d : dirIter)
             {
-                if (!visible(d.path().u8string()))
+                if (!visible(d.path()))
                 {
                     continue;
                 }
-                auto name = d.path().filename().u8string();
+                auto name = d.path().filename();
                 DirectoryType type{};
                 if (d.is_directory())
                 {
@@ -194,15 +194,15 @@ namespace imext
             return items;
         }
 
-        virtual void createDir(const std::string& path) override
+        virtual void createDir(const std::filesystem::path& path) override
         {
             std::filesystem::create_directories(path);
         }
 
-        virtual std::string traverseTo(const std::string& path, const std::string& dir) override
+        virtual std::string traverseTo(const std::filesystem::path& path, const std::string& dir) override
         {
-            auto newPath = std::filesystem::u8path(path + "\\" + dir);
-            return newPath.u8string();
+            //auto newPath = std::filesystem::u8path(path / dir);
+            return path/dir;
         }
     };
 
@@ -221,9 +221,9 @@ namespace imext
 {
     static std::string GetDirectoryTypeAsString(DirectoryType type);
 
-    static void DrawDriveComboBox(FileSystemInfo* fsInfo, std::string& path);
-    static void DrawFilePath(FileSystemInfo* fsInfo, std::string& path, FileBrowserCache& cache);
-    static FileBrowserStatus DrawFileTable(FileSystemInfo* fsInfo, std::string& path, FileBrowserCache& cache);
+    static void DrawDriveComboBox(FileSystemInfo* fsInfo, std::filesystem::path& path);
+    static void DrawFilePath(FileSystemInfo* fsInfo, std::filesystem::path& path, FileBrowserCache& cache);
+    static FileBrowserStatus DrawFileTable(FileSystemInfo* fsInfo, std::filesystem::path& path, FileBrowserCache& cache);
 } // namespace imext
 
 /* Static Function Definition */
@@ -250,7 +250,7 @@ namespace imext
         return typeName;
     }
 
-    static void DrawDriveComboBox(FileSystemInfo* fsInfo, std::string& path)
+    static void DrawDriveComboBox(FileSystemInfo* fsInfo, std::filesystem::path& path)
     {
         auto rootName = fsInfo->getRootPath(path);
         auto logicalDrives = fsInfo->getLogicalDrives();
@@ -273,7 +273,7 @@ namespace imext
         ImGui::SameLine();
     }
 
-    static void DrawFilePath(FileSystemInfo* fsInfo, std::string& path, FileBrowserCache& cache)
+    static void DrawFilePath(FileSystemInfo* fsInfo, std::filesystem::path& path, FileBrowserCache& cache)
     {
         auto rootPath = fsInfo->getRootPath(path);
         auto withoutRoot = fsInfo->getWihtoutRootPath(path);
@@ -289,7 +289,7 @@ namespace imext
         ImGui::SetNextItemWidth(size.x - pos.x);
         if (InputText("##Path", cache.mWorkingPath))
         {
-            if (fsInfo->exists(rootPath + cache.mWorkingPath))
+            if (fsInfo->exists(rootPath / cache.mWorkingPath))
             {
                 withoutRoot = cache.mWorkingPath;
             }
@@ -305,7 +305,7 @@ namespace imext
                                     {"Yes", "No"});
         if (cd == 0)
         {
-            fsInfo->createDir(rootPath + cache.mWorkingPath);
+            fsInfo->createDir(rootPath / cache.mWorkingPath);
             withoutRoot = cache.mWorkingPath;
         }
         else if (cd == 1)
@@ -314,10 +314,10 @@ namespace imext
         }
 
         ImGui::PopStyleVar();
-        path = rootPath + withoutRoot;
+        path = rootPath / withoutRoot;
     }
 
-    static FileBrowserStatus DrawFileTable(FileSystemInfo* fsInfo, std::string& path, FileBrowserCache& cache)
+    static FileBrowserStatus DrawFileTable(FileSystemInfo* fsInfo, std::filesystem::path& path, FileBrowserCache& cache)
     {
         FileBrowserStatus returnCode = FileBrowserStatus::None;
         auto size = ImGui::GetWindowSize();
@@ -409,7 +409,7 @@ namespace imext
 
 namespace imext
 {
-    IMGUI_IMPL_API FileBrowserStatus FileBrowser(const char* name, bool* open, std::string& path, FileBrowserMode mode,
+    IMGUI_IMPL_API FileBrowserStatus FileBrowser(const char* name, bool* open, std::filesystem::path& path, FileBrowserMode mode,
                                                  FileSystemInfo* fsInfo)
     {
         DefaultFileSystemInfo defaultFsInfo{};

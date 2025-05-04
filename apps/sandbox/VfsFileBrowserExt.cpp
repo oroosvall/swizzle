@@ -34,28 +34,28 @@ std::vector<std::string> VfsFileSystemInfo::getLogicalDrives()
     return std::vector<std::string>();
 }
 
-std::string VfsFileSystemInfo::absolutePath(const std::string& path)
+std::filesystem::path VfsFileSystemInfo::absolutePath(const std::filesystem::path& path)
 {
     return path;
 }
 
-std::string VfsFileSystemInfo::getRootPath(const std::string& path)
+std::filesystem::path VfsFileSystemInfo::getRootPath(const std::filesystem::path& path)
 {
     UNUSED_ARG(path);
-    return "/";
+    return std::filesystem::path("/");
 }
 
-std::string VfsFileSystemInfo::getWihtoutRootPath(const std::string& path)
+std::filesystem::path VfsFileSystemInfo::getWihtoutRootPath(const std::filesystem::path& path)
 {
-    std::string np = path;
-    if (path[0] == '/')
+    std::string np = path.c_str();
+    if (path.c_str()[0] == '/')
     {
         np.erase(0, 1);
     }
-    return np;
+    return std::filesystem::path(np.c_str());
 }
 
-std::string VfsFileSystemInfo::getDirectory(const std::string& path)
+std::filesystem::path VfsFileSystemInfo::getDirectory(const std::filesystem::path& path)
 {
     if (mVfs->isDirectory(path.c_str()))
     {
@@ -69,31 +69,31 @@ std::string VfsFileSystemInfo::getDirectory(const std::string& path)
             return mVfs->getDirectory(path.c_str());
         }
     }
-    return "";
+    return std::filesystem::path("");
 }
 
-bool VfsFileSystemInfo::visible(const std::string& path)
+bool VfsFileSystemInfo::visible(const std::filesystem::path& path)
 {
     UNUSED_ARG(path);
     return true;
 }
 
-bool VfsFileSystemInfo::exists(const std::string& path)
+bool VfsFileSystemInfo::exists(const std::filesystem::path& path)
 {
     return mVfs->exists(path.c_str());
 }
 
-bool VfsFileSystemInfo::isRoot(const std::string& path)
+bool VfsFileSystemInfo::isRoot(const std::filesystem::path& path)
 {
-    return path == "/";
+    return path.u8string() == u8"/";
 }
 
-bool VfsFileSystemInfo::isDirectory(const std::string& path)
+bool VfsFileSystemInfo::isDirectory(const std::filesystem::path& path)
 {
     return mVfs->isDirectory(path.c_str());
 }
 
-std::vector<imext::DirectoryItem> VfsFileSystemInfo::getDirectoryItems(const std::string& path, bool onlyDirectories)
+std::vector<imext::DirectoryItem> VfsFileSystemInfo::getDirectoryItems(const std::filesystem::path& path, bool onlyDirectories)
 {
     std::vector<imext::DirectoryItem> items;
     U32 count = mVfs->getDirectoryItems(path.c_str());
@@ -101,7 +101,7 @@ std::vector<imext::DirectoryItem> VfsFileSystemInfo::getDirectoryItems(const std
     for (U32 i = 0; i < count; i++)
     {
         const SwChar* name = mVfs->getDirectoryItemName(path.c_str(), i);
-        std::string newPath = path + "/" + name;
+        std::filesystem::path newPath = path / name;
         imext::DirectoryItem di{};
         di.mPath = name;
         di.mType = mVfs->isDirectory(newPath.c_str()) ? imext::DirectoryType::Directory : imext::DirectoryType::File;
@@ -122,14 +122,14 @@ std::vector<imext::DirectoryItem> VfsFileSystemInfo::getDirectoryItems(const std
     return items;
 }
 
-void VfsFileSystemInfo::createDir(const std::string& path)
+void VfsFileSystemInfo::createDir(const std::filesystem::path& path)
 {
     mVfs->createDirectory(path.c_str());
 }
 
-std::string VfsFileSystemInfo::traverseTo(const std::string& path, const std::string& dir)
+std::string VfsFileSystemInfo::traverseTo(const std::filesystem::path& path, const std::string& dir)
 {
-    std::string np = path;
+    std::string np = path.c_str();
     if (dir == "..")
     {
         if (np[np.size() - 1u] == '/')

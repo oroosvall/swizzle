@@ -48,7 +48,7 @@ namespace imext
 
     struct DirectoryItem
     {
-        std::string mPath;
+        std::filesystem::path mPath;
         DirectoryType mType;
     };
 
@@ -66,18 +66,18 @@ namespace imext
         virtual bool hasLogicalDrives() = 0;
         virtual std::vector<std::string> getLogicalDrives() = 0;
 
-        virtual std::string absolutePath(const std::string& path) = 0;
-        virtual std::string getRootPath(const std::string& path) = 0;
-        virtual std::string getWihtoutRootPath(const std::string& path) = 0;
-        virtual std::string getDirectory(const std::string& path) = 0;
-        virtual bool visible(const std::string& path) = 0;
-        virtual bool exists(const std::string& path) = 0;
-        virtual bool isRoot(const std::string& path) = 0;
-        virtual bool isDirectory(const std::string& path) = 0;
-        virtual std::vector<DirectoryItem> getDirectoryItems(const std::string& path, bool onlyDirectories) = 0;
+        virtual std::filesystem::path absolutePath(const std::filesystem::path& path) = 0;
+        virtual std::filesystem::path getRootPath(const std::filesystem::path& path) = 0;
+        virtual std::filesystem::path getWihtoutRootPath(const std::filesystem::path& path) = 0;
+        virtual std::filesystem::path getDirectory(const std::filesystem::path& path) = 0;
+        virtual bool visible(const std::filesystem::path& path) = 0;
+        virtual bool exists(const std::filesystem::path& path) = 0;
+        virtual bool isRoot(const std::filesystem::path& path) = 0;
+        virtual bool isDirectory(const std::filesystem::path& path) = 0;
+        virtual std::vector<DirectoryItem> getDirectoryItems(const std::filesystem::path& path, bool onlyDirectories) = 0;
 
-        virtual void createDir(const std::string& path) = 0;
-        virtual std::string traverseTo(const std::string& path, const std::string& dir) = 0;
+        virtual void createDir(const std::filesystem::path& path) = 0;
+        virtual std::string traverseTo(const std::filesystem::path& path, const std::string& dir) = 0;
     };
 } // namespace imext
 
@@ -85,7 +85,7 @@ namespace imext
 
 namespace imext
 {
-    IMGUI_IMPL_API FileBrowserStatus FileBrowser(const char* name, bool* open, std::string& path,
+    IMGUI_IMPL_API FileBrowserStatus FileBrowser(const char* name, bool* open, std::filesystem::path& path,
                                                  FileBrowserMode mode = FileBrowserMode::OpenFile,
                                                  FileSystemInfo* fsInfo = nullptr);
     IMGUI_IMPL_API bool InputText(const char* label, std::string& str);
